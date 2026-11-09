@@ -10,11 +10,12 @@
     <Product>Super Celik</Product>
     <RootNamespace>SerbiaID</RootNamespace>
     <Version>0.1.0</Version>
-    <ApplicationIcon></ApplicationIcon>
+    <ApplicationIcon>app.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
     <Using Include="System.IO" />
+    <Resource Include="app.ico" />
   </ItemGroup>
 
   <ItemGroup>
