@@ -22,9 +22,23 @@ enum SignatureVerifier {
     static let anchors: [SecCertificate] = {
         let urls = resourceBundle?.urls(forResourcesWithExtension: "crt", subdirectory: "Resources/CA") ?? []
         return urls.compactMap { url in
-            (try? Data(contentsOf: url)).flatMap { SecCertificateCreateWithData(nil, $0 as CFData) }
+            (try? Data(contentsOf: url)).flatMap(derFromFile).flatMap { SecCertificateCreateWithData(nil, $0 as CFData) }
         }
     }()
+
+    /// The .crt files are a mix of DER (MUPCA 3) and PEM (MUP CA 4); SecCertificate only takes DER.
+    /// Silently dropping the PEM ones left the whole CA 4 hierarchy out, so current token and card
+    /// certificates failed with "could not build the trust chain".
+    static func derFromFile(_ data: Data) -> Data? {
+        guard let text = String(data: data, encoding: .ascii), text.contains("-----BEGIN CERTIFICATE-----") else {
+            return data
+        }
+        let b64 = text.components(separatedBy: .newlines)
+            .filter { !$0.hasPrefix("-----") }
+            .joined()
+            .trimmingCharacters(in: .whitespaces)
+        return Data(base64Encoded: b64, options: .ignoreUnknownCharacters)
+    }
 
     /// The SwiftPM resource bundle with the CA certificates.
     /// `Bundle.module` is not used on purpose: it only looks next to the .app (not in
