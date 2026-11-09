@@ -1,5 +1,5 @@
-import Foundation
-import PCSC
+﻿import Foundation
+import CPCSC
 
 // MARK: - Data model (mirrors CelikApi 1.4.2 structures, see MUP "Opis funkcija")
 
@@ -483,3 +483,4 @@ final class MockCardService: CardService {
     func changeTokenPin(reader: String, old: String, new: String) throws {}
     func tokenSign(reader: String, pin: String, keyFile: UInt16, digestInfo: Data) throws -> Data { Data(count: 256) }
 }
+
