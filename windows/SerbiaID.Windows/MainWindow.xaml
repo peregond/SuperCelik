@@ -1,0 +1,60 @@
+<Window x:Class="SerbiaID.MainWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="SerbiaID" Width="900" Height="640" MinWidth="720" MinHeight="520"
+        WindowStartupLocation="CenterScreen">
+    <DockPanel>
+        <WrapPanel DockPanel.Dock="Top" Margin="10">
+            <TextBlock x:Name="LblReader" FontWeight="Bold" VerticalAlignment="Center" Margin="0,0,6,0"/>
+            <ComboBox x:Name="CmbReader" Width="270" SelectionChanged="CmbReader_Changed"/>
+            <Button x:Name="BtnRefresh" Margin="8,0,0,0" Padding="10,2" Click="Refresh_Click"/>
+            <TextBlock x:Name="LblCard" VerticalAlignment="Center" Margin="12,0,0,0"/>
+            <ComboBox x:Name="CmbLang" Width="110" Margin="24,0,0,0" SelectionChanged="Lang_Changed"/>
+        </WrapPanel>
+
+        <TabControl x:Name="Tabs" Margin="10,0,10,10">
+            <TabItem x:Name="TabPersonal">
+                <DockPanel Margin="10">
+                    <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+                        <Button x:Name="BtnRead" Padding="12,3" Click="Read_Click"/>
+                        <Button x:Name="BtnPrint" Padding="12,3" Margin="8,0,0,0" Click="Print_Click"/>
+                        <Button x:Name="BtnVerify" Padding="12,3" Margin="8,0,0,0" Click="Verify_Click"/>
+                        <TextBlock x:Name="LblSig" VerticalAlignment="Center" Margin="12,0,0,0" FontWeight="SemiBold"/>
+                    </WrapPanel>
+                    <StackPanel Orientation="Horizontal">
+                        <Border Width="150" Height="190" BorderBrush="LightGray" BorderThickness="1" VerticalAlignment="Top" Margin="0,0,20,0">
+                            <Image x:Name="ImgPortrait" Stretch="Uniform"/>
+                        </Border>
+                        <ScrollViewer VerticalScrollBarVisibility="Auto" Width="600">
+                            <Grid x:Name="FieldsGrid">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="200"/>
+                                    <ColumnDefinition Width="*"/>
+                                </Grid.ColumnDefinitions>
+                            </Grid>
+                        </ScrollViewer>
+                    </StackPanel>
+                </DockPanel>
+            </TabItem>
+
+            <TabItem x:Name="TabToken">
+                <DockPanel Margin="10">
+                    <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+                        <Button x:Name="BtnReadToken" DockPanel.Dock="Right" Padding="12,3" Click="ReadToken_Click"/>
+                        <TextBlock x:Name="LblCerts" FontWeight="Bold" VerticalAlignment="Center"/>
+                    </DockPanel>
+                    <TextBlock x:Name="LblPinNote" DockPanel.Dock="Bottom" Foreground="Gray" TextWrapping="Wrap" Margin="0,8,0,0"/>
+                    <TextBlock x:Name="LblTokenInfo" DockPanel.Dock="Top" Foreground="Gray" Margin="0,0,0,6"/>
+                    <ListBox x:Name="LstCerts"/>
+                </DockPanel>
+            </TabItem>
+
+            <TabItem x:Name="TabAbout">
+                <StackPanel VerticalAlignment="Center" HorizontalAlignment="Center" MaxWidth="460">
+                    <TextBlock x:Name="LblAboutTitle" FontSize="24" HorizontalAlignment="Center" Margin="0,0,0,10"/>
+                    <TextBlock x:Name="LblAboutText" TextWrapping="Wrap" TextAlignment="Center"/>
+                </StackPanel>
+            </TabItem>
+        </TabControl>
+    </DockPanel>
+</Window>
