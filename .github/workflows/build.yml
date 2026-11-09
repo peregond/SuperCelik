@@ -1,4 +1,4 @@
-﻿name: Build installers
+name: Build installers
 
 on:
   push:
@@ -35,6 +35,7 @@ jobs:
         with:
           files: dist/*.dmg
           generate_release_notes: true
+          prerelease: true
 
   windows:
     runs-on: windows-latest
@@ -65,4 +66,5 @@ jobs:
         with:
           files: dist/*-setup.exe
           generate_release_notes: true
+          prerelease: true
 
