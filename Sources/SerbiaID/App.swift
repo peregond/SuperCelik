@@ -2,7 +2,7 @@ import SwiftUI
 
 @main
 struct SerbiaIDApp: App {
-    @StateObject private var loc = Loc()
+    @StateObject private var loc = Loc.shared
     @StateObject private var model = AppModel()
 
     var body: some Scene {
