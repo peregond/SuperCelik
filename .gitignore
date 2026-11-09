@@ -1,0 +1,8 @@
+.build/
+.swiftpm/
+dist/
+*.xcodeproj/xcuserdata/
+.DS_Store
+# never commit card dumps / personal data
+carddump/
+*.bin
