@@ -102,7 +102,9 @@ struct PersonalView: View {
 struct TokenView: View {
     @EnvironmentObject var loc: Loc
     @EnvironmentObject var model: AppModel
-    @State private var old = "", new1 = "", new2 = ""
+    @State private var old = ""
+    @State private var new1 = ""
+    @State private var new2 = ""
     @State private var status: String?
 
     var body: some View {
