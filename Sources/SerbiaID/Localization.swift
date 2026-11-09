@@ -14,6 +14,7 @@ enum AppLanguage: String, CaseIterable, Identifiable {
 
 /// Runtime-switchable localization (no app restart needed).
 final class Loc: ObservableObject {
+    static let shared = Loc()
     @AppStorage("language") private var stored: String = Loc.systemDefault().rawValue
     @Published var language: AppLanguage = .en {
         didSet { stored = language.rawValue }
@@ -45,13 +46,31 @@ final class Loc: ObservableObject {
         case pinChanged, pinFailed, verifySignature, export
         case notImplemented, error, ok, cancel, language, aboutText
         case nationality, docSerial, pinUnsupported, sigOk, sigChain, sigBad
-        case readToken, chainOk, pinNote, printCard
+        case readToken, chainOk, pinNote, printCard, savePdf, pdfSaved, version, checkUpdates
+        case updateAvailable, updateNow, updateDownloading, upToDate, updateUnavailable, updateFailed
+        case brandSub, hintRead, hintToken, docID, docIF, docRP
         case certMoiCA, certAuth, certSign, certSigFixed, certSigVariable
     }
 
     // swiftlint:disable line_length
     static let table: [L: [AppLanguage: String]] = [
-        .printCard: [.ru: "Печать / PDF", .en: "Print / PDF", .sr: "Štampa / PDF"],
+        .printCard: [.ru: "Печать", .en: "Print", .sr: "Štampa"],
+        .savePdf: [.ru: "Сохранить PDF", .en: "Save PDF", .sr: "Sačuvaj PDF"],
+        .pdfSaved: [.ru: "PDF сохранён", .en: "PDF saved", .sr: "PDF je sačuvan"],
+        .version: [.ru: "Версия", .en: "Version", .sr: "Verzija"],
+        .checkUpdates: [.ru: "Проверить обновления", .en: "Check for updates", .sr: "Proveri ažuriranja"],
+        .updateAvailable: [.ru: "Доступна новая версия %@", .en: "New version %@ is available", .sr: "Dostupna je nova verzija %@"],
+        .updateNow: [.ru: "Обновить", .en: "Update", .sr: "Ažuriraj"],
+        .updateDownloading: [.ru: "Загрузка обновления…", .en: "Downloading update…", .sr: "Preuzimanje ažuriranja…"],
+        .upToDate: [.ru: "У вас последняя версия", .en: "You have the latest version", .sr: "Imate najnoviju verziju"],
+        .updateUnavailable: [.ru: "Не удалось получить сведения об обновлениях (нет сети или репозиторий закрыт)", .en: "Could not get update information (offline or the repository is private)", .sr: "Nije moguće dobiti podatke o ažuriranju (nema mreže ili je repozitorijum privatan)"],
+        .updateFailed: [.ru: "Не удалось обновить", .en: "Update failed", .sr: "Ažuriranje nije uspelo"],
+        .brandSub: [.ru: "Электронная ID-карта Сербии", .en: "Serbian electronic ID card", .sr: "Elektronska lična karta Srbije"],
+        .hintRead: [.ru: "Вставьте карту в считыватель и нажмите «Прочитать карту».", .en: "Insert the card into the reader and press “Read card”.", .sr: "Umetnite karticu u čitač i pritisnite „Pročitaj karticu“."],
+        .hintToken: [.ru: "Нажмите «Прочитать токен», чтобы увидеть сертификаты.", .en: "Press “Read token” to see the certificates.", .sr: "Pritisnite „Pročitaj token“ da vidite sertifikate."],
+        .docID: [.ru: "Электронная ID-карта", .en: "Electronic ID card", .sr: "Elektronska lična karta"],
+        .docIF: [.ru: "ID-карта иностранца", .en: "ID card for foreigners", .sr: "Lična karta za strance"],
+        .docRP: [.ru: "Вид на жительство", .en: "Residence permit", .sr: "Boravišna dozvola"],
         .readToken: [.ru: "Прочитать токен", .en: "Read token", .sr: "Pročitaj token"],
         .chainOk: [.ru: "Цепочка доверия до МУП подтверждена", .en: "Chain to MUP CA verified", .sr: "Lanac poverenja do MUP-a potvrđen"],
         .pinNote: [.ru: "Чтение токена не использует PIN. Подпись документов токеном пока не поддерживается.", .en: "Reading the token does not use the PIN. Signing with the token is not supported yet.", .sr: "Čitanje tokena ne koristi PIN. Potpisivanje tokenom još nije podržano."],
