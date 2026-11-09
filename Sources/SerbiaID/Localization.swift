@@ -45,12 +45,13 @@ final class Loc: ObservableObject {
         case pinChanged, pinFailed, verifySignature, export
         case notImplemented, error, ok, cancel, language, aboutText
         case nationality, docSerial, pinUnsupported, sigOk, sigChain, sigBad
-        case readToken, chainOk, pinNote
+        case readToken, chainOk, pinNote, printCard
         case certMoiCA, certAuth, certSign, certSigFixed, certSigVariable
     }
 
     // swiftlint:disable line_length
     static let table: [L: [AppLanguage: String]] = [
+        .printCard: [.ru: "Печать / PDF", .en: "Print / PDF", .sr: "Štampa / PDF"],
         .readToken: [.ru: "Прочитать токен", .en: "Read token", .sr: "Pročitaj token"],
         .chainOk: [.ru: "Цепочка доверия до МУП подтверждена", .en: "Chain to MUP CA verified", .sr: "Lanac poverenja do MUP-a potvrđen"],
         .pinNote: [.ru: "Чтение токена не использует PIN. Подпись документов токеном пока не поддерживается.", .en: "Reading the token does not use the PIN. Signing with the token is not supported yet.", .sr: "Čitanje tokena ne koristi PIN. Potpisivanje tokenom još nije podržano."],
