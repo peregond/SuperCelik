@@ -1,4 +1,4 @@
-using System.Security.Cryptography.Pkcs;
+﻿using System.Security.Cryptography.Pkcs;
 using System.Security.Cryptography.X509Certificates;
 
 namespace SerbiaID;
@@ -54,6 +54,8 @@ internal static class Crypto
         {
             using var x = new X509Certificate2(c.Der);
             c.Subject = x.GetNameInfo(X509NameType.SimpleName, false);
+            c.Issuer = x.GetNameInfo(X509NameType.SimpleName, true);
+            c.NotBefore = x.NotBefore; c.NotAfter = x.NotAfter;
             c.ChainTrusted = Chains(x, out c.ChainError);
         }
         catch (Exception e) { c.ChainError = e.Message; }
