@@ -45,11 +45,15 @@ final class Loc: ObservableObject {
         case pinChanged, pinFailed, verifySignature, export
         case notImplemented, error, ok, cancel, language, aboutText
         case nationality, docSerial, pinUnsupported, sigOk, sigChain, sigBad
+        case readToken, chainOk, pinNote
         case certMoiCA, certAuth, certSign, certSigFixed, certSigVariable
     }
 
     // swiftlint:disable line_length
     static let table: [L: [AppLanguage: String]] = [
+        .readToken: [.ru: "Прочитать токен", .en: "Read token", .sr: "Pročitaj token"],
+        .chainOk: [.ru: "Цепочка доверия до МУП подтверждена", .en: "Chain to MUP CA verified", .sr: "Lanac poverenja do MUP-a potvrđen"],
+        .pinNote: [.ru: "Чтение токена не использует PIN. Подпись документов токеном пока не поддерживается.", .en: "Reading the token does not use the PIN. Signing with the token is not supported yet.", .sr: "Čitanje tokena ne koristi PIN. Potpisivanje tokenom još nije podržano."],
         .sigOk: [.ru: "Подпись верна, данные не изменены", .en: "Signature valid, data unmodified", .sr: "Potpis je ispravan, podaci nisu menjani"],
         .sigChain: [.ru: "Не удалось построить цепочку доверия (это не значит, что данные неверны)", .en: "Trust chain could not be established (does not mean the data is invalid)", .sr: "Nije uspostavljen lanac poverenja (ne znači da podaci nisu ispravni)"],
         .sigBad: [.ru: "Подпись неверна или данные изменены", .en: "Signature invalid or data modified", .sr: "Potpis nije ispravan ili su podaci izmenjeni"],
