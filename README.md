@@ -1,3 +1,5 @@
+<p align="center"><img src="assets/icon-mac-1024.png" width="128" alt="Super Celik"></p>
+
 # Super Celik
 
 Единое приложение вместо Čelik + TrustEdge ID для сербской электронной ID-карты, карты иностранца и вида на жительство.
