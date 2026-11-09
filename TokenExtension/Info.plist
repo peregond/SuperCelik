@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>CFBundleDevelopmentRegion</key><string>en</string>
+    <key>CFBundleDisplayName</key><string>Super Celik eID</string>
+    <key>CFBundleName</key><string>SuperCelikToken</string>
+    <key>CFBundleIdentifier</key><string>com.peregond.supercelik.token</string>
+    <key>CFBundleExecutable</key><string>SuperCelikToken</string>
+    <key>CFBundlePackageType</key><string>XPC!</string>
+    <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
+    <key>CFBundleShortVersionString</key><string>__VERSION__</string>
+    <key>CFBundleVersion</key><string>__VERSION__</string>
+    <key>LSMinimumSystemVersion</key><string>13.0</string>
+    <key>NSExtension</key>
+    <dict>
+        <key>NSExtensionPointIdentifier</key><string>com.apple.ctk-tokens</string>
+        <key>NSExtensionPrincipalClass</key><string>SuperCelikTokenDriver</string>
+        <key>NSExtensionAttributes</key>
+        <dict>
+            <!-- The system selects this applet on every inserted card and starts the driver only
+                 when it answers 9000: NetSeT CardEdge (PKCS#15) on Serbian eID cards and tokens. -->
+            <key>com.apple.ctk.aid</key><string>A000000063504B43532D3135</string>
+            <key>com.apple.ctk.class-id</key><string>com.peregond.supercelik.token</string>
+            <key>com.apple.ctk.driver-class</key><string>SuperCelikTokenDriver</string>
+            <key>com.apple.ctk.token-type</key><string>smartcard</string>
+        </dict>
+    </dict>
+</dict>
+</plist>
