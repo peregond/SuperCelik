@@ -29,6 +29,26 @@ jobs:
         with:
           name: SuperCelik-macOS-${{ matrix.arch }}
           path: dist/*.dmg
+      - name: UI screenshots (demo data, arm64 only)
+        if: matrix.arch == 'arm64'
+        continue-on-error: true
+        run: |
+          mkdir -p shots
+          for spec in "personal" "token" "settings" "personal --dark" "personal --problem"; do
+            name=$(echo "$spec" | tr ' ' '_' | tr -d '-')
+            out="$PWD/shots/$name.png"
+            open -n dist/SuperCelik.app --args --shot "$out" $spec
+            for i in $(seq 1 40); do [ -f "$out" ] && break; sleep 1; done
+            pkill -x SerbiaID || true
+            sleep 1
+          done
+          ls -la shots
+      - uses: actions/upload-artifact@v4
+        if: matrix.arch == 'arm64'
+        with:
+          name: SuperCelik-macOS-screenshots
+          path: shots
+          if-no-files-found: ignore
       - name: Publish release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@v2
