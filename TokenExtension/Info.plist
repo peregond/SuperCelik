@@ -15,7 +15,6 @@
     <key>NSExtension</key>
     <dict>
         <key>NSExtensionPointIdentifier</key><string>com.apple.ctk-tokens</string>
-        <key>NSExtensionPrincipalClass</key><string>SuperCelikTokenDriver</string>
         <key>NSExtensionAttributes</key>
         <dict>
             <key>com.apple.ctk.class-id</key><string>com.peregond.supercelik.token</string>
