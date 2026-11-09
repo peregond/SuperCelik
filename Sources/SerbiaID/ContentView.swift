@@ -49,6 +49,8 @@ struct PersonalView: View {
             HStack {
                 Button(loc.t(.readCard)) { model.readCard() }
                     .disabled(!model.cardPresent).keyboardShortcut("r")
+                Button(loc.t(.printCard)) { if let p = model.personal { Printer.print(p, loc: loc) } }
+                    .disabled(model.personal == nil).keyboardShortcut("p")
                 Button(loc.t(.verifySignature)) { model.verifySignatures() }
                     .disabled(!model.cardPresent)
                 sigLabel
