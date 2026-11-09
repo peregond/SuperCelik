@@ -1,4 +1,4 @@
-name: Build installers
+﻿name: Build installers
 
 on:
   push:
@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   macos:
-    runs-on: macos-14
+    runs-on: macos-15
     strategy:
       matrix:
         arch: [arm64, x86_64]   # Apple Silicon, Intel
@@ -65,3 +65,4 @@ jobs:
         with:
           files: dist/*-setup.exe
           generate_release_notes: true
+
