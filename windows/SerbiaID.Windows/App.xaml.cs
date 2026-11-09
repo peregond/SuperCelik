@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 
 namespace SerbiaID;
 
@@ -12,6 +12,22 @@ public partial class App : Application
             SelfTest.Run(Path.Combine(AppContext.BaseDirectory, "selftest.txt"));
             Shutdown();
             return;
+        }
+        // `--shot file.png [tab]` renders the window with FICTIONAL demo data to a PNG (for UI review).
+        var si = Array.IndexOf(e.Args, "--shot");
+        if (si >= 0 && si + 1 < e.Args.Length)
+        {
+            var w = new MainWindow();
+            w.LoadDemo(e.Args.Length > si + 2 ? int.Parse(e.Args[si + 2]) : 0);
+            w.Show();
+            Dispatcher.InvokeAsync(() => { w.SaveScreenshot(e.Args[si + 1]); Shutdown(); }, System.Windows.Threading.DispatcherPriority.ContextIdle);
+            return;
+        }
+        var pi = Array.IndexOf(e.Args, "--pdf");     // demo-data PDF export (for testing)
+        if (pi >= 0 && pi + 1 < e.Args.Length)
+        {
+            var w = new MainWindow(); w.LoadDemo(0);
+            w.ExportDemoPdf(e.Args[pi + 1]); Shutdown(); return;
         }
         new MainWindow().Show();
     }
