@@ -61,6 +61,7 @@
                         <Button x:Name="BtnPrint" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0" Click="Print_Click"/>
                         <Button x:Name="BtnPdf" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0" Click="Pdf_Click"/>
                         <Button x:Name="BtnVerify" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0" Click="Verify_Click"/>
+                        <Button x:Name="BtnEye" Style="{StaticResource SecondaryButton}" Margin="0,0,8,0" Click="Eye_Click"/>
                         <Button x:Name="BtnMore" Style="{StaticResource SecondaryButton}" Margin="0,0,12,0" Click="More_Click">
                             <Button.ContextMenu><ContextMenu x:Name="MoreMenu"/></Button.ContextMenu>
                         </Button>
