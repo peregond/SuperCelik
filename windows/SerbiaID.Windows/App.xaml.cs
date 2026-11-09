@@ -36,7 +36,7 @@ public partial class App : Application
         if (si >= 0 && si + 1 < e.Args.Length)
         {
             var w = new MainWindow();
-            w.LoadDemo(e.Args.Length > si + 2 ? int.Parse(e.Args[si + 2]) : 0);
+            w.LoadDemo(e.Args.Length > si + 2 ? int.Parse(e.Args[si + 2]) : 0, e.Args.Contains("--dark"), e.Args.Contains("--problem"));
             w.Show();
             Dispatcher.InvokeAsync(() => { w.SaveScreenshot(e.Args[si + 1]); Shutdown(); }, System.Windows.Threading.DispatcherPriority.ContextIdle);
             return;
@@ -44,7 +44,7 @@ public partial class App : Application
         var pi = Array.IndexOf(e.Args, "--pdf");     // demo-data PDF export (for testing)
         if (pi >= 0 && pi + 1 < e.Args.Length)
         {
-            var w = new MainWindow(); w.LoadDemo(0);
+            var w = new MainWindow(); w.LoadDemo(0, false, false);
             w.ExportDemoPdf(e.Args[pi + 1]); Shutdown(); return;
         }
         new MainWindow().Show();
