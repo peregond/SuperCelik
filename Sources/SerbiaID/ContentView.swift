@@ -184,11 +184,8 @@ struct ContentView: View {
                  color: model.cardPresent ? .green : .secondary,
                  icon: model.cardPresent ? "checkmark.circle.fill" : "xmark.circle")
             Spacer()
-            Picker("", selection: $loc.language) {
-                ForEach(AppLanguage.allCases) { Text($0.title).tag($0) }
-            }
-            .labelsHidden().pickerStyle(.menu).frame(width: 120)
         }
+        .controlSize(.large)
         .padding(.horizontal, 20).padding(.vertical, 12)
         .background(Color(nsColor: .controlBackgroundColor))
     }
@@ -241,6 +238,7 @@ struct PersonalView: View {
     }
 
     private var actionBar: some View {
+        VStack(alignment: .leading, spacing: 12) {
         HStack(spacing: 8) {
             Button { Task { await model.readCard() } } label: {
                 Label(loc.t(.readCard), systemImage: "person.text.rectangle").fontWeight(.semibold)
@@ -270,8 +268,9 @@ struct PersonalView: View {
                 Button { model.exportJSON() } label: { Label(loc.t(.exportJson), systemImage: "curlybraces") }
             } label: { Label(loc.t(.more), systemImage: "ellipsis.circle") }
             .controlSize(.large).disabled(model.personal == nil).fixedSize()
-            sigPill
             Spacer()
+        }
+        sigPill
         }
     }
 
@@ -407,6 +406,14 @@ struct SettingsView: View {
                 Card {
                     VStack(alignment: .leading, spacing: 10) {
                         Text(loc.t(.setAppearance)).font(.system(size: 15, weight: .bold))
+                        HStack {
+                            Text(loc.t(.language))
+                            Spacer()
+                            Picker("", selection: $loc.language) {
+                                ForEach(AppLanguage.allCases) { Text($0.title).tag($0) }
+                            }
+                            .labelsHidden().pickerStyle(.segmented).frame(width: 260)
+                        }
                         HStack {
                             Text(loc.t(.setTheme))
                             Spacer()
