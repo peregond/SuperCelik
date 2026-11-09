@@ -49,12 +49,53 @@ final class Loc: ObservableObject {
         case readToken, chainOk, pinNote, printCard, savePdf, pdfSaved, version, checkUpdates
         case updateAvailable, updateNow, updateDownloading, upToDate, updateUnavailable, updateFailed
         case brandSub, hintRead, hintToken, docID, docIF, docRP
+        case tabSettings, setAppearance, setTheme, themeSystem, themeLight, themeDark, setPrivacy, setMask, setAutoHide
+        case setBehavior, setAutoRead, setPrintJmbg, setAutoUpdate, copy, reveal, hideValue, more, copyAll, savePhoto, exportJson
+        case expiresIn, expiredOn, certIssuer, certValid, exportCert, preview, close, copied, autoHidden
+        case errNoReaderT, errNoReaderH, errNoCardT, errNoCardH, errUnsupportedT, errUnsupportedH, errGenericT, errGenericH, techDetails
         case certMoiCA, certAuth, certSign, certSigFixed, certSigVariable
     }
 
     // swiftlint:disable line_length
     static let table: [L: [AppLanguage: String]] = [
-        .printCard: [.ru: "Печать", .en: "Print", .sr: "Štampa"],
+        .tabSettings: [.ru: "Настройки", .en: "Settings", .sr: "Podešavanja"],
+        .setAppearance: [.ru: "Оформление", .en: "Appearance", .sr: "Izgled"],
+        .setTheme: [.ru: "Тема", .en: "Theme", .sr: "Tema"],
+        .themeSystem: [.ru: "Как в системе", .en: "System", .sr: "Sistemska"],
+        .themeLight: [.ru: "Светлая", .en: "Light", .sr: "Svetla"],
+        .themeDark: [.ru: "Тёмная", .en: "Dark", .sr: "Tamna"],
+        .setPrivacy: [.ru: "Конфиденциальность", .en: "Privacy", .sr: "Privatnost"],
+        .setMask: [.ru: "Скрывать ЕМБГ, адрес и номер документа", .en: "Hide personal number, address and document number", .sr: "Sakrij JMBG, adresu i broj dokumenta"],
+        .setAutoHide: [.ru: "Скрывать данные при бездействии, минут (0 — никогда)", .en: "Hide data when idle, minutes (0 = never)", .sr: "Sakrij podatke pri neaktivnosti, minuta (0 = nikad)"],
+        .setBehavior: [.ru: "Поведение", .en: "Behavior", .sr: "Ponašanje"],
+        .setAutoRead: [.ru: "Читать карту автоматически при вставке", .en: "Read the card automatically when inserted", .sr: "Automatski pročitaj karticu pri umetanju"],
+        .setPrintJmbg: [.ru: "Печатать ЕМБГ в распечатке и PDF", .en: "Include personal number in printouts and PDF", .sr: "Štampaj JMBG u štampi i PDF-u"],
+        .setAutoUpdate: [.ru: "Проверять обновления при запуске", .en: "Check for updates on startup", .sr: "Proveri ažuriranja pri pokretanju"],
+        .copy: [.ru: "Копировать", .en: "Copy", .sr: "Kopiraj"],
+        .reveal: [.ru: "Показать", .en: "Show", .sr: "Prikaži"],
+        .hideValue: [.ru: "Скрыть", .en: "Hide", .sr: "Sakrij"],
+        .more: [.ru: "Ещё", .en: "More", .sr: "Više"],
+        .copyAll: [.ru: "Копировать все данные", .en: "Copy all data", .sr: "Kopiraj sve podatke"],
+        .savePhoto: [.ru: "Сохранить фото", .en: "Save photo", .sr: "Sačuvaj fotografiju"],
+        .exportJson: [.ru: "Экспорт в JSON", .en: "Export as JSON", .sr: "Izvezi kao JSON"],
+        .expiresIn: [.ru: "Действителен ещё %d дн.", .en: "Valid for %d more days", .sr: "Važi još %d dana"],
+        .expiredOn: [.ru: "Срок действия истёк", .en: "Expired", .sr: "Istekao je"],
+        .certIssuer: [.ru: "Выдан", .en: "Issued by", .sr: "Izdavalac"],
+        .certValid: [.ru: "Действителен с %@ по %@", .en: "Valid %@ – %@", .sr: "Važi od %@ do %@"],
+        .exportCert: [.ru: "Экспорт .cer", .en: "Export .cer", .sr: "Izvezi .cer"],
+        .preview: [.ru: "Предпросмотр", .en: "Preview", .sr: "Pregled"],
+        .close: [.ru: "Закрыть", .en: "Close", .sr: "Zatvori"],
+        .copied: [.ru: "Скопировано", .en: "Copied", .sr: "Kopirano"],
+        .autoHidden: [.ru: "Данные скрыты из-за бездействия. Прочитайте карту снова.", .en: "Data hidden due to inactivity. Read the card again.", .sr: "Podaci su sakriveni zbog neaktivnosti. Ponovo pročitajte karticu."],
+        .errNoReaderT: [.ru: "Считыватель не найден", .en: "No card reader found", .sr: "Čitač nije pronađen"],
+        .errNoReaderH: [.ru: "Подключите считыватель по USB и нажмите «Обновить». Если он уже подключён, проверьте драйвер.", .en: "Plug in the reader via USB and press Refresh. If it is already connected, check the driver.", .sr: "Povežite čitač preko USB-a i pritisnite „Osveži“. Ako je već povezan, proverite drajver."],
+        .errNoCardT: [.ru: "Карты нет в считывателе", .en: "No card in the reader", .sr: "Nema kartice u čitaču"],
+        .errNoCardH: [.ru: "Вставьте карту чипом вниз до конца.", .en: "Insert the card fully, chip side down.", .sr: "Umetnite karticu do kraja, čipom nadole."],
+        .errUnsupportedT: [.ru: "Карта не поддерживается", .en: "Card not supported", .sr: "Kartica nije podržana"],
+        .errUnsupportedH: [.ru: "Поддерживаются электронная ID-карта, карта иностранца и вид на жительство. Старые карты (до 18.08.2014) не поддерживаются.", .en: "Supported: electronic ID card, ID for foreigners and residence permit. Old cards (before 18.08.2014) are not supported.", .sr: "Podržane su elektronska lična karta, lična karta za strance i boravišna dozvola. Stare kartice (pre 18.08.2014) nisu podržane."],
+        .errGenericT: [.ru: "Не удалось выполнить операцию", .en: "The operation failed", .sr: "Operacija nije uspela"],
+        .errGenericH: [.ru: "Переставьте карту и попробуйте ещё раз.", .en: "Re-insert the card and try again.", .sr: "Ponovo umetnite karticu i pokušajte opet."],
+        .techDetails: [.ru: "Подробности", .en: "Details", .sr: "Detalji"],        .printCard: [.ru: "Печать", .en: "Print", .sr: "Štampa"],
         .savePdf: [.ru: "Сохранить PDF", .en: "Save PDF", .sr: "Sačuvaj PDF"],
         .pdfSaved: [.ru: "PDF сохранён", .en: "PDF saved", .sr: "PDF je sačuvan"],
         .version: [.ru: "Версия", .en: "Version", .sr: "Verzija"],
