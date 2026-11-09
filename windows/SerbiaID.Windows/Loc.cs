@@ -1,4 +1,4 @@
-using System.Globalization;
+﻿using System.Globalization;
 
 namespace SerbiaID;
 
@@ -49,7 +49,22 @@ public static class Loc
         ["certificates"] = new[] { "Сертификаты", "Certificates", "Sertifikati" },
         ["readToken"] = new[] { "Прочитать токен", "Read token", "Pročitaj token" },
         ["verifySignature"] = new[] { "Проверить подпись", "Verify signature", "Proveri potpis" },
-        ["printCard"] = new[] { "Печать / PDF", "Print / PDF", "Štampa / PDF" },
+        ["printCard"] = new[] { "Печать", "Print", "Štampa" },
+        ["brandSub"] = new[] { "Электронная ID-карта Сербии", "Serbian electronic ID card", "Elektronska lična karta Srbije" },
+        ["hintRead"] = new[] { "Вставьте карту в считыватель и нажмите «Прочитать карту».", "Insert the card into the reader and press “Read card”.", "Umetnite karticu u čitač i pritisnite „Pročitaj karticu“." },
+        ["docID"] = new[] { "Электронная ID-карта", "Electronic ID card", "Elektronska lična karta" },
+        ["docIF"] = new[] { "ID-карта иностранца", "ID card for foreigners", "Lična karta za strance" },
+        ["docRP"] = new[] { "Вид на жительство", "Residence permit", "Boravišna dozvola" },
+        ["savePdf"] = new[] { "Сохранить PDF", "Save PDF", "Sačuvaj PDF" },
+        ["pdfSaved"] = new[] { "PDF сохранён", "PDF saved", "PDF je sačuvan" },
+        ["version"] = new[] { "Версия", "Version", "Verzija" },
+        ["checkUpdates"] = new[] { "Проверить обновления", "Check for updates", "Proveri ažuriranja" },
+        ["updateAvailable"] = new[] { "Доступна новая версия {0}", "New version {0} is available", "Dostupna je nova verzija {0}" },
+        ["updateNow"] = new[] { "Обновить", "Update", "Ažuriraj" },
+        ["updateDownloading"] = new[] { "Загрузка обновления…", "Downloading update…", "Preuzimanje ažuriranja…" },
+        ["upToDate"] = new[] { "У вас последняя версия", "You have the latest version", "Imate najnoviju verziju" },
+        ["updateUnavailable"] = new[] { "Не удалось получить сведения об обновлениях (нет сети или репозиторий закрыт)", "Could not get update information (offline or the repository is private)", "Nije moguće dobiti podatke o ažuriranju (nema mreže ili je repozitorijum privatan)" },
+        ["updateFailed"] = new[] { "Не удалось обновить", "Update failed", "Ažuriranje nije uspelo" },
         ["sigOk"] = new[] { "Подпись верна, данные не изменены", "Signature valid, data unmodified", "Potpis je ispravan, podaci nisu menjani" },
         ["sigChain"] = new[] { "Не удалось построить цепочку доверия (это не значит, что данные неверны)", "Trust chain could not be established (does not mean the data is invalid)", "Nije uspostavljen lanac poverenja (ne znači da podaci nisu ispravni)" },
         ["sigBad"] = new[] { "Подпись неверна или данные изменены", "Signature invalid or data modified", "Potpis nije ispravan ili su podaci izmenjeni" },
