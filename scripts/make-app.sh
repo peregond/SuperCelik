@@ -1,14 +1,22 @@
 #!/usr/bin/env bash
-# Builds a universal (arm64 + x86_64) SerbiaID.app and a zip next to it.
-# Usage: scripts/make-app.sh [version]   (run on macOS)
+# Builds SerbiaID.app and a drag-to-Applications .dmg installer (run on macOS).
+# Usage: bash scripts/make-app.sh <version> <arch>
+#   arch: arm64 (Apple Silicon) | x86_64 (Intel) | universal
 set -euo pipefail
 cd "$(dirname "$0")/.."
 
 VERSION="${1:-0.0.0}"
-APP="dist/SerbiaID.app"
+ARCH="${2:-universal}"
+case "$ARCH" in
+  arm64)     ARCHFLAGS=(--arch arm64);               LABEL="apple-silicon" ;;
+  x86_64)    ARCHFLAGS=(--arch x86_64);              LABEL="intel" ;;
+  universal) ARCHFLAGS=(--arch arm64 --arch x86_64); LABEL="universal" ;;
+  *) echo "unknown arch $ARCH"; exit 1 ;;
+esac
 
-swift build -c release --arch arm64 --arch x86_64
-BIN_DIR="$(swift build -c release --arch arm64 --arch x86_64 --show-bin-path)"
+APP="dist/SerbiaID.app"
+swift build -c release "${ARCHFLAGS[@]}"
+BIN_DIR="$(swift build -c release "${ARCHFLAGS[@]}" --show-bin-path)"
 
 rm -rf dist && mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN_DIR/SerbiaID" "$APP/Contents/MacOS/SerbiaID"
@@ -16,8 +24,14 @@ cp "$BIN_DIR/SerbiaID" "$APP/Contents/MacOS/SerbiaID"
 cp -R "$BIN_DIR"/SerbiaID_SerbiaID.bundle "$APP/Contents/Resources/"
 sed "s/__VERSION__/$VERSION/g" scripts/Info.plist > "$APP/Contents/Info.plist"
 
-# Ad-hoc signature (no Developer ID): users must right-click > Open the first time.
+# Ad-hoc signature (no Developer ID): first launch needs right-click > Open.
 codesign --force --deep --sign - "$APP"
 
-(cd dist && ditto -c -k --keepParent SerbiaID.app "SerbiaID-$VERSION-macOS-universal.zip")
-echo "Built dist/SerbiaID-$VERSION-macOS-universal.zip"
+# DMG with an /Applications shortcut
+STAGE="dist/dmg"; mkdir -p "$STAGE"
+cp -R "$APP" "$STAGE/"
+ln -s /Applications "$STAGE/Applications"
+DMG="dist/SerbiaID-$VERSION-macOS-$LABEL.dmg"
+hdiutil create -volname "SerbiaID $VERSION" -srcfolder "$STAGE" -ov -format UDZO "$DMG"
+rm -rf "$STAGE"
+echo "Built $DMG"
