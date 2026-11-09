@@ -1,0 +1,31 @@
+<UserControl x:Class="SerbiaID.Logo"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             SnapsToDevicePixels="False" UseLayoutRounding="False">
+    <!-- Vector logo (same geometry as assets/logo.svg): crisp at any size -->
+    <Viewbox Stretch="Uniform">
+        <Canvas Width="512" Height="512">
+            <Polygon Points="70,70 442,70 488,196 256,484 24,196" Fill="#C6363C" Stroke="#C6363C" StrokeThickness="14" StrokeLineJoin="Round"/>
+            <Polygon Points="83.02,81.2 428.98,81.2 471.76,198.38 256,466.22 40.24,198.38" Fill="#FFFFFF" Stroke="#FFFFFF" StrokeThickness="14" StrokeLineJoin="Round"/>
+            <Canvas>
+                <Canvas.Clip>
+                    <PathGeometry>
+                        <PathFigure StartPoint="96.04,92.4" IsClosed="True">
+                            <LineSegment Point="415.96,92.4"/>
+                            <LineSegment Point="455.52,200.76"/>
+                            <LineSegment Point="256,448.44"/>
+                            <LineSegment Point="56.48,200.76"/>
+                        </PathFigure>
+                    </PathGeometry>
+                </Canvas.Clip>
+                <Rectangle Canvas.Top="84.4" Width="512" Height="124.1" Fill="#C6363C"/>
+                <Rectangle Canvas.Top="208.4" Width="512" Height="124.1" Fill="#0C4076"/>
+                <Rectangle Canvas.Top="332.4" Width="512" Height="132" Fill="#FFFFFF"/>
+            </Canvas>
+            <Path Stroke="#0C4076" StrokeThickness="48" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                  Data="M 329.6,168.8 C 329.6,136.8 302.4,124 265.6,124 C 225.6,124 196.8,144.8 196.8,178.4 C 196.8,213.6 228.8,223.2 257.6,231.2 C 288,239.2 316.8,250.4 316.8,285.6 C 316.8,320.8 288,340 248,340 C 212.8,340 185.6,325.6 182.4,292"/>
+            <Path Stroke="#FFFFFF" StrokeThickness="31" StrokeStartLineCap="Round" StrokeEndLineCap="Round" StrokeLineJoin="Round"
+                  Data="M 329.6,168.8 C 329.6,136.8 302.4,124 265.6,124 C 225.6,124 196.8,144.8 196.8,178.4 C 196.8,213.6 228.8,223.2 257.6,231.2 C 288,239.2 316.8,250.4 316.8,285.6 C 316.8,320.8 288,340 248,340 C 212.8,340 185.6,325.6 182.4,292"/>
+        </Canvas>
+    </Viewbox>
+</UserControl>
