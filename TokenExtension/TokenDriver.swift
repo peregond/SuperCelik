@@ -2,6 +2,9 @@ import Foundation
 import CryptoTokenKit
 import CryptoKit
 import Security
+import os
+
+let ctkLog = Logger(subsystem: "com.peregond.supercelik.token", category: "driver")
 
 // CryptoTokenKit smart-card driver for the NetSeT CardEdge applet (PKCS#15 AID A000000063504B43532D3135)
 // found on Serbian ID cards, foreigner ID cards, residence permits and CardEdge USB tokens.
@@ -10,8 +13,9 @@ import Security
 // and a smart card shows up in the keychain only through a CryptoTokenKit extension. Without one the
 // card is invisible to the browser ("no certificate" on eid.gov.rs) even though Super Celik reads it.
 //
-// The system loads this extension when a card whose applet answers SELECT AID is inserted
-// (com.apple.ctk.aid in Info.plist), so it never touches other cards. It only reads public objects
+// Info.plist deliberately has no com.apple.ctk.aid: with it, ctkd never started the driver for the
+// Gemalto "ESCE 8.0" eID card (its own probe SELECT did not count as a match). So the driver is
+// offered every card and declines (throws) unless the CardEdge applet answers our own SELECT. It only reads public objects
 // at insertion time; the PIN is asked by macOS itself (system dialog) and only when the browser
 // wants a signature.
 //
@@ -79,7 +83,10 @@ enum CardIO {
 
     static func selectApplet(_ card: TKSmartCard) throws {
         let r = try transmit(card, [0x00, 0xA4, 0x04, 0x00, UInt8(cardEdgeAID.count)] + [UInt8](cardEdgeAID))
-        guard r.sw == 0x9000 else { throw TKError(.corruptedData) }
+        guard r.sw == 0x9000 else {
+            ctkLog.notice("SELECT CardEdge applet: \(String(format: "%04X", r.sw), privacy: .public)")
+            throw TKError(.corruptedData)
+        }
     }
 
     /// SELECT by file id; the file size is bytes 2-3 (BE) of the FCI. Then READ BINARY in chunks.
@@ -184,7 +191,16 @@ final class TokenDriver: TKSmartCardTokenDriver, TKSmartCardTokenDriverDelegate 
     }
 
     func tokenDriver(_ driver: TKSmartCardTokenDriver, createTokenFor smartCard: TKSmartCard, aid AID: Data?) throws -> TKSmartCardToken {
-        try Token(smartCard: smartCard, aid: AID, driver: self)
+        let atr = smartCard.slot.atr?.bytes.map { String(format: "%02X", $0) }.joined() ?? "?"
+        ctkLog.notice("createToken: card ATR \(atr, privacy: .public)")
+        do {
+            let token = try Token(smartCard: smartCard, driver: self)
+            ctkLog.notice("createToken: token created with \(token.pairs.count, privacy: .public) key pair(s)")
+            return token
+        } catch {
+            ctkLog.error("createToken: declined: \(String(describing: error), privacy: .public)")
+            throw error
+        }
     }
 }
 
@@ -194,11 +210,11 @@ final class Token: TKSmartCardToken, TKTokenDelegate {
     /// Object id (Data) -> key pair info, used by the session to find the private key file.
     private(set) var pairs: [Data: CardKeyPair] = [:]
 
-    init(smartCard: TKSmartCard, aid: Data?, driver: TokenDriver) throws {
+    init(smartCard: TKSmartCard, driver: TokenDriver) throws {
         var found: [CardKeyPair] = []
         var serial = ""
         try CardIO.session(smartCard) {
-            found = try CardObjects.load(smartCard)
+            found = try CardObjects.load(smartCard)      // throws if the CardEdge applet is absent
             if let info = try? CardIO.readFile(smartCard, 0x70F3), info.count > 32 {
                 serial = String(decoding: info.dropFirst(32).prefix { $0 >= 0x20 && $0 < 0x7F }, as: UTF8.self)
                     .trimmingCharacters(in: .whitespaces)
@@ -208,7 +224,9 @@ final class Token: TKSmartCardToken, TKTokenDelegate {
             serial = found.first.map { Data(SHA256.hash(data: SecCertificateCopyData($0.certificate) as Data)).prefix(8)
                 .map { String(format: "%02X", $0) }.joined() } ?? UUID().uuidString
         }
-        super.init(smartCard: smartCard, aid: aid ?? cardEdgeAID, instanceID: "SuperCelik-" + serial, tokenDriver: driver)
+        guard !found.isEmpty else { throw TKError(.objectNotFound) }
+        // aid: nil, so the framework does not re-SELECT on its own; we select where needed.
+        super.init(smartCard: smartCard, aid: nil, instanceID: "SuperCelik-" + serial, tokenDriver: driver)
         delegate = self
 
         var items: [TKTokenKeychainItem] = []
@@ -308,13 +326,18 @@ final class TokenSession: TKSmartCardTokenSession, TKTokenSessionDelegate {
                 try CardIO.selectApplet(card)
                 m = try CardIO.transmit(card, mse)
             }
-            guard m.sw == 0x9000 else { throw TKError(.corruptedData) }
+            guard m.sw == 0x9000 else {
+                ctkLog.error("MSE SET: card returned \(String(format: "%04X", m.sw), privacy: .public)")
+                throw TKError(.corruptedData)
+            }
             let r = try CardIO.transmit(card, pso())
             switch r.sw {
             case 0x9000 where !r.data.isEmpty: return r.data
             case 0x6982: throw TKError(.authenticationNeeded)   // PIN not verified yet -> system asks for it
             case 0x6983: throw TKError(.authenticationFailed)
-            default: throw TKError(.corruptedData)
+            default:
+                ctkLog.error("sign: card returned \(String(format: "%04X", r.sw), privacy: .public)")
+                throw TKError(.corruptedData)
             }
         }
     }

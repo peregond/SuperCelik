@@ -18,9 +18,6 @@
         <key>NSExtensionPrincipalClass</key><string>SuperCelikTokenDriver</string>
         <key>NSExtensionAttributes</key>
         <dict>
-            <!-- The system selects this applet on every inserted card and starts the driver only
-                 when it answers 9000: NetSeT CardEdge (PKCS#15) on Serbian eID cards and tokens. -->
-            <key>com.apple.ctk.aid</key><string>A000000063504B43532D3135</string>
             <key>com.apple.ctk.class-id</key><string>com.peregond.supercelik.token</string>
             <key>com.apple.ctk.driver-class</key><string>SuperCelikTokenDriver</string>
             <key>com.apple.ctk.token-type</key><string>smartcard</string>
