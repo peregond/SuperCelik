@@ -81,8 +81,12 @@ enum CardError: LocalizedError {
     case unsupportedForCard
     case signature(String)          // data was tampered / signature invalid
     case chainNotTrusted(String)    // like EID_E_SECFORMAT_CHECK_CERT_ERROR: not proof the data is bad
+    case pinWrong(triesLeft: Int)
+    case pinBlocked
     var errorDescription: String? {
         switch self {
+        case .pinWrong(let n): return "Wrong PIN, \(n) tries left"
+        case .pinBlocked: return "PIN is blocked (unblock at MUP)"
         case .signature(let m): return "Signature: " + m
         case .chainNotTrusted(let m): return "Certificate chain: " + m
         case .pcsc(let code, let what): return "\(what): PC/SC 0x" + String(UInt32(bitPattern: code), radix: 16)
@@ -100,6 +104,11 @@ protocol CardService {
     func readCertificates(reader: String, cardType: EidCardType) throws -> [CertificateInfo]
     func verify(reader: String, signature: EidSignature) throws -> Bool
     func readToken(reader: String) throws -> TokenInfo
+    /// Token PIN operations. PIN = 4...8 ASCII digits. WARNING: each wrong PIN uses up one of a
+    /// few tries; the card blocks at zero. Callers must never retry automatically.
+    func changeTokenPin(reader: String, old: String, new: String) throws
+    /// RSA PKCS#1 v1.5 signature over `digestInfo` (DER DigestInfo = hash OID + hash).
+    func tokenSign(reader: String, pin: String, keyFile: UInt16, digestInfo: Data) throws -> Data
     /// Per the official API this works only on the old (Apollo) card, 5...16 chars, ISO-8859-1.
     func changePin(reader: String, cardType: EidCardType, old: String, new: String) throws -> Int
 }
@@ -341,6 +350,76 @@ final class PCSCService: CardService {
         }
     }
 
+    // MARK: Token PIN + signing.
+    // APDUs confirmed two ways: (1) headers `00 22 41 B6` (MSE SET) and `B0 83` appear in the original
+    // netsetpkcs11_x64.dll; (2) live on an RP2024 card: MSE SET with key file 0x6005 -> 9000,
+    // PSO without PIN -> 6982. PIN VERIFY / CHANGE formats follow the open-source srb-id-pkcs11 module
+    // (same card family, same ATR) and were NOT exercised live (a wrong PIN burns a try).
+    //   VERIFY:  00 20 00 80 08 <PIN digits, 0x00-padded to 8>   (63Cx = x tries left, 6983 = blocked)
+    //   CHANGE:  00 24 00 80 10 <old padded 8><new padded 8>
+    //   SIGN:    00 22 41 B6 07 80 01 02 84 02 <key file hi lo>, then 00 2A 9E 00 Lc <DigestInfo> 00
+    // Key files: index 0x8FFF -> meta files (class 1 cert / 2 pub key / 3 priv key); public key file
+    // 0x6004 = 00 05 <priv key file id> <modulus len BE16> <modulus> <exp len BE16> <exp>.
+
+    private static func paddedPin(_ pin: String) throws -> [UInt8] {
+        let b = Array(pin.utf8)
+        guard (4...8).contains(b.count), b.allSatisfy({ $0 >= 0x30 && $0 <= 0x39 }) else {
+            throw CardError.signature("PIN must be 4-8 digits")
+        }
+        return b + [UInt8](repeating: 0, count: 8 - b.count)
+    }
+
+    private func txFollow(card: SCARDHANDLE, proto: DWORD, apdu: [UInt8]) throws -> (data: [UInt8], sw: UInt16) {
+        var r = try transmit(card: card, proto: proto, apdu: apdu)
+        var data = r.data
+        while r.sw >> 8 == 0x61 {   // T=0 "more data": GET RESPONSE
+            r = try transmit(card: card, proto: proto, apdu: [0x00, 0xC0, 0x00, 0x00, UInt8(r.sw & 0xFF)])
+            data += r.data
+        }
+        return (data, r.sw)
+    }
+
+    private func verifyPin(card: SCARDHANDLE, proto: DWORD, pin: String) throws {
+        let r = try txFollow(card: card, proto: proto, apdu: [0x00, 0x20, 0x00, 0x80, 0x08] + (try Self.paddedPin(pin)))
+        if r.sw == 0x9000 { return }
+        if r.sw == 0x6983 || r.sw == 0x63C0 { throw CardError.pinBlocked }
+        if r.sw >> 4 == 0x063C { throw CardError.pinWrong(triesLeft: Int(r.sw & 0xF)) }
+        throw CardError.pcsc(Int32(r.sw), "Verify PIN")
+    }
+
+    private func selectTokenApplet(card: SCARDHANDLE, proto: DWORD) throws {
+        let aid = Self.bytes(hex: "A000000063504B43532D3135")
+        let r = try transmit(card: card, proto: proto, apdu: [0x00, 0xA4, 0x04, 0x00, UInt8(aid.count)] + aid)
+        guard r.sw == 0x9000 else { throw CardError.unsupportedForCard }
+    }
+
+    func changeTokenPin(reader: String, old: String, new: String) throws {
+        let data = try Self.paddedPin(old) + Self.paddedPin(new)
+        try withCard(reader: reader) { card, proto in
+            try selectTokenApplet(card: card, proto: proto)
+            let r = try txFollow(card: card, proto: proto, apdu: [0x00, 0x24, 0x00, 0x80, 0x10] + data)
+            if r.sw == 0x9000 { return }
+            if r.sw == 0x6983 || r.sw == 0x63C0 { throw CardError.pinBlocked }
+            if r.sw >> 4 == 0x063C { throw CardError.pinWrong(triesLeft: Int(r.sw & 0xF)) }
+            throw CardError.pcsc(Int32(r.sw), "Change PIN")
+        }
+    }
+
+    func tokenSign(reader: String, pin: String, keyFile: UInt16, digestInfo: Data) throws -> Data {
+        guard digestInfo.count <= 255 else { throw CardError.signature("digest too long") }
+        return try withCard(reader: reader) { card, proto in
+            try selectTokenApplet(card: card, proto: proto)
+            try verifyPin(card: card, proto: proto, pin: pin)        // single attempt, never retried
+            let mse: [UInt8] = [0x80, 0x01, 0x02, 0x84, 0x02, UInt8(keyFile >> 8), UInt8(keyFile & 0xFF)]
+            var r = try txFollow(card: card, proto: proto, apdu: [0x00, 0x22, 0x41, 0xB6, UInt8(mse.count)] + mse)
+            guard r.sw == 0x9000 else { throw CardError.pcsc(Int32(r.sw), "MSE SET") }
+            r = try txFollow(card: card, proto: proto,
+                             apdu: [0x00, 0x2A, 0x9E, 0x00, UInt8(digestInfo.count)] + [UInt8](digestInfo) + [0x00])
+            guard r.sw == 0x9000, !r.data.isEmpty else { throw CardError.pcsc(Int32(r.sw), "Sign") }
+            return Data(r.data)
+        }
+    }
+
     /// Card signatures (verified against CelikApi.dll on an RP2024 card):
     /// file 0F1C = CMS SignedData whose content is a list of SHA-256 hashes of whole files
     /// (0F1B, 0F02, 0F03, 0F06, ..., 0FA1, 0FA2); file 0F1D = CMS whose content is SHA-256 of file 0F04.
@@ -401,4 +480,6 @@ final class MockCardService: CardService {
         TokenInfo(tokenLabel: "NetSeT's CardEdge Token", tokenSerial: "RP000000000", certificates: [])
     }
     func changePin(reader: String, cardType: EidCardType, old: String, new: String) throws -> Int { 3 }
+    func changeTokenPin(reader: String, old: String, new: String) throws {}
+    func tokenSign(reader: String, pin: String, keyFile: UInt16, digestInfo: Data) throws -> Data { Data(count: 256) }
 }
