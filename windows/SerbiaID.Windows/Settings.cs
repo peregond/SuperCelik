@@ -1,4 +1,4 @@
-using System.Text.Json;
+﻿using System.Text.Json;
 using System.Windows;
 using System.Windows.Media;
 using Microsoft.Win32;
@@ -23,6 +23,19 @@ public sealed class AppSettings
 
     private static string PathFile => System.IO.Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "SuperCelik", "settings.json");
+
+    /// Language chosen in the installer (HKCU\Software\SuperCelik\Lang = russian / english / serbian), used on first run.
+    public static string InstallerLang()
+    {
+        try
+        {
+            return Registry.GetValue(@"HKEY_CURRENT_USER\Software\SuperCelik", "Lang", null) as string switch
+            {
+                "russian" => "ru", "serbian" => "sr", "english" => "en", _ => null,
+            };
+        }
+        catch { return null; }
+    }
 
     public static AppSettings Load()
     {
