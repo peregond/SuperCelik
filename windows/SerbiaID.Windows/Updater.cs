@@ -103,6 +103,8 @@ public static class Updater
     /// Starts the Inno Setup installer silently (it closes and restarts the app itself).
     public static void RunInstaller(string path)
     {
-        Process.Start(new ProcessStartInfo(path, "/SILENT /CLOSEAPPLICATIONS /RESTARTAPPLICATIONS") { UseShellExecute = true });
+        var lang = Loc.Current switch { Lang.ru => "russian", Lang.sr => "serbian", _ => "english" };
+        // the installer relaunches the app itself after a silent install (see installer.iss)
+        Process.Start(new ProcessStartInfo(path, $"/SILENT /CLOSEAPPLICATIONS /LANG={lang}") { UseShellExecute = true });
     }
 }
