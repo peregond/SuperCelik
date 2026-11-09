@@ -257,6 +257,13 @@ struct PersonalView: View {
                 Label(loc.t(.verifySignature), systemImage: "checkmark.seal")
             }
             .controlSize(.large).disabled(!model.cardPresent || model.busy)
+            if prefs.maskSensitive {
+                // one eye for all sensitive fields: eye = hidden (click to show), crossed eye = shown (click to hide)
+                Button { model.revealAll.toggle() } label: {
+                    Label(model.revealAll ? loc.t(.hideValue) : loc.t(.reveal), systemImage: model.revealAll ? "eye.slash" : "eye")
+                }
+                .controlSize(.large).disabled(model.personal == nil)
+            }
             Menu {
                 Button { model.copyAll() } label: { Label(loc.t(.copyAll), systemImage: "doc.on.doc") }
                 Button { model.savePhoto() } label: { Label(loc.t(.savePhoto), systemImage: "photo") }
@@ -308,7 +315,7 @@ struct FieldCell: View {
     let row: Row
 
     private var masked: Bool { row.sensitive && prefs.maskSensitive }
-    private var hidden: Bool { masked && !model.revealed.contains(row.id) }
+    private var hidden: Bool { masked && !model.revealAll }
 
     var body: some View {
         HStack(alignment: .bottom, spacing: 6) {
@@ -317,12 +324,6 @@ struct FieldCell: View {
                 Text(hidden ? "••••••••••" : row.value).font(.system(size: 14, weight: .semibold)).textSelection(.enabled)
             }
             Spacer(minLength: 4)
-            if masked {
-                Button {
-                    if model.revealed.contains(row.id) { model.revealed.remove(row.id) } else { model.revealed.insert(row.id) }
-                } label: { Image(systemName: hidden ? "eye" : "eye.slash").frame(width: 18) }
-                    .buttonStyle(.plain).foregroundStyle(.secondary).help(hidden ? loc.t(.reveal) : loc.t(.hideValue))
-            }
             CopyButton(value: row.value)
         }
     }
