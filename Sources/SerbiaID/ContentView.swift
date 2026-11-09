@@ -239,7 +239,8 @@ struct PersonalView: View {
 
     private var actionBar: some View {
         VStack(alignment: .leading, spacing: 12) {
-        HStack(spacing: 8) {
+        // Buttons keep their full labels; when the window is too narrow they wrap to the next line.
+        FlowLayout(spacing: 8, lineSpacing: 8) {
             Button { Task { await model.readCard() } } label: {
                 Label(loc.t(.readCard), systemImage: "person.text.rectangle").fontWeight(.semibold)
             }
@@ -268,8 +269,8 @@ struct PersonalView: View {
                 Button { model.exportJSON() } label: { Label(loc.t(.exportJson), systemImage: "curlybraces") }
             } label: { Label(loc.t(.more), systemImage: "ellipsis.circle") }
             .controlSize(.large).disabled(model.personal == nil).fixedSize()
-            Spacer()
         }
+        .frame(maxWidth: .infinity, alignment: .leading)
         sigPill
         }
     }
@@ -496,6 +497,7 @@ struct PreviewSheet: View {
             if let p = model.personal {
                 ScrollView {
                     PrintSheet(p: p, loc: loc, includeJmbg: prefs.printJmbg)
+                        .frame(width: 595, height: 842)
                         .scaleEffect(0.8, anchor: .topLeading)
                         .frame(width: 595 * 0.8, height: 842 * 0.8, alignment: .topLeading)
                         .shadow(color: .black.opacity(0.25), radius: 10, y: 2)
@@ -516,5 +518,47 @@ struct PreviewSheet: View {
         }
         .padding(20)
         .frame(width: 560, height: 780)
+    }
+}
+
+/// Lays children out left to right at their ideal (untruncated) size and starts a new
+/// line when the next one does not fit.
+struct FlowLayout: Layout {
+    var spacing: CGFloat = 8
+    var lineSpacing: CGFloat = 8
+
+    private func rows(_ subviews: Subviews, width: CGFloat) -> [[(Int, CGSize)]] {
+        var rows: [[(Int, CGSize)]] = [[]]
+        var x: CGFloat = 0
+        for (i, v) in subviews.enumerated() {
+            let size = v.sizeThatFits(.unspecified)
+            if x > 0, x + size.width > width {
+                rows.append([]); x = 0
+            }
+            rows[rows.count - 1].append((i, size))
+            x += size.width + spacing
+        }
+        return rows
+    }
+
+    func sizeThatFits(proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) -> CGSize {
+        let width = proposal.width ?? .infinity
+        let rs = rows(subviews, width: width)
+        let h = rs.map { $0.map { $0.1.height }.max() ?? 0 }.reduce(0, +) + lineSpacing * CGFloat(max(rs.count - 1, 0))
+        let w = rs.map { r in r.map { $0.1.width }.reduce(0, +) + spacing * CGFloat(max(r.count - 1, 0)) }.max() ?? 0
+        return CGSize(width: proposal.width ?? w, height: h)
+    }
+
+    func placeSubviews(in bounds: CGRect, proposal: ProposedViewSize, subviews: Subviews, cache: inout ()) {
+        var y = bounds.minY
+        for r in rows(subviews, width: bounds.width) {
+            let h = r.map { $0.1.height }.max() ?? 0
+            var x = bounds.minX
+            for (i, size) in r {
+                subviews[i].place(at: CGPoint(x: x, y: y + (h - size.height) / 2), proposal: ProposedViewSize(size))
+                x += size.width + spacing
+            }
+            y += h + lineSpacing
+        }
     }
 }

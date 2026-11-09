@@ -20,11 +20,28 @@ enum SignatureVerifier {
 
     /// MUP root + intermediate CAs shipped inside the app bundle.
     static let anchors: [SecCertificate] = {
-        let urls = Bundle.module.urls(forResourcesWithExtension: "crt", subdirectory: "Resources/CA") ?? []
+        let urls = resourceBundle?.urls(forResourcesWithExtension: "crt", subdirectory: "Resources/CA") ?? []
         return urls.compactMap { url in
             (try? Data(contentsOf: url)).flatMap { SecCertificateCreateWithData(nil, $0 as CFData) }
         }
     }()
+
+    /// The SwiftPM resource bundle with the CA certificates.
+    /// `Bundle.module` is not used on purpose: it only looks next to the .app (not in
+    /// Contents/Resources, where make-app.sh puts it) and traps when the bundle is missing,
+    /// which crashed the app on "Read token". Here a missing bundle just means no anchors,
+    /// so the chain check reports "not trusted" instead of crashing.
+    private static let resourceBundle: Bundle? = {
+        let name = "SerbiaID_SerbiaID.bundle"
+        var dirs: [URL?] = [Bundle.main.resourceURL, Bundle.main.bundleURL,
+                            Bundle.main.executableURL?.deletingLastPathComponent()]
+        dirs.append(Bundle(for: BundleFinder.self).resourceURL)
+        for case let dir? in dirs {
+            if let b = Bundle(url: dir.appendingPathComponent(name)) { return b }
+        }
+        return nil
+    }()
+    private final class BundleFinder {}
 
     /// Verifies a BER CMS SignedData: signature, signer certificate chain (MUP CAs only).
     /// Returns the signed content.
