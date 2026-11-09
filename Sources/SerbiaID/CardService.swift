@@ -62,6 +62,19 @@ struct CertificateInfo: Identifiable {
     var der: Data                           // X.509 DER
 }
 
+/// Info from the NetSeT CardEdge token (PKCS#15-style applet, MS minidriver file layout).
+struct TokenInfo {
+    var tokenLabel = ""            // e.g. "NetSeT's CardEdge Token"
+    var tokenSerial = ""
+    var certificates: [TokenCertificate] = []
+}
+
+struct TokenCertificate: Identifiable {
+    let id = UUID()
+    var label: String
+    var der: Data                  // X.509 DER (decompressed)
+}
+
 enum CardError: LocalizedError {
     case pcsc(Int32, String)
     case notImplemented
@@ -86,6 +99,7 @@ protocol CardService {
     func readPersonalData(reader: String) throws -> PersonalData
     func readCertificates(reader: String, cardType: EidCardType) throws -> [CertificateInfo]
     func verify(reader: String, signature: EidSignature) throws -> Bool
+    func readToken(reader: String) throws -> TokenInfo
     /// Per the official API this works only on the old (Apollo) card, 5...16 chars, ISO-8859-1.
     func changePin(reader: String, cardType: EidCardType, old: String, new: String) throws -> Int
 }
@@ -280,6 +294,53 @@ final class PCSCService: CardService {
         }
         return nil
     }
+    // MARK: Token (PKCS#15 applet A000000063504B43532D3135) — read-only, no PIN needed.
+    // Layout observed on a NetSeT CardEdge token (MS minidriver style):
+    //   70F3 = label (32 bytes, space padded) + serial; 7102 = user certificate:
+    //   [len LE16][01 00][uncompressed size LE16][zlib stream] -> X.509 DER (verified, chain OK);
+    //   8007 = [01 71 02 len] + certificate label. File size comes from bytes 2-3 (BE) of the SELECT FCI.
+    // Private-key files (6005, 8xxx) and any PIN operation are deliberately NOT touched.
+
+    private func readTokenFile(card: SCARDHANDLE, proto: DWORD, fid: UInt16) throws -> Data {
+        let sel = try transmit(card: card, proto: proto, apdu: [0x00, 0xA4, 0x00, 0x00, 0x02, UInt8(fid >> 8), UInt8(fid & 0xFF)])
+        guard sel.sw == 0x9000, sel.data.count >= 4 else { throw CardError.pcsc(Int32(sel.sw), "Select token file") }
+        let size = Int(sel.data[2]) << 8 | Int(sel.data[3])
+        var out = Data()
+        while out.count < size {
+            let n = min(0xE0, size - out.count)
+            let o = out.count
+            let r = try transmit(card: card, proto: proto, apdu: [0x00, 0xB0, UInt8(o >> 8), UInt8(o & 0xFF), UInt8(n)])
+            guard r.sw == 0x9000 else { throw CardError.pcsc(Int32(r.sw), "Read token file") }
+            out += r.data
+        }
+        return out
+    }
+
+    func readToken(reader: String) throws -> TokenInfo {
+        try withCard(reader: reader) { card, proto in
+            let aid = Self.bytes(hex: "A000000063504B43532D3135")
+            let r = try transmit(card: card, proto: proto, apdu: [0x00, 0xA4, 0x04, 0x00, UInt8(aid.count)] + aid)
+            guard r.sw == 0x9000 else { throw CardError.unsupportedForCard }
+
+            var info = TokenInfo()
+            if let d = try? readTokenFile(card: card, proto: proto, fid: 0x70F3), d.count > 32 {
+                info.tokenLabel = (String(data: d.prefix(32), encoding: .utf8) ?? "").trimmingCharacters(in: .whitespaces)
+                info.tokenSerial = (String(data: d.dropFirst(32).prefix { $0 >= 0x20 && $0 < 0x7F }, encoding: .utf8) ?? "")
+                    .trimmingCharacters(in: .whitespaces)
+            }
+            if let blob = try? readTokenFile(card: card, proto: proto, fid: 0x7102), blob.count > 8,
+               let der = TokenCodec.inflate(Data(blob.dropFirst(6))) {
+                var label = ""
+                if let l = try? readTokenFile(card: card, proto: proto, fid: 0x8007), l.count > 4 {
+                    let len = Int(l[3])
+                    label = String(data: l[4..<min(l.count, 4 + len)], encoding: .utf8) ?? ""
+                }
+                info.certificates.append(TokenCertificate(label: label, der: der))
+            }
+            return info
+        }
+    }
+
     /// Card signatures (verified against CelikApi.dll on an RP2024 card):
     /// file 0F1C = CMS SignedData whose content is a list of SHA-256 hashes of whole files
     /// (0F1B, 0F02, 0F03, 0F06, ..., 0FA1, 0FA2); file 0F1D = CMS whose content is SHA-256 of file 0F04.
@@ -336,5 +397,8 @@ final class MockCardService: CardService {
         [CertificateInfo(type: .sigFixed, der: Data())]
     }
     func verify(reader: String, signature: EidSignature) throws -> Bool { true }
+    func readToken(reader: String) throws -> TokenInfo {
+        TokenInfo(tokenLabel: "NetSeT's CardEdge Token", tokenSerial: "RP000000000", certificates: [])
+    }
     func changePin(reader: String, cardType: EidCardType, old: String, new: String) throws -> Int { 3 }
 }
