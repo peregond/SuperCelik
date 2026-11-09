@@ -60,6 +60,26 @@ final class AppModel: ObservableObject {
         catch { errorMessage = error.localizedDescription }
     }
 
+    @Published var update: UpdateInfo?
+    @Published var updating = false
+    @Published var updateStatus: String?
+
+    /// manual = triggered from the About page (reports "up to date" / "unavailable").
+    func checkUpdates(manual: Bool) async {
+        if Updater.currentVersion == "0.0.0" && !manual { return }    // dev build (swift run)
+        let r = await Updater.check()
+        if let info = r.info { update = info; updateStatus = nil; return }
+        if manual { updateStatus = r.reachable ? Loc.shared.t(.upToDate) : Loc.shared.t(.updateUnavailable) }
+    }
+
+    func installUpdate() async {
+        guard let u = update else { return }
+        updating = true
+        do { try await Updater.install(u) }
+        catch { errorMessage = "\(Loc.shared.t(.updateFailed)): \(error.localizedDescription)" }
+        updating = false
+    }
+
     enum SigStatus { case ok, chainNotTrusted(String), invalid(String), unavailable }
     @Published var signatureStatus: SigStatus?
 
