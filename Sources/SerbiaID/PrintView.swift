@@ -6,6 +6,7 @@ import UniformTypeIdentifiers
 struct PrintSheet: View {
     let p: PersonalData
     let loc: Loc
+    var includeJmbg: Bool = true
 
     private var docType: String {
         switch p.cardType {
@@ -33,18 +34,12 @@ struct PrintSheet: View {
                         Image(nsImage: img).resizable().scaledToFill().frame(width: 130, height: 165).clipped()
                     }
                     VStack(alignment: .leading, spacing: 8) {
-                        let f = p.fixed, d = p.document
-                        line(.surname, f.surname); line(.givenName, f.givenName)
-                        if !f.parentGivenName.isEmpty { line(.parentName, f.parentGivenName) }
-                        line(.dob, f.dateOfBirth); line(.sex, f.sex)
-                        line(.placeOfBirth, [f.placeOfBirth, f.communityOfBirth, f.stateOfBirth].filter { !$0.isEmpty }.joined(separator: ", "))
-                        if !f.nationalityFull.isEmpty { line(.nationality, f.nationalityFull) }
-                        line(.jmbg, f.personalNumber)
-                        line(.address, p.variable.formatted)
-                        line(.docNumber, d.docRegNo)
-                        if !d.documentSerialNumber.isEmpty { line(.docSerial, d.documentSerialNumber) }
-                        line(.issuedBy, d.issuingAuthority)
-                        line(.issueDate, d.issuingDate); line(.expiryDate, d.expiryDate)
+                        ForEach(p.rows(includeJmbg: includeJmbg)) { row in
+                            HStack(alignment: .firstTextBaseline) {
+                                Text(loc.t(row.label)).foregroundStyle(.gray).frame(width: 150, alignment: .leading)
+                                Text(row.value).fontWeight(.semibold).foregroundStyle(.black)
+                            }.font(.system(size: 12))
+                        }
                     }
                 }
                 Spacer()
@@ -57,18 +52,11 @@ struct PrintSheet: View {
         .background(Color.white)
         .environment(\.colorScheme, .light)
     }
-
-    private func line(_ k: Loc.L, _ v: String) -> some View {
-        HStack(alignment: .firstTextBaseline) {
-            Text(loc.t(k)).foregroundStyle(.gray).frame(width: 150, alignment: .leading)
-            Text(v).fontWeight(.semibold)
-        }.font(.system(size: 12))
-    }
 }
 
 enum Printer {
-    @MainActor private static func makeView(_ p: PersonalData, loc: Loc) -> NSView {
-        let host = NSHostingView(rootView: PrintSheet(p: p, loc: loc))
+    @MainActor private static func makeView(_ p: PersonalData, loc: Loc, includeJmbg: Bool) -> NSView {
+        let host = NSHostingView(rootView: PrintSheet(p: p, loc: loc, includeJmbg: includeJmbg))
         host.frame = NSRect(x: 0, y: 0, width: 595, height: 842)
         return host
     }
@@ -81,14 +69,14 @@ enum Printer {
     }
 
     /// Opens the standard macOS print dialog.
-    @MainActor static func print(_ p: PersonalData, loc: Loc) {
-        let op = NSPrintOperation(view: makeView(p, loc: loc), printInfo: baseInfo())
+    @MainActor static func print(_ p: PersonalData, loc: Loc, includeJmbg: Bool = true) {
+        let op = NSPrintOperation(view: makeView(p, loc: loc, includeJmbg: includeJmbg), printInfo: baseInfo())
         op.showsPrintPanel = true
         op.run()
     }
 
     /// Asks for a file name and writes a vector PDF directly (no print dialog).
-    @MainActor static func savePDF(_ p: PersonalData, loc: Loc) {
+    @MainActor static func savePDF(_ p: PersonalData, loc: Loc, includeJmbg: Bool = true) {
         let panel = NSSavePanel()
         panel.allowedContentTypes = [.pdf]
         panel.nameFieldStringValue = "SuperCelik.pdf"
@@ -96,7 +84,7 @@ enum Printer {
         let info = baseInfo()
         info.jobDisposition = .save
         info.dictionary()[NSPrintInfo.AttributeKey.jobSavingURL] = url
-        let op = NSPrintOperation(view: makeView(p, loc: loc), printInfo: info)
+        let op = NSPrintOperation(view: makeView(p, loc: loc, includeJmbg: includeJmbg), printInfo: info)
         op.showsPrintPanel = false
         op.showsProgressPanel = false
         op.run()
