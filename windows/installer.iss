@@ -24,6 +24,7 @@ SetupIconFile=SerbiaID.Windows\app.ico
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
 Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl"
+Name: "serbian"; MessagesFile: "Serbian.isl"
 
 [Files]
 ; self-contained publish output (see build.yml): dotnet publish -c Release -r win-x64 --self-contained
@@ -32,6 +33,10 @@ Source: "..\dist\win-x64\*"; DestDir: "{app}"; Flags: recursesubdirs ignoreversi
 [Icons]
 Name: "{group}\Super Celik"; Filename: "{app}\SuperCelik.exe"
 Name: "{autodesktop}\Super Celik"; Filename: "{app}\SuperCelik.exe"; Tasks: desktopicon
+
+; remember the installer language: the app uses it on first launch
+[Registry]
+Root: HKCU; Subkey: "Software\SuperCelik"; ValueType: string; ValueName: "Lang"; ValueData: "{language}"; Flags: uninsdeletekey
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"
