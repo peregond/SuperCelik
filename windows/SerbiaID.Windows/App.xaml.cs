@@ -13,6 +13,24 @@ public partial class App : Application
             Shutdown();
             return;
         }
+        // `--updatetest` checks GitHub and downloads+verifies the installer (does NOT run it); writes updatetest.txt
+        if (e.Args.Contains("--updatetest"))
+        {
+            var o = Path.Combine(AppContext.BaseDirectory, "updatetest.txt");
+            try
+            {
+                var (info, reachable) = Task.Run(() => Updater.CheckAsync()).GetAwaiter().GetResult();
+                var s = $"current={Updater.CurrentText} reachable={reachable} found={(info == null ? "none" : info.Version.ToString(3))}";
+                if (info != null)
+                {
+                    var p = Task.Run(() => Updater.DownloadAsync(info)).GetAwaiter().GetResult();
+                    s += $"\ndownloaded={new FileInfo(p).Length} bytes, sha256 published={(info.Sha256.Length > 0)} (verified when present)";
+                }
+                File.WriteAllText(o, s);
+            }
+            catch (Exception ex) { File.WriteAllText(o, "ERROR " + ex.Message); }
+            Shutdown(); return;
+        }
         // `--shot file.png [tab]` renders the window with FICTIONAL demo data to a PNG (for UI review).
         var si = Array.IndexOf(e.Args, "--shot");
         if (si >= 0 && si + 1 < e.Args.Length)
