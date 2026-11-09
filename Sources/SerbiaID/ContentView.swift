@@ -106,8 +106,26 @@ struct TokenView: View {
     var body: some View {
         HStack(alignment: .top, spacing: 24) {
             VStack(alignment: .leading) {
-                Text(loc.t(.certificates)).font(.headline)
-                List(model.certificates) { Text(certName($0.type)) }
+                HStack {
+                    Text(loc.t(.certificates)).font(.headline)
+                    Spacer()
+                    Button(loc.t(.readToken)) { model.readToken() }.disabled(!model.cardPresent)
+                }
+                if let t = model.token {
+                    Text("\(t.tokenLabel) \(t.tokenSerial)").font(.caption).foregroundStyle(.secondary)
+                }
+                List(model.tokenRows) { row in
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(row.label.isEmpty ? (row.summary?.subject ?? "") : row.label)
+                        if let s = row.summary {
+                            Label(s.chainTrusted ? loc.t(.chainOk) : loc.t(.sigChain),
+                                  systemImage: s.chainTrusted ? "checkmark.seal.fill" : "exclamationmark.triangle.fill")
+                                .font(.caption)
+                                .foregroundStyle(s.chainTrusted ? .green : .orange)
+                        }
+                    }
+                }
+                Text(loc.t(.pinNote)).font(.caption).foregroundStyle(.secondary)
             }
             Form {
                 Section(loc.t(.changePin)) {
