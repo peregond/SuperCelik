@@ -40,6 +40,26 @@ final class AppModel: ObservableObject {
         } catch { errorMessage = error.localizedDescription }
     }
 
+    struct TokenCertRow: Identifiable {
+        let id: UUID
+        let label: String
+        let summary: TokenCodec.CertSummary?
+    }
+    @Published var token: TokenInfo?
+    @Published var tokenRows: [TokenCertRow] = []
+
+    /// Read-only: no PIN is sent to the card.
+    func readToken() {
+        do {
+            let t = try service.readToken(reader: selectedReader)
+            token = t
+            tokenRows = t.certificates.map {
+                TokenCertRow(id: $0.id, label: $0.label, summary: TokenCodec.summarize(der: $0.der))
+            }
+        } catch CardError.unsupportedForCard { token = nil; tokenRows = []; errorMessage = "No token applet on this card" }
+        catch { errorMessage = error.localizedDescription }
+    }
+
     enum SigStatus { case ok, chainNotTrusted(String), invalid(String), unavailable }
     @Published var signatureStatus: SigStatus?
 
