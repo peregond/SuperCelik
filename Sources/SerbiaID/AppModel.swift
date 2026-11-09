@@ -30,7 +30,7 @@ final class AppModel: ObservableObject {
     @Published var personal: PersonalData?
     @Published var token: TokenInfo?
     @Published var tokenRows: [TokenCertRow] = []
-    @Published var revealed: Set<String> = []
+    @Published var revealAll = false          // one global eye: show / hide all sensitive fields
     @Published var busy = false
     @Published var problem: Problem?
     @Published var showPreview = false
@@ -130,7 +130,7 @@ final class AppModel: ObservableObject {
     }
 
     private func clearData() {
-        personal = nil; token = nil; tokenRows = []; signatureStatus = nil; revealed = []
+        personal = nil; token = nil; tokenRows = []; signatureStatus = nil; revealAll = false
     }
 
     // MARK: - Operations (card I/O runs off the main thread)
@@ -150,7 +150,7 @@ final class AppModel: ObservableObject {
         await run {
             let svc = service, reader = selectedReader
             let p = try await perform { try svc.readPersonalData(reader: reader) }
-            personal = p; signatureStatus = nil; revealed = []; problem = nil
+            personal = p; signatureStatus = nil; revealAll = false; problem = nil
         }
     }
 
