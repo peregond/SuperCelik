@@ -23,6 +23,7 @@ rm -rf dist && mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN_DIR/SerbiaID" "$APP/Contents/MacOS/SerbiaID"
 # SwiftPM resource bundle (contains the MUP CA certificates)
 cp -R "$BIN_DIR"/SerbiaID_SerbiaID.bundle "$APP/Contents/Resources/"
+cp assets/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
 sed "s/__VERSION__/$VERSION/g" scripts/Info.plist > "$APP/Contents/Info.plist"
 
 # Ad-hoc signature (no Developer ID): first launch needs right-click > Open.
