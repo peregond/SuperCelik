@@ -37,9 +37,10 @@ jobs:
           for spec in "personal" "token" "settings" "personal --dark" "personal --problem"; do
             name=$(echo "$spec" | tr ' ' '_' | tr -d '-')
             out="$PWD/shots/$name.png"
-            open -n dist/SuperCelik.app --args --shot "$out" $spec
-            for i in $(seq 1 40); do [ -f "$out" ] && break; sleep 1; done
-            pkill -x SerbiaID || true
+            dist/SuperCelik.app/Contents/MacOS/SerbiaID --shot "$out" $spec > "shots/$name.log" 2>&1 &
+            pid=$!
+            for i in $(seq 1 40); do [ -f "$out" ] && break; kill -0 $pid 2>/dev/null || break; sleep 1; done
+            kill $pid 2>/dev/null || true
             sleep 1
           done
           ls -la shots
