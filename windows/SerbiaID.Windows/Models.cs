@@ -1,4 +1,4 @@
-namespace SerbiaID;
+﻿namespace SerbiaID;
 
 public enum CardType { ID2014 = 2, IF2020 = 3, RP2024 = 4 }
 
@@ -48,7 +48,8 @@ public sealed class TokenCertificate
 {
     public string Label = "";
     public byte[] Der;
-    public string Subject = "";
+    public string Subject = "", Issuer = "";
+    public DateTime NotBefore, NotAfter;
     public bool ChainTrusted;
     public string ChainError;
 }
