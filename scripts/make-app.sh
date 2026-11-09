@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Builds SerbiaID.app and a drag-to-Applications .dmg installer (run on macOS).
+# Builds SuperCelik.app and a drag-to-Applications .dmg installer (run on macOS).
 # Usage: bash scripts/make-app.sh <version> <arch>
 #   arch: arm64 (Apple Silicon) | x86_64 (Intel) | universal
 set -euo pipefail
@@ -14,11 +14,12 @@ case "$ARCH" in
   *) echo "unknown arch $ARCH"; exit 1 ;;
 esac
 
-APP="dist/SerbiaID.app"
+APP="dist/SuperCelik.app"
 swift build -c release "${ARCHFLAGS[@]}"
 BIN_DIR="$(swift build -c release "${ARCHFLAGS[@]}" --show-bin-path)"
 
 rm -rf dist && mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
+# Executable name matches CFBundleExecutable in Info.plist
 cp "$BIN_DIR/SerbiaID" "$APP/Contents/MacOS/SerbiaID"
 # SwiftPM resource bundle (contains the MUP CA certificates)
 cp -R "$BIN_DIR"/SerbiaID_SerbiaID.bundle "$APP/Contents/Resources/"
@@ -31,7 +32,7 @@ codesign --force --deep --sign - "$APP"
 STAGE="dist/dmg"; mkdir -p "$STAGE"
 cp -R "$APP" "$STAGE/"
 ln -s /Applications "$STAGE/Applications"
-DMG="dist/SerbiaID-$VERSION-macOS-$LABEL.dmg"
-hdiutil create -volname "SerbiaID $VERSION" -srcfolder "$STAGE" -ov -format UDZO "$DMG"
+DMG="dist/SuperCelik-$VERSION-macOS-$LABEL.dmg"
+hdiutil create -volname "Super Celik $VERSION" -srcfolder "$STAGE" -ov -format UDZO "$DMG"
 rm -rf "$STAGE"
 echo "Built $DMG"
