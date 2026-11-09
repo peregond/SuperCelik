@@ -30,6 +30,18 @@ public partial class MainWindow : Window
 
     protected override void OnClosed(EventArgs e) { _pc.Dispose(); base.OnClosed(e); }
 
+    private static StackPanel Btn(string glyph, string text)
+    {
+        var sp = new StackPanel { Orientation = Orientation.Horizontal };
+        sp.Children.Add(new TextBlock
+        {
+            Text = glyph, FontFamily = new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets"), FontSize = 15,
+            Margin = new Thickness(0, 1, 8, 0), VerticalAlignment = VerticalAlignment.Center,
+        });
+        sp.Children.Add(new TextBlock { Text = text, VerticalAlignment = VerticalAlignment.Center });
+        return sp;
+    }
+
     private string Reader => CmbReader.SelectedItem as string;
     private Brush B(string key) => (Brush)FindResource(key);
 
@@ -83,14 +95,14 @@ public partial class MainWindow : Window
         Title = Loc.T("appTitle");
         LblBrand.Text = Loc.T("appTitle");
         LblBrandSub.Text = Loc.T("brandSub");
-        BtnRefresh.Content = Loc.T("refresh");
-        BtnRead.Content = Loc.T("readCard");
-        BtnPrint.Content = Loc.T("printCard");
-        BtnPdf.Content = Loc.T("savePdf");
-        BtnVerify.Content = Loc.T("verifySignature");
-        BtnReadToken.Content = Loc.T("readToken");
-        BtnCheckUpdates.Content = Loc.T("checkUpdates");
-        BtnUpdate.Content = Loc.T("updateNow");
+        BtnRefresh.Content = Btn("\uE72C", Loc.T("refresh"));
+        BtnRead.Content = Btn("\uE77B", Loc.T("readCard"));
+        BtnPrint.Content = Btn("\uE749", Loc.T("printCard"));
+        BtnPdf.Content = Btn("\uE74E", Loc.T("savePdf"));
+        BtnVerify.Content = Btn("\uE73E", Loc.T("verifySignature"));
+        BtnReadToken.Content = Btn("\uE192", Loc.T("readToken"));
+        BtnCheckUpdates.Content = Btn("\uE895", Loc.T("checkUpdates"));
+        BtnUpdate.Content = Btn("\uE896", Loc.T("updateNow"));
         TabPersonal.Header = Loc.T("tabPersonal");
         TabToken.Header = Loc.T("tabToken");
         TabAbout.Header = Loc.T("tabAbout");
