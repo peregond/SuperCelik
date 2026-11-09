@@ -2,9 +2,9 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-    <key>CFBundleName</key><string>SerbiaID</string>
-    <key>CFBundleDisplayName</key><string>SerbiaID</string>
-    <key>CFBundleIdentifier</key><string>com.peregond.serbiaid</string>
+    <key>CFBundleName</key><string>Super Celik</string>
+    <key>CFBundleDisplayName</key><string>Super Celik</string>
+    <key>CFBundleIdentifier</key><string>com.peregond.supercelik</string>
     <key>CFBundleExecutable</key><string>SerbiaID</string>
     <key>CFBundlePackageType</key><string>APPL</string>
     <key>CFBundleShortVersionString</key><string>__VERSION__</string>
