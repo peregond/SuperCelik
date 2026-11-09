@@ -21,7 +21,7 @@ public partial class MainWindow : Window
     private SigStatus _sig;
     private UpdateInfo _update;
     private List<string> _readers = new();
-    private readonly HashSet<string> _revealed = new();
+    private bool _revealAll;     // one global eye: show / hide all sensitive fields
     private bool _loading = true, _cardPresent, _busy, _demo;
     private DateTime _lastActivity = DateTime.Now;
     private readonly DispatcherTimer _poll = new() { Interval = TimeSpan.FromMilliseconds(1500) };
@@ -273,7 +273,7 @@ public partial class MainWindow : Window
             }
             else if (_personal != null || _token != null)
             {
-                _personal = null; _token = null; _sig = null; _revealed.Clear(); RenderAll();   // privacy: drop data when the card is removed
+                _personal = null; _token = null; _sig = null; _revealAll = false; RenderAll();   // privacy: drop data when the card is removed
             }
         }
         catch { /* reader unplugged mid-poll: the next tick or a manual refresh reports it */ }
@@ -283,7 +283,7 @@ public partial class MainWindow : Window
     {
         if (_demo || _cfg.AutoHideMinutes <= 0 || (_personal == null && _token == null)) return;
         if ((DateTime.Now - _lastActivity).TotalMinutes < _cfg.AutoHideMinutes) return;
-        _personal = null; _token = null; _sig = null; _revealed.Clear();
+        _personal = null; _token = null; _sig = null; _revealAll = false;
         RenderAll();
         ShowInfo(Loc.T("autoHidden"));
     }
@@ -293,7 +293,7 @@ public partial class MainWindow : Window
     {
         var reader = Reader;
         var p = await Task.Run(() => SerbianCard.ReadPersonalData(_pc, reader));
-        _personal = p; _sig = null; _revealed.Clear(); HideProblem();
+        _personal = p; _sig = null; _revealAll = false; HideProblem();
         RenderAll();
     }
 
@@ -329,8 +329,18 @@ public partial class MainWindow : Window
         else SetPill(pill, label, "✔  " + string.Format(Loc.T("expiresIn"), days), "OkBrush", "OkBgBrush");
     }
 
+    private void UpdateEye()
+    {
+        BtnEye.Visibility = _personal != null && _cfg.MaskSensitive ? Visibility.Visible : Visibility.Collapsed;
+        // eye = data is hidden (click to show); crossed eye = data is shown (click to hide)
+        SetBtn(BtnEye, _revealAll ? "\uED1A" : "\uE7B3", _revealAll ? Loc.T("hideValue") : Loc.T("reveal"));
+    }
+
+    private void Eye_Click(object s, RoutedEventArgs e) { _revealAll = !_revealAll; RenderPersonal(); }
+
     private void RenderPersonal()
     {
+        UpdateEye();
         FieldsPanel.Children.Clear();
         ImgPortrait.Source = null;
         bool has = _personal != null;
@@ -347,19 +357,12 @@ public partial class MainWindow : Window
         foreach (var (key, value) in Rows(_personal))
         {
             bool sensitive = Sensitive.Contains(key);
-            bool hidden = sensitive && _cfg.MaskSensitive && !_revealed.Contains(key);
+            bool hidden = sensitive && _cfg.MaskSensitive && !_revealAll;
 
             var cell = new DockPanel { Width = 290, Margin = new Thickness(0, 0, 14, 14) };
             var buttons = new StackPanel { Orientation = Orientation.Horizontal, VerticalAlignment = VerticalAlignment.Bottom };
             DockPanel.SetDock(buttons, Dock.Right);
 
-            if (sensitive && _cfg.MaskSensitive)
-            {
-                var eye = IconBtn(hidden ? "" : "", hidden ? Loc.T("reveal") : Loc.T("hideValue"));
-                var k = key;
-                eye.Click += (_, _) => { if (!_revealed.Remove(k)) _revealed.Add(k); RenderPersonal(); };
-                buttons.Children.Add(eye);
-            }
             var copy = IconBtn("", Loc.T("copy"));
             var v = value;
             copy.Click += (_, _) => { try { Clipboard.SetText(v); } catch { } Flash(copy); };
