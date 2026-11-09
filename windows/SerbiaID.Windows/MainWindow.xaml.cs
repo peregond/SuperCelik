@@ -32,6 +32,7 @@ public partial class MainWindow : Window
     public MainWindow()
     {
         InitializeComponent();
+        _cfg.Lang ??= AppSettings.InstallerLang();
         if (_cfg.Lang != null && Enum.TryParse<Lang>(_cfg.Lang, out var l)) Loc.Current = l;
         Theme.Apply(_cfg.Theme);
         RestoreWindow();
@@ -97,7 +98,7 @@ public partial class MainWindow : Window
     private static void SetBtn(Button b, string glyph, string text)
     {
         var sp = new StackPanel { Orientation = Orientation.Horizontal };
-        var g = Glyph(glyph); g.Margin = new Thickness(0, 1, 8, 0);
+        var g = Glyph(glyph); g.Width = 20; g.TextAlignment = TextAlignment.Center; g.Margin = new Thickness(0, 0, 8, 0);
         sp.Children.Add(g);
         sp.Children.Add(new TextBlock { Text = text, VerticalAlignment = VerticalAlignment.Center });
         b.Content = sp;
@@ -152,6 +153,7 @@ public partial class MainWindow : Window
         LblAboutTitle.Text = Loc.T("appTitle");
         LblAboutText.Text = Loc.T("aboutText");
         LblVersion.Text = $"{Loc.T("version")} {Updater.CurrentText}";
+        LblSetLang.Text = Loc.T("language");
         LblSetAppearance.Text = Loc.T("setAppearance"); LblSetTheme.Text = Loc.T("setTheme");
         LblSetPrivacy.Text = Loc.T("setPrivacy"); LblSetBehavior.Text = Loc.T("setBehavior");
         ChkMask.Content = Loc.T("setMask"); ChkPrintJmbg.Content = Loc.T("setPrintJmbg");
