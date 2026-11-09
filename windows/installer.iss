@@ -37,4 +37,7 @@ Name: "{autodesktop}\Super Celik"; Filename: "{app}\SuperCelik.exe"; Tasks: desk
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"
 
 [Run]
-Filename: "{app}\SuperCelik.exe"; Description: "{cm:LaunchProgram,Super Celik}"; Flags: nowait postinstall skipifsilent
+; interactive install: "Launch Super Celik" checkbox on the last page
+Filename: "{app}\SuperCelik.exe"; Description: "{cm:LaunchProgram,Super Celik}"; Flags: nowait postinstall skipifsilent runasoriginaluser
+; silent install (auto-update from inside the app): start the new version again automatically
+Filename: "{app}\SuperCelik.exe"; Flags: nowait runasoriginaluser; Check: WizardSilent
