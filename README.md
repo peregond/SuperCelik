@@ -4,7 +4,8 @@
 Независимая реализация, не связана с МУП РС и NetSeT/Veridos.
 
 ## Установка (готовая сборка)
-Скачайте `SerbiaID-<версия>-macOS-universal.zip` из раздела **Releases** (Intel + Apple Silicon, macOS 13+).
+Скачайте установщик из раздела **Releases** (macOS 13+): `SerbiaID-<версия>-macOS-apple-silicon.dmg` (M1/M2/M3/M4)
+или `SerbiaID-<версия>-macOS-intel.dmg` (Intel). Откройте dmg и перетащите SerbiaID в «Программы».
 Приложение подписано ad-hoc и не нотаризовано: при первом запуске — правый клик → «Открыть»,
 либо `xattr -dr com.apple.quarantine SerbiaID.app`.
 
@@ -13,7 +14,7 @@
 ## Сборка вручную (Mac, Xcode 15+ / Swift 5.9)
     swift run                      # с реальным ридером
     SERBIAID_DEMO=1 swift run      # демо-данные без карты
-    bash scripts/make-app.sh 0.1.0      # универсальный .app + zip в dist/
+    bash scripts/make-app.sh 0.1.0 arm64   # или x86_64 / universal → dist/*.dmg
 
 ## Статус
 - Готово: UI, три языка, поиск ридеров и ATR через PC/SC (PCSC.framework).
