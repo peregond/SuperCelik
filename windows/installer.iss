@@ -19,6 +19,7 @@ ArchitecturesInstallIn64BitMode=x64compatible
 PrivilegesRequiredOverridesAllowed=dialog
 WizardStyle=modern
 UninstallDisplayIcon={app}\SuperCelik.exe
+SetupIconFile=SerbiaID.Windows\app.ico
 
 [Languages]
 Name: "english"; MessagesFile: "compiler:Default.isl"
