@@ -102,7 +102,7 @@ struct ContentView: View {
                                     : String(format: loc.t(.updateAvailable), u.version))
                     .fontWeight(.semibold)
                 Spacer()
-                Button(loc.t(.updateNow)) { Task { await model.installUpdate() } }
+                Button { Task { await model.installUpdate() } } label: { Label(loc.t(.updateNow), systemImage: "arrow.down.circle") }
                     .buttonStyle(.borderedProminent).disabled(model.updating)
             }
             .padding(.horizontal, 20).padding(.vertical, 8)
@@ -142,14 +142,14 @@ struct PersonalView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 HStack(spacing: 8) {
-                    Button { model.readCard() } label: { Text(loc.t(.readCard)).fontWeight(.semibold) }
+                    Button { model.readCard() } label: { Label(loc.t(.readCard), systemImage: "person.text.rectangle").fontWeight(.semibold) }
                         .buttonStyle(.borderedProminent).controlSize(.large)
                         .disabled(!model.cardPresent).keyboardShortcut("r")
-                    Button(loc.t(.printCard)) { if let p = model.personal { Printer.print(p, loc: loc) } }
+                    Button { if let p = model.personal { Printer.print(p, loc: loc) } } label: { Label(loc.t(.printCard), systemImage: "printer") }
                         .controlSize(.large).disabled(model.personal == nil).keyboardShortcut("p")
-                    Button(loc.t(.savePdf)) { if let p = model.personal { Printer.savePDF(p, loc: loc) } }
+                    Button { if let p = model.personal { Printer.savePDF(p, loc: loc) } } label: { Label(loc.t(.savePdf), systemImage: "square.and.arrow.down") }
                         .controlSize(.large).disabled(model.personal == nil).keyboardShortcut("s")
-                    Button(loc.t(.verifySignature)) { model.verifySignatures() }
+                    Button { model.verifySignatures() } label: { Label(loc.t(.verifySignature), systemImage: "checkmark.seal") }
                         .controlSize(.large).disabled(!model.cardPresent)
                     sigPill
                     Spacer()
@@ -243,7 +243,7 @@ struct TokenView: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 16) {
                 HStack {
-                    Button { model.readToken() } label: { Text(loc.t(.readToken)).fontWeight(.semibold) }
+                    Button { model.readToken() } label: { Label(loc.t(.readToken), systemImage: "key").fontWeight(.semibold) }
                         .buttonStyle(.borderedProminent).controlSize(.large).disabled(!model.cardPresent)
                     if let t = model.token {
                         Text("\(t.tokenLabel)  \(t.tokenSerial)").foregroundStyle(.secondary)
@@ -292,7 +292,7 @@ struct AboutView: View {
                 Text(loc.t(.appTitle)).font(.system(size: 26, weight: .bold))
                 Text(loc.t(.aboutText)).multilineTextAlignment(.center).foregroundStyle(.secondary).frame(maxWidth: 380)
                 Text("\(loc.t(.version)) \(Updater.currentVersion)").fontWeight(.semibold).padding(.top, 8)
-                Button(loc.t(.checkUpdates)) { Task { await model.checkUpdates(manual: true) } }
+                Button { Task { await model.checkUpdates(manual: true) } } label: { Label(loc.t(.checkUpdates), systemImage: "arrow.triangle.2.circlepath") }
                 if let s = model.updateStatus {
                     Text(s).font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.center).frame(maxWidth: 380)
                 }
