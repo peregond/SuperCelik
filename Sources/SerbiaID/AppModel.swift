@@ -56,6 +56,7 @@ final class AppModel: ObservableObject {
             loadDemo(problem: args.contains("--problem"))
         } else {
             refresh()
+            BrowserLogin.prepare()
         }
         let box = activity
         NSEvent.addLocalMonitorForEvents(matching: [.mouseMoved, .leftMouseDown, .keyDown, .scrollWheel]) { e in
