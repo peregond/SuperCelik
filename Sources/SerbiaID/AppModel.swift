@@ -188,10 +188,10 @@ final class AppModel: ObservableObject {
 
     // MARK: - Token PIN / PUK / signing (each wrong PIN/PUK burns a card try: one attempt, never retried)
 
-    private func askSecrets(title: String, labels: [String]) -> [String]? {
+    private func askSecrets(title: String, message: String, labels: [String]) -> [String]? {
         let alert = NSAlert()
         alert.messageText = title
-        alert.informativeText = Loc.shared.t(.pinWarn)
+        alert.informativeText = message
         alert.addButton(withTitle: Loc.shared.t(.ok))
         alert.addButton(withTitle: Loc.shared.t(.cancel))
         // Each field gets a caption above it and an explicit width: inside NSAlert's accessory view an
@@ -231,8 +231,13 @@ final class AppModel: ObservableObject {
 
     private func pinOperation(old: Loc.L, unblock: Bool) async {
         let l = Loc.shared
-        guard let v = askSecrets(title: l.t(unblock ? .unblockPin : .changePin),
-                                 labels: [l.t(old), l.t(.newPin), l.t(.confirmPin)]) else { return }
+        let title = l.t(unblock ? .unblockPin : .changePin)
+        // One question per dialog, so it is always clear which PIN is being asked for.
+        guard let first = askSecrets(title: title, message: l.t(unblock ? .pinStepPuk : .pinStepOld) + "\n\n" + l.t(.pinWarn),
+                                     labels: [l.t(old)]) else { return }
+        guard let new1 = askSecrets(title: title, message: l.t(.pinStepNew), labels: [l.t(.newPin)]) else { return }
+        guard let new2 = askSecrets(title: title, message: l.t(.pinStepConfirm), labels: [l.t(.confirmPin)]) else { return }
+        let v = [first[0], new1[0], new2[0]]
         guard v.allSatisfy(Self.validPin) else { problem = Problem(titleKey: .pinInvalid, isInfo: true); return }
         guard v[1] == v[2] else { problem = Problem(titleKey: .pinMismatch, isInfo: true); return }
         guard !busy else { return }
@@ -255,7 +260,7 @@ final class AppModel: ObservableObject {
         let open = NSOpenPanel()
         open.canChooseDirectories = false; open.allowsMultipleSelection = false
         guard open.runModal() == .OK, let src = open.url else { return }
-        guard let v = askSecrets(title: Loc.shared.t(.signFile), labels: [Loc.shared.t(.currentPin)]) else { return }
+        guard let v = askSecrets(title: Loc.shared.t(.signFile), message: Loc.shared.t(.pinWarn), labels: [Loc.shared.t(.currentPin)]) else { return }
         guard Self.validPin(v[0]) else { problem = Problem(titleKey: .pinInvalid, isInfo: true); return }
         let save = NSSavePanel()
         save.nameFieldStringValue = src.lastPathComponent + ".p7s"
