@@ -91,6 +91,7 @@ final class AppModel: ObservableObject {
     func startMonitoring() async {
         guard !isDemoUI else { return }
         // A card that was already in the reader at launch never produces an "inserted" change.
+        if cardPresent { checkDriver() }
         if prefs.autoRead, cardPresent, personal == nil { await readCard() }
         while !Task.isCancelled {
             poll()
@@ -116,6 +117,7 @@ final class AppModel: ObservableObject {
             cardPresent = present
             if present {
                 if problem?.isInfo == false { problem = nil }
+                checkDriver()
                 if prefs.autoRead { Task { await readCard() } }
             } else {
                 clearData()          // privacy: drop data when the card is removed
@@ -183,6 +185,26 @@ final class AppModel: ObservableObject {
                 TokenCertRow(label: $0.label, summary: TokenCodec.summarize(der: $0.der), der: $0.der)
             }
             problem = nil
+        }
+    }
+
+    // MARK: - Browser-login driver self-check
+
+    /// Runs once per card insertion: if macOS did not attach our CryptoTokenKit driver to the card,
+    /// repair it in the background and tell the user the one thing they must do (re-insert the card).
+    private func checkDriver() {
+        guard !isDemoUI else { return }
+        let reader = selectedReader
+        Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 5_000_000_000)
+            let attached = await Task.detached { BrowserLogin.driverAttached() }.value
+            guard let self, self.cardPresent, self.selectedReader == reader else { return }
+            if attached {
+                if self.problem?.titleKey == .driverStuck { self.problem = nil }
+                return
+            }
+            await Task.detached { BrowserLogin.repairDriver() }.value
+            if self.cardPresent, self.problem == nil { self.problem = Problem(titleKey: .driverStuck, isInfo: true) }
         }
     }
 

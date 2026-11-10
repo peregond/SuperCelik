@@ -55,7 +55,7 @@ final class Loc: ObservableObject {
         case errNoReaderT, errNoReaderH, errNoCardT, errNoCardH, errUnsupportedT, errUnsupportedH, errGenericT, errGenericH, techDetails
         case certMoiCA, certAuth, certSign, certSigFixed, certSigVariable
         case menuCard
-        case pinStepOld, pinStepPuk, pinStepNew, pinStepConfirm, unblockPin, pukLabel, signFile, signedSaved, pinWarn, pinWrongMsg, pinBlockedMsg, pinInvalid, pinUnblocked, signNeedCert
+        case driverStuck, pinStepOld, pinStepPuk, pinStepNew, pinStepConfirm, unblockPin, pukLabel, signFile, signedSaved, pinWarn, pinWrongMsg, pinBlockedMsg, pinInvalid, pinUnblocked, signNeedCert
         // iOS (NFC)
         case scanCard, nfcPrompt, nfcReading, nfcDone, sharePdf, hintNfc, aboutTextIOS
         case nfcUnavailableT, nfcUnavailableH, nfcNoCardT, nfcNoCardH, nfcLostT, nfcLostH
@@ -175,6 +175,7 @@ final class Loc: ObservableObject {
         .newPin: [.ru: "Новый PIN", .en: "New PIN", .sr: "Novi PIN"],
         .confirmPin: [.ru: "Повторите новый PIN", .en: "Confirm new PIN", .sr: "Potvrdite novi PIN"],
         .pinMismatch: [.ru: "PIN-коды не совпадают", .en: "PINs do not match", .sr: "PIN-ovi se ne poklapaju"],
+        .driverStuck: [.ru: "Вход в браузере: драйвер карты перезапущен. Выньте карту и вставьте её снова, затем полностью закройте и откройте браузер.", .en: "Browser login: the card driver was restarted. Remove the card and insert it again, then fully quit and reopen the browser.", .sr: "Prijava u pregledaču: drajver kartice je restartovan. Izvadite karticu i ponovo je umetnite, zatim potpuno zatvorite i ponovo otvorite pregledač."],
         .pinStepOld: [.ru: "Шаг 1 из 3. Введите ДЕЙСТВУЮЩИЙ PIN (тот, что сейчас на карте).", .en: "Step 1 of 3. Enter your CURRENT PIN (the one on the card now).", .sr: "Korak 1 od 3. Unesite TRENUTNI PIN (onaj koji je sada na kartici)."],
         .pinStepPuk: [.ru: "Шаг 1 из 3. Введите PUK (код разблокировки).", .en: "Step 1 of 3. Enter your PUK (unblock code).", .sr: "Korak 1 od 3. Unesite PUK (kod za odblokiranje)."],
         .pinStepNew: [.ru: "Шаг 2 из 3. Придумайте и введите НОВЫЙ PIN (4–8 цифр).", .en: "Step 2 of 3. Choose and enter a NEW PIN (4–8 digits).", .sr: "Korak 2 od 3. Smislite i unesite NOVI PIN (4–8 cifara)."],
