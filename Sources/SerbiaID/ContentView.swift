@@ -449,6 +449,7 @@ struct TokenView: View {
                 EmptyState(systemImage: "key.viewfinder", title: loc.t(.certificates), message: loc.t(.hintToken)) {
                     VStack(spacing: 12) {
                         readButton.controlSize(.large)
+                        pinButtons
                         Text(loc.t(.pinNote)).font(.caption).foregroundStyle(.secondary)
                             .multilineTextAlignment(.center).frame(maxWidth: 420)
                     }
@@ -464,6 +465,7 @@ struct TokenView: View {
                             }
                         }
                         ForEach(model.tokenRows) { certificate($0) }
+                        pinButtons
                         Text(loc.t(.pinNote)).font(.caption).foregroundStyle(.secondary)
                     }
                     .padding(20)
@@ -477,6 +479,15 @@ struct TokenView: View {
                 readButton.labelStyle(.titleAndIcon).help(loc.t(.readToken))
             }
         }
+    }
+
+    private var pinButtons: some View {
+        HStack {
+            Button { Task { await model.changePin() } } label: { Label(loc.t(.changePin), systemImage: "lock.rotation") }
+            Button { Task { await model.unblockPin() } } label: { Label(loc.t(.unblockPin), systemImage: "lock.open") }
+            Button { Task { await model.signFile() } } label: { Label(loc.t(.signFile), systemImage: "signature") }
+        }
+        .disabled(!model.cardPresent || model.busy)
     }
 
     private var readButton: some View {
