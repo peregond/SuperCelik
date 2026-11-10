@@ -485,9 +485,21 @@ public partial class MainWindow : Window
         });
     }
 
+    /// Three separate dialogs (current/PUK, new, confirm) so it is always clear which PIN is being asked for.
+    private string[] AskPinSteps(string title, string firstNoteKey, string firstLabelKey)
+    {
+        var a = PinDialog.Ask(this, title, Loc.T(firstNoteKey) + "\n\n" + Loc.T("pinWarn"), Loc.T(firstLabelKey));
+        if (a == null) return null;
+        var b = PinDialog.Ask(this, title, Loc.T("pinStepNew"), Loc.T("pinNew"));
+        if (b == null) return null;
+        var c = PinDialog.Ask(this, title, Loc.T("pinStepConfirm"), Loc.T("pinNew2"));
+        if (c == null) return null;
+        return new[] { a[0], b[0], c[0] };
+    }
+
     private async void ChangePin_Click(object s, RoutedEventArgs e)
     {
-        var v = PinDialog.Ask(this, Loc.T("changePin"), Loc.T("pinWarn"), Loc.T("pinOld"), Loc.T("pinNew"), Loc.T("pinNew2"));
+        var v = AskPinSteps(Loc.T("changePin"), "pinStepOld", "pinOld");
         if (v == null) return;
         if (!v.All(ValidPin)) { ShowInfo(Loc.T("pinInvalid")); return; }
         if (v[1] != v[2]) { ShowInfo(Loc.T("pinMismatch")); return; }
@@ -501,7 +513,7 @@ public partial class MainWindow : Window
 
     private async void UnblockPin_Click(object s, RoutedEventArgs e)
     {
-        var v = PinDialog.Ask(this, Loc.T("unblockPin"), Loc.T("pukWarn"), Loc.T("pukEnter"), Loc.T("pinNew"), Loc.T("pinNew2"));
+        var v = AskPinSteps(Loc.T("unblockPin"), "pinStepPuk", "pukEnter");
         if (v == null) return;
         if (!v.All(ValidPin)) { ShowInfo(Loc.T("pinInvalid")); return; }
         if (v[1] != v[2]) { ShowInfo(Loc.T("pinMismatch")); return; }
