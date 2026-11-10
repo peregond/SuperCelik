@@ -3,7 +3,7 @@
 # Super Celik
 
 Единое приложение вместо Čelik + TrustEdge ID для сербской электронной ID-карты, карты иностранца и вида на жительство.
-Языки: RU / EN / SR. Версии: **macOS** (SwiftUI) и **Windows** (WPF, .NET 8).
+Языки: RU / EN / SR. Версии: **macOS** (SwiftUI), **Windows** (WPF, .NET 8) и **iPhone** (SwiftUI, чтение по NFC, см. [ios/README.md](ios/README.md); работает только с картами, у которых есть NFC-чип).
 Независимая реализация, не связана с МУП РС и NetSeT/Veridos.
 
 ## Установка (готовые сборки — раздел Releases)
