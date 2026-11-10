@@ -55,6 +55,7 @@ final class Loc: ObservableObject {
         case errNoReaderT, errNoReaderH, errNoCardT, errNoCardH, errUnsupportedT, errUnsupportedH, errGenericT, errGenericH, techDetails
         case certMoiCA, certAuth, certSign, certSigFixed, certSigVariable
         case menuCard
+        case unblockPin, pukLabel, signFile, signedSaved, pinWarn, pinWrongMsg, pinBlockedMsg, pinInvalid, pinUnblocked, signNeedCert
         // iOS (NFC)
         case scanCard, nfcPrompt, nfcReading, nfcDone, sharePdf, hintNfc, aboutTextIOS
         case nfcUnavailableT, nfcUnavailableH, nfcNoCardT, nfcNoCardH, nfcLostT, nfcLostH
@@ -132,7 +133,7 @@ final class Loc: ObservableObject {
         .docRP: [.ru: "Вид на жительство", .en: "Residence permit", .sr: "Boravišna dozvola"],
         .readToken: [.ru: "Прочитать токен", .en: "Read token", .sr: "Pročitaj token"],
         .chainOk: [.ru: "Цепочка доверия до МУП подтверждена", .en: "Chain to MUP CA verified", .sr: "Lanac poverenja do MUP-a potvrđen"],
-        .pinNote: [.ru: "Чтение токена не использует PIN. Подпись документов токеном пока не поддерживается.", .en: "Reading the token does not use the PIN. Signing with the token is not supported yet.", .sr: "Čitanje tokena ne koristi PIN. Potpisivanje tokenom još nije podržano."],
+        .pinNote: [.ru: "Чтение токена не использует PIN. Подпись создаёт отдельный файл .p7s (CMS, отсоединённая), проверяемый любой программой с поддержкой CMS.", .en: "Reading the token does not use the PIN. Signing creates a detached CMS .p7s file verifiable by any CMS-capable tool.", .sr: "Čitanje tokena ne koristi PIN. Potpis pravi odvojeni CMS .p7s fajl koji može da proveri svaki alat sa CMS podrškom."],
         .sigOk: [.ru: "Подпись верна, данные не изменены", .en: "Signature valid, data unmodified", .sr: "Potpis je ispravan, podaci nisu menjani"],
         .sigChain: [.ru: "Не удалось построить цепочку доверия (это не значит, что данные неверны)", .en: "Trust chain could not be established (does not mean the data is invalid)", .sr: "Nije uspostavljen lanac poverenja (ne znači da podaci nisu ispravni)"],
         .sigBad: [.ru: "Подпись неверна или данные изменены", .en: "Signature invalid or data modified", .sr: "Potpis nije ispravan ili su podaci izmenjeni"],
@@ -174,6 +175,16 @@ final class Loc: ObservableObject {
         .newPin: [.ru: "Новый PIN", .en: "New PIN", .sr: "Novi PIN"],
         .confirmPin: [.ru: "Повторите новый PIN", .en: "Confirm new PIN", .sr: "Potvrdite novi PIN"],
         .pinMismatch: [.ru: "PIN-коды не совпадают", .en: "PINs do not match", .sr: "PIN-ovi se ne poklapaju"],
+        .unblockPin: [.ru: "Разблокировать по PUK", .en: "Unblock with PUK", .sr: "Odblokiraj PUK-om"],
+        .pukLabel: [.ru: "PUK (4–8 цифр)", .en: "PUK (4–8 digits)", .sr: "PUK (4–8 cifara)"],
+        .signFile: [.ru: "Подписать файл", .en: "Sign file", .sr: "Potpiši fajl"],
+        .signedSaved: [.ru: "Подпись сохранена", .en: "Signature saved", .sr: "Potpis je sačuvan"],
+        .pinWarn: [.ru: "Неверный PIN/PUK тратит попытку; после исчерпания токен блокируется. Разблокировка по PUK не проверена на реальной карте.", .en: "A wrong PIN/PUK uses up a try; the token locks when none are left. PUK unblock is not verified on a real card.", .sr: "Pogrešan PIN/PUK troši pokušaj; token se zaključava kad ih nestane. Odblokiranje PUK-om nije provereno na pravoj kartici."],
+        .pinWrongMsg: [.ru: "Неверный PIN/PUK. Осталось попыток: ", .en: "Wrong PIN/PUK. Tries left: ", .sr: "Pogrešan PIN/PUK. Preostalo pokušaja: "],
+        .pinBlockedMsg: [.ru: "PIN заблокирован. Используйте «Разблокировать по PUK».", .en: "PIN is blocked. Use “Unblock with PUK”.", .sr: "PIN je blokiran. Koristite „Odblokiraj PUK-om“."],
+        .pinInvalid: [.ru: "PIN/PUK должен состоять из 4–8 цифр", .en: "PIN/PUK must be 4–8 digits", .sr: "PIN/PUK mora imati 4–8 cifara"],
+        .pinUnblocked: [.ru: "PIN разблокирован и заменён новым", .en: "PIN unblocked and replaced", .sr: "PIN je odblokiran i zamenjen"],
+        .signNeedCert: [.ru: "На токене не найден сертификат", .en: "No certificate found on the token", .sr: "Na tokenu nije pronađen sertifikat"],
         .pinChanged: [.ru: "PIN изменён", .en: "PIN changed", .sr: "PIN je promenjen"],
         .pinFailed: [.ru: "Не удалось сменить PIN", .en: "PIN change failed", .sr: "Promena PIN-a nije uspela"],
         .verifySignature: [.ru: "Проверить подпись", .en: "Verify signature", .sr: "Proveri potpis"],

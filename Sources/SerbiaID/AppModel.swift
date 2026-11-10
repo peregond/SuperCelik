@@ -186,6 +186,84 @@ final class AppModel: ObservableObject {
         }
     }
 
+    // MARK: - Token PIN / PUK / signing (each wrong PIN/PUK burns a card try: one attempt, never retried)
+
+    private func askSecrets(title: String, labels: [String]) -> [String]? {
+        let alert = NSAlert()
+        alert.messageText = title
+        alert.informativeText = Loc.shared.t(.pinWarn)
+        alert.addButton(withTitle: Loc.shared.t(.ok))
+        alert.addButton(withTitle: Loc.shared.t(.cancel))
+        let fields = labels.map { label -> NSSecureTextField in
+            let f = NSSecureTextField(frame: NSRect(x: 0, y: 0, width: 260, height: 22)); f.placeholderString = label; return f
+        }
+        let stack = NSStackView(views: fields)
+        stack.orientation = .vertical; stack.spacing = 8
+        stack.frame = NSRect(x: 0, y: 0, width: 260, height: CGFloat(fields.count) * 30)
+        alert.accessoryView = stack
+        alert.window.initialFirstResponder = fields.first
+        return alert.runModal() == .alertFirstButtonReturn ? fields.map { $0.stringValue } : nil
+    }
+
+    private static func validPin(_ p: String) -> Bool {
+        (4...8).contains(p.count) && p.utf8.allSatisfy { $0 >= 0x30 && $0 <= 0x39 }
+    }
+
+    private func pinProblem(_ error: Error) {
+        let l = Loc.shared
+        if case CardError.pinWrong(let n) = error { problem = Problem(raw: l.t(.pinWrongMsg) + "\(n)", isInfo: true) }
+        else if case CardError.pinBlocked = error { problem = Problem(titleKey: .pinBlockedMsg, isInfo: true) }
+        else { showProblem(error) }
+    }
+
+    private func pinOperation(old: Loc.L, unblock: Bool) async {
+        let l = Loc.shared
+        guard let v = askSecrets(title: l.t(unblock ? .unblockPin : .changePin),
+                                 labels: [l.t(old), l.t(.newPin), l.t(.confirmPin)]) else { return }
+        guard v.allSatisfy(Self.validPin) else { problem = Problem(titleKey: .pinInvalid, isInfo: true); return }
+        guard v[1] == v[2] else { problem = Problem(titleKey: .pinMismatch, isInfo: true); return }
+        guard !busy else { return }
+        busy = true; defer { busy = false }
+        let svc = service, reader = selectedReader
+        do {
+            try await perform {
+                if unblock { try svc.unblockTokenPin(reader: reader, puk: v[0], new: v[1]) }
+                else { try svc.changeTokenPin(reader: reader, old: v[0], new: v[1]) }
+            }
+            problem = Problem(titleKey: unblock ? .pinUnblocked : .pinChanged, isInfo: true)
+        } catch { pinProblem(error) }
+    }
+
+    func changePin() async { await pinOperation(old: .currentPin, unblock: false) }
+    func unblockPin() async { await pinOperation(old: .pukLabel, unblock: true) }
+
+    /// Detached CMS (.p7s) over a chosen file, signed with the token key.
+    func signFile() async {
+        let open = NSOpenPanel()
+        open.canChooseDirectories = false; open.allowsMultipleSelection = false
+        guard open.runModal() == .OK, let src = open.url else { return }
+        guard let v = askSecrets(title: Loc.shared.t(.signFile), labels: [Loc.shared.t(.currentPin)]) else { return }
+        guard Self.validPin(v[0]) else { problem = Problem(titleKey: .pinInvalid, isInfo: true); return }
+        let save = NSSavePanel()
+        save.nameFieldStringValue = src.lastPathComponent + ".p7s"
+        guard save.runModal() == .OK, let dst = save.url else { return }
+        guard !busy else { return }
+        busy = true; defer { busy = false }
+        let svc = service, reader = selectedReader, pin = v[0], noCert = Loc.shared.t(.signNeedCert)
+        do {
+            let p7s: Data = try await perform {
+                let tok = try svc.readToken(reader: reader)
+                guard let cert = tok.certificates.first else { throw CardError.signature(noCert) }
+                let data = try Data(contentsOf: src)
+                return try CMSBuilder.signDetached(data: data, certDer: cert.der) { di in
+                    try svc.tokenSign(reader: reader, pin: pin, keyFile: EidCard.defaultSignKeyFile, digestInfo: di)
+                }
+            }
+            try p7s.write(to: dst)
+            problem = Problem(raw: "\(Loc.shared.t(.signedSaved)): \(dst.lastPathComponent)", isInfo: true)
+        } catch { pinProblem(error) }
+    }
+
     // MARK: - Errors
 
     func showProblem(_ error: Error) {

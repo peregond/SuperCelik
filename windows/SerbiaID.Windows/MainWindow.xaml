@@ -109,6 +109,11 @@
                         <Button x:Name="BtnReadToken" DockPanel.Dock="Left" Style="{StaticResource PrimaryButton}" Click="ReadToken_Click"/>
                         <TextBlock x:Name="LblTokenInfo" Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center" Margin="14,0,0,0"/>
                     </DockPanel>
+                    <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,16">
+                        <Button x:Name="BtnChangePin" Style="{StaticResource SecondaryButton}" Click="ChangePin_Click" Margin="0,0,10,0"/>
+                        <Button x:Name="BtnUnblockPin" Style="{StaticResource SecondaryButton}" Click="UnblockPin_Click" Margin="0,0,10,0"/>
+                        <Button x:Name="BtnSignFile" Style="{StaticResource SecondaryButton}" Click="SignFile_Click"/>
+                    </WrapPanel>
                     <TextBlock x:Name="LblPinNote" DockPanel.Dock="Bottom" Foreground="{DynamicResource MutedBrush}" TextWrapping="Wrap" Margin="2,14,0,0"/>
                     <Border Style="{StaticResource Card}">
                         <DockPanel>

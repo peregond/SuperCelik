@@ -295,4 +295,19 @@ final class EidCard {
         guard r.sw == 0x9000, !r.data.isEmpty else { throw CardError.pcsc(Int32(r.sw), "Sign") }
         return Data(r.data)
     }
+
+    /// Unblock the token PIN with the PUK and set a new PIN. UNVERIFIED APDU: ISO 7816-4 RESET RETRY COUNTER,
+    /// P1=00 -> PUK || new PIN, P2=80 like VERIFY / CHANGE. One attempt only (a wrong PUK burns a try).
+    func unblockTokenPin(puk: String, new: String) throws {
+        let data = try Self.paddedPin(puk) + Self.paddedPin(new)
+        try selectTokenApplet()
+        let r = try txFollow([0x00, 0x2C, 0x00, 0x80, 0x10] + data)
+        if r.sw == 0x9000 { return }
+        if r.sw == 0x6983 || r.sw == 0x63C0 { throw CardError.pinBlocked }
+        if r.sw >> 4 == 0x063C { throw CardError.pinWrong(triesLeft: Int(r.sw & 0xF)) }
+        throw CardError.pcsc(Int32(r.sw), "Unblock PIN")
+    }
+
+    /// Private key file observed live on an RP2024 token.
+    static let defaultSignKeyFile: UInt16 = 0x6005
 }

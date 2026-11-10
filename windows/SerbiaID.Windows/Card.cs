@@ -1,4 +1,4 @@
-using System.IO.Compression;
+﻿using System.IO.Compression;
 using System.Runtime.InteropServices;
 using System.Security.Cryptography;
 using System.Text;
@@ -339,4 +339,16 @@ public static class SerbianCard
         var r = s.TxFollow(Apdu(0, 0x24, 0, 0x80, PaddedPin(oldPin).Concat(PaddedPin(newPin)).ToArray()));
         if (r.Sw != 0x9000) ThrowPin(r.Sw);
     }
+
+    /// Unblock the token PIN with the PUK and set a new PIN. UNVERIFIED APDU (ISO 7816-4 RESET RETRY COUNTER,
+    /// P1=00: PUK || new PIN, P2=80 like VERIFY/CHANGE). Single attempt, never retried: a wrong PUK burns a try.
+    public static void UnblockTokenPin(PcscService pc, string reader, string puk, string newPin)
+    {
+        using var s = pc.Connect(reader);
+        SelectTokenApplet(s);
+        var r = s.TxFollow(Apdu(0, 0x2C, 0, 0x80, PaddedPin(puk).Concat(PaddedPin(newPin)).ToArray()));
+        if (r.Sw != 0x9000) ThrowPin(r.Sw);
+    }
+
+    public static ushort DefaultSignKeyFile => 0x6005;   // private key file observed live on RP2024
 }
