@@ -144,7 +144,9 @@ enum CMSVerifier {
             throw CardError.signature("no content")
         }
         let content = octet.octets
-        let certNodes = parts.first(where: { $0.tag == 0xA0 })?.children ?? []
+        // Explicit types: newer compilers infer a doubly optional array from the one-line form.
+        let certSet: Asn1Node? = parts.first(where: { $0.tag == 0xA0 })
+        let certNodes: [Asn1Node] = certSet?.children ?? []
         let certs = certNodes.compactMap { SecCertificateCreateWithData(nil, $0.raw as CFData) }
         guard let signerInfos = parts.last, signerInfos.tag == 0x31,
               let si = signerInfos.children.first else { throw CardError.signature("no signer") }
@@ -164,7 +166,7 @@ enum CMSVerifier {
         var signedBytes = content
         if let attrs = signedAttrs {
             // messageDigest attribute must equal hash(content)
-            let md = attrs.children.first { $0.children.first?.oid == oidMessageDigest }
+            let md: Asn1Node? = attrs.children.first(where: { $0.children.first?.oid == oidMessageDigest })
             guard let value = md?.children.dropFirst().first?.children.first?.octets,
                   value == hash.fn(content) else {
                 throw CardError.signature("invalid signature (message digest)")
