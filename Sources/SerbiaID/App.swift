@@ -16,6 +16,21 @@ struct SerbiaIDApp: App {
                 .frame(minWidth: 860, minHeight: 600)
         }
         .commands {
+            // Card actions live in the menu bar too, so their shortcuts work even when the
+            // toolbar has moved a button into its overflow menu.
+            CommandMenu(loc.t(.menuCard)) {
+                Button(loc.t(.readCard)) { Task { await model.readCard() } }
+                    .keyboardShortcut("r").disabled(!model.cardPresent || model.busy)
+                Button(loc.t(.verifySignature)) { Task { await model.verifySignatures() } }
+                    .disabled(!model.cardPresent || model.busy)
+                Divider()
+                Button(loc.t(.printCard)) { model.showPreview = true }
+                    .keyboardShortcut("p").disabled(model.personal == nil)
+                Button(loc.t(.savePdf)) {
+                    if let p = model.personal { Printer.savePDF(p, loc: loc, includeJmbg: prefs.printJmbg) }
+                }
+                .keyboardShortcut("s").disabled(model.personal == nil)
+            }
             CommandMenu(loc.t(.language)) {
                 ForEach(AppLanguage.allCases) { lang in
                     Button(lang.title) { loc.language = lang }
