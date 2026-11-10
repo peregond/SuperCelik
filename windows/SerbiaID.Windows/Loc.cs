@@ -126,5 +126,9 @@ public static class Loc
         ["sigChain"] = new[] { "Не удалось построить цепочку доверия (это не значит, что данные неверны)", "Trust chain could not be established (does not mean the data is invalid)", "Nije uspostavljen lanac poverenja (ne znači da podaci nisu ispravni)" },
         ["sigBad"] = new[] { "Подпись неверна или данные изменены", "Signature invalid or data modified", "Potpis nije ispravan ili su podaci izmenjeni" },
         ["chainOk"] = new[] { "Цепочка доверия до МУП подтверждена", "Chain to MUP CA verified", "Lanac poverenja do MUP-a potvrđen" },
-        ["pinNote"] = new[] { "Чтение токена не использует PIN. Подпись создаёт отдельный файл .p7s (CMS, отсоединённая), проверяемый любой программой с поддержкой CMS.", "Reading the token does not use the PIN. Signing creates a detached CMS .p7s file verifiable by any CMS-capable tool.", "Čitanje tokena ne koristi PIN. Potpis pravi odvojeni CMS .p7s fajl koji može da proveri svaki alat sa CMS podrškom." };
+        ["pinNote"] = new[] { "Чтение токена не использует PIN. Подпись создаёт отдельный файл .p7s (CMS, отсоединённая), проверяемый любой программой с поддержкой CMS.", "Reading the token does not use the PIN. Signing creates a detached CMS .p7s file verifiable by any CMS-capable tool.", "Čitanje tokena ne koristi PIN. Potpis pravi odvojeni CMS .p7s fajl koji može da proveri svaki alat sa CMS podrškom." },
+        ["error"] = new[] { "Ошибка", "Error", "Greška" },
+        ["language"] = new[] { "Язык", "Language", "Jezik" },
+        ["aboutText"] = new[] { "Единое приложение для чтения электронной ID-карты и управления токеном. Независимая реализация, не связанная с МУП РС и NetSeT/Veridos.", "A single app for reading the electronic ID card and managing the token. Independent implementation, not affiliated with MUP RS or NetSeT/Veridos.", "Jedinstvena aplikacija za čitanje elektronske lične karte i upravljanje tokenom. Nezavisna implementacija, nije povezana sa MUP RS i NetSeT/Veridos." },
+    };
 }
