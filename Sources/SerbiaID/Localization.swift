@@ -54,10 +54,26 @@ final class Loc: ObservableObject {
         case expiresIn, expiredOn, certIssuer, certValid, exportCert, preview, close, copied, autoHidden
         case errNoReaderT, errNoReaderH, errNoCardT, errNoCardH, errUnsupportedT, errUnsupportedH, errGenericT, errGenericH, techDetails
         case certMoiCA, certAuth, certSign, certSigFixed, certSigVariable
+        // iOS (NFC)
+        case scanCard, nfcPrompt, nfcReading, nfcDone, sharePdf, hintNfc, aboutTextIOS
+        case nfcUnavailableT, nfcUnavailableH, nfcNoCardT, nfcNoCardH, nfcLostT, nfcLostH
     }
 
     // swiftlint:disable line_length
     static let table: [L: [AppLanguage: String]] = [
+        .scanCard: [.ru: "Прочитать карту по NFC", .en: "Read card via NFC", .sr: "Pročitaj karticu preko NFC-a"],
+        .nfcPrompt: [.ru: "Приложите карту к верхней части iPhone и не двигайте её", .en: "Hold the card against the top of your iPhone and keep it still", .sr: "Prislonite karticu uz gornji deo iPhone-a i ne pomerajte je"],
+        .nfcReading: [.ru: "Чтение карты… Не убирайте карту", .en: "Reading the card… Keep holding it", .sr: "Čitanje kartice… Ne pomerajte je"],
+        .nfcDone: [.ru: "Готово", .en: "Done", .sr: "Gotovo"],
+        .sharePdf: [.ru: "Поделиться PDF", .en: "Share PDF", .sr: "Podeli PDF"],
+        .hintNfc: [.ru: "Нажмите «Прочитать карту по NFC» и приложите карту к верхней части iPhone.", .en: "Tap “Read card via NFC” and hold the card against the top of your iPhone.", .sr: "Dodirnite „Pročitaj karticu preko NFC-a“ i prislonite karticu uz gornji deo iPhone-a."],
+        .aboutTextIOS: [.ru: "Чтение электронной ID-карты Сербии по NFC. Независимая реализация, не связана с МУП РС и NetSeT/Veridos.", .en: "Reads the Serbian electronic ID card over NFC. Independent implementation, not affiliated with MUP RS or NetSeT/Veridos.", .sr: "Čitanje elektronske lične karte Srbije preko NFC-a. Nezavisna implementacija, nije povezana sa MUP RS i NetSeT/Veridos."],
+        .nfcUnavailableT: [.ru: "NFC недоступен", .en: "NFC is not available", .sr: "NFC nije dostupan"],
+        .nfcUnavailableH: [.ru: "Это устройство не умеет читать карты по NFC. Нужен iPhone 7 или новее.", .en: "This device cannot read cards over NFC. An iPhone 7 or newer is required.", .sr: "Ovaj uređaj ne može da čita kartice preko NFC-a. Potreban je iPhone 7 ili noviji."],
+        .nfcNoCardT: [.ru: "Карта не найдена", .en: "No card found", .sr: "Kartica nije pronađena"],
+        .nfcNoCardH: [.ru: "Держите карту у верхней части iPhone и не двигайте её. Если iPhone не видит карту совсем, у неё, скорее всего, нет бесконтактного чипа: такую карту можно прочитать только USB-ридером в версии для Mac или Windows.", .en: "Hold the card against the top of the iPhone and keep it still. If the iPhone never detects it, the card most likely has no contactless chip and can only be read with a USB reader in the Mac or Windows version.", .sr: "Držite karticu uz gornji deo iPhone-a i ne pomerajte je. Ako je iPhone uopšte ne vidi, kartica verovatno nema beskontaktni čip i može se pročitati samo USB čitačem u verziji za Mac ili Windows."],
+        .nfcLostT: [.ru: "Связь с картой прервалась", .en: "Connection to the card was lost", .sr: "Veza sa karticom je prekinuta"],
+        .nfcLostH: [.ru: "Не двигайте карту до конца чтения и попробуйте ещё раз.", .en: "Keep the card still until reading finishes and try again.", .sr: "Ne pomerajte karticu dok se čitanje ne završi i pokušajte ponovo."],
         .tabSettings: [.ru: "Настройки", .en: "Settings", .sr: "Podešavanja"],
         .setAppearance: [.ru: "Оформление", .en: "Appearance", .sr: "Izgled"],
         .setTheme: [.ru: "Тема", .en: "Theme", .sr: "Tema"],

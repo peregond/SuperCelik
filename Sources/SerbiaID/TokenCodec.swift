@@ -49,6 +49,7 @@ enum TokenCodec {
                 }
             }
         }
+        #if os(macOS)
         let oids = [kSecOIDX509V1ValidityNotBefore, kSecOIDX509V1ValidityNotAfter] as CFArray
         let vals = SecCertificateCopyValues(cert, oids, nil) as? [String: Any]
         func date(_ oid: CFString) -> Date? {
@@ -57,5 +58,9 @@ enum TokenCodec {
             return Date(timeIntervalSinceReferenceDate: n.doubleValue)
         }
         return (issuer, date(kSecOIDX509V1ValidityNotBefore), date(kSecOIDX509V1ValidityNotAfter))
+        #else
+        let (from, to) = X509Dates.validity(der: SecCertificateCopyData(cert) as Data)   // no SecCertificateCopyValues on iOS
+        return (issuer, from, to)
+        #endif
     }
 }
