@@ -194,12 +194,25 @@ final class AppModel: ObservableObject {
         alert.informativeText = Loc.shared.t(.pinWarn)
         alert.addButton(withTitle: Loc.shared.t(.ok))
         alert.addButton(withTitle: Loc.shared.t(.cancel))
-        let fields = labels.map { label -> NSSecureTextField in
-            let f = NSSecureTextField(frame: NSRect(x: 0, y: 0, width: 260, height: 22)); f.placeholderString = label; return f
+        // Each field gets a caption above it and an explicit width: inside NSAlert's accessory view an
+        // NSSecureTextField with no width constraint collapses to a tiny pill.
+        var fields: [NSSecureTextField] = []
+        var rows: [NSView] = []
+        for label in labels {
+            let caption = NSTextField(labelWithString: label)
+            caption.font = .systemFont(ofSize: NSFont.smallSystemFontSize)
+            caption.textColor = .secondaryLabelColor
+            let f = NSSecureTextField()
+            f.translatesAutoresizingMaskIntoConstraints = false
+            f.widthAnchor.constraint(equalToConstant: 280).isActive = true
+            fields.append(f)
+            let row = NSStackView(views: [caption, f])
+            row.orientation = .vertical; row.alignment = .leading; row.spacing = 3
+            rows.append(row)
         }
-        let stack = NSStackView(views: fields)
-        stack.orientation = .vertical; stack.spacing = 8
-        stack.frame = NSRect(x: 0, y: 0, width: 260, height: CGFloat(fields.count) * 30)
+        let stack = NSStackView(views: rows)
+        stack.orientation = .vertical; stack.alignment = .leading; stack.spacing = 10
+        stack.setFrameSize(stack.fittingSize)
         alert.accessoryView = stack
         alert.window.initialFirstResponder = fields.first
         return alert.runModal() == .alertFirstButtonReturn ? fields.map { $0.stringValue } : nil
