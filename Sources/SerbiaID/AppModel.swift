@@ -42,6 +42,7 @@ final class AppModel: ObservableObject {
     enum SigStatus { case ok, chainNotTrusted(String), invalid(String), unavailable }
     @Published var signatureStatus: SigStatus?
 
+    private var driverCheckGeneration = 0     // bumped on every card insertion / removal
     private(set) var service: CardService
     let isDemoUI: Bool
     private let prefs = Prefs.shared
@@ -120,6 +121,7 @@ final class AppModel: ObservableObject {
                 checkDriver()
                 if prefs.autoRead { Task { await readCard() } }
             } else {
+                driverCheckGeneration += 1     // cancels a pending driver check
                 clearData()          // privacy: drop data when the card is removed
             }
         } catch { /* reader unplugged mid-poll: a manual refresh reports it */ }
@@ -195,16 +197,21 @@ final class AppModel: ObservableObject {
     private func checkDriver() {
         guard !isDemoUI else { return }
         let reader = selectedReader
+        driverCheckGeneration += 1
+        let generation = driverCheckGeneration
         Task { [weak self] in
             try? await Task.sleep(nanoseconds: 5_000_000_000)
+            // Only the latest insertion may act: a card pulled and re-inserted during the delay
+            // invalidates this check (otherwise it would restart a driver that is still starting up).
+            guard let self, self.driverCheckGeneration == generation else { return }
             let attached = await Task.detached { BrowserLogin.driverAttached() }.value
-            guard let self, self.cardPresent, self.selectedReader == reader else { return }
+            guard self.driverCheckGeneration == generation, self.cardPresent, self.selectedReader == reader else { return }
             if attached {
                 if self.problem?.titleKey == .driverStuck { self.problem = nil }
                 return
             }
             await Task.detached { BrowserLogin.repairDriver() }.value
-            if self.cardPresent, self.problem == nil { self.problem = Problem(titleKey: .driverStuck, isInfo: true) }
+            if self.driverCheckGeneration == generation, self.cardPresent, self.problem == nil { self.problem = Problem(titleKey: .driverStuck, isInfo: true) }
         }
     }
 
