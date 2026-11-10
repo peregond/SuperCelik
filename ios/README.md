@@ -13,22 +13,21 @@ iPhone в любом приложении для чтения NFC (наприм�
 NFC-чипа в ней нет, и её можно прочитать только USB-ридером в версии для Mac или Windows.
 
 ## Что нужно для установки
-- Mac с Xcode 15 или новее и [XcodeGen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`).
+- Mac с Xcode 15 или новее.
 - iPhone 7 или новее, iOS 16+.
 - **Платный Apple Developer Program** (99 $ в год). Разрешение «NFC Tag Reading» бесплатным
   (Personal Team) аккаунтам не выдаётся, без него сессия NFC не запускается.
 
 ## Сборка
-    cd ios
-    xcodegen generate
-    open SuperCelik.xcodeproj
+Откройте двойным кликом `ios/SuperCelik.xcodeproj` (папку репозитория нужно скачать целиком:
+проект берёт общий код из `Sources/SerbiaID`).
 
 В Xcode: цель SuperCelik → Signing & Capabilities → выберите свою команду (Team). Если bundle id
 `com.peregond.supercelik.ios` занят, поменяйте его на свой. Проверьте, что в списке возможностей
 есть «Near Field Communication Tag Reading» (её добавляет файл `Config/SuperCelik.entitlements`).
 Подключите iPhone и нажмите Run.
 
-CI собирает приложение без подписи только для проверки, что код компилируется; готового .ipa нет.
+CI собирает этот же проект без подписи только для проверки, что код компилируется; готового .ipa нет.
 
 ## Как пользоваться
 «Прочитать карту по NFC» → приложите карту к верхней части iPhone и не двигайте её до конца

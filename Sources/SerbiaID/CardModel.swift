@@ -1,6 +1,6 @@
 import Foundation
 
-// Shared by the macOS app and the iOS app (ios/project.yml compiles this file too).
+// Shared by the macOS app and the iOS app (ios/SuperCelik.xcodeproj compiles this file too).
 
 // MARK: - Data model (mirrors CelikApi 1.4.2 structures, see MUP "Opis funkcija")
 
