@@ -54,7 +54,7 @@ final class Loc: ObservableObject {
         case expiresIn, expiredOn, certIssuer, certValid, exportCert, preview, close, copied, autoHidden
         case errNoReaderT, errNoReaderH, errNoCardT, errNoCardH, errUnsupportedT, errUnsupportedH, errGenericT, errGenericH, techDetails
         case certMoiCA, certAuth, certSign, certSigFixed, certSigVariable
-        case secDocument, menuCard
+        case menuCard
         // iOS (NFC)
         case scanCard, nfcPrompt, nfcReading, nfcDone, sharePdf, hintNfc, aboutTextIOS
         case nfcUnavailableT, nfcUnavailableH, nfcNoCardT, nfcNoCardH, nfcLostT, nfcLostH
@@ -75,7 +75,6 @@ final class Loc: ObservableObject {
         .nfcNoCardH: [.ru: "Держите карту у верхней части iPhone и не двигайте её. Если iPhone не видит карту совсем, у неё, скорее всего, нет бесконтактного чипа: такую карту можно прочитать только USB-ридером в версии для Mac или Windows.", .en: "Hold the card against the top of the iPhone and keep it still. If the iPhone never detects it, the card most likely has no contactless chip and can only be read with a USB reader in the Mac or Windows version.", .sr: "Držite karticu uz gornji deo iPhone-a i ne pomerajte je. Ako je iPhone uopšte ne vidi, kartica verovatno nema beskontaktni čip i može se pročitati samo USB čitačem u verziji za Mac ili Windows."],
         .nfcLostT: [.ru: "Связь с картой прервалась", .en: "Connection to the card was lost", .sr: "Veza sa karticom je prekinuta"],
         .nfcLostH: [.ru: "Не двигайте карту до конца чтения и попробуйте ещё раз.", .en: "Keep the card still until reading finishes and try again.", .sr: "Ne pomerajte karticu dok se čitanje ne završi i pokušajte ponovo."],
-        .secDocument: [.ru: "Документ", .en: "Document", .sr: "Dokument"],
         .menuCard: [.ru: "Карта", .en: "Card", .sr: "Kartica"],
         .tabSettings: [.ru: "Настройки", .en: "Settings", .sr: "Podešavanja"],
         .setAppearance: [.ru: "Оформление", .en: "Appearance", .sr: "Izgled"],

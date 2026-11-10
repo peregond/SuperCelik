@@ -90,6 +90,8 @@ final class AppModel: ObservableObject {
     /// Runs forever from the root view: card insert / remove, and idle auto-hide.
     func startMonitoring() async {
         guard !isDemoUI else { return }
+        // A card that was already in the reader at launch never produces an "inserted" change.
+        if prefs.autoRead, cardPresent, personal == nil { await readCard() }
         while !Task.isCancelled {
             poll()
             checkIdle()

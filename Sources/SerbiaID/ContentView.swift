@@ -27,23 +27,6 @@ struct Card<Content: View>: View {
     }
 }
 
-/// A titled card that groups related fields.
-struct SectionCard<Content: View>: View {
-    let title: String
-    let systemImage: String
-    @ViewBuilder var content: Content
-    var body: some View {
-        Card {
-            VStack(alignment: .leading, spacing: 14) {
-                Label(title, systemImage: systemImage)
-                    .font(.headline).foregroundStyle(.secondary)
-                content
-            }
-            .frame(maxWidth: .infinity, alignment: .leading)
-        }
-    }
-}
-
 struct Pill: View {
     let text: String
     let color: Color
@@ -289,17 +272,11 @@ struct PersonalView: View {
     @EnvironmentObject var model: AppModel
     @EnvironmentObject var prefs: Prefs
 
-    private static let identityIDs: Set<String> = ["surname", "givenName", "parentName", "dob", "sex",
-                                                   "placeOfBirth", "nationality", "jmbg"]
-
     var body: some View {
         Group {
             if let p = model.personal {
                 ScrollView {
-                    VStack(alignment: .leading, spacing: 16) {
-                        hero(p)
-                        sections(p.rows())
-                    }
+                    summary(p)
                     .padding(20)
                     .frame(maxWidth: 920)
                     .frame(maxWidth: .infinity)
@@ -361,39 +338,30 @@ struct PersonalView: View {
         }
     }
 
-    private func hero(_ p: PersonalData) -> some View {
+    /// Everything on one card, sized to fit the window without scrolling: photo on the left,
+    /// name and all fields on the right.
+    private func summary(_ p: PersonalData) -> some View {
         Card {
             HStack(alignment: .top, spacing: 20) {
                 portrait(p)
-                VStack(alignment: .leading, spacing: 8) {
-                    Text("\(p.fixed.givenName) \(p.fixed.surname)")
-                        .font(.system(size: 26, weight: .bold))
-                        .textSelection(.enabled)
-                        .fixedSize(horizontal: false, vertical: true)
-                    Text(docTypeName(p.cardType)).font(.title3).foregroundStyle(.secondary)
-                    VStack(alignment: .leading, spacing: 8) {
-                        if let d = p.expiryDate { ExpiryPill(date: d) }
+                VStack(alignment: .leading, spacing: 12) {
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("\(p.fixed.givenName) \(p.fixed.surname)")
+                            .font(.system(size: 22, weight: .bold))
+                            .textSelection(.enabled)
+                            .fixedSize(horizontal: false, vertical: true)
+                        HStack(spacing: 10) {
+                            Text(docTypeName(p.cardType)).foregroundStyle(.secondary)
+                            if let d = p.expiryDate { ExpiryPill(date: d) }
+                        }
                         sigPill
                     }
-                    .padding(.top, 6)
+                    Divider()
+                    FieldGrid(rows: p.rows())
                 }
-                Spacer(minLength: 0)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }
-    }
-
-    @ViewBuilder private func sections(_ rows: [Row]) -> some View {
-        let identity = rows.filter { Self.identityIDs.contains($0.id) }
-        let address = rows.filter { $0.id == "address" }
-        let document = rows.filter { !Self.identityIDs.contains($0.id) && $0.id != "address" }
-        SectionCard(title: loc.t(.tabPersonal), systemImage: "person") { FieldGrid(rows: identity) }
-        if !address.isEmpty {
-            SectionCard(title: loc.t(.address), systemImage: "house") {
-                ForEach(address) { FieldCell(row: $0) }
-            }
-        }
-        SectionCard(title: loc.t(.secDocument), systemImage: "doc.text") { FieldGrid(rows: document) }
     }
 
     @ViewBuilder private var sigPill: some View {
@@ -414,7 +382,7 @@ struct PersonalView: View {
                 Image(systemName: "person.fill").resizable().scaledToFit().padding(34).foregroundStyle(.tertiary)
             }
         }
-        .frame(width: 132, height: 168)
+        .frame(width: 150, height: 190)
         .background(Color.primary.opacity(0.06))
         .clipShape(RoundedRectangle(cornerRadius: 12, style: .continuous))
         .overlay(RoundedRectangle(cornerRadius: 12, style: .continuous).strokeBorder(Color.primary.opacity(0.1)))
@@ -433,8 +401,8 @@ struct PersonalView: View {
 struct FieldGrid: View {
     let rows: [Row]
     var body: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 230), spacing: 20, alignment: .topLeading)],
-                  alignment: .leading, spacing: 16) {
+        LazyVGrid(columns: [GridItem(.adaptive(minimum: 170), spacing: 16, alignment: .topLeading)],
+                  alignment: .leading, spacing: 12) {
             ForEach(rows) { FieldCell(row: $0) }
         }
         .frame(maxWidth: .infinity, alignment: .leading)

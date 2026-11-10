@@ -14,7 +14,7 @@ final class Prefs: ObservableObject {
     init() {
         let d = UserDefaults.standard
         d.register(defaults: ["theme": "system", "autoUpdate": true, "maskSensitive": true,
-                              "autoRead": false, "printJmbg": true, "autoHideMinutes": 3])
+                              "autoRead": true, "printJmbg": true, "autoHideMinutes": 3])
         theme = d.string(forKey: "theme") ?? "system"
         autoUpdate = d.bool(forKey: "autoUpdate")
         maskSensitive = d.bool(forKey: "maskSensitive")
