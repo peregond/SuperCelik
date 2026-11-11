@@ -5,7 +5,27 @@ on:
     paths: [".github/workflows/screenshots.yml"]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
+  publish:
+    needs: [ios, android]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { path: out }
+      - name: Push PNGs to a throwaway branch
+        run: |
+          mkdir -p /tmp/shots && cp out/*/*.png /tmp/shots/
+          git config user.name "ci" && git config user.email "ci@example.invalid"
+          git checkout --orphan screenshots-out
+          git rm -rf . -q
+          cp /tmp/shots/*.png .
+          git add *.png && git commit -qm "screenshots"
+          git push -f origin screenshots-out
+
   ios:
     runs-on: macos-15
     steps:
