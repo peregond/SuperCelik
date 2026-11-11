@@ -9,7 +9,7 @@
     <AssemblyName>SuperCelik</AssemblyName>
     <Product>Super Celik</Product>
     <RootNamespace>SerbiaID</RootNamespace>
-    <Version>0.7.1</Version>
+    <Version>0.8.0</Version>
     <ApplicationIcon>app.ico</ApplicationIcon>
   </PropertyGroup>
 
