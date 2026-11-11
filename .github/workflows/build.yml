@@ -38,6 +38,22 @@ jobs:
           files: dist/*.dmg
           generate_release_notes: true
 
+  macos-appstore:
+    # Compile and layout check of the Mac App Store variant (sandbox entitlements, no updater); the ad-hoc signed
+    # app is not uploadable. The real signed package comes from the "App Store (macOS)" workflow.
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the App Store variant (ad-hoc signed)
+        run: UNSIGNED=1 bash scripts/make-appstore-mac.sh 0.0.0 1
+      - name: Check the bundle
+        run: |
+          APP=dist/SuperCelik.app
+          codesign -d --entitlements - "$APP" 2>&1 | grep -E "app-sandbox|smartcard"
+          test -f "$APP/Contents/PlugIns/SuperCelikToken.appex/Contents/Info.plist"
+          test -f "$APP/Contents/Resources/PrivacyInfo.xcprivacy"
+          /usr/libexec/PlistBuddy -c "Print :LSApplicationCategoryType" "$APP/Contents/Info.plist"
+
   ios:
     # Unsigned builds: an .ipa for re-signing and a simulator app that runs on a Mac as is.
     # Installing on an iPhone with working NFC needs the user's own paid Apple Developer team

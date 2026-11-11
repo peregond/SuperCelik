@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Mac App Store: sandbox is mandatory. TEAMID is replaced by scripts/make-appstore-mac.sh. -->
+	<key>com.apple.security.app-sandbox</key><true/>
+	<!-- PC/SC: reading the card through a smart card reader -->
+	<key>com.apple.security.smartcard</key><true/>
+	<!-- save PDF / certificates / signatures where the user chooses -->
+	<key>com.apple.security.files.user-selected.read-write</key><true/>
+	<key>com.apple.security.print</key><true/>
+	<key>com.apple.application-identifier</key><string>TEAMID.com.peregond.supercelik</string>
+	<key>com.apple.developer.team-identifier</key><string>TEAMID</string>
+</dict>
+</plist>
