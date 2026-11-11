@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Super Celik</string>
+    <string name="title_personal">Personal data</string>
+    <string name="read_nfc">Read via NFC</string>
+    <string name="read_usb">Read via USB reader</string>
+    <string name="hint_idle">Choose how to read the card. NFC works only if the card has a contactless chip; otherwise connect a USB smart card reader (OTG).</string>
+    <string name="hint_nfc_wait">Hold the card against the back of the phone…</string>
+    <string name="hint_usb_wait">Looking for a USB reader…</string>
+    <string name="reading">Reading the card…</string>
+    <string name="cancel">Cancel</string>
+    <string name="clear">Clear</string>
+    <string name="err_no_nfc">This phone has no NFC, or NFC is turned off.</string>
+    <string name="err_no_usb">No USB smart card reader found. Connect it with an OTG adapter.</string>
+    <string name="err_usb_denied">USB access was not granted.</string>
+    <string name="err_no_card">No card in the reader.</string>
+    <string name="err_unsupported">Unsupported card (no known applet; old Apollo cards are not supported).</string>
+    <string name="err_generic">Could not read the card</string>
+    <string name="err_lost">The card moved away during reading. Try again.</string>
+    <string name="doc_section">Document</string>
+    <string name="person_section">Person</string>
+    <string name="address_section">Address</string>
+    <string name="surname">Surname</string>
+    <string name="given_name">Given name</string>
+    <string name="parent_name">Parent\'s name</string>
+    <string name="dob">Date of birth</string>
+    <string name="place_of_birth">Place of birth</string>
+    <string name="sex">Sex</string>
+    <string name="jmbg">Personal number (JMBG)</string>
+    <string name="doc_number">Document number</string>
+    <string name="issued_by">Issued by</string>
+    <string name="issue_date">Issue date</string>
+    <string name="expiry_date">Expiry date</string>
+    <string name="address">Address</string>
+    <string name="about_note">Independent implementation, not affiliated with MUP RS or NetSeT/Veridos. Data is shown on screen only and is cleared when you close the app.</string>
+    <string name="hint_ready">Ready: hold the card against the back of the phone</string>
+</resources>

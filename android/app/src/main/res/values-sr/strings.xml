@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Super Celik</string>
+    <string name="title_personal">Lični podaci</string>
+    <string name="read_nfc">Čitaj preko NFC-a</string>
+    <string name="read_usb">Čitaj preko USB čitača</string>
+    <string name="hint_idle">Izaberite kako da čitate karticu. NFC radi samo ako kartica ima beskontaktni čip; inače povežite USB čitač kartica (OTG).</string>
+    <string name="hint_nfc_wait">Prislonite karticu na zadnju stranu telefona…</string>
+    <string name="hint_usb_wait">Tražim USB čitač…</string>
+    <string name="reading">Čitam karticu…</string>
+    <string name="cancel">Otkaži</string>
+    <string name="clear">Obriši</string>
+    <string name="err_no_nfc">Ovaj telefon nema NFC ili je isključen.</string>
+    <string name="err_no_usb">USB čitač nije pronađen. Povežite ga preko OTG adaptera.</string>
+    <string name="err_usb_denied">Pristup USB-u nije odobren.</string>
+    <string name="err_no_card">Nema kartice u čitaču.</string>
+    <string name="err_unsupported">Kartica nije podržana (nema poznatog apleta; stare Apollo kartice nisu podržane).</string>
+    <string name="err_generic">Nije moguće pročitati karticu</string>
+    <string name="err_lost">Kartica se pomerila tokom čitanja. Pokušajte ponovo.</string>
+    <string name="doc_section">Dokument</string>
+    <string name="person_section">Lice</string>
+    <string name="address_section">Adresa</string>
+    <string name="surname">Prezime</string>
+    <string name="given_name">Ime</string>
+    <string name="parent_name">Ime roditelja</string>
+    <string name="dob">Datum rođenja</string>
+    <string name="place_of_birth">Mesto rođenja</string>
+    <string name="sex">Pol</string>
+    <string name="jmbg">JMBG</string>
+    <string name="doc_number">Broj dokumenta</string>
+    <string name="issued_by">Izdao</string>
+    <string name="issue_date">Datum izdavanja</string>
+    <string name="expiry_date">Važi do</string>
+    <string name="address">Adresa</string>
+    <string name="about_note">Nezavisna implementacija, nije povezana sa MUP RS i NetSeT/Veridos. Podaci se prikazuju samo na ekranu i brišu se zatvaranjem aplikacije.</string>
+    <string name="hint_ready">Spremno: prislonite karticu na zadnju stranu telefona</string>
+</resources>
