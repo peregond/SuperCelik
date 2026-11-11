@@ -95,7 +95,8 @@ jobs:
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then v="${GITHUB_REF_NAME#v}"; else v="0.0.0-${GITHUB_SHA::7}"; fi
           IFS=. read -r MA MI PA <<< "${v%%-*}"
           echo "v=$v" >> "$GITHUB_OUTPUT"
-          echo "code=$(( ${MA:-0} * 10000 + ${MI:-0} * 100 + ${PA:-0} ))" >> "$GITHUB_OUTPUT"
+          code=$(( ${MA:-0} * 10000 + ${MI:-0} * 100 + ${PA:-0} )); [ "$code" -ge 1 ] || code=1
+          echo "code=$code" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
