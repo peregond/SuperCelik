@@ -38,10 +38,10 @@ final class PhoneModel: ObservableObject {
         var p = PersonalData()
         p.cardType = .rp2024
         p.document = DocumentData(docRegNo: "001234567", documentType: "RP", issuingDate: "01.01.2024",
-                                  expiryDate: "01.01.2030", issuingAuthority: "MUP RS", documentSerialNumber: "RS1234567")
+                                  expiryDate: "01.01.2030", issuingAuthority: "MUP RS", documentSerialNumber: "RS1234567", documentName: "Dozvola za privremeni boravak i rad")
         p.fixed = FixedPersonalData(personalNumber: "0101990710000", surname: "PETROVIĆ", givenName: "MARKO", sex: "M",
-                                    stateOfBirth: "Srbija", dateOfBirth: "01.01.1990", nationalityFull: "Srbija")
-        p.variable = VariablePersonalData(community: "Stari Grad", place: "Beograd", street: "Knez Mihailova", houseNumber: "1")
+                                    placeOfBirth: "Beograd", stateOfBirth: "Srbija", dateOfBirth: "01.01.1990", nationalityFull: "Srbija", purposeOfStay: "Rad")
+        p.variable = VariablePersonalData(state: "Srbija", community: "Stari Grad", place: "Beograd", street: "Knez Mihailova", houseNumber: "1", addressDate: "01.01.2024")
         let size = CGSize(width: 240, height: 310)
         p.portrait = UIGraphicsImageRenderer(size: size).jpegData(withCompressionQuality: 0.9) { ctx in
             UIColor(red: 0.85, green: 0.89, blue: 0.94, alpha: 1).setFill(); ctx.fill(CGRect(origin: .zero, size: size))
@@ -58,6 +58,12 @@ final class PhoneModel: ObservableObject {
     private let loc = Loc.shared
 
     var nfcAvailable: Bool { NFCCardReader.isAvailable }
+
+    /// The app decides how to read: a connected wired reader first, otherwise NFC.
+    var autoSource: ReadSource { USBCardReader.hasReader ? .usb : (nfcAvailable ? .nfc : .usb) }
+    var autoIcon: String { autoSource == .usb ? "cable.connector" : "wave.3.right" }
+    func scanCardAuto() async { await scanCard(autoSource) }
+    func scanTokenAuto() async { await scanToken(autoSource) }
 
     /// Runs the shared card code through the chosen transport (wired reader or NFC).
     private func run<T>(_ source: ReadSource, _ body: @escaping @Sendable (EidCard) throws -> T) async throws -> T {

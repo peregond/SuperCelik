@@ -41,19 +41,21 @@ jobs:
       - name: Screenshots
         run: |
           mkdir -p shots
-          shot() { # name, device-substring, appearance
+          shot() { # name, device-substring, appearance, launch args
             UDID=$(xcrun simctl list devices available | grep "$2" | head -1 | grep -oE '[0-9A-F-]{36}')
             xcrun simctl boot "$UDID"; xcrun simctl bootstatus "$UDID" -b
             xcrun simctl ui "$UDID" appearance "$3"
             xcrun simctl install "$UDID" build/Build/Products/Debug-iphonesimulator/SuperCelik.app
-            xcrun simctl launch "$UDID" com.peregond.supercelik.ios --demo
+            xcrun simctl launch "$UDID" com.peregond.supercelik.ios --demo $4
             sleep 6
             xcrun simctl io "$UDID" screenshot "shots/$1.png"
             xcrun simctl shutdown "$UDID"
           }
           shot iphone-light "iPhone" light
           shot iphone-dark "iPhone" dark
+          shot iphone-pdf "iPhone" light --pdf
           shot ipad-light "iPad" light
+          shot ipad-pdf "iPad" light --pdf
       - uses: actions/upload-artifact@v4
         with: { name: shots-ios, path: shots/*.png }
 
