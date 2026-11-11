@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Super Celik</string>
+    <string name="title_personal">Личные данные</string>
+    <string name="read_nfc">Читать по NFC</string>
+    <string name="read_usb">Читать через USB-ридер</string>
+    <string name="hint_idle">Выберите, как читать карту. NFC работает, только если в карте есть бесконтактный чип; иначе подключите USB-ридер смарт-карт (OTG).</string>
+    <string name="hint_nfc_wait">Приложите карту к задней части телефона…</string>
+    <string name="hint_usb_wait">Ищу USB-ридер…</string>
+    <string name="reading">Читаю карту…</string>
+    <string name="cancel">Отмена</string>
+    <string name="clear">Очистить</string>
+    <string name="err_no_nfc">В этом телефоне нет NFC или он выключен.</string>
+    <string name="err_no_usb">USB-ридер не найден. Подключите его через OTG-переходник.</string>
+    <string name="err_usb_denied">Доступ к USB не разрешён.</string>
+    <string name="err_no_card">В ридере нет карты.</string>
+    <string name="err_unsupported">Карта не поддерживается (нет известного апплета; старые карты Apollo не поддерживаются).</string>
+    <string name="err_generic">Не удалось прочитать карту</string>
+    <string name="err_lost">Карта сместилась во время чтения. Попробуйте ещё раз.</string>
+    <string name="doc_section">Документ</string>
+    <string name="person_section">Личность</string>
+    <string name="address_section">Адрес</string>
+    <string name="surname">Фамилия</string>
+    <string name="given_name">Имя</string>
+    <string name="parent_name">Имя родителя</string>
+    <string name="dob">Дата рождения</string>
+    <string name="place_of_birth">Место рождения</string>
+    <string name="sex">Пол</string>
+    <string name="jmbg">ЕМБГ (JMBG)</string>
+    <string name="doc_number">Номер документа</string>
+    <string name="issued_by">Кем выдан</string>
+    <string name="issue_date">Дата выдачи</string>
+    <string name="expiry_date">Действителен до</string>
+    <string name="address">Адрес</string>
+    <string name="about_note">Независимая реализация, не связана с МУП РС и NetSeT/Veridos. Данные показываются только на экране и стираются при закрытии приложения.</string>
+</resources>
