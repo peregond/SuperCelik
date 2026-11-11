@@ -64,13 +64,15 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         if (intent.action == UsbManager.ACTION_USB_DEVICE_ATTACHED) vm.startUsb(this)
+        if (intent.getBooleanExtra("demo", false)) vm.showDemo()
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         // Personal data must not end up in screenshots or the recent-apps preview.
-        window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
+        val demo = intent?.getBooleanExtra("demo", false) == true
+        if (!demo) window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
         nfc = NfcAdapter.getDefaultAdapter(this)
 
         // NFC reader mode is on only while we are waiting for a card and the app is visible.
@@ -93,6 +95,7 @@ class MainActivity : ComponentActivity() {
 
         // A USB reader being plugged in launches the app (see device_filter) and reads straight away.
         if (intent?.action == UsbManager.ACTION_USB_DEVICE_ATTACHED) vm.startUsb(this)
+        if (demo) vm.showDemo()
 
         setContent {
             SuperCelikTheme {

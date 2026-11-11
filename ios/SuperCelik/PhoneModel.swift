@@ -29,6 +29,23 @@ final class PhoneModel: ObservableObject {
 
     enum ReadSource { case usb, nfc }
 
+    /// `--demo` launch argument: fictional data for screenshots (never touches a card).
+    init() {
+        if CommandLine.arguments.contains("--demo") { loadDemo() }
+    }
+
+    private func loadDemo() {
+        var p = PersonalData()
+        p.cardType = .rp2024
+        p.document = DocumentData(docRegNo: "001234567", documentType: "RP", issuingDate: "01.01.2024",
+                                  expiryDate: "01.01.2026", issuingAuthority: "MUP RS", documentSerialNumber: "RS1234567")
+        p.fixed = FixedPersonalData(personalNumber: "0101990710000", surname: "PETROVIĆ", givenName: "MARKO", sex: "M",
+                                    stateOfBirth: "Srbija", dateOfBirth: "01.01.1990", nationalityFull: "Srbija")
+        p.variable = VariablePersonalData(community: "Stari Grad", place: "Beograd", street: "Knez Mihailova", houseNumber: "1")
+        personal = p
+        signatureStatus = .ok
+    }
+
     private let nfcReader = NFCCardReader()
     private let usbReader = USBCardReader()
     private let loc = Loc.shared

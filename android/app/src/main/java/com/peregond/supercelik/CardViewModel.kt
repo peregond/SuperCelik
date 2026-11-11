@@ -88,6 +88,16 @@ class CardViewModel : ViewModel() {
         }
     }
 
+    /** Fictional data for screenshots (launch intent extra "demo"); never touches a card. */
+    fun showDemo() {
+        _state.value = UiState.Done(PersonalData(
+            cardType = CardType.RP2024, docRegNo = "001234567", documentType = "RP",
+            issuingDate = "01.01.2024", expiryDate = "01.01.2026", issuingAuthority = "MUP RS",
+            personalNumber = "0101990710000", surname = "PETROVIĆ", givenName = "MARKO",
+            parentGivenName = "Nikola", sex = "M", placeOfBirth = "Beograd", dateOfBirth = "01.01.1990",
+            address = "Knez Mihailova 1, Beograd, Stari Grad", portrait = null))
+    }
+
     private fun fail(e: CardException?, detail: String) { _state.value = UiState.Failed(e, detail) }
 
     /** Back to the start screen; also drops personal data from memory. */
