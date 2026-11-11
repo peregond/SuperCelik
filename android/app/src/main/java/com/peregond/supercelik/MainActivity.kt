@@ -101,7 +101,7 @@ class MainActivity : ComponentActivity() {
             val theme by vm.theme.collectAsStateWithLifecycle()
             val dynamic by vm.dynamic.collectAsStateWithLifecycle()
             val dark = when (theme) { 1 -> false; 2 -> true; else -> isSystemInDarkTheme() }
-            SuperCelikTheme(dark, dynamic) { Root(vm, nfc) }
+            SuperCelikTheme(dark, dynamic) { Root(vm, nfc, intent?.getStringExtra("tab")) }
         }
     }
 }
@@ -110,11 +110,11 @@ private enum class Tab { Card, Token, Settings }
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-private fun Root(vm: CardViewModel, nfc: NfcAdapter?) {
+private fun Root(vm: CardViewModel, nfc: NfcAdapter?, initialTab: String?) {
     val phase by vm.phase.collectAsStateWithLifecycle()
     val personal by vm.personal.collectAsStateWithLifecycle()
     val message by vm.message.collectAsStateWithLifecycle()
-    var tab by rememberSaveable { mutableStateOf(Tab.Card) }
+    var tab by rememberSaveable { mutableStateOf(when (initialTab) { "token" -> Tab.Token; "settings" -> Tab.Settings; else -> Tab.Card }) }
     var reveal by rememberSaveable { mutableStateOf(false) }
     val snackbar = remember { SnackbarHostState() }
     val haptic = LocalHapticFeedback.current
