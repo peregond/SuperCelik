@@ -95,4 +95,12 @@
     <string name="minutes_n">%d min</string>
     <string name="settings_language">Language</string>
     <string name="settings_language_hint">Choose the app language in system settings</string>
+    <string name="photo">Photo</string>
+    <string name="view_pdf">View PDF</string>
+    <string name="pdf_title">PDF</string>
+    <string name="print">Print</string>
+    <string name="close">Close</string>
+    <string name="settings_palette">Colours</string>
+    <string name="palette_flag">Serbian flag</string>
+    <string name="palette_wallpaper">Wallpaper (Material You)</string>
 </resources>

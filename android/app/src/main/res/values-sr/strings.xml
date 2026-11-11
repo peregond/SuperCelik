@@ -95,4 +95,12 @@
     <string name="minutes_n">%d min</string>
     <string name="settings_language">Jezik</string>
     <string name="settings_language_hint">Jezik aplikacije se bira u podešavanjima sistema</string>
+    <string name="photo">Fotografija</string>
+    <string name="view_pdf">Otvori PDF</string>
+    <string name="pdf_title">PDF</string>
+    <string name="print">Štampaj</string>
+    <string name="close">Zatvori</string>
+    <string name="settings_palette">Boje</string>
+    <string name="palette_flag">Zastava Srbije</string>
+    <string name="palette_wallpaper">Pozadina (Material You)</string>
 </resources>
