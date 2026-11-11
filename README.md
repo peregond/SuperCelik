@@ -3,13 +3,14 @@
 # Super Celik
 
 Единое приложение вместо Čelik + TrustEdge ID для сербской электронной ID-карты, карты иностранца и вида на жительство.
-Языки: RU / EN / SR. Версии: **macOS** (SwiftUI), **Windows** (WPF, .NET 8) и **iPhone** (SwiftUI, чтение по NFC, см. [ios/README.md](ios/README.md); работает только с картами, у которых есть NFC-чип).
+Языки: RU / EN / SR. Версии: **macOS** (SwiftUI), **Windows** (WPF, .NET 8), **Android** (Kotlin + Jetpack Compose, Material You, см. [android/README.md](android/README.md)) и **iPhone / iPad** (SwiftUI, чтение по NFC, см. [ios/README.md](ios/README.md); работает только с картами, у которых есть NFC-чип).
 Независимая реализация, не связана с МУП РС и NetSeT/Veridos.
 
 ## Установка (готовые сборки — раздел Releases)
 - **macOS 13+**: `SuperCelik-<версия>-macOS-apple-silicon.dmg` (M1 и новее) или `...-intel.dmg`. Откройте dmg и перетащите Super Celik в «Программы».
   Приложение подписано ad-hoc и не нотаризовано: при первом запуске — правый клик → «Открыть», либо
   `xattr -dr com.apple.quarantine /Applications/SuperCelik.app`.
+- **Android 8+**: `SuperCelik-<версия>-android.apk` (для установки вручную: разрешите установку из неизвестных источников). Читает карту по NFC или через USB-ридер (OTG), в том числе проверка подписи МУП, токен, смена PIN, подпись файла.
 - **Windows 10/11 x64**: `SuperCelik-<версия>-windows-x64-setup.exe`. Установщик не подписан сертификатом издателя: SmartScreen может показать предупреждение («Подробнее» → «Выполнить в любом случае»).
 
 Сборка делается автоматически в GitHub Actions: каждый push в `main` → артефакты; тег `vX.Y.Z` → релиз.

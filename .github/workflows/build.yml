@@ -89,6 +89,14 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - name: Version
+        id: ver
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then v="${GITHUB_REF_NAME#v}"; else v="0.0.0-${GITHUB_SHA::7}"; fi
+          IFS=. read -r MA MI PA <<< "${v%%-*}"
+          echo "v=$v" >> "$GITHUB_OUTPUT"
+          code=$(( ${MA:-0} * 10000 + ${MI:-0} * 100 + ${PA:-0} )); [ "$code" -ge 1 ] || code=1
+          echo "code=$code" >> "$GITHUB_OUTPUT"
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
@@ -96,9 +104,37 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: 8.9
-      - name: Build debug APK
-        run: gradle -p android assembleDebug --no-daemon
+      - name: Signing key
+        env:
+          KS_B64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KS_PASS: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KS_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+        run: |
+          alias="${KS_ALIAS:-release}"; pass="$KS_PASS"
+          if [ -n "$KS_B64" ] && [ -n "$pass" ]; then
+            echo "$KS_B64" | base64 -d > "$RUNNER_TEMP/release.keystore"
+          else
+            echo "::warning::No ANDROID_KEYSTORE_* secrets: signing with a throwaway key (updates will not install over a previous build)"
+            pass="$(openssl rand -hex 16)"
+            keytool -genkeypair -keystore "$RUNNER_TEMP/release.keystore" -storetype PKCS12 -storepass "$pass" -keypass "$pass" \
+              -alias "$alias" -keyalg RSA -keysize 2048 -validity 10000 -dname "CN=Super Celik CI"
+          fi
+          echo "::add-mask::$pass"
+          echo "ANDROID_KEYSTORE_FILE=$RUNNER_TEMP/release.keystore" >> "$GITHUB_ENV"
+          echo "ANDROID_KEYSTORE_PASSWORD=$pass" >> "$GITHUB_ENV"
+          echo "ANDROID_KEY_ALIAS=$alias" >> "$GITHUB_ENV"
+      - name: Build release APK
+        run: |
+          gradle -p android assembleRelease --no-daemon -PappVersion=${{ steps.ver.outputs.v }} -PappVersionCode=${{ steps.ver.outputs.code }}
+          mkdir -p dist
+          cp android/app/build/outputs/apk/release/*.apk "dist/SuperCelik-${{ steps.ver.outputs.v }}-android.apk"
       - uses: actions/upload-artifact@v4
         with:
-          name: SuperCelik-android-debug
-          path: android/app/build/outputs/apk/debug/*.apk
+          name: SuperCelik-android
+          path: dist/*.apk
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*.apk
+          generate_release_notes: true
