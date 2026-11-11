@@ -21,7 +21,7 @@ enum SignatureVerifier {
     /// MUP root + intermediate CAs shipped inside the app bundle.
     static let anchors: [SecCertificate] = {
         let urls = resourceBundle?.urls(forResourcesWithExtension: "crt", subdirectory: "Resources/CA")
-            ?? Bundle.main.urls(forResourcesWithExtension: "crt", subdirectory: "CA")   // iOS app (ios/project.yml)
+            ?? Bundle.main.urls(forResourcesWithExtension: "crt", subdirectory: "CA")   // iOS app (ios/SuperCelik.xcodeproj)
             ?? []
         return urls.compactMap { url in
             (try? Data(contentsOf: url)).flatMap(derFromFile).flatMap { SecCertificateCreateWithData(nil, $0 as CFData) }

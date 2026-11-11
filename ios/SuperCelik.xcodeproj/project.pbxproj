@@ -1,0 +1,324 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 56;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		076F477AFBB34016C0DCD226 /* SuperCelikApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6A9443BC53EB311ED927118 /* SuperCelikApp.swift */; };
+		A0CD34D9E0004D0C44D04EF4 /* PhoneModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C85CB36E74AF9D06F4C2C244 /* PhoneModel.swift */; };
+		0FDAD66B44FCA1C5261B7DF4 /* PhoneViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5956581239ED5DE9BFB2439 /* PhoneViews.swift */; };
+		88A55BCC54A2427357D27C34 /* NFCCardReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 492A73205AAE534941E47FAD /* NFCCardReader.swift */; };
+		C3C68D7A4090674E4864223C /* CardModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = E10939E43FC2D933A6CAF5E1 /* CardModel.swift */; };
+		A8DA87E5D552C7D65DB60502 /* EidCard.swift in Sources */ = {isa = PBXBuildFile; fileRef = 1E9D1F12F7A92DF8EEF84674 /* EidCard.swift */; };
+		1399766CC0FF5659B42273D5 /* Asn1.swift in Sources */ = {isa = PBXBuildFile; fileRef = B3A8059A1B6797FEA618FAB3 /* Asn1.swift */; };
+		A80BA307179EA1833751F509 /* SignatureVerifier.swift in Sources */ = {isa = PBXBuildFile; fileRef = 72109A858B683F8E142D0898 /* SignatureVerifier.swift */; };
+		EE73FE1E3D7DCD01C021C9E5 /* TokenCodec.swift in Sources */ = {isa = PBXBuildFile; fileRef = 322FEE8323D49DB7C8A07CC2 /* TokenCodec.swift */; };
+		DF5BB9D4C1031B014807AC29 /* MupPrintLayout.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3292D081FC7FB524F69380F9 /* MupPrintLayout.swift */; };
+		D4A908AB15295593E9A65B1D /* Rows.swift in Sources */ = {isa = PBXBuildFile; fileRef = 25B19FB07F4E719A757DFA0D /* Rows.swift */; };
+		BF6BE802ED9729B4CD6B4FC2 /* Localization.swift in Sources */ = {isa = PBXBuildFile; fileRef = A4FCB9C80BFBF932E353568D /* Localization.swift */; };
+		014BC6FEFC3616EE53BBB0B9 /* Prefs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58324604F865E53A71B5811D /* Prefs.swift */; };
+		2B4A2C08D382ED0CB67D3F18 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BE471734216310C4D69C4A16 /* Assets.xcassets */; };
+		243866D0C6E614680F031BFA /* CA in Resources */ = {isa = PBXBuildFile; fileRef = 6B4A331ACAAFD2EB8C66B299 /* CA */; };
+		9E4B2F6A1C8D3057A2B6E0F4 /* Glass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D1A0C3E7B2F4A9086E1C7D3 /* Glass.swift */; };
+		1F6D8B4A2E9C0357B8D5A3C1 /* USBCardReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C3E9A1D5B0F2486D9A3E1B7 /* USBCardReader.swift */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		B6A9443BC53EB311ED927118 /* SuperCelikApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuperCelikApp.swift; sourceTree = "<group>"; };
+		C85CB36E74AF9D06F4C2C244 /* PhoneModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneModel.swift; sourceTree = "<group>"; };
+		E5956581239ED5DE9BFB2439 /* PhoneViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneViews.swift; sourceTree = "<group>"; };
+		492A73205AAE534941E47FAD /* NFCCardReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = NFCCardReader.swift; sourceTree = "<group>"; };
+		E10939E43FC2D933A6CAF5E1 /* CardModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CardModel.swift; sourceTree = "<group>"; };
+		1E9D1F12F7A92DF8EEF84674 /* EidCard.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = EidCard.swift; sourceTree = "<group>"; };
+		B3A8059A1B6797FEA618FAB3 /* Asn1.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Asn1.swift; sourceTree = "<group>"; };
+		72109A858B683F8E142D0898 /* SignatureVerifier.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SignatureVerifier.swift; sourceTree = "<group>"; };
+		322FEE8323D49DB7C8A07CC2 /* TokenCodec.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = TokenCodec.swift; sourceTree = "<group>"; };
+		3292D081FC7FB524F69380F9 /* MupPrintLayout.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = MupPrintLayout.swift; sourceTree = "<group>"; };
+		25B19FB07F4E719A757DFA0D /* Rows.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Rows.swift; sourceTree = "<group>"; };
+		A4FCB9C80BFBF932E353568D /* Localization.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Localization.swift; sourceTree = "<group>"; };
+		58324604F865E53A71B5811D /* Prefs.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Prefs.swift; sourceTree = "<group>"; };
+		BE471734216310C4D69C4A16 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		6B4A331ACAAFD2EB8C66B299 /* CA */ = {isa = PBXFileReference; lastKnownFileType = folder; name = CA; path = Resources/CA; sourceTree = "<group>"; };
+		99D288D75AE11A0DB2B6E1FB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A2DE76C438FE5E928C381133 /* SuperCelik.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SuperCelik.entitlements; sourceTree = "<group>"; };
+		7956FE5BC62358262873304A /* SuperCelik.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SuperCelik.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5D1A0C3E7B2F4A9086E1C7D3 /* Glass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Glass.swift; sourceTree = "<group>"; };
+		7C3E9A1D5B0F2486D9A3E1B7 /* USBCardReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = USBCardReader.swift; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		E7A61CFEA03B2D2A3A0D27C7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		6CB36D34074C10A6153CF9BC = {
+			isa = PBXGroup;
+			children = (
+				30BAE363BF904CFF4BA52B3A,
+				A01B5CB932856B6168E43F89,
+				C3809410BC68B6AD7407904A,
+				3EEF9D4B52FAB14020558098,
+			);
+			sourceTree = "<group>";
+		};
+		30BAE363BF904CFF4BA52B3A /* SuperCelik */ = {
+			isa = PBXGroup;
+			children = (
+				B6A9443BC53EB311ED927118,
+				C85CB36E74AF9D06F4C2C244,
+				E5956581239ED5DE9BFB2439,
+				492A73205AAE534941E47FAD,
+				7C3E9A1D5B0F2486D9A3E1B7,
+				5D1A0C3E7B2F4A9086E1C7D3,
+				BE471734216310C4D69C4A16,
+			);
+			path = SuperCelik;
+			sourceTree = "<group>";
+		};
+		A01B5CB932856B6168E43F89 /* Shared (macOS app sources) */ = {
+			isa = PBXGroup;
+			children = (
+				E10939E43FC2D933A6CAF5E1,
+				1E9D1F12F7A92DF8EEF84674,
+				B3A8059A1B6797FEA618FAB3,
+				72109A858B683F8E142D0898,
+				322FEE8323D49DB7C8A07CC2,
+				3292D081FC7FB524F69380F9,
+				25B19FB07F4E719A757DFA0D,
+				A4FCB9C80BFBF932E353568D,
+				58324604F865E53A71B5811D,
+				6B4A331ACAAFD2EB8C66B299,
+			);
+			name = "Shared (macOS app sources)";
+			path = ../Sources/SerbiaID;
+			sourceTree = "<group>";
+		};
+		C3809410BC68B6AD7407904A /* Config */ = {
+			isa = PBXGroup;
+			children = (
+				99D288D75AE11A0DB2B6E1FB,
+				A2DE76C438FE5E928C381133,
+			);
+			path = Config;
+			sourceTree = "<group>";
+		};
+		3EEF9D4B52FAB14020558098 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				7956FE5BC62358262873304A,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		42AEFBAE01D2DFD981F7DA7D /* SuperCelik */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 486AEA505A17A1249389F938 /* Build configuration list for PBXNativeTarget "SuperCelik" */;
+			buildPhases = (
+				4BE3BF6C9528F7C4F292F67A /* Sources */,
+				E7A61CFEA03B2D2A3A0D27C7 /* Frameworks */,
+				CCD626E08A8A3DCF380CCDC9 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SuperCelik;
+			productName = SuperCelik;
+			productReference = 7956FE5BC62358262873304A /* SuperCelik.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		46F86FAA6BBF9AC94A7E4595 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = 1;
+				LastSwiftUpdateCheck = 1500;
+				LastUpgradeCheck = 1500;
+				TargetAttributes = {
+					42AEFBAE01D2DFD981F7DA7D = {
+						CreatedOnToolsVersion = 15.0;
+					};
+				};
+			};
+			buildConfigurationList = 8BFEA3FAFA52EA4FAF3C0463 /* Build configuration list for PBXProject "SuperCelik" */;
+			compatibilityVersion = "Xcode 14.0";
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				en,
+				Base,
+			);
+			mainGroup = 6CB36D34074C10A6153CF9BC;
+			productRefGroup = 3EEF9D4B52FAB14020558098 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				42AEFBAE01D2DFD981F7DA7D /* SuperCelik */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		CCD626E08A8A3DCF380CCDC9 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				2B4A2C08D382ED0CB67D3F18 /* Assets.xcassets in Resources */,
+				243866D0C6E614680F031BFA /* CA in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		4BE3BF6C9528F7C4F292F67A /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				076F477AFBB34016C0DCD226 /* SuperCelikApp.swift in Sources */,
+				A0CD34D9E0004D0C44D04EF4 /* PhoneModel.swift in Sources */,
+				0FDAD66B44FCA1C5261B7DF4 /* PhoneViews.swift in Sources */,
+				88A55BCC54A2427357D27C34 /* NFCCardReader.swift in Sources */,
+				1F6D8B4A2E9C0357B8D5A3C1 /* USBCardReader.swift in Sources */,
+				9E4B2F6A1C8D3057A2B6E0F4 /* Glass.swift in Sources */,
+				C3C68D7A4090674E4864223C /* CardModel.swift in Sources */,
+				A8DA87E5D552C7D65DB60502 /* EidCard.swift in Sources */,
+				1399766CC0FF5659B42273D5 /* Asn1.swift in Sources */,
+				A80BA307179EA1833751F509 /* SignatureVerifier.swift in Sources */,
+				EE73FE1E3D7DCD01C021C9E5 /* TokenCodec.swift in Sources */,
+				DF5BB9D4C1031B014807AC29 /* MupPrintLayout.swift in Sources */,
+				D4A908AB15295593E9A65B1D /* Rows.swift in Sources */,
+				BF6BE802ED9729B4CD6B4FC2 /* Localization.swift in Sources */,
+				014BC6FEFC3616EE53BBB0B9 /* Prefs.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1BFEF058FC915816555210CC /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_TESTABILITY = YES;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"DEBUG=1",
+					"$(inherited)",
+				);
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MARKETING_VERSION = 0.0.0;
+				ONLY_ACTIVE_ARCH = YES;
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_VERSION = 5.0;
+			};
+			name = Debug;
+		};
+		A6120C4C5D30B57B4566307F /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CURRENT_PROJECT_VERSION = 1;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_USER_SCRIPT_SANDBOXING = YES;
+				GCC_NO_COMMON_BLOCKS = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 16.0;
+				MARKETING_VERSION = 0.0.0;
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_VERSION = 5.0;
+				VALIDATE_PRODUCT = YES;
+			};
+			name = Release;
+		};
+		1A4784061330F2D212DD116C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Config/SuperCelik.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Config/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.peregond.supercelik.ios;
+				PRODUCT_NAME = SuperCelik;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		E8360BD69633DC4B3024D425 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Config/SuperCelik.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
+				ENABLE_PREVIEWS = YES;
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = Config/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.peregond.supercelik.ios;
+				PRODUCT_NAME = SuperCelik;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		8BFEA3FAFA52EA4FAF3C0463 /* Build configuration list for PBXProject "SuperCelik" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1BFEF058FC915816555210CC /* Debug */,
+				A6120C4C5D30B57B4566307F /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		486AEA505A17A1249389F938 /* Build configuration list for PBXNativeTarget "SuperCelik" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				1A4784061330F2D212DD116C /* Debug */,
+				E8360BD69633DC4B3024D425 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+/* End XCConfigurationList section */
+	};
+	rootObject = 46F86FAA6BBF9AC94A7E4595 /* Project object */;
+}

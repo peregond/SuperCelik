@@ -12,27 +12,36 @@
 iPhone в любом приложении для чтения NFC (например, NFC Tools). Если iPhone карту не видит,
 NFC-чипа в ней нет, и её можно прочитать только USB-ридером в версии для Mac или Windows.
 
+## Готовые сборки
+CI на каждый PR и на каждый релиз собирает два файла (в Actions: артефакт `SuperCelik-iOS`, в релизе: рядом с dmg):
+- `SuperCelik-<версия>-iOS-simulator.zip`: приложение для симулятора iPhone на Mac. Нужен только Xcode (в нём есть Simulator).
+  Распакуйте, запустите Simulator (Xcode → Open Developer Tool → Simulator), выберите любой iPhone и перетащите
+  `SuperCelik.app` на окно симулятора. Видно весь интерфейс, но NFC в симуляторе нет, карту прочитать нельзя.
+- `SuperCelik-<версия>-iOS-unsigned.ipa`: сборка для iPhone **без подписи**, поэтому сама она на телефоне не запустится.
+  Её нужно подписать своим аккаунтом (Sideloadly, AltStore, Apple Configurator или `Xcode → Devices`). С бесплатным
+  Apple ID подпись уберёт разрешение на NFC: интерфейс откроется, а чтение карты работать не будет. Для чтения по NFC
+  подпишите платной командой разработчика (Apple Developer Program), либо соберите проект из Xcode, как ниже.
+
 ## iPad
 Приложение собирается и для iPad, но **у iPad нет NFC-считывателя**, поэтому карту он не читает: приложение показывает пояснение.
 На iPhone и iPad нет доступа к USB-ридерам (нет общего PC/SC для сторонних приложений), так что для проводного ридера используйте Mac, Windows или Android (OTG).
 
 ## Что нужно для установки
-- Mac с Xcode 15 или новее и [XcodeGen](https://github.com/yonaskolb/XcodeGen) (`brew install xcodegen`).
+- Mac с Xcode 15 или новее.
 - iPhone 7 или новее, iOS 16+.
 - **Платный Apple Developer Program** (99 $ в год). Разрешение «NFC Tag Reading» бесплатным
   (Personal Team) аккаунтам не выдаётся, без него сессия NFC не запускается.
 
 ## Сборка
-    cd ios
-    xcodegen generate
-    open SuperCelik.xcodeproj
+Откройте двойным кликом `ios/SuperCelik.xcodeproj` (папку репозитория нужно скачать целиком:
+проект берёт общий код из `Sources/SerbiaID`).
 
 В Xcode: цель SuperCelik → Signing & Capabilities → выберите свою команду (Team). Если bundle id
 `com.peregond.supercelik.ios` занят, поменяйте его на свой. Проверьте, что в списке возможностей
 есть «Near Field Communication Tag Reading» (её добавляет файл `Config/SuperCelik.entitlements`).
 Подключите iPhone и нажмите Run.
 
-CI собирает приложение без подписи только для проверки, что код компилируется; готового .ipa нет.
+CI собирает этот же проект без подписи только для проверки, что код компилируется; готового .ipa нет.
 
 ## Как пользоваться
 «Прочитать карту по NFC» → приложите карту к верхней части iPhone и не двигайте её до конца
