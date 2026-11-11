@@ -16,6 +16,7 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -64,7 +65,7 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         if (intent.action == UsbManager.ACTION_USB_DEVICE_ATTACHED) vm.startUsb(this)
-        if (intent.getBooleanExtra("demo", false)) vm.showDemo()
+        if (intent.getBooleanExtra("demo", false)) { vm.demoOpenPdf = intent.getBooleanExtra("pdf", false); vm.showDemo() }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -95,13 +96,13 @@ class MainActivity : ComponentActivity() {
 
         // A USB reader being plugged in launches the app (see device_filter) and reads straight away.
         if (intent?.action == UsbManager.ACTION_USB_DEVICE_ATTACHED) vm.startUsb(this)
-        if (demo) vm.showDemo()
+        if (demo) { vm.demoOpenPdf = intent?.getBooleanExtra("pdf", false) == true; vm.showDemo() }
 
         setContent {
             val theme by vm.theme.collectAsStateWithLifecycle()
             val dynamic by vm.dynamic.collectAsStateWithLifecycle()
             val dark = when (theme) { 1 -> false; 2 -> true; else -> isSystemInDarkTheme() }
-            SuperCelikTheme(dark, dynamic) { Root(vm, nfc, intent?.getStringExtra("tab")) }
+            SuperCelikTheme(dark, wallpaper = dynamic) { Root(vm, nfc, intent?.getStringExtra("tab")) }
         }
     }
 }
@@ -130,6 +131,7 @@ private fun Root(vm: CardViewModel, nfc: NfcAdapter?, initialTab: String?) {
 
     Scaffold(
         topBar = {
+            Column {
             CenterAlignedTopAppBar(
                 title = { Text(stringResource(R.string.app_name)) },
                 actions = {
@@ -141,6 +143,8 @@ private fun Root(vm: CardViewModel, nfc: NfcAdapter?, initialTab: String?) {
                     }
                 },
             )
+            FlagStripe()
+            }
         },
         bottomBar = {
             NavigationBar {

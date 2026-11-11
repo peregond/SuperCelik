@@ -95,4 +95,14 @@
     <string name="minutes_n">%d мин</string>
     <string name="settings_language">Язык</string>
     <string name="settings_language_hint">Язык приложения выбирается в настройках системы</string>
+    <string name="photo">Фото</string>
+    <string name="view_pdf">Открыть PDF</string>
+    <string name="pdf_title">PDF</string>
+    <string name="print">Печать</string>
+    <string name="close">Закрыть</string>
+    <string name="settings_palette">Цвета</string>
+    <string name="palette_flag">Цветной</string>
+    <string name="palette_wallpaper">Обои (Material You)</string>
+    <string name="settings_print_jmbg">Печатать ЕМБГ</string>
+    <string name="settings_print_jmbg_hint">Включать ЕМБГ в PDF-печатную форму</string>
 </resources>

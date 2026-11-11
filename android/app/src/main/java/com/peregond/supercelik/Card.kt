@@ -31,6 +31,11 @@ data class PersonalData(
     val stateOfBirth: String, val dateOfBirth: String, val nationality: String,
     val address: String,
     val portrait: ByteArray?,
+    // raw fields for the MUP print layout
+    val communityOfBirth: String = "", val purposeOfStay: String = "", val eNote: String = "", val documentName: String = "",
+    val addrState: String = "", val community: String = "", val place: String = "", val street: String = "",
+    val houseNumber: String = "", val houseLetter: String = "", val entrance: String = "", val floor: String = "",
+    val apartment: String = "", val addressDate: String = "", val addressLabel: String = "",
 )
 
 class TokenCert(val label: String, val der: ByteArray)
@@ -126,6 +131,11 @@ class EidCard(private val transport: CardTransport) {
             nationality = str(fix, 0x062F),
             address = address,
             portrait = portrait,
+            communityOfBirth = str(fix, 0x061C),            // UNVERIFIED tag
+            purposeOfStay = str(fix, 0x0693), eNote = str(fix, 0x0694), documentName = str(doc, 0x0692),
+            addrState = str(v, 0x0620), community = str(v, 0x0621), place = str(v, 0x0622), street = str(v, 0x0623),
+            houseNumber = str(v, 0x0624), houseLetter = str(v, 0x0625), entrance = str(v, 0x0626),
+            floor = str(v, 0x0627), apartment = str(v, 0x0628), addressDate = date(v, 0x062C),
         )
     }
 
