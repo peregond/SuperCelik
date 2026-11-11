@@ -55,6 +55,7 @@ final class AppModel: ObservableObject {
         if args.contains("--shot") {
             if args.contains("--dark") { Prefs.shared.theme = "dark" }
             loadDemo(problem: args.contains("--problem"))
+            if let i = args.firstIndex(of: "--state"), i + 1 < args.count { applyShotState(args[i + 1]) }
         } else {
             refresh()
             BrowserLogin.prepare()
@@ -66,6 +67,14 @@ final class AppModel: ObservableObject {
     }
 
     // MARK: - Readers + automatic card detection
+
+    /// What the reader mascot shows.
+    var readerMood: ReaderMood {
+        if busy { return .busy }
+        if readers.isEmpty { return .noReader }
+        if let p = problem, !p.isInfo { return .error }
+        return cardPresent ? .ready : .waiting
+    }
 
     /// Fictional data shown from Settings (App Review has no Serbian eID). While it is on, polling is paused.
     private var demoActive = false
@@ -82,7 +91,8 @@ final class AppModel: ObservableObject {
             if !list.contains(selectedReader) { selectedReader = list.first ?? "" }
             guard !selectedReader.isEmpty else {
                 cardPresent = false; atrHex = nil
-                showProblem(CardError.pcsc(Int32(bitPattern: 0x8010002E), "ListReaders")); return
+                if problem?.isInfo == false { problem = nil }
+                return
             }
             applyAtr(try service.atr(reader: selectedReader))
             if cardPresent, problem?.isInfo == false { problem = nil }
@@ -398,6 +408,19 @@ final class AppModel: ObservableObject {
     }
 
     // MARK: - Demo (fictional data, used by `--shot` and SERBIAID_DEMO=1)
+
+    /// `--shot ... --state noreader|nocard|ready|busy|error`: the empty states, for UI review.
+    private func applyShotState(_ state: String) {
+        clearData()
+        problem = nil
+        switch state {
+        case "noreader": readers = []; selectedReader = ""; cardPresent = false
+        case "nocard": cardPresent = false
+        case "busy": busy = true
+        case "error": showProblem(CardError.unsupportedForCard)
+        default: break     // "ready": reader + card, nothing read yet
+        }
+    }
 
     private func loadDemo(problem withProblem: Bool) {
         readers = ["Demo Reader"]; selectedReader = "Demo Reader"; cardPresent = true

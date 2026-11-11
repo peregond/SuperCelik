@@ -3,4 +3,10 @@ personal-dark personal --dark
 token token
 settings settings
 about about
-problem personal --problem
+empty-noreader personal --state noreader
+empty-nocard personal --state nocard
+empty-ready personal --state ready
+empty-ready-dark personal --state ready --dark
+empty-busy personal --state busy
+empty-error personal --state error
+token-empty token --state ready

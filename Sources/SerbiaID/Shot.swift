@@ -12,20 +12,25 @@ enum Shot {
 
     @MainActor static func runIfRequested(setPage: (String) -> Void) async {
         guard let req = arguments else { return }
+        func log(_ m: String) { FileHandle.standardError.write(Data("shot: \(m)\n".utf8)) }
+        log("start \(req.page)")
         setPage(req.page)
         NSApp.setActivationPolicy(.regular)
         NSApp.activate(ignoringOtherApps: true)
         try? await Task.sleep(nanoseconds: 2_500_000_000)
 
         guard let window = NSApp.windows.first(where: { $0.contentView != nil }), let view = window.contentView else {
-            NSApp.terminate(nil); return
+            log("no window"); exit(2)
         }
+        log("window found")
         window.setContentSize(NSSize(width: 1100, height: 760))
         try? await Task.sleep(nanoseconds: 800_000_000)
         if let rep = view.bitmapImageRepForCachingDisplay(in: view.bounds) {
             view.cacheDisplay(in: view.bounds, to: rep)
             try? rep.representation(using: .png, properties: [:])?.write(to: URL(fileURLWithPath: req.path))
+            log("written")
         }
-        NSApp.terminate(nil)
+        // exit() rather than NSApp.terminate: nothing to save, and terminate can wait on the window server in CI
+        exit(0)
     }
 }

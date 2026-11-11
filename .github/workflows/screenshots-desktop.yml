@@ -23,8 +23,11 @@ jobs:
           mkdir -p shots
           BIN=dist/SuperCelik.app/Contents/MacOS/SerbiaID
           shot() { # name, args...
-            n="$1"; shift
-            "$BIN" --shot "$PWD/shots/mac-$n.png" "$@" || echo "shot $n failed"
+            n="$1"; shift; out="$PWD/shots/mac-$n.png"
+            "$BIN" --shot "$out" "$@" < /dev/null & pid=$!
+            for i in $(seq 1 30); do kill -0 $pid 2>/dev/null || break; sleep 1; done
+            if kill -0 $pid 2>/dev/null; then echo "TIMEOUT: $n"; kill -9 $pid; fi
+            [ -s "$out" ] || echo "no image for $n"
           }
           while read -r line; do [ -n "$line" ] && shot $line; done < .github/shots-mac.txt
           ls -l shots
@@ -43,11 +46,13 @@ jobs:
         shell: bash
         run: |
           mkdir -p shots
+          # (the checkout on Windows gives CRLF line ends: strip them, or the last argument is "--dark\r")
+          tr -d '\r' < .github/shots-windows.txt > shots.txt
           while read -r line; do
             [ -z "$line" ] && continue
             set -- $line; n="$1"; shift
             ./out/SuperCelik.exe --shot "$(pwd -W)/shots/win-$n.png" "$@" || echo "shot $n failed"
-          done < .github/shots-windows.txt
+          done < shots.txt
           ls -l shots
       - uses: actions/upload-artifact@v4
         with: { name: shots-windows, path: shots/*.png }

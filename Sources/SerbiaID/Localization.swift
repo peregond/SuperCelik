@@ -69,12 +69,19 @@ final class Loc: ObservableObject {
         case menuCard
         case driverStuck, pinStepOld, pinStepPuk, pinStepNew, pinStepConfirm, unblockPin, pukLabel, signFile, signedSaved, pinWarn, pinWrongMsg, pinBlockedMsg, pinInvalid, pinUnblocked, signNeedCert
         // iOS (NFC)
-        case demoData, demoHint, tabCardShort, tabTokenShort, readCardAuto, hintAuto, viewPdf, photo, scanUsb, usbNoReaderT, usbNoReaderH, hintUsb, scanCard, nfcPrompt, nfcReading, nfcDone, sharePdf, hintNfc, aboutTextIOS
+        case statusReading, emptyNoReaderT, emptyNoReaderH, emptyNoCardT, emptyNoCardH, emptyReadyT, emptyReadyH, demoData, demoHint, tabCardShort, tabTokenShort, readCardAuto, hintAuto, viewPdf, photo, scanUsb, usbNoReaderT, usbNoReaderH, hintUsb, scanCard, nfcPrompt, nfcReading, nfcDone, sharePdf, hintNfc, aboutTextIOS
         case nfcUnavailableT, nfcUnavailableH, nfcNoCardT, nfcNoCardH, nfcLostT, nfcLostH
     }
 
     // swiftlint:disable line_length
     static let table: [L: [AppLanguage: String]] = [
+        .statusReading: [.ru: "Читаю карту…", .en: "Reading the card…", .sr: "Čitam karticu…"],
+        .emptyNoReaderT: [.ru: "Подключите считыватель", .en: "Connect a card reader", .sr: "Povežite čitač"],
+        .emptyNoReaderH: [.ru: "Подключите считыватель по USB: приложение увидит его само. Если он уже подключён, проверьте драйвер.", .en: "Plug the reader in via USB: the app will notice it by itself. If it is already connected, check the driver.", .sr: "Povežite čitač preko USB-a: aplikacija će ga sama prepoznati. Ako je već povezan, proverite drajver."],
+        .emptyNoCardT: [.ru: "Вставьте карту", .en: "Insert the card", .sr: "Umetnite karticu"],
+        .emptyNoCardH: [.ru: "Вставьте карту в считыватель до конца.", .en: "Push the card all the way into the reader.", .sr: "Umetnite karticu u čitač do kraja."],
+        .emptyReadyT: [.ru: "Можно читать", .en: "Ready to read", .sr: "Spremno za čitanje"],
+        .emptyReadyH: [.ru: "Данные останутся на этом компьютере.", .en: "The data stays on this computer.", .sr: "Podaci ostaju na ovom računaru."],
         .demoData: [.ru: "Показать демо-данные", .en: "Show demo data", .sr: "Prikaži demo podatke"],
         .demoHint: [.ru: "Вымышленные данные, чтобы посмотреть, как выглядит приложение, без карты и ридера.", .en: "Fictional data, to see how the app looks without a card or reader.", .sr: "Izmišljeni podaci, da vidite kako aplikacija izgleda bez kartice i čitača."],
         .tabCardShort: [.ru: "Карта", .en: "Card", .sr: "Kartica"],

@@ -3,4 +3,10 @@ personal-dark 0 --dark
 token 1
 settings 2
 about 3
-problem 0 --problem
+empty-noreader 0 --state noreader
+empty-nocard 0 --state nocard
+empty-ready 0 --state ready
+empty-ready-dark 0 --state ready --dark
+empty-busy 0 --state busy
+empty-error 0 --state error
+token-empty 1 --state ready
