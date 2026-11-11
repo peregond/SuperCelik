@@ -13,6 +13,7 @@ struct PhoneRootView: View {
             SettingsTab()
                 .tabItem { Label(loc.t(.tabSettings), systemImage: "gearshape") }
         }
+        .minimizingTabBar()
     }
 }
 
@@ -69,7 +70,7 @@ struct ScanButton: View {
             .frame(maxWidth: .infinity)
             .padding(.vertical, 6)
         }
-        .buttonStyle(.borderedProminent)
+        .glassButton(prominent: primary)
         .tint(primary ? .accentColor : .gray)
         .disabled(model.busy || (needsNfc && !model.nfcAvailable))
     }
@@ -82,37 +83,58 @@ struct CardTab: View {
     @EnvironmentObject var prefs: Prefs
     @EnvironmentObject var model: PhoneModel
     @State private var share: ShareItem?
+    @State private var pdf: ShareItem?
+    @State private var photoOpen = false
 
     var body: some View {
         NavigationStack {
-            List {
-                Section {
-                    // Wired reader is the main way; NFC is for cards that have a contactless chip.
-                    ScanButton(title: .scanUsb) { await model.scanCard(.usb) }
-                    ScanButton(title: .scanCard, icon: "wave.3.right", primary: false, needsNfc: true) { await model.scanCard(.nfc) }
+            ScrollView {
+                VStack(spacing: 16) {
+                    GlassGroup(spacing: 12) {
+                        // Wired reader is the main way; NFC is for cards that have a contactless chip.
+                        ScanButton(title: .scanUsb) { await model.scanCard(.usb) }
+                        ScanButton(title: .scanCard, icon: "wave.3.right", primary: false, needsNfc: true) { await model.scanCard(.nfc) }
+                    }
                     if let problem = model.problem {
-                        ProblemBanner(problem: problem)
+                        ProblemBanner(problem: problem).padding(16).frame(maxWidth: .infinity, alignment: .leading).glassCard()
                     } else if model.personal == nil {
-                        Text(loc.t(.hintUsb)).font(.subheadline).foregroundStyle(.secondary)
+                        Text(loc.t(.hintUsb)).font(.subheadline).foregroundStyle(.secondary).multilineTextAlignment(.center).padding(.horizontal)
                     }
-                }
-                if let p = model.personal {
-                    Section { header(p) }
-                    if let s = model.signatureStatus { Section { signatureRow(s) } }
-                    Section {
-                        ForEach(p.rows(includeJmbg: true)) { row in FieldRow(row: row) }
-                    }
-                    Section {
-                        Button { model.printPDF(includeJmbg: prefs.printJmbg) } label: {
-                            Label(loc.t(.printCard), systemImage: "printer")
+                    if let p = model.personal {
+                        header(p).padding(16).frame(maxWidth: .infinity, alignment: .leading).glassCard()
+                        if let s = model.signatureStatus {
+                            signatureRow(s).padding(16).frame(maxWidth: .infinity, alignment: .leading).glassCard(cornerRadius: 22)
                         }
-                        Button {
-                            if let url = model.pdfFile(includeJmbg: prefs.printJmbg) { share = ShareItem(url: url) }
-                        } label: { Label(loc.t(.sharePdf), systemImage: "square.and.arrow.up") }
-                        Button { model.copyAll() } label: { Label(loc.t(.copyAll), systemImage: "doc.on.doc") }
+                        VStack(spacing: 0) {
+                            let rows = p.rows(includeJmbg: true)
+                            ForEach(rows) { row in
+                                FieldRow(row: row).padding(.horizontal, 16).padding(.vertical, 10)
+                                if row.id != rows.last?.id { Divider().padding(.leading, 16) }
+                            }
+                        }
+                        .glassCard()
+                        GlassGroup(spacing: 10) {
+                            Button { if let url = model.pdfFile(includeJmbg: prefs.printJmbg) { pdf = ShareItem(url: url) } } label: {
+                                Label(loc.t(.viewPdf), systemImage: "doc.richtext").frame(maxWidth: .infinity).padding(.vertical, 6)
+                            }.glassButton(prominent: true)
+                            HStack(spacing: 10) {
+                                Button { model.printPDF(includeJmbg: prefs.printJmbg) } label: {
+                                    Label(loc.t(.printCard), systemImage: "printer").frame(maxWidth: .infinity).padding(.vertical, 6)
+                                }.glassButton(prominent: false)
+                                Button {
+                                    if let url = model.pdfFile(includeJmbg: prefs.printJmbg) { share = ShareItem(url: url) }
+                                } label: { Label(loc.t(.sharePdf), systemImage: "square.and.arrow.up").frame(maxWidth: .infinity).padding(.vertical, 6) }
+                                    .glassButton(prominent: false)
+                            }
+                            Button { model.copyAll() } label: {
+                                Label(loc.t(.copyAll), systemImage: "doc.on.doc").frame(maxWidth: .infinity).padding(.vertical, 6)
+                            }.glassButton(prominent: false)
+                        }
                     }
                 }
+                .padding(16)
             }
+            .background(GlassBackdrop())
             .navigationTitle(loc.t(.appTitle))
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
@@ -131,23 +153,33 @@ struct CardTab: View {
                 }
             }
             .sheet(item: $share) { ShareSheet(url: $0.url) }
+            .sheet(item: $pdf) { PDFPreview(url: $0.url).ignoresSafeArea() }
+            .sheet(isPresented: $photoOpen) {
+                if let d = model.personal?.portrait, let img = UIImage(data: d) {
+                    Image(uiImage: img).resizable().scaledToFit().padding().presentationDetents([.medium, .large])
+                }
+            }
         }
     }
 
     private func header(_ p: PersonalData) -> some View {
-        HStack(alignment: .top, spacing: 14) {
-            if let d = p.portrait, let img = UIImage(data: d) {
-                Image(uiImage: img).resizable().scaledToFit()
-                    .frame(width: 96, height: 128)
-                    .clipShape(RoundedRectangle(cornerRadius: 6))
-            }
-            VStack(alignment: .leading, spacing: 6) {
-                Text(docTitle(p.cardType)).font(.caption).foregroundStyle(.secondary)
-                Text("\(p.fixed.givenName) \(p.fixed.surname)").font(.title3.bold())
-                if let exp = p.expiryDate { expiry(exp) }
+        VStack(alignment: .leading, spacing: 12) {
+            FlagStripe()
+            HStack(alignment: .top, spacing: 14) {
+                if let d = p.portrait, let img = UIImage(data: d) {
+                    Image(uiImage: img).resizable().scaledToFill()
+                        .frame(width: 104, height: 136)
+                        .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                        .onTapGesture { photoOpen = true }
+                        .accessibilityLabel(loc.t(.photo))
+                }
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(docTitle(p.cardType)).font(.caption).foregroundStyle(.secondary)
+                    Text("\(p.fixed.givenName) \(p.fixed.surname)").font(.title3.bold())
+                    if let exp = p.expiryDate { expiry(exp) }
+                }
             }
         }
-        .padding(.vertical, 4)
     }
 
     private func expiry(_ date: Date) -> some View {
