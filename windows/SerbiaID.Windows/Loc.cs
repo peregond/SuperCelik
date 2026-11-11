@@ -2,9 +2,9 @@
 
 namespace SerbiaID;
 
-public enum Lang { ru = 0, en = 1, sr = 2 }
+public enum Lang { ru = 0, en = 1, sr = 2, srCyrl = 3 }
 
-/// Runtime-switchable RU / EN / SR strings (same texts as the macOS app).
+/// Runtime-switchable RU / EN / SR (Latin and Cyrillic) strings (same texts as the macOS app).
 public static class Loc
 {
     public static Lang Current { get; set; } = Detect();
@@ -12,12 +12,17 @@ public static class Loc
     public static Lang Detect() => CultureInfo.CurrentUICulture.TwoLetterISOLanguageName switch
     {
         "ru" => Lang.ru,
-        "sr" or "hr" or "bs" => Lang.sr,
+        "sr" => CultureInfo.CurrentUICulture.Name.Contains("Cyrl", StringComparison.OrdinalIgnoreCase) ? Lang.srCyrl : Lang.sr,
+        "hr" or "bs" => Lang.sr,
         _ => Lang.en,
     };
 
-    public static string T(string key) =>
-        Table.TryGetValue(key, out var v) ? v[(int)Current] : key;
+    public static string T(string key)
+    {
+        if (!Table.TryGetValue(key, out var v)) return key;
+        // Serbian Cyrillic = the Serbian (Latin) text run through SerbianScript
+        return Current == Lang.srCyrl ? SerbianScript.Cyrillic(v[(int)Lang.sr]) : v[(int)Current];
+    }
 
     private static readonly Dictionary<string, string[]> Table = new()
     {
