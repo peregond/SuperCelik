@@ -23,3 +23,10 @@ Android Studio (Koala или новее) → открыть папку `android`
     gradle -p android assembleDebug
 
 APK: `android/app/build/outputs/apk/debug/`. Сборка также делается в GitHub Actions (артефакт `SuperCelik-android-debug`).
+
+## Подпись релизных APK
+CI подписывает релизный APK ключом из секретов репозитория: `ANDROID_KEYSTORE_BASE64` (файл .jks/.p12 в base64),
+`ANDROID_KEYSTORE_PASSWORD` и по желанию `ANDROID_KEY_ALIAS` (по умолчанию `release`). Если секретов нет, CI создаёт одноразовый ключ:
+APK ставится, но **обновление поверх прошлой сборки не установится** (другая подпись). Создайте ключ один раз
+(`keytool -genkeypair -keystore release.p12 -storetype PKCS12 -alias release -keyalg RSA -keysize 2048 -validity 10000`),
+закодируйте `base64 -w0 release.p12` и добавьте в секреты. Сам ключ в репозиторий не кладите.
