@@ -18,17 +18,22 @@ android {
     }
 
     signingConfigs {
-        // Release APKs from CI are signed with the debug key so they can be sideloaded; not for the Play Store.
-        create("sideload") {
-            storeFile = signingConfigs.getByName("debug").storeFile
-            storePassword = "android"; keyAlias = "androiddebugkey"; keyPassword = "android"
+        // Release signing comes from the environment (CI: a keystore from repository secrets, or a throwaway one).
+        // Without it a local `assembleRelease` produces an unsigned APK; `assembleDebug` is signed with the debug key.
+        System.getenv("ANDROID_KEYSTORE_FILE")?.let { path ->
+            create("release") {
+                storeFile = file(path)
+                storePassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+                keyAlias = System.getenv("ANDROID_KEY_ALIAS") ?: "release"
+                keyPassword = System.getenv("ANDROID_KEYSTORE_PASSWORD")
+            }
         }
     }
 
     buildTypes {
         release {
             isMinifyEnabled = false
-            signingConfig = signingConfigs.getByName("sideload")
+            signingConfig = signingConfigs.findByName("release")
         }
     }
     compileOptions {
