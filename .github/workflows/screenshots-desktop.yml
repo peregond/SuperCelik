@@ -24,9 +24,21 @@ jobs:
           BIN=dist/SuperCelik.app/Contents/MacOS/SerbiaID
           shot() { # name, args...
             n="$1"; shift; out="$PWD/shots/mac-$n.png"
-            "$BIN" --shot "$out" "$@" < /dev/null & pid=$!
-            for i in $(seq 1 30); do kill -0 $pid 2>/dev/null || break; sleep 1; done
-            if kill -0 $pid 2>/dev/null; then echo "TIMEOUT: $n"; kill -9 $pid; fi
+            if [ -z "$USE_OPEN" ]; then
+              "$BIN" --shot "$out" "$@" < /dev/null & pid=$!
+              for i in $(seq 1 25); do kill -0 $pid 2>/dev/null || break; sleep 1; done
+              if kill -0 $pid 2>/dev/null; then
+                echo "TIMEOUT (direct launch): $n"
+                if [ -z "$SAMPLED" ]; then SAMPLED=1; sample $pid 2 -mayDie 2>/dev/null | head -80 || true; fi
+                kill -9 $pid; USE_OPEN=1
+              fi
+            fi
+            if [ ! -s "$out" ]; then
+              # launch through LaunchServices, like a double click
+              open -n dist/SuperCelik.app --args --shot "$out" "$@"
+              for i in $(seq 1 25); do [ -s "$out" ] && break; sleep 1; done
+              sleep 1; pkill -9 -x SerbiaID || true
+            fi
             [ -s "$out" ] || echo "no image for $n"
           }
           while read -r line; do [ -n "$line" ] && shot $line; done < .github/shots-mac.txt
