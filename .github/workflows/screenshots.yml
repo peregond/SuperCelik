@@ -28,7 +28,7 @@ jobs:
           git push -f origin screenshots-out
 
   ios:
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
       - name: Install XcodeGen
@@ -52,9 +52,9 @@ jobs:
             xcrun simctl io "$UDID" screenshot "shots/$1.png"
             xcrun simctl shutdown "$UDID"
           }
-          shot iphone-light "iPhone 16 (" light
-          shot iphone-dark "iPhone 16 (" dark
-          shot ipad-light "iPad Pro 13-inch" light
+          shot iphone-light "iPhone" light
+          shot iphone-dark "iPhone" dark
+          shot ipad-light "iPad" light
       - uses: actions/upload-artifact@v4
         with: { name: shots-ios, path: shots/*.png }
 

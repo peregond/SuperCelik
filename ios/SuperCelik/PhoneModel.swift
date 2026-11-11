@@ -42,6 +42,13 @@ final class PhoneModel: ObservableObject {
         p.fixed = FixedPersonalData(personalNumber: "0101990710000", surname: "PETROVIĆ", givenName: "MARKO", sex: "M",
                                     stateOfBirth: "Srbija", dateOfBirth: "01.01.1990", nationalityFull: "Srbija")
         p.variable = VariablePersonalData(community: "Stari Grad", place: "Beograd", street: "Knez Mihailova", houseNumber: "1")
+        let size = CGSize(width: 240, height: 310)
+        p.portrait = UIGraphicsImageRenderer(size: size).jpegData(withCompressionQuality: 0.9) { ctx in
+            UIColor(red: 0.85, green: 0.89, blue: 0.94, alpha: 1).setFill(); ctx.fill(CGRect(origin: .zero, size: size))
+            UIColor(red: 0.56, green: 0.64, blue: 0.75, alpha: 1).setFill()
+            ctx.cgContext.fillEllipse(in: CGRect(x: 64, y: 64, width: 112, height: 112))
+            ctx.cgContext.fillEllipse(in: CGRect(x: 30, y: 190, width: 180, height: 210))
+        }
         personal = p
         signatureStatus = .ok
     }
