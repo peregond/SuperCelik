@@ -16,6 +16,14 @@ android {
         versionName = "0.1.0"
     }
 
+    signingConfigs {
+        // Release APKs from CI are signed with the debug key so they can be sideloaded; not for the Play Store.
+        create("sideload") {
+            storeFile = signingConfigs.getByName("debug").storeFile
+            storePassword = "android"; keyAlias = "androiddebugkey"; keyPassword = "android"
+        }
+    }
+
     buildTypes {
         release {
             isMinifyEnabled = false
@@ -32,13 +40,6 @@ android {
     // MUP root + intermediate CA certificates shared with the Mac / Windows apps -> assets/CA/*.crt
     sourceSets.getByName("main").assets.srcDir("../../Sources/SerbiaID/Resources")
 
-    signingConfigs {
-        // Release APKs from CI are signed with the debug key so they can be sideloaded; not for the Play Store.
-        create("sideload") {
-            storeFile = signingConfigs.getByName("debug").storeFile
-            storePassword = "android"; keyAlias = "androiddebugkey"; keyPassword = "android"
-        }
-    }
 }
 
 dependencies {
