@@ -34,7 +34,8 @@ final class PhoneModel: ObservableObject {
         if CommandLine.arguments.contains("--demo") { loadDemo() }
     }
 
-    private func loadDemo() {
+    /// Fictional data shown without a card (App Review has no Serbian eID; also used for screenshots).
+    func loadDemo() {
         var p = PersonalData()
         p.cardType = .rp2024
         p.document = DocumentData(docRegNo: "001234567", documentType: "RP", issuingDate: "01.01.2024",

@@ -1,0 +1,1 @@
+eid,serbia,id card,reader,smart card,nfc,residence permit,signature,pdf,print,pin,licna karta,srbija

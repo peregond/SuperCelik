@@ -67,7 +67,15 @@ final class AppModel: ObservableObject {
 
     // MARK: - Readers + automatic card detection
 
+    /// Fictional data shown from Settings (App Review has no Serbian eID). While it is on, polling is paused.
+    private var demoActive = false
+    func showDemoData() {
+        demoActive = true
+        loadDemo(problem: false)
+    }
+
     func refresh() {
+        if demoActive { demoActive = false; clearData() }
         do {
             let list = try service.listReaders()
             readers = list
@@ -102,7 +110,7 @@ final class AppModel: ObservableObject {
     }
 
     private func poll() {
-        guard !busy else { return }
+        guard !busy, !demoActive else { return }
         do {
             let list = try service.listReaders()
             if list != readers {
@@ -128,6 +136,7 @@ final class AppModel: ObservableObject {
     }
 
     private func checkIdle() {
+        guard !demoActive else { return }
         let m = prefs.autoHideMinutes
         guard m > 0, personal != nil || token != nil else { return }
         if Date().timeIntervalSince(activity.last) >= Double(m) * 60 {

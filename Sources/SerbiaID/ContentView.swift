@@ -537,6 +537,7 @@ struct TokenView: View {
 struct SettingsView: View {
     @EnvironmentObject var loc: Loc
     @EnvironmentObject var prefs: Prefs
+    @EnvironmentObject var model: AppModel
 
     var body: some View {
         Form {
@@ -564,6 +565,9 @@ struct SettingsView: View {
                 Toggle(loc.t(.setAutoRead), isOn: $prefs.autoRead)
                 Toggle(loc.t(.setAutoUpdate), isOn: $prefs.autoUpdate)
             }
+            Section {
+                Button(loc.t(.demoData)) { model.showDemoData() }
+            } footer: { Text(loc.t(.demoHint)) }
         }
         .formStyle(.grouped)
         .frame(maxWidth: 680)
