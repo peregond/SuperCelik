@@ -1,0 +1,71 @@
+name: Screenshots (desktop)
+
+# Renders the macOS and Windows windows with FICTIONAL demo data (the apps' own `--shot` mode) and pushes the PNGs
+# to the throwaway branch `screenshots-desktop-out`, for design review. To re-shoot from a PR, change
+# .github/shots-trigger (any content) or this file; it can also be started by hand.
+on:
+  pull_request:
+    paths: [".github/workflows/screenshots-desktop.yml", ".github/shots-trigger"]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  mac:
+    runs-on: macos-26
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build the app
+        run: bash scripts/make-app.sh 0.0.0 arm64
+      - name: Shots
+        run: |
+          mkdir -p shots
+          BIN=dist/SuperCelik.app/Contents/MacOS/SerbiaID
+          shot() { # name, args...
+            n="$1"; shift
+            "$BIN" --shot "$PWD/shots/mac-$n.png" "$@" || echo "shot $n failed"
+          }
+          while read -r line; do [ -n "$line" ] && shot $line; done < .github/shots-mac.txt
+          ls -l shots
+      - uses: actions/upload-artifact@v4
+        with: { name: shots-mac, path: shots/*.png }
+
+  windows:
+    runs-on: windows-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: 8.0.x }
+      - name: Build
+        run: dotnet build windows/SerbiaID.Windows -c Release -o out
+      - name: Shots
+        shell: bash
+        run: |
+          mkdir -p shots
+          while read -r line; do
+            [ -z "$line" ] && continue
+            set -- $line; n="$1"; shift
+            ./out/SuperCelik.exe --shot "$(pwd -W)/shots/win-$n.png" "$@" || echo "shot $n failed"
+          done < .github/shots-windows.txt
+          ls -l shots
+      - uses: actions/upload-artifact@v4
+        with: { name: shots-windows, path: shots/*.png }
+
+  publish:
+    needs: [mac, windows]
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with: { path: out }
+      - name: Push PNGs to a throwaway branch
+        run: |
+          mkdir -p /tmp/shots && cp out/*/*.png /tmp/shots/
+          git config user.name "ci" && git config user.email "ci@example.invalid"
+          git checkout --orphan screenshots-desktop-out
+          git rm -rf . -q
+          cp /tmp/shots/*.png .
+          git add *.png && git commit -qm "desktop screenshots"
+          git push -f origin screenshots-desktop-out

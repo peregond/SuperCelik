@@ -1,0 +1,6 @@
+personal personal
+personal-dark personal --dark
+token token
+settings settings
+about about
+problem personal --problem
