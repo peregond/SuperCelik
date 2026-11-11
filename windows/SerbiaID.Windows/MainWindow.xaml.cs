@@ -807,6 +807,10 @@ public partial class MainWindow : Window
         UpdateLayout();
         var el = (FrameworkElement)Content;
         var rtb = new RenderTargetBitmap((int)ActualWidth, (int)ActualHeight, 96, 96, PixelFormats.Pbgra32);
+        // the window background is not part of Content: paint it first, or the dark theme comes out on white
+        var bg = new DrawingVisual();
+        using (var dc = bg.RenderOpen()) dc.DrawRectangle(Background, null, new Rect(0, 0, ActualWidth, ActualHeight));
+        rtb.Render(bg);
         rtb.Render(el);
         var enc = new PngBitmapEncoder(); enc.Frames.Add(BitmapFrame.Create(rtb));
         using var fs = File.Create(path); enc.Save(fs);

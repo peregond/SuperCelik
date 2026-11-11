@@ -172,7 +172,7 @@ struct ContentView: View {
         #if !APPSTORE
         .task { if prefs.autoUpdate { await model.checkUpdates(manual: false) } }
         #endif
-        .task { await Shot.runIfRequested(setPage: { pageRaw = $0 }) }
+        .onAppear { if let p = Shot.page { pageRaw = p } }
     }
 
     private var sidebar: some View {
