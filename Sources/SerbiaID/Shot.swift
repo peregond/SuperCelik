@@ -32,7 +32,7 @@ enum Shot {
         let w = NSWindow(contentRect: NSRect(x: 80, y: 80, width: 1100, height: 760),
                          styleMask: [.titled, .closable, .miniaturizable, .resizable], backing: .buffered, defer: false)
         w.isReleasedWhenClosed = false
-        if CommandLine.arguments.contains("--dark") { w.appearance = NSAppearance(named: .darkAqua) }
+        w.appearance = NSAppearance(named: CommandLine.arguments.contains("--dark") ? .darkAqua : .aqua)
         w.contentView = NSHostingView(rootView: root)
         w.setContentSize(NSSize(width: 1100, height: 760))
         window = w
@@ -49,6 +49,12 @@ enum Shot {
             log("written")
         } else {
             log("nothing to draw")
+        }
+        // cacheDisplay misses scroll views and glass materials: let the caller take a real window capture
+        // (`screencapture -l <id>`), then quit when it says so or after a few seconds
+        try? "\(w.windowNumber)".write(toFile: req.path + ".wid", atomically: true, encoding: .utf8)
+        for _ in 0..<40 where !FileManager.default.fileExists(atPath: req.path + ".done") {
+            try? await Task.sleep(nanoseconds: 250_000_000)
         }
         // exit() rather than NSApp.terminate: nothing to save, and terminate can wait on the window server in CI
         exit(0)

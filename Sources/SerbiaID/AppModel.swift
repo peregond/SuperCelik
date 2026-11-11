@@ -53,7 +53,7 @@ final class AppModel: ObservableObject {
         isDemoUI = args.contains("--shot") || ProcessInfo.processInfo.environment["SERBIAID_DEMO"] == "1"
         service = isDemoUI ? MockCardService() : PCSCService()
         if args.contains("--shot") {
-            if args.contains("--dark") { Prefs.shared.theme = "dark" }
+            Prefs.shared.theme = args.contains("--dark") ? "dark" : "light"
             loadDemo(problem: args.contains("--problem"))
             if let i = args.firstIndex(of: "--state"), i + 1 < args.count { applyShotState(args[i + 1]) }
         } else {

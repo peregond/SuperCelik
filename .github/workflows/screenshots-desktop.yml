@@ -25,11 +25,22 @@ jobs:
           shot() { # name, args...
             n="$1"; shift; out="$PWD/shots/mac-$n.png"
             "$BIN" --shot "$out" "$@" < /dev/null & pid=$!
-            for i in $(seq 1 25); do kill -0 $pid 2>/dev/null || break; sleep 1; done
+            for i in $(seq 1 20); do [ -s "$out.wid" ] && break; sleep 1; done
+            if [ -s "$out.wid" ]; then
+              # a real capture of the window (the app's own rendering misses scroll views and glass)
+              if screencapture -x -o -l "$(cat "$out.wid")" "$out.real.png" && [ -s "$out.real.png" ]; then
+                mv "$out.real.png" "$out"
+              else
+                echo "screencapture failed for $n, keeping the app's own rendering"
+              fi
+              touch "$out.done"
+            fi
+            for i in $(seq 1 15); do kill -0 $pid 2>/dev/null || break; sleep 1; done
             if kill -0 $pid 2>/dev/null; then echo "TIMEOUT: $n"; kill -9 $pid; fi
             [ -s "$out" ] || echo "no image for $n"
           }
           while read -r line; do [ -n "$line" ] && shot $line; done < .github/shots-mac.txt
+          rm -f shots/*.wid shots/*.done shots/*.real.png
           ls -l shots
       - uses: actions/upload-artifact@v4
         with: { name: shots-mac, path: shots/*.png }
