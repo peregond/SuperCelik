@@ -3,17 +3,30 @@ import UIKit
 
 struct PhoneRootView: View {
     @EnvironmentObject var loc: Loc
+    @State private var showSettings = false
 
     var body: some View {
-        TabView {
-            CardTab()
-                .tabItem { Label(loc.t(.tabPersonal), systemImage: "person.text.rectangle") }
-            TokenTab()
-                .tabItem { Label(loc.t(.tabToken), systemImage: "checkmark.seal") }
-            SettingsTab()
-                .tabItem { Label(loc.t(.tabSettings), systemImage: "gearshape") }
+        tabs
+            .minimizingTabBar()
+            .sheet(isPresented: $showSettings) { SettingsTab() }
+    }
+
+    /// iPhone: tab bar (Liquid Glass). iPad: iOS 18+ turns the same tabs into a sidebar like the Mac app.
+    @ViewBuilder private var tabs: some View {
+        if #available(iOS 18.0, *) {
+            TabView {
+                Tab(loc.t(.tabPersonal), systemImage: "person.text.rectangle") { CardTab(showSettings: $showSettings) }
+                Tab(loc.t(.tabToken), systemImage: "checkmark.seal") { TokenTab(showSettings: $showSettings) }
+            }
+            .tabViewStyle(.sidebarAdaptable)
+        } else {
+            TabView {
+                CardTab(showSettings: $showSettings)
+                    .tabItem { Label(loc.t(.tabPersonal), systemImage: "person.text.rectangle") }
+                TokenTab(showSettings: $showSettings)
+                    .tabItem { Label(loc.t(.tabToken), systemImage: "checkmark.seal") }
+            }
         }
-        .minimizingTabBar()
     }
 }
 
@@ -50,13 +63,11 @@ struct ProblemBanner: View {
     }
 }
 
+/// The one main button: the app picks the wired reader if one is connected, otherwise NFC.
 struct ScanButton: View {
     @EnvironmentObject var loc: Loc
     @EnvironmentObject var model: PhoneModel
     let title: Loc.L
-    var icon = "cable.connector"
-    var primary = true
-    var needsNfc = false
     let action: () async -> Void
 
     var body: some View {
@@ -64,15 +75,26 @@ struct ScanButton: View {
             Task { await action() }
         } label: {
             HStack {
-                if model.busy { ProgressView() } else { Image(systemName: icon) }
+                if model.busy { ProgressView() } else { Image(systemName: model.autoIcon) }
                 Text(loc.t(title)).fontWeight(.semibold)
             }
             .frame(maxWidth: .infinity)
-            .padding(.vertical, 6)
+            .padding(.vertical, 8)
         }
-        .glassButton(prominent: primary)
-        .tint(primary ? .accentColor : .gray)
-        .disabled(model.busy || (needsNfc && !model.nfcAvailable))
+        .glassButton(prominent: true)
+        .tint(.blue)
+        .controlSize(.large)
+        .disabled(model.busy)
+    }
+}
+
+/// Settings gear in the top-right corner of every screen.
+struct SettingsButton: View {
+    @EnvironmentObject var loc: Loc
+    @Binding var show: Bool
+    var body: some View {
+        Button { show = true } label: { Image(systemName: "gearshape") }
+            .accessibilityLabel(loc.t(.tabSettings))
     }
 }
 
@@ -82,6 +104,8 @@ struct CardTab: View {
     @EnvironmentObject var loc: Loc
     @EnvironmentObject var prefs: Prefs
     @EnvironmentObject var model: PhoneModel
+    @Environment(\.horizontalSizeClass) private var sizeClass
+    @Binding var showSettings: Bool
     @State private var share: ShareItem?
     @State private var pdf: ShareItem?
     @State private var photoOpen = false
@@ -90,52 +114,27 @@ struct CardTab: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 16) {
-                    GlassGroup(spacing: 12) {
-                        // Wired reader is the main way; NFC is for cards that have a contactless chip.
-                        ScanButton(title: .scanUsb) { await model.scanCard(.usb) }
-                        ScanButton(title: .scanCard, icon: "wave.3.right", primary: false, needsNfc: true) { await model.scanCard(.nfc) }
-                    }
                     if let problem = model.problem {
                         ProblemBanner(problem: problem).padding(16).frame(maxWidth: .infinity, alignment: .leading).glassCard()
                     } else if model.personal == nil {
-                        Text(loc.t(.hintUsb)).font(.subheadline).foregroundStyle(.secondary).multilineTextAlignment(.center).padding(.horizontal)
+                        Text(loc.t(.hintAuto)).font(.subheadline).foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center).padding(.horizontal).padding(.top, 40)
                     }
                     if let p = model.personal {
-                        header(p).padding(16).frame(maxWidth: .infinity, alignment: .leading).glassCard()
-                        if let s = model.signatureStatus {
-                            signatureRow(s).padding(16).frame(maxWidth: .infinity, alignment: .leading).glassCard(cornerRadius: 22)
-                        }
-                        VStack(spacing: 0) {
-                            let rows = p.rows(includeJmbg: true)
-                            ForEach(rows) { row in
-                                FieldRow(row: row).frame(maxWidth: .infinity, alignment: .leading).padding(.horizontal, 16).padding(.vertical, 10)
-                                if row.id != rows.last?.id { Divider().padding(.leading, 16) }
-                            }
-                        }
-                        .glassCard()
-                        GlassGroup(spacing: 10) {
-                            Button { if let url = model.pdfFile(includeJmbg: prefs.printJmbg) { pdf = ShareItem(url: url) } } label: {
-                                Label(loc.t(.viewPdf), systemImage: "doc.richtext").frame(maxWidth: .infinity).padding(.vertical, 6)
-                            }.glassButton(prominent: true)
-                            HStack(spacing: 10) {
-                                Button { model.printPDF(includeJmbg: prefs.printJmbg) } label: {
-                                    Label(loc.t(.printCard), systemImage: "printer").frame(maxWidth: .infinity).padding(.vertical, 6)
-                                }.glassButton(prominent: false)
-                                Button {
-                                    if let url = model.pdfFile(includeJmbg: prefs.printJmbg) { share = ShareItem(url: url) }
-                                } label: { Label(loc.t(.sharePdf), systemImage: "square.and.arrow.up").frame(maxWidth: .infinity).padding(.vertical, 6) }
-                                    .glassButton(prominent: false)
-                            }
-                            Button { model.copyAll() } label: {
-                                Label(loc.t(.copyAll), systemImage: "doc.on.doc").frame(maxWidth: .infinity).padding(.vertical, 6)
-                            }.glassButton(prominent: false)
-                        }
+                        if sizeClass == .regular { regularLayout(p) } else { compactLayout(p) }
                     }
                 }
                 .padding(16)
+                .frame(maxWidth: 1100)
+                .frame(maxWidth: .infinity)
             }
             .background(GlassBackdrop())
-            .navigationTitle(loc.t(.appTitle))
+            .navigationTitle("")
+            .navigationBarTitleDisplayMode(.inline)
+            .safeAreaInset(edge: .bottom) {
+                ScanButton(title: .readCardAuto) { await model.scanCardAuto() }
+                    .padding(.horizontal, 20).padding(.bottom, 8)
+            }
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
                     if model.personal != nil {
@@ -144,6 +143,7 @@ struct CardTab: View {
                         }
                         .accessibilityLabel(loc.t(model.revealAll ? .hideValue : .reveal))
                     }
+                    SettingsButton(show: $showSettings)
                 }
                 ToolbarItemGroup(placement: .navigationBarLeading) {
                     if model.personal != nil {
@@ -159,6 +159,69 @@ struct CardTab: View {
                     Image(uiImage: img).resizable().scaledToFit().padding().presentationDetents([.medium, .large])
                 }
             }
+            .task {
+                // screenshots only: `--pdf` opens the printout right away
+                if CommandLine.arguments.contains("--pdf"), model.personal != nil,
+                   let url = model.pdfFile(includeJmbg: prefs.printJmbg) { pdf = ShareItem(url: url) }
+            }
+        }
+    }
+
+    /// iPhone: one column.
+    @ViewBuilder private func compactLayout(_ p: PersonalData) -> some View {
+        header(p).padding(16).frame(maxWidth: .infinity, alignment: .leading).glassCard()
+        if let s = model.signatureStatus {
+            signatureRow(s).padding(16).frame(maxWidth: .infinity, alignment: .leading).glassCard(cornerRadius: 22)
+        }
+        fieldsCard(p, columns: 1)
+        actions
+    }
+
+    /// iPad: like the Mac window: name, signature and actions on the left, all fields on the right, one screen.
+    @ViewBuilder private func regularLayout(_ p: PersonalData) -> some View {
+        HStack(alignment: .top, spacing: 16) {
+            VStack(spacing: 16) {
+                header(p).padding(16).frame(maxWidth: .infinity, alignment: .leading).glassCard()
+                if let s = model.signatureStatus {
+                    signatureRow(s).padding(16).frame(maxWidth: .infinity, alignment: .leading).glassCard(cornerRadius: 22)
+                }
+                actions
+            }
+            .frame(width: 380)
+            fieldsCard(p, columns: 2)
+        }
+    }
+
+    private func fieldsCard(_ p: PersonalData, columns: Int) -> some View {
+        let rows = p.rows(includeJmbg: true)
+        return LazyVGrid(columns: Array(repeating: GridItem(.flexible(), alignment: .topLeading), count: columns), alignment: .leading, spacing: 0) {
+            ForEach(rows) { row in
+                FieldRow(row: row)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                    .padding(.horizontal, 16).padding(.vertical, 10)
+            }
+        }
+        .padding(.vertical, 6)
+        .glassCard()
+    }
+
+    private var actions: some View {
+        GlassGroup(spacing: 10) {
+            Button { if let url = model.pdfFile(includeJmbg: prefs.printJmbg) { pdf = ShareItem(url: url) } } label: {
+                Label(loc.t(.viewPdf), systemImage: "doc.richtext").frame(maxWidth: .infinity).padding(.vertical, 6)
+            }.glassButton(prominent: false)
+            HStack(spacing: 10) {
+                Button { model.printPDF(includeJmbg: prefs.printJmbg) } label: {
+                    Label(loc.t(.printCard), systemImage: "printer").frame(maxWidth: .infinity).padding(.vertical, 6)
+                }.glassButton(prominent: false)
+                Button {
+                    if let url = model.pdfFile(includeJmbg: prefs.printJmbg) { share = ShareItem(url: url) }
+                } label: { Label(loc.t(.sharePdf), systemImage: "square.and.arrow.up").frame(maxWidth: .infinity).padding(.vertical, 6) }
+                    .glassButton(prominent: false)
+            }
+            Button { model.copyAll() } label: {
+                Label(loc.t(.copyAll), systemImage: "doc.on.doc").frame(maxWidth: .infinity).padding(.vertical, 6)
+            }.glassButton(prominent: false)
         }
     }
 
@@ -249,13 +312,13 @@ struct FieldRow: View {
 struct TokenTab: View {
     @EnvironmentObject var loc: Loc
     @EnvironmentObject var model: PhoneModel
+    @Binding var showSettings: Bool
     @State private var share: ShareItem?
 
     var body: some View {
         NavigationStack {
             List {
                 Section {
-                    ScanButton(title: .readToken) { await model.scanToken(.usb) }
                     if let problem = model.problem, model.token == nil {
                         ProblemBanner(problem: problem)
                     }
@@ -272,6 +335,12 @@ struct TokenTab: View {
                 }
             }
             .navigationTitle(loc.t(.tabToken))
+            .navigationBarTitleDisplayMode(.inline)
+            .safeAreaInset(edge: .bottom) {
+                ScanButton(title: .readToken) { await model.scanTokenAuto() }
+                    .padding(.horizontal, 20).padding(.bottom, 8)
+            }
+            .toolbar { ToolbarItem(placement: .navigationBarTrailing) { SettingsButton(show: $showSettings) } }
             .sheet(item: $share) { ShareSheet(url: $0.url) }
         }
     }
@@ -304,6 +373,7 @@ struct TokenTab: View {
 // MARK: - Settings / about
 
 struct SettingsTab: View {
+    @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var loc: Loc
     @EnvironmentObject var prefs: Prefs
 
@@ -335,6 +405,7 @@ struct SettingsTab: View {
                 }
             }
             .navigationTitle(loc.t(.tabSettings))
+            .toolbar { ToolbarItem(placement: .confirmationAction) { Button(loc.t(.ok)) { dismiss() } } }
         }
     }
 }
