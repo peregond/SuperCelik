@@ -101,6 +101,8 @@
     <string name="print">Print</string>
     <string name="close">Close</string>
     <string name="settings_palette">Colours</string>
-    <string name="palette_flag">Serbian flag</string>
+    <string name="palette_flag">Colorful</string>
     <string name="palette_wallpaper">Wallpaper (Material You)</string>
+    <string name="settings_print_jmbg">Print JMBG</string>
+    <string name="settings_print_jmbg_hint">Include the personal number in the PDF printout</string>
 </resources>

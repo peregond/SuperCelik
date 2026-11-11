@@ -49,6 +49,10 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
     private val _autoClear = MutableStateFlow(prefs.getInt("autoClear", 5))     // minutes, 0 = off
     val autoClear: StateFlow<Int> = _autoClear.asStateFlow()
 
+    private val _printJmbg = MutableStateFlow(prefs.getBoolean("printJmbg", true))
+    val printJmbg: StateFlow<Boolean> = _printJmbg.asStateFlow()
+    fun setPrintJmbg(v: Boolean) { _printJmbg.value = v; prefs.edit().putBoolean("printJmbg", v).apply() }
+
     fun setTheme(v: Int) { _theme.value = v; prefs.edit().putInt("theme", v).apply() }
     fun setDynamic(v: Boolean) { _dynamic.value = v; prefs.edit().putBoolean("wallpaper", v).apply() }
     fun setMask(v: Boolean) { _mask.value = v; prefs.edit().putBoolean("mask", v).apply() }
@@ -212,7 +216,10 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
             personalNumber = "0101990710000", surname = "PETROVIĆ", givenName = "MARKO",
             parentGivenName = "Nikola", sex = "M", placeOfBirth = "Beograd", stateOfBirth = "Srbija",
             dateOfBirth = "01.01.1990", nationality = "Srbija",
-            address = "Knez Mihailova 1, Beograd, Stari Grad", portrait = demoPortrait())
+            address = "Knez Mihailova 1, Beograd, Stari Grad", portrait = demoPortrait(),
+            communityOfBirth = "Stari Grad", purposeOfStay = "Rad", documentName = "Dozvola za privremeni boravak i rad",
+            addrState = "Srbija", community = "Stari Grad", place = "Beograd", street = "Knez Mihailova", houseNumber = "1",
+            addressDate = "01.01.2024")
         _sig.value = SigResult.Ok
         _token.value = TokenData("NetSeT's CardEdge Token", "RP000000000", listOf(TokenCert("MARKO PETROVIC 000000000 Auth", ByteArray(0))))
     }

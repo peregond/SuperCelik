@@ -101,6 +101,8 @@
     <string name="print">Печать</string>
     <string name="close">Закрыть</string>
     <string name="settings_palette">Цвета</string>
-    <string name="palette_flag">Флаг Сербии</string>
+    <string name="palette_flag">Цветной</string>
     <string name="palette_wallpaper">Обои (Material You)</string>
+    <string name="settings_print_jmbg">Печатать ЕМБГ</string>
+    <string name="settings_print_jmbg_hint">Включать ЕМБГ в PDF-печатную форму</string>
 </resources>

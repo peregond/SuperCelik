@@ -131,12 +131,13 @@ private fun PersonalResult(vm: CardViewModel, p: PersonalData, revealAll: Boolea
     val clipboard = LocalClipboardManager.current
     val bitmap = remember(p.portrait) { p.portrait?.let { BitmapFactory.decodeByteArray(it, 0, it.size)?.asImageBitmap() } }
     val show = revealAll || !mask
+    val printJmbg by vm.printJmbg.collectAsStateWithLifecycle()
     val flagPalette = LocalFlagPalette.current
     val heroBg = if (flagPalette) Flag.Blue else MaterialTheme.colorScheme.primaryContainer
     val heroFg = if (flagPalette) Color.White else MaterialTheme.colorScheme.onPrimaryContainer
     var photoOpen by remember { mutableStateOf(false) }
     var pdfFile by remember { mutableStateOf<File?>(null) }
-    LaunchedEffect(Unit) { if (vm.demoOpenPdf) { vm.demoOpenPdf = false; pdfFile = Pdf.create(ctx, p, allRowsForPdf(ctx, p), ctx.getString(R.string.app_name)) } }
+    LaunchedEffect(Unit) { if (vm.demoOpenPdf) { vm.demoOpenPdf = false; pdfFile = Pdf.create(ctx, p, true) } }
 
     val rows = listOf(
         Triple(R.string.surname, p.surname, false), Triple(R.string.given_name, p.givenName, false),
@@ -149,7 +150,6 @@ private fun PersonalResult(vm: CardViewModel, p: PersonalData, revealAll: Boolea
         Triple(R.string.issued_by, p.issuingAuthority, false), Triple(R.string.issue_date, p.issuingDate, false),
         Triple(R.string.expiry_date, p.expiryDate, false),
     )
-    val pdfTitle = stringResource(R.string.app_name)
     val allRows = (rows + docRows + Triple(R.string.address, p.address, true)).map { (k, v, _) -> ctx.getString(k) to v }
 
     LazyColumn(
@@ -185,7 +185,7 @@ private fun PersonalResult(vm: CardViewModel, p: PersonalData, revealAll: Boolea
                     clipboard.setText(AnnotatedString(allRows.filter { it.second.isNotBlank() }.joinToString("\n") { "${it.first}: ${it.second}" }))
                     vm.notify(Msg(R.string.copied, error = false))
                 }, Modifier.weight(1f)) { Icon(Icons.Filled.ContentCopy, null); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.copy_all)) }
-                FilledTonalButton(onClick = { pdfFile = Pdf.create(ctx, p, allRows, pdfTitle) }, Modifier.weight(1f)) {
+                FilledTonalButton(onClick = { pdfFile = Pdf.create(ctx, p, printJmbg) }, Modifier.weight(1f)) {
                     Icon(Icons.Filled.PictureAsPdf, null); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.view_pdf))
                 }
             }
@@ -203,13 +203,6 @@ private fun PhotoDialog(bitmap: androidx.compose.ui.graphics.ImageBitmap, onClos
         }
     }
 }
-
-private fun allRowsForPdf(ctx: Context, p: PersonalData): List<Pair<String, String>> = listOf(
-    R.string.surname to p.surname, R.string.given_name to p.givenName, R.string.parent_name to p.parentGivenName,
-    R.string.dob to p.dateOfBirth, R.string.place_of_birth to p.placeOfBirth.ifBlank { p.stateOfBirth }, R.string.sex to p.sex,
-    R.string.nationality to p.nationality, R.string.jmbg to p.personalNumber, R.string.doc_number to p.docRegNo,
-    R.string.issued_by to p.issuingAuthority, R.string.issue_date to p.issuingDate, R.string.expiry_date to p.expiryDate,
-    R.string.address to p.address).map { (k, v) -> ctx.getString(k) to v }
 
 private fun docName(t: CardType) = when (t) {
     CardType.ID2014 -> R.string.doc_id
@@ -277,14 +270,6 @@ private fun Section(title: Int, rows: List<Triple<Int, String, Boolean>>, show: 
             }
         }
     }
-}
-
-private fun sharePdf(ctx: Context, p: PersonalData, rows: List<Pair<String, String>>, title: String) {
-    val f = Pdf.create(ctx, p, rows, title)
-    val uri = FileProvider.getUriForFile(ctx, "${ctx.packageName}.files", f)
-    ctx.startActivity(Intent.createChooser(Intent(Intent.ACTION_SEND).apply {
-        type = "application/pdf"; putExtra(Intent.EXTRA_STREAM, uri); addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-    }, null))
 }
 
 // ---------------------------------------------------------------- token tab
@@ -462,6 +447,12 @@ fun SettingsScreen(vm: CardViewModel) {
             ListItem(headlineContent = { Text(stringResource(R.string.settings_mask)) },
                 supportingContent = { Text(stringResource(R.string.settings_mask_hint)) },
                 trailingContent = { Switch(mask, { vm.setMask(it) }) })
+        }
+        item {
+            val printJmbg by vm.printJmbg.collectAsStateWithLifecycle()
+            ListItem(headlineContent = { Text(stringResource(R.string.settings_print_jmbg)) },
+                supportingContent = { Text(stringResource(R.string.settings_print_jmbg_hint)) },
+                trailingContent = { Switch(printJmbg, { vm.setPrintJmbg(it) }) })
         }
         item {
             Text(stringResource(R.string.settings_autoclear), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
