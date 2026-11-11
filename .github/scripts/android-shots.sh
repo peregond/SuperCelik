@@ -14,6 +14,13 @@ cap() {
     done
   fi
   adb pull /sdcard/s.png "shots/$1.png"
+  if [ ! -s "shots/$1.png" ]; then
+    # headless emulator: ask the emulator itself for the frame (console command)
+    rm -rf "/tmp/emu-$1"; mkdir -p "/tmp/emu-$1"
+    adb emu screenrecord screenshot "/tmp/emu-$1"; sleep 2
+    f=$(ls "/tmp/emu-$1"/*.png 2>/dev/null | head -1)
+    [ -n "$f" ] && cp "$f" "shots/$1.png"
+  fi
 }
 adb shell cmd uimode night no
 adb shell am start -n $A
