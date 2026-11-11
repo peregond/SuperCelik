@@ -92,7 +92,7 @@ class CardViewModel : ViewModel() {
     fun showDemo() {
         _state.value = UiState.Done(PersonalData(
             cardType = CardType.RP2024, docRegNo = "001234567", documentType = "RP",
-            issuingDate = "01.01.2024", expiryDate = "01.01.2026", issuingAuthority = "MUP RS",
+            issuingDate = "01.01.2024", expiryDate = "01.01.2030", issuingAuthority = "MUP RS",
             personalNumber = "0101990710000", surname = "PETROVIĆ", givenName = "MARKO",
             parentGivenName = "Nikola", sex = "M", placeOfBirth = "Beograd", dateOfBirth = "01.01.1990",
             address = "Knez Mihailova 1, Beograd, Stari Grad", portrait = null))

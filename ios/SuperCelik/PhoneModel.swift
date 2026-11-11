@@ -38,7 +38,7 @@ final class PhoneModel: ObservableObject {
         var p = PersonalData()
         p.cardType = .rp2024
         p.document = DocumentData(docRegNo: "001234567", documentType: "RP", issuingDate: "01.01.2024",
-                                  expiryDate: "01.01.2026", issuingAuthority: "MUP RS", documentSerialNumber: "RS1234567")
+                                  expiryDate: "01.01.2030", issuingAuthority: "MUP RS", documentSerialNumber: "RS1234567")
         p.fixed = FixedPersonalData(personalNumber: "0101990710000", surname: "PETROVIĆ", givenName: "MARKO", sex: "M",
                                     stateOfBirth: "Srbija", dateOfBirth: "01.01.1990", nationalityFull: "Srbija")
         p.variable = VariablePersonalData(community: "Stari Grad", place: "Beograd", street: "Knez Mihailova", houseNumber: "1")
