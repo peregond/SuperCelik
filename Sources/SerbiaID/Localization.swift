@@ -69,7 +69,7 @@ final class Loc: ObservableObject {
         case menuCard
         case driverStuck, pinStepOld, pinStepPuk, pinStepNew, pinStepConfirm, unblockPin, pukLabel, signFile, signedSaved, pinWarn, pinWrongMsg, pinBlockedMsg, pinInvalid, pinUnblocked, signNeedCert
         // iOS (NFC)
-        case demoData, demoHint, readCardAuto, hintAuto, viewPdf, photo, scanUsb, usbNoReaderT, usbNoReaderH, hintUsb, scanCard, nfcPrompt, nfcReading, nfcDone, sharePdf, hintNfc, aboutTextIOS
+        case demoData, demoHint, tabCardShort, tabTokenShort, readCardAuto, hintAuto, viewPdf, photo, scanUsb, usbNoReaderT, usbNoReaderH, hintUsb, scanCard, nfcPrompt, nfcReading, nfcDone, sharePdf, hintNfc, aboutTextIOS
         case nfcUnavailableT, nfcUnavailableH, nfcNoCardT, nfcNoCardH, nfcLostT, nfcLostH
     }
 
@@ -77,6 +77,8 @@ final class Loc: ObservableObject {
     static let table: [L: [AppLanguage: String]] = [
         .demoData: [.ru: "Показать демо-данные", .en: "Show demo data", .sr: "Prikaži demo podatke"],
         .demoHint: [.ru: "Вымышленные данные, чтобы посмотреть, как выглядит приложение, без карты и ридера.", .en: "Fictional data, to see how the app looks without a card or reader.", .sr: "Izmišljeni podaci, da vidite kako aplikacija izgleda bez kartice i čitača."],
+        .tabCardShort: [.ru: "Карта", .en: "Card", .sr: "Kartica"],
+        .tabTokenShort: [.ru: "Токен", .en: "Token", .sr: "Token"],
         .readCardAuto: [.ru: "Прочитать карту", .en: "Read card", .sr: "Pročitaj karticu"],
         .hintAuto: [.ru: "Подключите ридер и вставьте карту, или приложите карту к iPhone (NFC). Приложение само выберет способ.", .en: "Connect a reader and insert the card, or hold the card to the iPhone (NFC). The app picks the method automatically.", .sr: "Povežite čitač i umetnite karticu, ili prislonite karticu uz iPhone (NFC). Aplikacija sama bira način."],
         .viewPdf: [.ru: "Открыть PDF", .en: "View PDF", .sr: "Otvori PDF"],

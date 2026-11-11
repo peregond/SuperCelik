@@ -15,16 +15,16 @@ struct PhoneRootView: View {
     @ViewBuilder private var tabs: some View {
         if #available(iOS 18.0, *) {
             TabView {
-                Tab(loc.t(.tabPersonal), systemImage: "person.text.rectangle") { CardTab(showSettings: $showSettings) }
-                Tab(loc.t(.tabToken), systemImage: "checkmark.seal") { TokenTab(showSettings: $showSettings) }
+                Tab(loc.t(.tabCardShort), systemImage: "person.text.rectangle") { CardTab(showSettings: $showSettings) }
+                Tab(loc.t(.tabTokenShort), systemImage: "checkmark.seal") { TokenTab(showSettings: $showSettings) }
             }
             .tabViewStyle(.sidebarAdaptable)
         } else {
             TabView {
                 CardTab(showSettings: $showSettings)
-                    .tabItem { Label(loc.t(.tabPersonal), systemImage: "person.text.rectangle") }
+                    .tabItem { Label(loc.t(.tabCardShort), systemImage: "person.text.rectangle") }
                 TokenTab(showSettings: $showSettings)
-                    .tabItem { Label(loc.t(.tabToken), systemImage: "checkmark.seal") }
+                    .tabItem { Label(loc.t(.tabTokenShort), systemImage: "checkmark.seal") }
             }
         }
     }
