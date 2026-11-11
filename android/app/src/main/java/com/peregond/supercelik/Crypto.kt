@@ -64,7 +64,7 @@ object CardCrypto {
 
     /** Verifies a BER CMS SignedData. `content` is null if the signature itself is bad. */
     @Suppress("UNCHECKED_CAST")
-    fun verifyCms(blob: ByteArray): CmsResult = try {
+    fun verifyCms(blob: ByteArray): CmsResult { return try {
         val cms = CMSSignedData(blob)
         val signer = cms.signerInfos.signers.first()
         val holders = cms.certificates.getMatches(signer.sid as Selector<X509CertificateHolder>)
@@ -78,7 +78,7 @@ object CardCrypto {
         CmsResult(cms.signedContent?.content as? ByteArray, err == null, err)
     } catch (e: Exception) {
         CmsResult(null, false, e.message ?: e.javaClass.simpleName)
-    }
+    } }
 
     private val SHA256_PREFIX = byteArrayOf(0x30, 0x31, 0x30, 0x0D, 0x06, 0x09, 0x60, 0x86.toByte(), 0x48, 0x01,
         0x65, 0x03, 0x04, 0x02, 0x01, 0x05, 0x00, 0x04, 0x20)
