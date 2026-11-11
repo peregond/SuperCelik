@@ -160,7 +160,6 @@ private fun PersonalResult(vm: CardViewModel, p: PersonalData, revealAll: Boolea
         item {
             Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = heroBg),
                 shape = RoundedCornerShape(28.dp)) {
-                FlagStripe(thickness = 6)
                 Row(Modifier.padding(16.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     if (bitmap != null) {
                         Image(bitmap, stringResource(R.string.photo),

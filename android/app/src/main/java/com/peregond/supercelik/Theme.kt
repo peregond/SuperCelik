@@ -40,8 +40,8 @@ private val LightFlag = lightColorScheme(
     background = Color(0xFFFFFBFF), onBackground = Color(0xFF1F1A1B),
     surface = Color(0xFFFFFBFF), onSurface = Color(0xFF1F1A1B),
     surfaceVariant = Color(0xFFF3DDDD), onSurfaceVariant = Color(0xFF524343),
-    surfaceContainerLowest = Color.White, surfaceContainerLow = Color(0xFFFFF0EF),
-    surfaceContainer = Color(0xFFFCEAEA), surfaceContainerHigh = Color(0xFFF6E4E4), surfaceContainerHighest = Color(0xFFF0DEDE),
+    surfaceContainerLowest = Color.White, surfaceContainerLow = Color(0xFFF8F2F2),
+    surfaceContainer = Color(0xFFF3ECEC), surfaceContainerHigh = Color(0xFFF6E4E4), surfaceContainerHighest = Color(0xFFF0DEDE),
     outline = Color(0xFF857373), outlineVariant = Color(0xFFD8C2C2),
 )
 private val DarkFlag = darkColorScheme(
