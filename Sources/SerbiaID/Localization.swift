@@ -57,12 +57,14 @@ final class Loc: ObservableObject {
         case menuCard
         case driverStuck, pinStepOld, pinStepPuk, pinStepNew, pinStepConfirm, unblockPin, pukLabel, signFile, signedSaved, pinWarn, pinWrongMsg, pinBlockedMsg, pinInvalid, pinUnblocked, signNeedCert
         // iOS (NFC)
-        case scanUsb, usbNoReaderT, usbNoReaderH, hintUsb, scanCard, nfcPrompt, nfcReading, nfcDone, sharePdf, hintNfc, aboutTextIOS
+        case viewPdf, photo, scanUsb, usbNoReaderT, usbNoReaderH, hintUsb, scanCard, nfcPrompt, nfcReading, nfcDone, sharePdf, hintNfc, aboutTextIOS
         case nfcUnavailableT, nfcUnavailableH, nfcNoCardT, nfcNoCardH, nfcLostT, nfcLostH
     }
 
     // swiftlint:disable line_length
     static let table: [L: [AppLanguage: String]] = [
+        .viewPdf: [.ru: "Открыть PDF", .en: "View PDF", .sr: "Otvori PDF"],
+        .photo: [.ru: "Фото", .en: "Photo", .sr: "Fotografija"],
         .scanUsb: [.ru: "Прочитать через USB-ридер", .en: "Read card via USB reader", .sr: "Pročitaj karticu preko USB čitača"],
         .usbNoReaderT: [.ru: "USB-ридер не виден системе", .en: "No USB reader visible to the system", .sr: "USB čitač nije vidljiv sistemu"],
         .usbNoReaderH: [.ru: "Подключите ридер смарт-карт (iPhone 15 и новее по USB-C, либо MFi-ридер) и вставьте карту. Если iOS ридер не показывает, используйте чтение по NFC (если в карте есть бесконтактный чип) или версию для Mac / Windows / Android.", .en: "Connect a smart card reader (iPhone 15 or newer over USB-C, or an MFi reader) and insert the card. If iOS does not expose the reader, use NFC (if the card has a contactless chip) or the Mac / Windows / Android app.", .sr: "Povežite čitač kartica (iPhone 15 i noviji preko USB-C, ili MFi čitač) i umetnite karticu. Ako iOS ne prikazuje čitač, koristite NFC (ako kartica ima beskontaktni čip) ili aplikaciju za Mac / Windows / Android."],

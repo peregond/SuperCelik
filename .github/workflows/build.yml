@@ -41,7 +41,7 @@ jobs:
   ios:
     # Compile check only: the build is unsigned. Installing on an iPhone needs the user's own
     # Apple Developer team (NFC tag reading is not available to free teams), see ios/README.md.
-    runs-on: macos-15
+    runs-on: macos-26
     steps:
       - uses: actions/checkout@v4
       - name: Install XcodeGen
