@@ -37,6 +37,11 @@ android {
     kotlinOptions { jvmTarget = "17" }
     buildFeatures { compose = true }
 
+    packaging {
+        // BouncyCastle jars carry the same multi-release / OSGi metadata
+        resources.excludes += setOf("META-INF/versions/**", "META-INF/MANIFEST.MF", "META-INF/*.kotlin_module", "META-INF/DEPENDENCIES", "META-INF/LICENSE*", "META-INF/NOTICE*", "META-INF/INDEX.LIST")
+    }
+
     // MUP root + intermediate CA certificates shared with the Mac / Windows apps -> assets/CA/*.crt
     sourceSets.getByName("main").assets.srcDir("../../Sources/SerbiaID/Resources")
 
