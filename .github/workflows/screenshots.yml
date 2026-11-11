@@ -75,6 +75,7 @@ jobs:
           api-level: 34
           arch: x86_64
           profile: pixel_7
+          emulator-options: -no-window -gpu guest -no-snapshot -noaudio -no-boot-anim
           script: bash .github/scripts/android-shots.sh
       - uses: actions/upload-artifact@v4
         with: { name: shots-android, path: shots/*.png }
