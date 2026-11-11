@@ -108,7 +108,7 @@ struct CardTab: View {
                         VStack(spacing: 0) {
                             let rows = p.rows(includeJmbg: true)
                             ForEach(rows) { row in
-                                FieldRow(row: row).padding(.horizontal, 16).padding(.vertical, 10)
+                                FieldRow(row: row).frame(maxWidth: .infinity, alignment: .leading).padding(.horizontal, 16).padding(.vertical, 10)
                                 if row.id != rows.last?.id { Divider().padding(.leading, 16) }
                             }
                         }
