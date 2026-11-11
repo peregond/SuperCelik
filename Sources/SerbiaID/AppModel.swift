@@ -42,6 +42,7 @@ final class AppModel: ObservableObject {
     enum SigStatus { case ok, chainNotTrusted(String), invalid(String), unavailable }
     @Published var signatureStatus: SigStatus?
 
+    private var driverCheckGeneration = 0     // bumped on every card insertion / removal
     private(set) var service: CardService
     let isDemoUI: Bool
     private let prefs = Prefs.shared
@@ -91,6 +92,7 @@ final class AppModel: ObservableObject {
     func startMonitoring() async {
         guard !isDemoUI else { return }
         // A card that was already in the reader at launch never produces an "inserted" change.
+        if cardPresent { checkDriver() }
         if prefs.autoRead, cardPresent, personal == nil { await readCard() }
         while !Task.isCancelled {
             poll()
@@ -116,8 +118,10 @@ final class AppModel: ObservableObject {
             cardPresent = present
             if present {
                 if problem?.isInfo == false { problem = nil }
+                checkDriver()
                 if prefs.autoRead { Task { await readCard() } }
             } else {
+                driverCheckGeneration += 1     // cancels a pending driver check
                 clearData()          // privacy: drop data when the card is removed
             }
         } catch { /* reader unplugged mid-poll: a manual refresh reports it */ }
@@ -184,6 +188,127 @@ final class AppModel: ObservableObject {
             }
             problem = nil
         }
+    }
+
+    // MARK: - Browser-login driver self-check
+
+    /// Runs once per card insertion: if macOS did not attach our CryptoTokenKit driver to the card,
+    /// repair it in the background and tell the user the one thing they must do (re-insert the card).
+    private func checkDriver() {
+        guard !isDemoUI else { return }
+        let reader = selectedReader
+        driverCheckGeneration += 1
+        let generation = driverCheckGeneration
+        Task { [weak self] in
+            try? await Task.sleep(nanoseconds: 5_000_000_000)
+            // Only the latest insertion may act: a card pulled and re-inserted during the delay
+            // invalidates this check (otherwise it would restart a driver that is still starting up).
+            guard let self, self.driverCheckGeneration == generation else { return }
+            let attached = await Task.detached { BrowserLogin.driverAttached() }.value
+            guard self.driverCheckGeneration == generation, self.cardPresent, self.selectedReader == reader else { return }
+            if attached {
+                if self.problem?.titleKey == .driverStuck { self.problem = nil }
+                return
+            }
+            await Task.detached { BrowserLogin.repairDriver() }.value
+            if self.driverCheckGeneration == generation, self.cardPresent, self.problem == nil { self.problem = Problem(titleKey: .driverStuck, isInfo: true) }
+        }
+    }
+
+    // MARK: - Token PIN / PUK / signing (each wrong PIN/PUK burns a card try: one attempt, never retried)
+
+    private func askSecrets(title: String, message: String, labels: [String]) -> [String]? {
+        let alert = NSAlert()
+        alert.messageText = title
+        alert.informativeText = message
+        alert.addButton(withTitle: Loc.shared.t(.ok))
+        alert.addButton(withTitle: Loc.shared.t(.cancel))
+        // Each field gets a caption above it and an explicit width: inside NSAlert's accessory view an
+        // NSSecureTextField with no width constraint collapses to a tiny pill.
+        var fields: [NSSecureTextField] = []
+        var rows: [NSView] = []
+        for label in labels {
+            let caption = NSTextField(labelWithString: label)
+            caption.font = .systemFont(ofSize: NSFont.smallSystemFontSize)
+            caption.textColor = .secondaryLabelColor
+            let f = NSSecureTextField()
+            f.translatesAutoresizingMaskIntoConstraints = false
+            f.widthAnchor.constraint(equalToConstant: 280).isActive = true
+            fields.append(f)
+            let row = NSStackView(views: [caption, f])
+            row.orientation = .vertical; row.alignment = .leading; row.spacing = 3
+            rows.append(row)
+        }
+        let stack = NSStackView(views: rows)
+        stack.orientation = .vertical; stack.alignment = .leading; stack.spacing = 10
+        stack.setFrameSize(stack.fittingSize)
+        alert.accessoryView = stack
+        alert.window.initialFirstResponder = fields.first
+        return alert.runModal() == .alertFirstButtonReturn ? fields.map { $0.stringValue } : nil
+    }
+
+    private static func validPin(_ p: String) -> Bool {
+        (4...8).contains(p.count) && p.utf8.allSatisfy { $0 >= 0x30 && $0 <= 0x39 }
+    }
+
+    private func pinProblem(_ error: Error) {
+        let l = Loc.shared
+        if case CardError.pinWrong(let n) = error { problem = Problem(raw: l.t(.pinWrongMsg) + "\(n)", isInfo: true) }
+        else if case CardError.pinBlocked = error { problem = Problem(titleKey: .pinBlockedMsg, isInfo: true) }
+        else { showProblem(error) }
+    }
+
+    private func pinOperation(old: Loc.L, unblock: Bool) async {
+        let l = Loc.shared
+        let title = l.t(unblock ? .unblockPin : .changePin)
+        // One question per dialog, so it is always clear which PIN is being asked for.
+        guard let first = askSecrets(title: title, message: l.t(unblock ? .pinStepPuk : .pinStepOld) + "\n\n" + l.t(.pinWarn),
+                                     labels: [l.t(old)]) else { return }
+        guard let new1 = askSecrets(title: title, message: l.t(.pinStepNew), labels: [l.t(.newPin)]) else { return }
+        guard let new2 = askSecrets(title: title, message: l.t(.pinStepConfirm), labels: [l.t(.confirmPin)]) else { return }
+        let v = [first[0], new1[0], new2[0]]
+        guard v.allSatisfy(Self.validPin) else { problem = Problem(titleKey: .pinInvalid, isInfo: true); return }
+        guard v[1] == v[2] else { problem = Problem(titleKey: .pinMismatch, isInfo: true); return }
+        guard !busy else { return }
+        busy = true; defer { busy = false }
+        let svc = service, reader = selectedReader
+        do {
+            try await perform {
+                if unblock { try svc.unblockTokenPin(reader: reader, puk: v[0], new: v[1]) }
+                else { try svc.changeTokenPin(reader: reader, old: v[0], new: v[1]) }
+            }
+            problem = Problem(titleKey: unblock ? .pinUnblocked : .pinChanged, isInfo: true)
+        } catch { pinProblem(error) }
+    }
+
+    func changePin() async { await pinOperation(old: .currentPin, unblock: false) }
+    func unblockPin() async { await pinOperation(old: .pukLabel, unblock: true) }
+
+    /// Detached CMS (.p7s) over a chosen file, signed with the token key.
+    func signFile() async {
+        let open = NSOpenPanel()
+        open.canChooseDirectories = false; open.allowsMultipleSelection = false
+        guard open.runModal() == .OK, let src = open.url else { return }
+        guard let v = askSecrets(title: Loc.shared.t(.signFile), message: Loc.shared.t(.pinWarn), labels: [Loc.shared.t(.currentPin)]) else { return }
+        guard Self.validPin(v[0]) else { problem = Problem(titleKey: .pinInvalid, isInfo: true); return }
+        let save = NSSavePanel()
+        save.nameFieldStringValue = src.lastPathComponent + ".p7s"
+        guard save.runModal() == .OK, let dst = save.url else { return }
+        guard !busy else { return }
+        busy = true; defer { busy = false }
+        let svc = service, reader = selectedReader, pin = v[0], noCert = Loc.shared.t(.signNeedCert)
+        do {
+            let p7s: Data = try await perform {
+                let tok = try svc.readToken(reader: reader)
+                guard let cert = tok.certificates.first else { throw CardError.signature(noCert) }
+                let data = try Data(contentsOf: src)
+                return try CMSBuilder.signDetached(data: data, certDer: cert.der) { di in
+                    try svc.tokenSign(reader: reader, pin: pin, keyFile: EidCard.defaultSignKeyFile, digestInfo: di)
+                }
+            }
+            try p7s.write(to: dst)
+            problem = Problem(raw: "\(Loc.shared.t(.signedSaved)): \(dst.lastPathComponent)", isInfo: true)
+        } catch { pinProblem(error) }
     }
 
     // MARK: - Errors

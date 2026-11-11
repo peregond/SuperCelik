@@ -88,7 +88,7 @@ enum CardError: LocalizedError {
     var errorDescription: String? {
         switch self {
         case .pinWrong(let n): return "Wrong PIN, \(n) tries left"
-        case .pinBlocked: return "PIN is blocked (unblock at MUP)"
+        case .pinBlocked: return "PIN is blocked (unblock with PUK)"
         case .signature(let m): return "Signature: " + m
         case .chainNotTrusted(let m): return "Certificate chain: " + m
         case .pcsc(let code, let what): return "\(what): PC/SC 0x" + String(UInt32(bitPattern: code), radix: 16)

@@ -13,6 +13,17 @@ enum BrowserLogin {
 
     static func prepare() {
         DispatchQueue.global(qos: .utility).async {
+            // After an update macOS can keep the OLD driver process alive and then refuses to start the new
+            // one ("other version in use"): the card never shows up in the keychain and the browser finds
+            // no certificate. Stopping the stale process once per app version avoids that; ctkd starts a
+            // fresh one the next time a card is inserted.
+            let key = "driverVersionSeen"
+            let version = (Bundle.main.infoDictionary?["CFBundleVersion"] as? String) ?? "0"
+            if UserDefaults.standard.string(forKey: key) != version {
+                stopRunningDriver()
+                UserDefaults.standard.set(version, forKey: key)
+                Thread.sleep(forTimeInterval: 1)
+            }
             registerExtension()
             installIntermediates()
         }
@@ -41,6 +52,32 @@ enum BrowserLogin {
                 NSLog("SuperCelik: could not add CA certificate to keychain: \(status)")
             }
         }
+    }
+
+    /// Stops a running driver process (it belongs to the user; ctkd relaunches it on demand).
+    static func stopRunningDriver() {
+        run("/usr/bin/pkill", ["-f", "SuperCelikToken.appex"])
+    }
+
+    /// True when macOS lists our token among its smart cards, i.e. the driver is attached to the card.
+    static func driverAttached() -> Bool {
+        let p = Process()
+        p.executableURL = URL(fileURLWithPath: "/usr/bin/security")
+        p.arguments = ["list-smartcards"]
+        let pipe = Pipe()
+        p.standardOutput = pipe
+        p.standardError = FileHandle.nullDevice
+        do { try p.run() } catch { return true }      // cannot check -> do not nag
+        let out = pipe.fileHandleForReading.readDataToEndOfFile()
+        p.waitUntilExit()
+        return String(data: out, encoding: .utf8)?.contains(extensionID) ?? true
+    }
+
+    /// Re-registers the driver and stops a stale instance. Returns after the system had time to settle.
+    static func repairDriver() {
+        stopRunningDriver()
+        Thread.sleep(forTimeInterval: 1)
+        registerExtension()
     }
 
     @discardableResult

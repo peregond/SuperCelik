@@ -14,6 +14,8 @@ protocol CardService {
     /// Token PIN operations. PIN = 4...8 ASCII digits. WARNING: each wrong PIN uses up one of a
     /// few tries; the card blocks at zero. Callers must never retry automatically.
     func changeTokenPin(reader: String, old: String, new: String) throws
+    /// Unblock with PUK + set a new PIN (APDU unverified; one attempt only).
+    func unblockTokenPin(reader: String, puk: String, new: String) throws
     /// RSA PKCS#1 v1.5 signature over `digestInfo` (DER DigestInfo = hash OID + hash).
     func tokenSign(reader: String, pin: String, keyFile: UInt16, digestInfo: Data) throws -> Data
     /// Per the official API this works only on the old (Apollo) card, 5...16 chars, ISO-8859-1.
@@ -98,6 +100,10 @@ final class PCSCService: CardService {
         try withEid(reader: reader) { try $0.changeTokenPin(old: old, new: new) }
     }
 
+    func unblockTokenPin(reader: String, puk: String, new: String) throws {
+        try withEid(reader: reader) { try $0.unblockTokenPin(puk: puk, new: new) }
+    }
+
     func tokenSign(reader: String, pin: String, keyFile: UInt16, digestInfo: Data) throws -> Data {
         try withEid(reader: reader) { try $0.tokenSign(pin: pin, keyFile: keyFile, digestInfo: digestInfo) }
     }
@@ -142,6 +148,7 @@ final class MockCardService: CardService {
     }
     func changePin(reader: String, cardType: EidCardType, old: String, new: String) throws -> Int { 3 }
     func changeTokenPin(reader: String, old: String, new: String) throws {}
+    func unblockTokenPin(reader: String, puk: String, new: String) throws {}
     func tokenSign(reader: String, pin: String, keyFile: UInt16, digestInfo: Data) throws -> Data { Data(count: 256) }
 }
 

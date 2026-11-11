@@ -22,6 +22,8 @@
 		014BC6FEFC3616EE53BBB0B9 /* Prefs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 58324604F865E53A71B5811D /* Prefs.swift */; };
 		2B4A2C08D382ED0CB67D3F18 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = BE471734216310C4D69C4A16 /* Assets.xcassets */; };
 		243866D0C6E614680F031BFA /* CA in Resources */ = {isa = PBXBuildFile; fileRef = 6B4A331ACAAFD2EB8C66B299 /* CA */; };
+		9E4B2F6A1C8D3057A2B6E0F4 /* Glass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D1A0C3E7B2F4A9086E1C7D3 /* Glass.swift */; };
+		1F6D8B4A2E9C0357B8D5A3C1 /* USBCardReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C3E9A1D5B0F2486D9A3E1B7 /* USBCardReader.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -43,6 +45,8 @@
 		99D288D75AE11A0DB2B6E1FB /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
 		A2DE76C438FE5E928C381133 /* SuperCelik.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = SuperCelik.entitlements; sourceTree = "<group>"; };
 		7956FE5BC62358262873304A /* SuperCelik.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SuperCelik.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		5D1A0C3E7B2F4A9086E1C7D3 /* Glass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Glass.swift; sourceTree = "<group>"; };
+		7C3E9A1D5B0F2486D9A3E1B7 /* USBCardReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = USBCardReader.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -73,6 +77,8 @@
 				C85CB36E74AF9D06F4C2C244,
 				E5956581239ED5DE9BFB2439,
 				492A73205AAE534941E47FAD,
+				7C3E9A1D5B0F2486D9A3E1B7,
+				5D1A0C3E7B2F4A9086E1C7D3,
 				BE471734216310C4D69C4A16,
 			);
 			path = SuperCelik;
@@ -187,6 +193,8 @@
 				A0CD34D9E0004D0C44D04EF4 /* PhoneModel.swift in Sources */,
 				0FDAD66B44FCA1C5261B7DF4 /* PhoneViews.swift in Sources */,
 				88A55BCC54A2427357D27C34 /* NFCCardReader.swift in Sources */,
+				1F6D8B4A2E9C0357B8D5A3C1 /* USBCardReader.swift in Sources */,
+				9E4B2F6A1C8D3057A2B6E0F4 /* Glass.swift in Sources */,
 				C3C68D7A4090674E4864223C /* CardModel.swift in Sources */,
 				A8DA87E5D552C7D65DB60502 /* EidCard.swift in Sources */,
 				1399766CC0FF5659B42273D5 /* Asn1.swift in Sources */,
@@ -265,7 +273,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.peregond.supercelik.ios;
 				PRODUCT_NAME = SuperCelik;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Debug;
 		};
@@ -285,7 +293,7 @@
 				);
 				PRODUCT_BUNDLE_IDENTIFIER = com.peregond.supercelik.ios;
 				PRODUCT_NAME = SuperCelik;
-				TARGETED_DEVICE_FAMILY = 1;
+				TARGETED_DEVICE_FAMILY = "1,2";
 			};
 			name = Release;
 		};

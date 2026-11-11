@@ -5,7 +5,8 @@ import CoreNFC
 enum NFCProblem: Error {
     case unavailable        // device has no NFC reader, or the app lacks the entitlement
     case cancelled          // user closed the system sheet
-    case noCard             // timed out without finding a card we can talk to
+    case noCard             // timed out without finding a card we can talk to (or none in the USB reader)
+    case noReader           // no USB / Lightning smart card reader visible to the system
     case connectionLost     // card moved away during the read
     case other(String)
 }

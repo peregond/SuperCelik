@@ -27,10 +27,51 @@ final class PhoneModel: ObservableObject {
     @Published var busy = false
     @Published var problem: PhoneProblem?
 
-    private let reader = NFCCardReader()
+    enum ReadSource { case usb, nfc }
+
+    /// `--demo` launch argument: fictional data for screenshots (never touches a card).
+    init() {
+        if CommandLine.arguments.contains("--demo") { loadDemo() }
+    }
+
+    private func loadDemo() {
+        var p = PersonalData()
+        p.cardType = .rp2024
+        p.document = DocumentData(docRegNo: "001234567", documentType: "RP", issuingDate: "01.01.2024",
+                                  expiryDate: "01.01.2030", issuingAuthority: "MUP RS", documentSerialNumber: "RS1234567", documentName: "Dozvola za privremeni boravak i rad")
+        p.fixed = FixedPersonalData(personalNumber: "0101990710000", surname: "PETROVIĆ", givenName: "MARKO", sex: "M",
+                                    placeOfBirth: "Beograd", stateOfBirth: "Srbija", dateOfBirth: "01.01.1990", nationalityFull: "Srbija", purposeOfStay: "Rad")
+        p.variable = VariablePersonalData(state: "Srbija", community: "Stari Grad", place: "Beograd", street: "Knez Mihailova", houseNumber: "1", addressDate: "01.01.2024")
+        let size = CGSize(width: 240, height: 310)
+        p.portrait = UIGraphicsImageRenderer(size: size).jpegData(withCompressionQuality: 0.9) { ctx in
+            UIColor(red: 0.85, green: 0.89, blue: 0.94, alpha: 1).setFill(); ctx.fill(CGRect(origin: .zero, size: size))
+            UIColor(red: 0.56, green: 0.64, blue: 0.75, alpha: 1).setFill()
+            ctx.cgContext.fillEllipse(in: CGRect(x: 64, y: 64, width: 112, height: 112))
+            ctx.cgContext.fillEllipse(in: CGRect(x: 30, y: 190, width: 180, height: 210))
+        }
+        personal = p
+        signatureStatus = .ok
+    }
+
+    private let nfcReader = NFCCardReader()
+    private let usbReader = USBCardReader()
     private let loc = Loc.shared
 
     var nfcAvailable: Bool { NFCCardReader.isAvailable }
+
+    /// The app decides how to read: a connected wired reader first, otherwise NFC.
+    var autoSource: ReadSource { USBCardReader.hasReader ? .usb : (nfcAvailable ? .nfc : .usb) }
+    var autoIcon: String { autoSource == .usb ? "cable.connector" : "wave.3.right" }
+    func scanCardAuto() async { await scanCard(autoSource) }
+    func scanTokenAuto() async { await scanToken(autoSource) }
+
+    /// Runs the shared card code through the chosen transport (wired reader or NFC).
+    private func run<T>(_ source: ReadSource, _ body: @escaping @Sendable (EidCard) throws -> T) async throws -> T {
+        switch source {
+        case .usb: return try await usbReader.run(body)
+        case .nfc: return try await nfcReader.run(prompts: prompts, body)
+        }
+    }
 
     private var prompts: NFCCardReader.Prompts {
         .init(start: loc.t(.nfcPrompt), reading: loc.t(.nfcReading), done: loc.t(.nfcDone))
@@ -40,12 +81,12 @@ final class PhoneModel: ObservableObject {
 
     /// One tap: personal data + photo, then both card signatures, in the same NFC session
     /// (EidCard caches the files, so verifying does not read them again).
-    func scanCard() async {
+    func scanCard(_ source: ReadSource = .usb) async {
         guard !busy else { return }
         busy = true
         defer { busy = false }
         do {
-            let (p, status) = try await reader.run(prompts: prompts) { card -> (PersonalData, SigStatus) in
+            let (p, status) = try await run(source) { card -> (PersonalData, SigStatus) in
                 let p = try card.readPersonalData()
                 let status: SigStatus
                 do {
@@ -62,12 +103,12 @@ final class PhoneModel: ObservableObject {
         } catch { show(error) }
     }
 
-    func scanToken() async {
+    func scanToken(_ source: ReadSource = .usb) async {
         guard !busy else { return }
         busy = true
         defer { busy = false }
         do {
-            let t = try await reader.run(prompts: prompts) { try $0.readToken() }
+            let t = try await run(source) { try $0.readToken() }
             token = t
             tokenRows = t.certificates.map {
                 PhoneCertRow(label: $0.label, summary: TokenCodec.summarize(der: $0.der), der: $0.der)
@@ -86,6 +127,8 @@ final class PhoneModel: ObservableObject {
             return                                   // user closed the sheet: nothing to report
         case NFCProblem.unavailable:
             problem = PhoneProblem(title: .nfcUnavailableT, hint: .nfcUnavailableH)
+        case NFCProblem.noReader:
+            problem = PhoneProblem(title: .usbNoReaderT, hint: .usbNoReaderH)
         case NFCProblem.noCard:
             problem = PhoneProblem(title: .nfcNoCardT, hint: .nfcNoCardH)
         case NFCProblem.connectionLost:

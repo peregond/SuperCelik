@@ -178,6 +178,7 @@ public partial class MainWindow : Window
     {
         BtnRead.IsEnabled = _cardPresent && !_busy;
         BtnReadToken.IsEnabled = _cardPresent && !_busy;
+        BtnChangePin.IsEnabled = BtnUnblockPin.IsEnabled = BtnSignFile.IsEnabled = _cardPresent && !_busy;
         BtnVerify.IsEnabled = _cardPresent && !_busy;
         bool has = _personal != null && !_busy;
         BtnPrint.IsEnabled = has; BtnPdf.IsEnabled = has; BtnMore.IsEnabled = has;
@@ -467,6 +468,87 @@ public partial class MainWindow : Window
         _token = await Task.Run(() => SerbianCard.ReadToken(_pc, reader));
         HideProblem(); RenderToken();
     });
+
+    // ---------- PIN / PUK / signing (each wrong PIN/PUK burns a card try: one attempt, no retries) ----------
+    private static bool ValidPin(string p) => p != null && p.Length is >= 4 and <= 8 && p.All(c => c is >= '0' and <= '9');
+
+    private async Task PinOp(Func<Task> work)
+    {
+        await Run(async () =>
+        {
+            try { await work(); }
+            catch (PinException pe)
+            {
+                ShowInfo(pe.Blocked ? Loc.T("pinBlockedMsg") : string.Format(Loc.T("pinWrong"), pe.TriesLeft));
+            }
+            catch (ArgumentException) { ShowInfo(Loc.T("pinInvalid")); }
+        });
+    }
+
+    /// Three separate dialogs (current/PUK, new, confirm) so it is always clear which PIN is being asked for.
+    private string[] AskPinSteps(string title, string firstNoteKey, string firstLabelKey)
+    {
+        var a = PinDialog.Ask(this, title, Loc.T(firstNoteKey) + "\n\n" + Loc.T("pinWarn"), Loc.T(firstLabelKey));
+        if (a == null) return null;
+        var b = PinDialog.Ask(this, title, Loc.T("pinStepNew"), Loc.T("pinNew"));
+        if (b == null) return null;
+        var c = PinDialog.Ask(this, title, Loc.T("pinStepConfirm"), Loc.T("pinNew2"));
+        if (c == null) return null;
+        return new[] { a[0], b[0], c[0] };
+    }
+
+    private async void ChangePin_Click(object s, RoutedEventArgs e)
+    {
+        var v = AskPinSteps(Loc.T("changePin"), "pinStepOld", "pinOld");
+        if (v == null) return;
+        if (!v.All(ValidPin)) { ShowInfo(Loc.T("pinInvalid")); return; }
+        if (v[1] != v[2]) { ShowInfo(Loc.T("pinMismatch")); return; }
+        var reader = Reader;
+        await PinOp(async () =>
+        {
+            await Task.Run(() => SerbianCard.ChangeTokenPin(_pc, reader, v[0], v[1]));
+            ShowInfo(Loc.T("pinChanged"));
+        });
+    }
+
+    private async void UnblockPin_Click(object s, RoutedEventArgs e)
+    {
+        var v = AskPinSteps(Loc.T("unblockPin"), "pinStepPuk", "pukEnter");
+        if (v == null) return;
+        if (!v.All(ValidPin)) { ShowInfo(Loc.T("pinInvalid")); return; }
+        if (v[1] != v[2]) { ShowInfo(Loc.T("pinMismatch")); return; }
+        var reader = Reader;
+        await PinOp(async () =>
+        {
+            await Task.Run(() => SerbianCard.UnblockTokenPin(_pc, reader, v[0], v[1]));
+            ShowInfo(Loc.T("pinUnblocked"));
+        });
+    }
+
+    private async void SignFile_Click(object s, RoutedEventArgs e)
+    {
+        var open = new OpenFileDialog();
+        if (open.ShowDialog(this) != true) return;
+        var v = PinDialog.Ask(this, Loc.T("signFile"), Loc.T("pinWarn"), Loc.T("pinEnter"));
+        if (v == null) return;
+        if (!ValidPin(v[0])) { ShowInfo(Loc.T("pinInvalid")); return; }
+        var save = new SaveFileDialog { Filter = "CMS signature (*.p7s)|*.p7s", FileName = Path.GetFileName(open.FileName) + ".p7s", DefaultExt = ".p7s" };
+        if (save.ShowDialog(this) != true) return;
+        var reader = Reader; var pin = v[0]; var src = open.FileName; var dst = save.FileName;
+        await PinOp(async () =>
+        {
+            var p7s = await Task.Run(() =>
+            {
+                var tok = _token ?? SerbianCard.ReadToken(_pc, reader);
+                if (tok.Certificates.Count == 0) throw new CardException(Loc.T("signNeedCert"));
+                var data = File.ReadAllBytes(src);
+                return Crypto.SignDetachedCms(data, tok.Certificates[0].Der,
+                    di => SerbianCard.TokenSign(_pc, reader, pin, SerbianCard.DefaultSignKeyFile, di));
+            });
+            File.WriteAllBytes(dst, p7s);
+            ShowInfo(string.Format(Loc.T("signed"), Path.GetFileName(dst)));
+        });
+    }
 
     private void RenderToken()
     {

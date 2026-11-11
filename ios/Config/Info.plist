@@ -32,6 +32,13 @@
 	<array>
 		<string>UIInterfaceOrientationPortrait</string>
 	</array>
+	<key>UISupportedInterfaceOrientations~ipad</key>
+	<array>
+		<string>UIInterfaceOrientationPortrait</string>
+		<string>UIInterfaceOrientationPortraitUpsideDown</string>
+		<string>UIInterfaceOrientationLandscapeLeft</string>
+		<string>UIInterfaceOrientationLandscapeRight</string>
+	</array>
 	<key>NFCReaderUsageDescription</key>
 	<string>Super Celik reads your Serbian ID card over NFC to show and print its data.</string>
 	<!-- Applets iOS may select on the card. Same AIDs as EidCard.applets / EidCard.tokenAID:
