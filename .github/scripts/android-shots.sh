@@ -22,6 +22,9 @@ sleep 6; cap android-token-light
 adb shell am force-stop com.peregond.supercelik
 adb shell am start -n $A --ez demo true --es tab settings
 sleep 6; cap android-settings-light
+adb shell am force-stop com.peregond.supercelik
+adb shell am start -n $A --ez demo true --ez pdf true
+sleep 8; cap android-pdf-light
 adb shell cmd uimode night yes
 adb shell am force-stop com.peregond.supercelik
 adb shell am start -n $A --ez demo true

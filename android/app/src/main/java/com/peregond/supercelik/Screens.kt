@@ -136,6 +136,7 @@ private fun PersonalResult(vm: CardViewModel, p: PersonalData, revealAll: Boolea
     val heroFg = if (flagPalette) Color.White else MaterialTheme.colorScheme.onPrimaryContainer
     var photoOpen by remember { mutableStateOf(false) }
     var pdfFile by remember { mutableStateOf<File?>(null) }
+    LaunchedEffect(Unit) { if (vm.demoOpenPdf) { vm.demoOpenPdf = false; pdfFile = Pdf.create(ctx, p, allRowsForPdf(ctx, p), ctx.getString(R.string.app_name)) } }
 
     val rows = listOf(
         Triple(R.string.surname, p.surname, false), Triple(R.string.given_name, p.givenName, false),
@@ -203,6 +204,13 @@ private fun PhotoDialog(bitmap: androidx.compose.ui.graphics.ImageBitmap, onClos
         }
     }
 }
+
+private fun allRowsForPdf(ctx: Context, p: PersonalData): List<Pair<String, String>> = listOf(
+    R.string.surname to p.surname, R.string.given_name to p.givenName, R.string.parent_name to p.parentGivenName,
+    R.string.dob to p.dateOfBirth, R.string.place_of_birth to p.placeOfBirth.ifBlank { p.stateOfBirth }, R.string.sex to p.sex,
+    R.string.nationality to p.nationality, R.string.jmbg to p.personalNumber, R.string.doc_number to p.docRegNo,
+    R.string.issued_by to p.issuingAuthority, R.string.issue_date to p.issuingDate, R.string.expiry_date to p.expiryDate,
+    R.string.address to p.address).map { (k, v) -> ctx.getString(k) to v }
 
 private fun docName(t: CardType) = when (t) {
     CardType.ID2014 -> R.string.doc_id

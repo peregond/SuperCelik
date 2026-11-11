@@ -201,6 +201,9 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
         }
     }
 
+    /** Demo/screenshots only: open the PDF viewer as soon as the result is shown. */
+    var demoOpenPdf = false
+
     /** Fictional data for screenshots (launch intent extra "demo"); never touches a card. */
     fun showDemo() {
         _personal.value = PersonalData(

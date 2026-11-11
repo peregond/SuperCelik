@@ -1,4 +1,5 @@
 name: Screenshots
+# (trigger: touching this file in a PR runs the job)
 
 on:
   pull_request:

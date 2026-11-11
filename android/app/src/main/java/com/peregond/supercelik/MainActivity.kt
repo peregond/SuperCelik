@@ -65,7 +65,7 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         if (intent.action == UsbManager.ACTION_USB_DEVICE_ATTACHED) vm.startUsb(this)
-        if (intent.getBooleanExtra("demo", false)) vm.showDemo()
+        if (intent.getBooleanExtra("demo", false)) { vm.demoOpenPdf = intent.getBooleanExtra("pdf", false); vm.showDemo() }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -96,7 +96,7 @@ class MainActivity : ComponentActivity() {
 
         // A USB reader being plugged in launches the app (see device_filter) and reads straight away.
         if (intent?.action == UsbManager.ACTION_USB_DEVICE_ATTACHED) vm.startUsb(this)
-        if (demo) vm.showDemo()
+        if (demo) { vm.demoOpenPdf = intent?.getBooleanExtra("pdf", false) == true; vm.showDemo() }
 
         setContent {
             val theme by vm.theme.collectAsStateWithLifecycle()
