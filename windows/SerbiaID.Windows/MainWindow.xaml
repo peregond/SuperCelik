@@ -14,25 +14,15 @@
             </DockPanel>
         </Border>
 
-        <!-- Header -->
-        <Border DockPanel.Dock="Top" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,0,1" Padding="24,14">
+        <!-- Header: reader status. The app name is in the title bar, so it is not repeated here. -->
+        <Border DockPanel.Dock="Top" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,0,1" Padding="24,10">
             <DockPanel>
-                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
-                    <local:Logo Width="40" Height="40"/>
-                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
-                        <TextBlock x:Name="LblBrand" Foreground="{DynamicResource TextBrush}" FontSize="19" FontWeight="Bold"/>
-                        <TextBlock x:Name="LblBrandSub" FontSize="11" Foreground="{DynamicResource MutedBrush}"/>
-                    </StackPanel>
-                </StackPanel>
-                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
-                    <Border x:Name="PillCard" CornerRadius="18" Height="36" Padding="14,0" Margin="0,0,10,0" VerticalAlignment="Center">
-                        <StackPanel Orientation="Horizontal" VerticalAlignment="Center">
-                            <Ellipse x:Name="DotCard" Width="8" Height="8" Margin="0,0,7,0"/>
-                            <TextBlock x:Name="LblCard" FontWeight="SemiBold" FontSize="12"/>
-                        </StackPanel>
-                    </Border>
-                    <ComboBox x:Name="CmbReader" Width="260" Height="36" VerticalAlignment="Center" SelectionChanged="CmbReader_Changed"/>
-                    <Button x:Name="BtnRefresh" Style="{StaticResource SecondaryButton}" Height="36" MinHeight="36" Padding="0" Margin="10,0,0,0" VerticalAlignment="Center" Click="Refresh_Click"/>
+                <Button x:Name="BtnRefresh" DockPanel.Dock="Right" Style="{StaticResource IconButton}" Width="36" Height="36" VerticalAlignment="Center" Click="Refresh_Click"/>
+                <local:ReaderMascot x:Name="Mascot" DockPanel.Dock="Left" Width="52" Height="52" VerticalAlignment="Center"/>
+                <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                    <TextBlock x:Name="LblCard" Foreground="{DynamicResource TextBrush}" FontSize="15" FontWeight="SemiBold"/>
+                    <TextBlock x:Name="LblReader" FontSize="11" Foreground="{DynamicResource MutedBrush}" TextTrimming="CharacterEllipsis" Margin="0,1,0,0"/>
+                    <ComboBox x:Name="CmbReader" Width="300" Height="30" Margin="0,4,0,0" HorizontalAlignment="Left" Visibility="Collapsed" SelectionChanged="CmbReader_Changed"/>
                 </StackPanel>
             </DockPanel>
         </Border>
@@ -52,54 +42,59 @@
             </DockPanel>
         </Border>
 
-        <TabControl x:Name="Tabs">
+        <TabControl x:Name="Tabs" SelectionChanged="Tabs_SelectionChanged">
             <!-- Personal data -->
             <TabItem x:Name="TabPersonal">
-                <DockPanel Margin="24,18,24,20">
-                    <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,12">
-                        <Button x:Name="BtnRead" Style="{StaticResource PrimaryButton}" Margin="0,0,8,8" Click="Read_Click"/>
-                        <Button x:Name="BtnPrint" Style="{StaticResource SecondaryButton}" Margin="0,0,8,8" Click="Print_Click"/>
-                        <Button x:Name="BtnPdf" Style="{StaticResource SecondaryButton}" Margin="0,0,8,8" Click="Pdf_Click"/>
-                        <Button x:Name="BtnVerify" Style="{StaticResource SecondaryButton}" Margin="0,0,8,8" Click="Verify_Click"/>
-                        <Button x:Name="BtnEye" Style="{StaticResource SecondaryButton}" Margin="0,0,8,8" Click="Eye_Click"/>
-                        <Button x:Name="BtnMore" Style="{StaticResource SecondaryButton}" Margin="0,0,12,8" Click="More_Click">
-                            <Button.ContextMenu><ContextMenu x:Name="MoreMenu"/></Button.ContextMenu>
-                        </Button>
-                        <Border x:Name="PillSig" CornerRadius="18" Height="36" Padding="14,0" Margin="0,0,0,8" VerticalAlignment="Center" Visibility="Collapsed">
-                            <TextBlock x:Name="LblSig" Foreground="{DynamicResource TextBrush}" FontWeight="SemiBold" FontSize="12" VerticalAlignment="Center"/>
-                        </Border>
-                    </WrapPanel>
-
-                    <StackPanel x:Name="EmptyState" DockPanel.Dock="Top" HorizontalAlignment="Center" Margin="0,70,0,0">
-                        <local:Logo Width="96" Height="96" HorizontalAlignment="Center"/>
-                        <TextBlock x:Name="LblHint" Foreground="{DynamicResource MutedBrush}" FontSize="14" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="420" Margin="0,16,0,0"/>
+                <Grid Margin="24,18,24,20">
+                    <!-- Nothing read yet: the reader's face says what is going on, the text what to do next -->
+                    <StackPanel x:Name="EmptyState" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,40">
+                        <local:ReaderMascot x:Name="EmptyMascot" Width="132" Height="132" HorizontalAlignment="Center"/>
+                        <TextBlock x:Name="LblEmptyTitle" Foreground="{DynamicResource TextBrush}" FontSize="20" FontWeight="SemiBold" TextAlignment="Center" Margin="0,14,0,0"/>
+                        <TextBlock x:Name="LblHint" Foreground="{DynamicResource MutedBrush}" FontSize="14" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="420" Margin="0,8,0,0"/>
+                        <Button x:Name="BtnReadBig" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Center" Margin="0,20,0,0" Click="Read_Click"/>
                     </StackPanel>
 
-                    <Grid x:Name="PersonalContent" Visibility="Collapsed">
-                        <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="250"/>
-                            <ColumnDefinition Width="18"/>
-                            <ColumnDefinition Width="*"/>
-                        </Grid.ColumnDefinitions>
-                        <Border Style="{StaticResource Card}" VerticalAlignment="Top">
-                            <StackPanel HorizontalAlignment="Center">
-                                <Border Width="170" Height="215" CornerRadius="12" Background="{DynamicResource PlaceholderBrush}" ClipToBounds="True">
-                                    <Image x:Name="ImgPortrait" Stretch="UniformToFill"/>
-                                </Border>
-                                <TextBlock x:Name="LblName" Foreground="{DynamicResource TextBrush}" FontSize="17" FontWeight="Bold" TextWrapping="Wrap" TextAlignment="Center" Margin="0,16,0,2"/>
-                                <TextBlock x:Name="LblDocType" Foreground="{DynamicResource MutedBrush}" TextAlignment="Center"/>
-                                <Border x:Name="PillExpiry" CornerRadius="14" Padding="12,5" Margin="0,12,0,0" HorizontalAlignment="Center">
-                                    <TextBlock x:Name="LblExpiry" FontWeight="SemiBold" FontSize="12" TextWrapping="Wrap" TextAlignment="Center"/>
-                                </Border>
-                            </StackPanel>
-                        </Border>
-                        <Border Grid.Column="2" Style="{StaticResource Card}">
-                            <ScrollViewer VerticalScrollBarVisibility="Auto">
-                                <WrapPanel x:Name="FieldsPanel"/>
-                            </ScrollViewer>
-                        </Border>
-                    </Grid>
-                </DockPanel>
+                    <DockPanel x:Name="PersonalContent" Visibility="Collapsed">
+                        <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,12">
+                            <Button x:Name="BtnRead" Style="{StaticResource PrimaryButton}" Margin="0,0,8,8" Click="Read_Click"/>
+                            <Button x:Name="BtnPrint" Style="{StaticResource SecondaryButton}" Margin="0,0,8,8" Click="Print_Click"/>
+                            <Button x:Name="BtnPdf" Style="{StaticResource SecondaryButton}" Margin="0,0,8,8" Click="Pdf_Click"/>
+                            <Button x:Name="BtnVerify" Style="{StaticResource SecondaryButton}" Margin="0,0,8,8" Click="Verify_Click"/>
+                            <Button x:Name="BtnEye" Style="{StaticResource SecondaryButton}" Margin="0,0,8,8" Click="Eye_Click"/>
+                            <Button x:Name="BtnMore" Style="{StaticResource SecondaryButton}" Margin="0,0,12,8" Click="More_Click">
+                                <Button.ContextMenu><ContextMenu x:Name="MoreMenu"/></Button.ContextMenu>
+                            </Button>
+                        </WrapPanel>
+                        <Grid>
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="250"/>
+                                <ColumnDefinition Width="18"/>
+                                <ColumnDefinition Width="*"/>
+                            </Grid.ColumnDefinitions>
+                            <Border Style="{StaticResource Card}" VerticalAlignment="Top">
+                                <StackPanel HorizontalAlignment="Center">
+                                    <Border Width="170" Height="215" CornerRadius="12" Background="{DynamicResource PlaceholderBrush}" ClipToBounds="True">
+                                        <Image x:Name="ImgPortrait" Stretch="UniformToFill"/>
+                                    </Border>
+                                    <TextBlock x:Name="LblName" Foreground="{DynamicResource TextBrush}" FontSize="17" FontWeight="Bold" TextWrapping="Wrap" TextAlignment="Center" Margin="0,16,0,2"/>
+                                    <TextBlock x:Name="LblDocType" Foreground="{DynamicResource MutedBrush}" TextAlignment="Center"/>
+                                    <Border x:Name="PillExpiry" CornerRadius="14" Padding="12,5" Margin="0,12,0,0" HorizontalAlignment="Center">
+                                        <TextBlock x:Name="LblExpiry" FontWeight="SemiBold" FontSize="12" TextWrapping="Wrap" TextAlignment="Center"/>
+                                    </Border>
+                                    <!-- result of "Verify signature": next to the document it belongs to, not among the buttons -->
+                                    <Border x:Name="PillSig" CornerRadius="14" Padding="12,5" Margin="0,8,0,0" HorizontalAlignment="Center" Visibility="Collapsed">
+                                        <TextBlock x:Name="LblSig" FontWeight="SemiBold" FontSize="12" TextWrapping="Wrap" TextAlignment="Center"/>
+                                    </Border>
+                                </StackPanel>
+                            </Border>
+                            <Border Grid.Column="2" Style="{StaticResource Card}">
+                                <ScrollViewer VerticalScrollBarVisibility="Auto">
+                                    <WrapPanel x:Name="FieldsPanel"/>
+                                </ScrollViewer>
+                            </Border>
+                        </Grid>
+                    </DockPanel>
+                </Grid>
             </TabItem>
 
             <!-- Token -->
@@ -127,7 +122,7 @@
             <!-- Settings -->
             <TabItem x:Name="TabSettings">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <StackPanel Margin="24,18,24,20" MaxWidth="640" HorizontalAlignment="Left">
+                    <StackPanel Margin="24,18,24,20" Width="560" HorizontalAlignment="Left">
                         <Border Style="{StaticResource Card}" Margin="0,0,0,16">
                             <StackPanel>
                                 <TextBlock x:Name="LblSetAppearance" Foreground="{DynamicResource TextBrush}" FontSize="15" FontWeight="Bold" Margin="0,0,0,10"/>

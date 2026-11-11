@@ -36,7 +36,9 @@ public partial class App : Application
         if (si >= 0 && si + 1 < e.Args.Length)
         {
             var w = new MainWindow();
-            w.LoadDemo(e.Args.Length > si + 2 ? int.Parse(e.Args[si + 2]) : 0, e.Args.Contains("--dark"), e.Args.Contains("--problem"));
+            var st = Array.IndexOf(e.Args, "--state");
+            w.LoadDemo(e.Args.Length > si + 2 ? int.Parse(e.Args[si + 2]) : 0, e.Args.Contains("--dark"), e.Args.Contains("--problem"),
+                       st >= 0 && st + 1 < e.Args.Length ? e.Args[st + 1] : null);
             w.Show();
             Dispatcher.InvokeAsync(() => { w.SaveScreenshot(e.Args[si + 1]); Shutdown(); }, System.Windows.Threading.DispatcherPriority.ContextIdle);
             return;

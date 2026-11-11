@@ -119,6 +119,13 @@ public partial class MainWindow : Window
         t.Tick += (_, _) => { t.Stop(); b.Content = old; }; t.Start();
     }
 
+    private void Tabs_SelectionChanged(object s, SelectionChangedEventArgs e)
+    {
+        // SelectionChanged bubbles up from the combo boxes inside the tabs too
+        if (!ReferenceEquals(e.OriginalSource, Tabs) || _loading) return;
+        if (Tabs.SelectedContent is FrameworkElement page) Fx.FadeIn(page, 6, 180);
+    }
+
     // ---------- language ----------
     private void Lang_Changed(object s, SelectionChangedEventArgs e)
     {
@@ -131,15 +138,17 @@ public partial class MainWindow : Window
     private void ApplyLanguage()
     {
         Title = Loc.T("appTitle");
-        LblBrand.Text = Loc.T("appTitle");
-        LblBrandSub.Text = Loc.T("brandSub");
-        SetBtn(BtnRefresh, "", Loc.T("refresh"));
+        BtnRefresh.Content = Glyph("", 15); BtnRefresh.ToolTip = Loc.T("refresh"); AutomationProperties.SetName(BtnRefresh, Loc.T("refresh"));
         SetBtn(BtnRead, "", Loc.T("readCard"));
+        SetBtn(BtnReadBig, "", Loc.T("readCard"));
         SetBtn(BtnPrint, "", Loc.T("printCard"));
         SetBtn(BtnPdf, "", Loc.T("savePdf"));
         SetBtn(BtnVerify, "", Loc.T("verifySignature"));
         SetBtn(BtnMore, "", Loc.T("more"));
         SetBtn(BtnReadToken, "", Loc.T("readToken"));
+        SetBtn(BtnChangePin, "\uE72E", Loc.T("changePin"));
+        SetBtn(BtnUnblockPin, "\uE785", Loc.T("unblockPin"));
+        SetBtn(BtnSignFile, "\uE70F", Loc.T("signFile"));
         SetBtn(BtnCheckUpdates, "", Loc.T("checkUpdates"));
         SetBtn(BtnUpdate, "", Loc.T("updateNow"));
         BtnProblemClose.Content = Glyph("", 12); AutomationProperties.SetName(BtnProblemClose, Loc.T("close"));
@@ -149,7 +158,6 @@ public partial class MainWindow : Window
         TabAbout.Header = Loc.T("tabAbout");
         LblCerts.Text = Loc.T("certificates");
         LblPinNote.Text = Loc.T("pinNote");
-        LblHint.Text = Loc.T("hintRead");
         LblAboutTitle.Text = Loc.T("appTitle");
         LblAboutText.Text = Loc.T("aboutText");
         LblVersion.Text = $"{Loc.T("version")} {Updater.CurrentText}";
@@ -176,7 +184,7 @@ public partial class MainWindow : Window
     // ---------- busy / errors ----------
     private void UpdateEnabled()
     {
-        BtnRead.IsEnabled = _cardPresent && !_busy;
+        BtnRead.IsEnabled = BtnReadBig.IsEnabled = _cardPresent && !_busy;
         BtnReadToken.IsEnabled = _cardPresent && !_busy;
         BtnChangePin.IsEnabled = BtnUnblockPin.IsEnabled = BtnSignFile.IsEnabled = _cardPresent && !_busy;
         BtnVerify.IsEnabled = _cardPresent && !_busy;
@@ -187,10 +195,10 @@ public partial class MainWindow : Window
     private async Task Run(Func<Task> work)
     {
         if (_busy) return;
-        _busy = true; BusyBar.Visibility = Visibility.Visible; UpdateEnabled();
+        _busy = true; BusyBar.Visibility = Visibility.Visible; UpdateCardLabel();
         try { await work(); }
         catch (Exception ex) { ShowProblem(ex); }
-        finally { _busy = false; BusyBar.Visibility = Visibility.Collapsed; UpdateEnabled(); }
+        finally { _busy = false; BusyBar.Visibility = Visibility.Collapsed; UpdateCardLabel(); }
     }
 
     private void ShowProblem(Exception ex)
@@ -207,26 +215,69 @@ public partial class MainWindow : Window
         LblProblemTitle.Text = Loc.T(t); LblProblemHint.Text = Loc.T(h);
         LblProblemHint.Visibility = Visibility.Visible;
         LblProblemTech.Text = $"{Loc.T("techDetails")}: {ex.Message}";
+        ShowBanner(error: true);
+    }
+
+    private bool _hasError;     // a red banner is showing: the mascot looks worried
+
+    private void ShowBanner(bool error)
+    {
+        bool was = ProblemBanner.Visibility == Visibility.Visible;
         ProblemBanner.Visibility = Visibility.Visible;
+        if (!was) Fx.FadeIn(ProblemBanner, -6, 200);
+        _hasError = error;
+        UpdateCardLabel();
     }
 
     private void ShowInfo(string text)
     {
         ProblemBanner.Background = B("BannerBrush"); LblProblemTitle.Foreground = B("TextBrush");
         LblProblemTitle.Text = text; LblProblemHint.Visibility = Visibility.Collapsed; LblProblemTech.Text = "";
-        ProblemBanner.Visibility = Visibility.Visible;
+        ShowBanner(error: false);
     }
 
-    private void HideProblem() => ProblemBanner.Visibility = Visibility.Collapsed;
+    private void HideProblem()
+    {
+        ProblemBanner.Visibility = Visibility.Collapsed;
+        if (_hasError) { _hasError = false; UpdateCardLabel(); }
+    }
     private void ProblemClose_Click(object s, RoutedEventArgs e) => HideProblem();
 
     // ---------- readers + automatic card detection ----------
+    private ReaderMood Mood =>
+        _busy ? ReaderMood.Busy : _readers.Count == 0 ? ReaderMood.NoReader : _hasError ? ReaderMood.Error
+        : _cardPresent ? ReaderMood.Ready : ReaderMood.Waiting;
+
+    /// One place for the reader / card status: the face and the line in the header, and the empty state of the first tab.
     private void UpdateCardLabel()
     {
-        DotCard.Fill = B(_cardPresent ? "OkBrush" : "MutedBrush");
-        LblCard.Text = _cardPresent ? Loc.T("cardPresent") : Loc.T("noCard");
-        LblCard.Foreground = B(_cardPresent ? "OkBrush" : "MutedBrush");
-        PillCard.Background = B(_cardPresent ? "OkBgBrush" : "BgBrush");
+        var mood = Mood;
+        LblCard.Text = Loc.T(_busy ? "statusReading" : _readers.Count == 0 ? "noReader" : _cardPresent ? "cardPresent" : "noCard");
+        // one reader: its name as plain text; several: a list to choose from; none: nothing (the line above says it)
+        LblReader.Text = _readers.Count == 1 ? _readers[0] : "";
+        LblReader.Visibility = _readers.Count == 1 ? Visibility.Visible : Visibility.Collapsed;
+        CmbReader.Visibility = _readers.Count > 1 ? Visibility.Visible : Visibility.Collapsed;
+        Mascot.Set(mood, _cardPresent);
+
+        // the empty state tells what to do next (the status itself is in the header)
+        EmptyMascot.Set(mood, _cardPresent);
+        string title = mood switch
+        {
+            ReaderMood.Busy => "statusReading",
+            ReaderMood.NoReader => "emptyNoReaderT",
+            _ => _cardPresent ? "emptyReadyT" : "emptyNoCardT",
+        };
+        string hint = mood switch
+        {
+            ReaderMood.Busy => null,
+            ReaderMood.NoReader => "emptyNoReaderH",
+            _ => _cardPresent ? "emptyReadyH" : "emptyNoCardH",
+        };
+        LblEmptyTitle.Text = Loc.T(title);
+        LblHint.Text = hint == null ? "" : Loc.T(hint);
+        bool canRead = _cardPresent && !_busy;
+        if (canRead && BtnReadBig.Visibility != Visibility.Visible && EmptyState.Visibility == Visibility.Visible) Fx.Pop(BtnReadBig);
+        BtnReadBig.Visibility = canRead ? Visibility.Visible : Visibility.Hidden;
         UpdateEnabled();
     }
 
@@ -249,7 +300,7 @@ public partial class MainWindow : Window
             FillReaders(_pc.ListReaders());
             _cardPresent = _readers.Count > 0 && _pc.Atr(Reader) != null;
             UpdateCardLabel();
-            if (_readers.Count == 0) ShowProblem(new CardException(Native.SCARD_E_NO_READERS_AVAILABLE, "ListReaders")); else HideProblem();
+            HideProblem();
         }
         catch (Exception ex) { ShowProblem(ex); }
     }
@@ -264,7 +315,7 @@ public partial class MainWindow : Window
         try
         {
             var readers = _pc.ListReaders();
-            if (!readers.SequenceEqual(_readers)) FillReaders(readers);
+            if (!readers.SequenceEqual(_readers)) { FillReaders(readers); UpdateCardLabel(); }
             bool present = _readers.Count > 0 && _pc.Atr(Reader) != null;
             if (present == _cardPresent) return;
             _cardPresent = present;
@@ -347,8 +398,12 @@ public partial class MainWindow : Window
         FieldsPanel.Children.Clear();
         ImgPortrait.Source = null;
         bool has = _personal != null;
+        bool appeared = has && PersonalContent.Visibility != Visibility.Visible;
+        bool emptied = !has && EmptyState.Visibility != Visibility.Visible;
         PersonalContent.Visibility = has ? Visibility.Visible : Visibility.Collapsed;
         EmptyState.Visibility = has ? Visibility.Collapsed : Visibility.Visible;
+        if (appeared) Fx.FadeIn(PersonalContent);
+        if (emptied) Fx.FadeIn(EmptyState, 0);
         if (!has) return;
 
         LblName.Text = $"{_personal.Fixed.GivenName} {_personal.Fixed.Surname}".Trim();
@@ -369,6 +424,13 @@ public partial class MainWindow : Window
             var copy = IconBtn("", Loc.T("copy"));
             var v = value;
             copy.Click += (_, _) => { try { Clipboard.SetText(v); } catch { } Flash(copy); };
+            // quiet until needed: the copy button shows when the pointer is over the field (or it has keyboard focus)
+            copy.Opacity = 0;
+            cell.Background = Brushes.Transparent;      // so that the whole cell reacts to the pointer
+            cell.MouseEnter += (_, _) => Fx.To(copy, OpacityProperty, 1, 120);
+            cell.MouseLeave += (_, _) => { if (!copy.IsKeyboardFocused) Fx.To(copy, OpacityProperty, 0, 160); };
+            copy.GotKeyboardFocus += (_, _) => Fx.To(copy, OpacityProperty, 1, 0);
+            copy.LostKeyboardFocus += (_, _) => { if (!cell.IsMouseOver) Fx.To(copy, OpacityProperty, 0, 160); };
             buttons.Children.Add(copy);
             cell.Children.Add(buttons);
 
@@ -453,6 +515,12 @@ public partial class MainWindow : Window
     private void RenderSig()
     {
         if (_sig == null) { PillSig.Visibility = Visibility.Collapsed; return; }
+        bool wasShown = PillSig.Visibility == Visibility.Visible;
+        try { RenderSigPill(); } finally { if (!wasShown) Fx.Pop(PillSig); }
+    }
+
+    private void RenderSigPill()
+    {
         switch (_sig.Result)
         {
             case SigResult.Ok: SetPill(PillSig, LblSig, "✔  " + Loc.T("sigOk"), "OkBrush", "OkBgBrush"); break;
@@ -554,7 +622,11 @@ public partial class MainWindow : Window
     {
         LstCerts.Children.Clear();
         LblTokenInfo.Text = _token == null ? "" : $"{_token.Label}  {_token.Serial}".Trim();
-        if (_token == null) return;
+        if (_token == null)
+        {
+            LstCerts.Children.Add(new TextBlock { Text = Loc.T("hintToken"), Foreground = B("MutedBrush"), TextWrapping = TextWrapping.Wrap });
+            return;
+        }
         foreach (var c in _token.Certificates)
         {
             var box = new StackPanel { Margin = new Thickness(0, 0, 0, 14) };
@@ -692,9 +764,11 @@ public partial class MainWindow : Window
     }
 
     // ---------- demo / screenshot (fictional data) ----------
-    internal void LoadDemo(int tab, bool dark = false, bool problem = false)
+    /// `state` (screenshots of the empty states): noreader | nocard | ready | busy | error
+    internal void LoadDemo(int tab, bool dark = false, bool problem = false, string state = null)
     {
         _demo = true; _poll.Stop(); _idle.Stop();
+        Fx.Enabled = false;      // a screenshot must not catch a half-finished fade
         if (dark) { _cfg.Theme = "dark"; Theme.Apply("dark"); }
         _cardPresent = true;
         _readers = new() { "Demo Reader" }; FillReaders(_readers);
@@ -712,9 +786,18 @@ public partial class MainWindow : Window
             Label = "MARKO PETROVIC 000000000 Auth", ChainTrusted = true, Issuer = "MUP Stranci CA 4",
             NotBefore = DateTime.Today.AddMonths(-14), NotAfter = DateTime.Today.AddDays(75), Der = new byte[] { 0 },
         });
+        if (state != null)
+        {
+            _personal = null; _sig = null; _token = null;
+            if (state == "noreader") { _readers = new(); FillReaders(_readers); _cardPresent = false; }
+            if (state == "nocard") _cardPresent = false;
+            if (state == "busy") _busy = true;
+        }
         Tabs.SelectedIndex = tab;
+        HideProblem();
         ApplyLanguage();
         if (problem) ShowProblem(new CardException(Native.SCARD_E_NO_READERS_AVAILABLE, "ListReaders"));
+        if (state == "error") ShowProblem(new CardException("Unsupported card (demo)"));
     }
 
     internal void ExportDemoPdf(string path) => PdfWriter.SaveSheet(PrintSheet.Build(_personal, 793.7, 1122.5, true), path);
