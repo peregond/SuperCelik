@@ -37,7 +37,7 @@ public partial class MainWindow : Window
         Theme.Apply(_cfg.Theme);
         RestoreWindow();
 
-        foreach (var lang in Enum.GetValues<Lang>()) CmbLang.Items.Add(lang switch { Lang.ru => "Русский", Lang.en => "English", _ => "Srpski" });
+        foreach (var lang in Enum.GetValues<Lang>()) CmbLang.Items.Add(lang switch { Lang.ru => "Русский", Lang.en => "English", Lang.sr => "Srpski (latinica)", _ => "Српски (ћирилица)" });
         CmbLang.SelectedIndex = (int)Loc.Current;
         for (int i = 0; i < 3; i++) CmbTheme.Items.Add("");
         CmbTheme.SelectedIndex = _cfg.Theme switch { "light" => 1, "dark" => 2, _ => 0 };

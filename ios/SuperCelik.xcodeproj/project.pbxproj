@@ -24,6 +24,7 @@
 		243866D0C6E614680F031BFA /* CA in Resources */ = {isa = PBXBuildFile; fileRef = 6B4A331ACAAFD2EB8C66B299 /* CA */; };
 		9E4B2F6A1C8D3057A2B6E0F4 /* Glass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D1A0C3E7B2F4A9086E1C7D3 /* Glass.swift */; };
 		1F6D8B4A2E9C0357B8D5A3C1 /* USBCardReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C3E9A1D5B0F2486D9A3E1B7 /* USBCardReader.swift */; };
+		6A2E7C9B1D4F0835C7E9A2B4 /* SerbianScript.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B8F1D6A0C5E4972A1D4B6E8 /* SerbianScript.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -47,6 +48,7 @@
 		7956FE5BC62358262873304A /* SuperCelik.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SuperCelik.app; sourceTree = BUILT_PRODUCTS_DIR; };
 		5D1A0C3E7B2F4A9086E1C7D3 /* Glass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Glass.swift; sourceTree = "<group>"; };
 		7C3E9A1D5B0F2486D9A3E1B7 /* USBCardReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = USBCardReader.swift; sourceTree = "<group>"; };
+		3B8F1D6A0C5E4972A1D4B6E8 /* SerbianScript.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerbianScript.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -95,6 +97,7 @@
 				3292D081FC7FB524F69380F9,
 				25B19FB07F4E719A757DFA0D,
 				A4FCB9C80BFBF932E353568D,
+				3B8F1D6A0C5E4972A1D4B6E8,
 				58324604F865E53A71B5811D,
 				6B4A331ACAAFD2EB8C66B299,
 			);
@@ -203,6 +206,7 @@
 				DF5BB9D4C1031B014807AC29 /* MupPrintLayout.swift in Sources */,
 				D4A908AB15295593E9A65B1D /* Rows.swift in Sources */,
 				BF6BE802ED9729B4CD6B4FC2 /* Localization.swift in Sources */,
+				6A2E7C9B1D4F0835C7E9A2B4 /* SerbianScript.swift in Sources */,
 				014BC6FEFC3616EE53BBB0B9 /* Prefs.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;

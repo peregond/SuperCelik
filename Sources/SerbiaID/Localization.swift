@@ -1,13 +1,14 @@
 import SwiftUI
 
 enum AppLanguage: String, CaseIterable, Identifiable {
-    case ru, en, sr
+    case ru, en, sr, srCyrl
     var id: String { rawValue }
     var title: String {
         switch self {
         case .ru: return "Русский"
         case .en: return "English"
-        case .sr: return "Srpski"
+        case .sr: return "Srpski (latinica)"
+        case .srCyrl: return "Српски (ћирилица)"
         }
     }
 }
@@ -25,17 +26,28 @@ final class Loc: ObservableObject {
     }
 
     static func systemDefault() -> AppLanguage {
-        let code = Locale.preferredLanguages.first?.prefix(2).lowercased() ?? "en"
+        let tag = Locale.preferredLanguages.first ?? "en"
+        let code = tag.prefix(2).lowercased()
         switch code {
         case "ru": return .ru
-        case "sr", "hr", "bs": return .sr
+        case "sr": return tag.contains("Cyrl") ? .srCyrl : .sr      // plain "sr" -> Latin, as most people in Serbia use it
+        case "hr", "bs": return .sr
         default: return .en
         }
     }
 
     func t(_ key: L) -> String {
-        Self.table[key]?[language] ?? Self.table[key]?[.en] ?? "\(key)"
+        // Serbian Cyrillic is the Serbian (Latin) text run through SerbianScript, once per key
+        if language == .srCyrl {
+            if let c = Self.cyrillicCache[key] { return c }
+            let c = SerbianScript.cyrillic(Self.table[key]?[.sr] ?? Self.table[key]?[.en] ?? "\(key)")
+            Self.cyrillicCache[key] = c
+            return c
+        }
+        return Self.table[key]?[language] ?? Self.table[key]?[.en] ?? "\(key)"
     }
+
+    private static var cyrillicCache: [L: String] = [:]
 
     enum L: Hashable {
         case appTitle, tabPersonal, tabToken, tabAbout
