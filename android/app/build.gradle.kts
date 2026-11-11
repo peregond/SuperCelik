@@ -19,6 +19,7 @@ android {
     buildTypes {
         release {
             isMinifyEnabled = false
+            signingConfig = signingConfigs.getByName("sideload")
         }
     }
     compileOptions {
@@ -27,6 +28,17 @@ android {
     }
     kotlinOptions { jvmTarget = "17" }
     buildFeatures { compose = true }
+
+    // MUP root + intermediate CA certificates shared with the Mac / Windows apps -> assets/CA/*.crt
+    sourceSets.getByName("main").assets.srcDir("../../Sources/SerbiaID/Resources")
+
+    signingConfigs {
+        // Release APKs from CI are signed with the debug key so they can be sideloaded; not for the Play Store.
+        create("sideload") {
+            storeFile = signingConfigs.getByName("debug").storeFile
+            storePassword = "android"; keyAlias = "androiddebugkey"; keyPassword = "android"
+        }
+    }
 }
 
 dependencies {
@@ -40,5 +52,7 @@ dependencies {
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.6")
     implementation("androidx.lifecycle:lifecycle-runtime-compose:2.8.6")
     implementation("org.jetbrains.kotlinx:kotlinx-coroutines-android:1.9.0")
+    implementation("org.bouncycastle:bcprov-jdk18on:1.78.1")
+    implementation("org.bouncycastle:bcpkix-jdk18on:1.78.1")
     debugImplementation("androidx.compose.ui:ui-tooling")
 }

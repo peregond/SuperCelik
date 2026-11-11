@@ -1,7 +1,6 @@
 package com.peregond.supercelik
 
 import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
 import androidx.compose.material3.dynamicDarkColorScheme
@@ -11,7 +10,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 
-// Fallback palette (Android 11 and older) from the Serbian flag: red + navy.
+// Fallback palette (Android 11 and older, or dynamic colour turned off) from the Serbian flag: red + navy.
 private val LightFallback = lightColorScheme(
     primary = Color(0xFFB3262B), onPrimary = Color.White,
     primaryContainer = Color(0xFFFFDAD7), onPrimaryContainer = Color(0xFF410004),
@@ -25,13 +24,12 @@ private val DarkFallback = darkColorScheme(
     secondaryContainer = Color(0xFF28418F), onSecondaryContainer = Color(0xFFDCE1FF),
 )
 
-/** Material You: wallpaper-based dynamic colour on Android 12+, flag colours otherwise. */
+/** Material You: wallpaper-based dynamic colour on Android 12+ (unless turned off), flag colours otherwise. */
 @Composable
-fun SuperCelikTheme(content: @Composable () -> Unit) {
-    val dark = isSystemInDarkTheme()
+fun SuperCelikTheme(dark: Boolean, dynamic: Boolean, content: @Composable () -> Unit) {
     val context = LocalContext.current
     val scheme = when {
-        Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ->
+        dynamic && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S ->
             if (dark) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         dark -> DarkFallback
         else -> LightFallback
