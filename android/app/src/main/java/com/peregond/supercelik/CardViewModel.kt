@@ -42,15 +42,15 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
     // ---- settings ----
     private val _theme = MutableStateFlow(prefs.getInt("theme", 0))            // 0 system, 1 light, 2 dark
     val theme: StateFlow<Int> = _theme.asStateFlow()
-    private val _dynamic = MutableStateFlow(prefs.getBoolean("dynamic", true))
-    val dynamic: StateFlow<Boolean> = _dynamic.asStateFlow()
+    private val _dynamic = MutableStateFlow(prefs.getBoolean("wallpaper", false))
+    val dynamic: StateFlow<Boolean> = _dynamic.asStateFlow()      // true = wallpaper (Material You) palette
     private val _mask = MutableStateFlow(prefs.getBoolean("mask", true))
     val mask: StateFlow<Boolean> = _mask.asStateFlow()
     private val _autoClear = MutableStateFlow(prefs.getInt("autoClear", 5))     // minutes, 0 = off
     val autoClear: StateFlow<Int> = _autoClear.asStateFlow()
 
     fun setTheme(v: Int) { _theme.value = v; prefs.edit().putInt("theme", v).apply() }
-    fun setDynamic(v: Boolean) { _dynamic.value = v; prefs.edit().putBoolean("dynamic", v).apply() }
+    fun setDynamic(v: Boolean) { _dynamic.value = v; prefs.edit().putBoolean("wallpaper", v).apply() }
     fun setMask(v: Boolean) { _mask.value = v; prefs.edit().putBoolean("mask", v).apply() }
     fun setAutoClear(v: Int) { _autoClear.value = v; prefs.edit().putInt("autoClear", v).apply(); scheduleClear() }
 
@@ -209,8 +209,21 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
             personalNumber = "0101990710000", surname = "PETROVIĆ", givenName = "MARKO",
             parentGivenName = "Nikola", sex = "M", placeOfBirth = "Beograd", stateOfBirth = "Srbija",
             dateOfBirth = "01.01.1990", nationality = "Srbija",
-            address = "Knez Mihailova 1, Beograd, Stari Grad", portrait = null)
+            address = "Knez Mihailova 1, Beograd, Stari Grad", portrait = demoPortrait())
         _sig.value = SigResult.Ok
         _token.value = TokenData("NetSeT's CardEdge Token", "RP000000000", listOf(TokenCert("MARKO PETROVIC 000000000 Auth", ByteArray(0))))
+    }
+
+    /** A drawn silhouette so screenshots show the photo layout (demo mode only). */
+    private fun demoPortrait(): ByteArray {
+        val bmp = android.graphics.Bitmap.createBitmap(240, 310, android.graphics.Bitmap.Config.ARGB_8888)
+        val c = android.graphics.Canvas(bmp)
+        c.drawColor(0xFFD9E2EF.toInt())
+        val p = android.graphics.Paint(android.graphics.Paint.ANTI_ALIAS_FLAG).apply { color = 0xFF8FA3BF.toInt() }
+        c.drawCircle(120f, 120f, 56f, p)
+        c.drawOval(android.graphics.RectF(30f, 190f, 210f, 400f), p)
+        val out = java.io.ByteArrayOutputStream()
+        bmp.compress(android.graphics.Bitmap.CompressFormat.JPEG, 90, out)
+        return out.toByteArray()
     }
 }

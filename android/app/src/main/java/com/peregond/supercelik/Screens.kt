@@ -45,6 +45,7 @@ import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.io.File
 import java.text.SimpleDateFormat
 import java.util.Locale
 
@@ -130,6 +131,11 @@ private fun PersonalResult(vm: CardViewModel, p: PersonalData, revealAll: Boolea
     val clipboard = LocalClipboardManager.current
     val bitmap = remember(p.portrait) { p.portrait?.let { BitmapFactory.decodeByteArray(it, 0, it.size)?.asImageBitmap() } }
     val show = revealAll || !mask
+    val flagPalette = LocalFlagPalette.current
+    val heroBg = if (flagPalette) Flag.Blue else MaterialTheme.colorScheme.primaryContainer
+    val heroFg = if (flagPalette) Color.White else MaterialTheme.colorScheme.onPrimaryContainer
+    var photoOpen by remember { mutableStateOf(false) }
+    var pdfFile by remember { mutableStateOf<File?>(null) }
 
     val rows = listOf(
         Triple(R.string.surname, p.surname, false), Triple(R.string.given_name, p.givenName, false),
@@ -151,19 +157,20 @@ private fun PersonalResult(vm: CardViewModel, p: PersonalData, revealAll: Boolea
         verticalArrangement = Arrangement.spacedBy(12.dp),
     ) {
         item {
-            Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+            Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = heroBg),
                 shape = RoundedCornerShape(28.dp)) {
+                FlagStripe(thickness = 6)
                 Row(Modifier.padding(16.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
                     if (bitmap != null) {
-                        Image(bitmap, null, Modifier.size(88.dp, 112.dp).clip(RoundedCornerShape(16.dp)), contentScale = ContentScale.Crop)
+                        Image(bitmap, stringResource(R.string.photo),
+                            Modifier.size(96.dp, 124.dp).clip(RoundedCornerShape(16.dp)).clickable { photoOpen = true },
+                            contentScale = ContentScale.Crop)
                         Spacer(Modifier.width(16.dp))
                     }
                     Column(Modifier.weight(1f)) {
-                        Text(stringResource(docName(p.cardType)), style = MaterialTheme.typography.labelLarge,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer)
-                        Text("${p.givenName} ${p.surname}", style = MaterialTheme.typography.titleLarge,
-                            color = MaterialTheme.colorScheme.onPrimaryContainer)
-                        ExpiryPill(p.expiryDate)
+                        Text(stringResource(docName(p.cardType)), style = MaterialTheme.typography.labelLarge, color = heroFg.copy(alpha = 0.85f))
+                        Text("${p.givenName} ${p.surname}", style = MaterialTheme.typography.titleLarge, color = heroFg)
+                        ExpiryPill(p.expiryDate, onHero = flagPalette)
                     }
                 }
             }
@@ -178,10 +185,21 @@ private fun PersonalResult(vm: CardViewModel, p: PersonalData, revealAll: Boolea
                     clipboard.setText(AnnotatedString(allRows.filter { it.second.isNotBlank() }.joinToString("\n") { "${it.first}: ${it.second}" }))
                     vm.notify(Msg(R.string.copied, error = false))
                 }, Modifier.weight(1f)) { Icon(Icons.Filled.ContentCopy, null); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.copy_all)) }
-                FilledTonalButton(onClick = { sharePdf(ctx, p, allRows, pdfTitle) }, Modifier.weight(1f)) {
-                    Icon(Icons.Filled.PictureAsPdf, null); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.share_pdf))
+                FilledTonalButton(onClick = { pdfFile = Pdf.create(ctx, p, allRows, pdfTitle) }, Modifier.weight(1f)) {
+                    Icon(Icons.Filled.PictureAsPdf, null); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.view_pdf))
                 }
             }
+        }
+    }
+    if (photoOpen && bitmap != null) PhotoDialog(bitmap) { photoOpen = false }
+    pdfFile?.let { PdfViewer(it) { pdfFile = null } }
+}
+
+@Composable
+private fun PhotoDialog(bitmap: androidx.compose.ui.graphics.ImageBitmap, onClose: () -> Unit) {
+    androidx.compose.ui.window.Dialog(onDismissRequest = onClose) {
+        Card(shape = RoundedCornerShape(28.dp), modifier = Modifier.clickable { onClose() }) {
+            Image(bitmap, stringResource(R.string.photo), Modifier.fillMaxWidth().padding(12.dp).clip(RoundedCornerShape(20.dp)), contentScale = ContentScale.FillWidth)
         }
     }
 }
@@ -193,7 +211,7 @@ private fun docName(t: CardType) = when (t) {
 }
 
 @Composable
-private fun ExpiryPill(expiry: String) {
+private fun ExpiryPill(expiry: String, onHero: Boolean) {
     val date = remember(expiry) { runCatching { SimpleDateFormat("dd.MM.yyyy", Locale.US).parse(expiry) }.getOrNull() } ?: return
     val days = ((date.time - System.currentTimeMillis()) / 86_400_000L).toInt()
     val (text, bad) = when {
@@ -202,8 +220,12 @@ private fun ExpiryPill(expiry: String) {
         else -> stringResource(R.string.valid_until, expiry) to false
     }
     Spacer(Modifier.height(6.dp))
-    Pill(text, if (bad) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSecondaryContainer,
-        if (bad) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.secondaryContainer)
+    if (onHero) {
+        Pill(text, if (bad) Color(0xFFFFB3B0) else Color.White, Color.White.copy(alpha = 0.16f))
+    } else {
+        Pill(text, if (bad) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSecondaryContainer,
+            if (bad) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.secondaryContainer)
+    }
 }
 
 @Composable
@@ -420,9 +442,14 @@ fun SettingsScreen(vm: CardViewModel) {
             }
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) item {
-            ListItem(headlineContent = { Text(stringResource(R.string.settings_dynamic)) },
-                supportingContent = { Text(stringResource(R.string.settings_dynamic_hint)) },
-                trailingContent = { Switch(dynamic, { vm.setDynamic(it) }) })
+            Text(stringResource(R.string.settings_palette), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+            Spacer(Modifier.height(8.dp))
+            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                listOf(R.string.palette_flag, R.string.palette_wallpaper).forEachIndexed { i, r ->
+                    SegmentedButton(selected = dynamic == (i == 1), onClick = { vm.setDynamic(i == 1) },
+                        shape = SegmentedButtonDefaults.itemShape(i, 2)) { Text(stringResource(r)) }
+                }
+            }
         }
         item {
             ListItem(headlineContent = { Text(stringResource(R.string.settings_mask)) },

@@ -16,6 +16,7 @@ import androidx.compose.animation.scaleIn
 import androidx.compose.animation.togetherWith
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material.icons.Icons
@@ -101,7 +102,7 @@ class MainActivity : ComponentActivity() {
             val theme by vm.theme.collectAsStateWithLifecycle()
             val dynamic by vm.dynamic.collectAsStateWithLifecycle()
             val dark = when (theme) { 1 -> false; 2 -> true; else -> isSystemInDarkTheme() }
-            SuperCelikTheme(dark, dynamic) { Root(vm, nfc, intent?.getStringExtra("tab")) }
+            SuperCelikTheme(dark, wallpaper = dynamic) { Root(vm, nfc, intent?.getStringExtra("tab")) }
         }
     }
 }
@@ -130,6 +131,7 @@ private fun Root(vm: CardViewModel, nfc: NfcAdapter?, initialTab: String?) {
 
     Scaffold(
         topBar = {
+            Column {
             CenterAlignedTopAppBar(
                 title = { Text(stringResource(R.string.app_name)) },
                 actions = {
@@ -141,6 +143,8 @@ private fun Root(vm: CardViewModel, nfc: NfcAdapter?, initialTab: String?) {
                     }
                 },
             )
+            FlagStripe()
+            }
         },
         bottomBar = {
             NavigationBar {
