@@ -32,7 +32,7 @@ import java.util.Date
 object CardCrypto {
     private val bc = BouncyCastleProvider()
 
-    /** MUP root + intermediate CAs, shipped as assets/CA/*.crt (same files as the Mac and Windows apps). */
+    /** MUP root + intermediate CAs, shipped as .crt files in assets/CA (same files as the Mac and Windows apps). */
     private val anchors: List<X509Certificate> by lazy {
         val assets = App.instance.assets
         val cf = CertificateFactory.getInstance("X.509")
