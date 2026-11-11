@@ -12,8 +12,9 @@ android {
         applicationId = "com.peregond.supercelik"
         minSdk = 26
         targetSdk = 35
-        versionCode = 1
-        versionName = "0.1.0"
+        // CI passes the tag version (vX.Y.Z); local builds get a dev version
+        versionCode = (project.findProperty("appVersionCode") as String?)?.toInt() ?: 1
+        versionName = (project.findProperty("appVersion") as String?) ?: "0.0.0-dev"
     }
 
     signingConfigs {
