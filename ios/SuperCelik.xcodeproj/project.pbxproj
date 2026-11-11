@@ -25,6 +25,7 @@
 		9E4B2F6A1C8D3057A2B6E0F4 /* Glass.swift in Sources */ = {isa = PBXBuildFile; fileRef = 5D1A0C3E7B2F4A9086E1C7D3 /* Glass.swift */; };
 		1F6D8B4A2E9C0357B8D5A3C1 /* USBCardReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C3E9A1D5B0F2486D9A3E1B7 /* USBCardReader.swift */; };
 		6A2E7C9B1D4F0835C7E9A2B4 /* SerbianScript.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B8F1D6A0C5E4972A1D4B6E8 /* SerbianScript.swift */; };
+		8D3B6F1A4C9E2057B1D7A9C2 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 4C7A2E9B1D5F3086A8B1C3E5 /* PrivacyInfo.xcprivacy */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -49,6 +50,7 @@
 		5D1A0C3E7B2F4A9086E1C7D3 /* Glass.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = Glass.swift; sourceTree = "<group>"; };
 		7C3E9A1D5B0F2486D9A3E1B7 /* USBCardReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = USBCardReader.swift; sourceTree = "<group>"; };
 		3B8F1D6A0C5E4972A1D4B6E8 /* SerbianScript.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerbianScript.swift; sourceTree = "<group>"; };
+		4C7A2E9B1D5F3086A8B1C3E5 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -110,6 +112,7 @@
 			children = (
 				99D288D75AE11A0DB2B6E1FB,
 				A2DE76C438FE5E928C381133,
+				4C7A2E9B1D5F3086A8B1C3E5,
 			);
 			path = Config;
 			sourceTree = "<group>";
@@ -182,6 +185,7 @@
 			files = (
 				2B4A2C08D382ED0CB67D3F18 /* Assets.xcassets in Resources */,
 				243866D0C6E614680F031BFA /* CA in Resources */,
+				8D3B6F1A4C9E2057B1D7A9C2 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

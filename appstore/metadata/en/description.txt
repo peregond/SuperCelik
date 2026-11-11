@@ -1,0 +1,13 @@
+Super Celik reads a Serbian electronic ID card, ID card for foreigners or residence permit (RP2024) and shows the data on your iPhone or iPad.
+
+• Read the card with a connected smart card reader or over NFC (if your card has a contactless chip). The app picks the method for you.
+• See personal data, photo, document validity and whether the card's signature is genuine (checked against the MUP certificate chain).
+• View the official-style printout (PDF), print it with AirPrint or share it.
+• Token certificates and their validity.
+• Sensitive fields (personal number, address, document number) are hidden until you reveal them; data is cleared automatically.
+• Languages: Русский, English, Srpski (latinica), Српски (ћирилица).
+• Private by design: no account, no analytics, no servers. Card data never leaves your device.
+
+Super Celik is an independent app. It is not affiliated with the Ministry of Interior of the Republic of Serbia (MUP RS) or NetSeT/Veridos.
+
+No card at hand? Settings > Show demo data shows the app with fictional data.

@@ -156,7 +156,9 @@ struct ContentView: View {
         .tint(brandTint)
         .sheet(isPresented: $model.showPreview) { PreviewSheet() }
         .task { await model.startMonitoring() }
+        #if !APPSTORE
         .task { if prefs.autoUpdate { await model.checkUpdates(manual: false) } }
+        #endif
         .task { await Shot.runIfRequested(setPage: { pageRaw = $0 }) }
     }
 
@@ -537,6 +539,7 @@ struct TokenView: View {
 struct SettingsView: View {
     @EnvironmentObject var loc: Loc
     @EnvironmentObject var prefs: Prefs
+    @EnvironmentObject var model: AppModel
 
     var body: some View {
         Form {
@@ -562,8 +565,13 @@ struct SettingsView: View {
             }
             Section(loc.t(.setBehavior)) {
                 Toggle(loc.t(.setAutoRead), isOn: $prefs.autoRead)
+                #if !APPSTORE
                 Toggle(loc.t(.setAutoUpdate), isOn: $prefs.autoUpdate)
+                #endif
             }
+            Section {
+                Button(loc.t(.demoData)) { model.showDemoData() }
+            } footer: { Text(loc.t(.demoHint)) }
         }
         .formStyle(.grouped)
         .frame(maxWidth: 680)
@@ -584,6 +592,7 @@ struct AboutView: View {
             Text("\(loc.t(.version)) \(Updater.currentVersion)").foregroundStyle(.secondary)
             Text(loc.t(.aboutText)).multilineTextAlignment(.center).foregroundStyle(.secondary)
                 .frame(maxWidth: 400).padding(.top, 6)
+            #if !APPSTORE
             Button { Task { await model.checkUpdates(manual: true) } } label: {
                 Label(loc.t(.checkUpdates), systemImage: "arrow.triangle.2.circlepath")
             }
@@ -591,6 +600,7 @@ struct AboutView: View {
             if let s = model.updateStatus {
                 Text(s).font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.center).frame(maxWidth: 400)
             }
+            #endif
         }
         .padding(32)
         .frame(maxWidth: .infinity, maxHeight: .infinity)

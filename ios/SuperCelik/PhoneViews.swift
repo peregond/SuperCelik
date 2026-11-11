@@ -374,6 +374,7 @@ struct TokenTab: View {
 
 struct SettingsTab: View {
     @Environment(\.dismiss) private var dismiss
+    @EnvironmentObject var model: PhoneModel
     @EnvironmentObject var loc: Loc
     @EnvironmentObject var prefs: Prefs
 
@@ -398,6 +399,9 @@ struct SettingsTab: View {
                     Toggle(loc.t(.setMask), isOn: $prefs.maskSensitive)
                     Toggle(loc.t(.setPrintJmbg), isOn: $prefs.printJmbg)
                 }
+                Section {
+                    Button(loc.t(.demoData)) { model.loadDemo(); dismiss() }
+                } footer: { Text(loc.t(.demoHint)) }
                 Section(loc.t(.tabAbout)) {
                     Text(loc.t(.aboutTextIOS)).font(.subheadline)
                     LabeledContent(loc.t(.version), value: version)

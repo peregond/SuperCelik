@@ -69,12 +69,14 @@ final class Loc: ObservableObject {
         case menuCard
         case driverStuck, pinStepOld, pinStepPuk, pinStepNew, pinStepConfirm, unblockPin, pukLabel, signFile, signedSaved, pinWarn, pinWrongMsg, pinBlockedMsg, pinInvalid, pinUnblocked, signNeedCert
         // iOS (NFC)
-        case tabCardShort, tabTokenShort, readCardAuto, hintAuto, viewPdf, photo, scanUsb, usbNoReaderT, usbNoReaderH, hintUsb, scanCard, nfcPrompt, nfcReading, nfcDone, sharePdf, hintNfc, aboutTextIOS
+        case demoData, demoHint, tabCardShort, tabTokenShort, readCardAuto, hintAuto, viewPdf, photo, scanUsb, usbNoReaderT, usbNoReaderH, hintUsb, scanCard, nfcPrompt, nfcReading, nfcDone, sharePdf, hintNfc, aboutTextIOS
         case nfcUnavailableT, nfcUnavailableH, nfcNoCardT, nfcNoCardH, nfcLostT, nfcLostH
     }
 
     // swiftlint:disable line_length
     static let table: [L: [AppLanguage: String]] = [
+        .demoData: [.ru: "Показать демо-данные", .en: "Show demo data", .sr: "Prikaži demo podatke"],
+        .demoHint: [.ru: "Вымышленные данные, чтобы посмотреть, как выглядит приложение, без карты и ридера.", .en: "Fictional data, to see how the app looks without a card or reader.", .sr: "Izmišljeni podaci, da vidite kako aplikacija izgleda bez kartice i čitača."],
         .tabCardShort: [.ru: "Карта", .en: "Card", .sr: "Kartica"],
         .tabTokenShort: [.ru: "Токен", .en: "Token", .sr: "Token"],
         .readCardAuto: [.ru: "Прочитать карту", .en: "Read card", .sr: "Pročitaj karticu"],

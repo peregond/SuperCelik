@@ -9,6 +9,7 @@ struct UpdateInfo {
     let pageURL: URL
 }
 
+#if !APPSTORE
 /// Checks the latest GitHub release and installs it. Works only while the release is readable
 /// without authentication (public repository). Downloads are restricted to GitHub hosts and
 /// verified against the SHA-256 digest published by GitHub when available.
@@ -116,3 +117,11 @@ enum Updater {
         NSApp.terminate(nil)
     }
 }
+#else
+/// Mac App Store build: updates come from the store, so there is no updater (and no network code).
+enum Updater {
+    static var currentVersion: String { (Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String) ?? "0.0.0" }
+    static func check() async -> (info: UpdateInfo?, reachable: Bool) { (nil, true) }
+    @MainActor static func install(_ info: UpdateInfo) async throws {}
+}
+#endif

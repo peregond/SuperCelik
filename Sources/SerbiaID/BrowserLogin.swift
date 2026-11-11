@@ -1,6 +1,18 @@
 import Foundation
 import Security
 
+#if APPSTORE
+/// Mac App Store build (sandboxed): macOS finds and starts the bundled CryptoTokenKit extension by itself, and the app
+/// may not run helper tools, so there is nothing to prepare or repair here.
+enum BrowserLogin {
+    static let extensionID = "com.peregond.supercelik.token"
+    static func prepare() {}
+    static func stopRunningDriver() {}
+    static func driverAttached() -> Bool { true }
+    static func repairDriver() {}
+}
+#else
+
 /// Browser login with the eID / token certificate (e.g. registracijas.eid.gov.rs) on macOS.
 ///
 /// Chrome and Safari on macOS take TLS client certificates only from the keychain. A smart card gets
@@ -92,3 +104,4 @@ enum BrowserLogin {
         return p.terminationStatus
     }
 }
+#endif
