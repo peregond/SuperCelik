@@ -43,7 +43,7 @@ targets:
         CODE_SIGN_STYLE: Automatic
         # Set your own team here or in Xcode (Signing & Capabilities). NFC needs a paid team.
         DEVELOPMENT_TEAM: ""
-        TARGETED_DEVICE_FAMILY: "1"
+        TARGETED_DEVICE_FAMILY: "1,2"   # iPhone + iPad (iPads have no NFC reader: the app shows an explanatory banner)
         ASSETCATALOG_COMPILER_APPICON_NAME: AppIcon
         ENABLE_PREVIEWS: YES
 schemes:
