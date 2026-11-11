@@ -53,6 +53,9 @@ struct ScanButton: View {
     @EnvironmentObject var loc: Loc
     @EnvironmentObject var model: PhoneModel
     let title: Loc.L
+    var icon = "cable.connector"
+    var primary = true
+    var needsNfc = false
     let action: () async -> Void
 
     var body: some View {
@@ -60,14 +63,15 @@ struct ScanButton: View {
             Task { await action() }
         } label: {
             HStack {
-                if model.busy { ProgressView().tint(.white) } else { Image(systemName: "wave.3.right") }
+                if model.busy { ProgressView() } else { Image(systemName: icon) }
                 Text(loc.t(title)).fontWeight(.semibold)
             }
             .frame(maxWidth: .infinity)
             .padding(.vertical, 6)
         }
         .buttonStyle(.borderedProminent)
-        .disabled(model.busy || !model.nfcAvailable)
+        .tint(primary ? .accentColor : .gray)
+        .disabled(model.busy || (needsNfc && !model.nfcAvailable))
     }
 }
 
@@ -83,13 +87,13 @@ struct CardTab: View {
         NavigationStack {
             List {
                 Section {
-                    ScanButton(title: .scanCard) { await model.scanCard() }
-                    if !model.nfcAvailable {
-                        ProblemBanner(problem: PhoneProblem(title: .nfcUnavailableT, hint: .nfcUnavailableH))
-                    } else if let problem = model.problem {
+                    // Wired reader is the main way; NFC is for cards that have a contactless chip.
+                    ScanButton(title: .scanUsb) { await model.scanCard(.usb) }
+                    ScanButton(title: .scanCard, icon: "wave.3.right", primary: false, needsNfc: true) { await model.scanCard(.nfc) }
+                    if let problem = model.problem {
                         ProblemBanner(problem: problem)
                     } else if model.personal == nil {
-                        Text(loc.t(.hintNfc)).font(.subheadline).foregroundStyle(.secondary)
+                        Text(loc.t(.hintUsb)).font(.subheadline).foregroundStyle(.secondary)
                     }
                 }
                 if let p = model.personal {
@@ -219,7 +223,7 @@ struct TokenTab: View {
         NavigationStack {
             List {
                 Section {
-                    ScanButton(title: .readToken) { await model.scanToken() }
+                    ScanButton(title: .readToken) { await model.scanToken(.usb) }
                     if let problem = model.problem, model.token == nil {
                         ProblemBanner(problem: problem)
                     }
