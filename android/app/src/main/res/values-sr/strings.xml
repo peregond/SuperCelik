@@ -33,4 +33,5 @@
     <string name="expiry_date">Važi do</string>
     <string name="address">Adresa</string>
     <string name="about_note">Nezavisna implementacija, nije povezana sa MUP RS i NetSeT/Veridos. Podaci se prikazuju samo na ekranu i brišu se zatvaranjem aplikacije.</string>
+    <string name="hint_ready">Spremno: prislonite karticu na zadnju stranu telefona</string>
 </resources>

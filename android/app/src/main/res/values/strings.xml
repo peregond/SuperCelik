@@ -33,4 +33,5 @@
     <string name="expiry_date">Expiry date</string>
     <string name="address">Address</string>
     <string name="about_note">Independent implementation, not affiliated with MUP RS or NetSeT/Veridos. Data is shown on screen only and is cleared when you close the app.</string>
+    <string name="hint_ready">Ready: hold the card against the back of the phone</string>
 </resources>

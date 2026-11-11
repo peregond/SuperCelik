@@ -33,4 +33,5 @@
     <string name="expiry_date">Действителен до</string>
     <string name="address">Адрес</string>
     <string name="about_note">Независимая реализация, не связана с МУП РС и NetSeT/Veridos. Данные показываются только на экране и стираются при закрытии приложения.</string>
+    <string name="hint_ready">Готово: приложите карту к задней части телефона</string>
 </resources>

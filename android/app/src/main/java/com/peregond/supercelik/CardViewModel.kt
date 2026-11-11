@@ -29,18 +29,25 @@ class CardViewModel : ViewModel() {
     val state: StateFlow<UiState> = _state.asStateFlow()
     private var job: Job? = null
 
-    /** True while the activity should keep NFC reader mode on. */
-    val wantsNfc: Boolean get() = _state.value is UiState.WaitingNfc
+    /** NFC reader mode stays on whenever the app is waiting for a card (start screen, after an error, explicit NFC wait). */
+    fun listensNfc(s: UiState = _state.value) = s is UiState.Idle || s is UiState.WaitingNfc || s is UiState.Failed
 
     fun startNfc(adapter: NfcAdapter?) {
         if (adapter == null || !adapter.isEnabled) { fail(CardException(CardException.Kind.Other, "nfc_off"), "nfc"); return }
         _state.value = UiState.WaitingNfc
     }
 
+    /** App opened or came back to the start screen: use a connected USB reader right away. */
+    fun autoStart(context: Context) {
+        if (_state.value !is UiState.Idle) return
+        val usb = context.getSystemService(Context.USB_SERVICE) as UsbManager
+        if (UsbCcidTransport.findReader(usb) != null) startUsb(context)
+    }
+
     /** Called by NFC reader mode (on a binder thread). */
     fun onTag(tag: Tag) {
         val iso = IsoDep.get(tag) ?: return     // some other tag: keep waiting
-        if (_state.value !is UiState.WaitingNfc) return
+        if (!listensNfc()) return
         _state.value = UiState.Reading
         job = viewModelScope.launch(Dispatchers.IO) {
             try {
