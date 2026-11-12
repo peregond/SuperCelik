@@ -61,8 +61,8 @@ h1{font-size:var(--h1);line-height:1.05;letter-spacing:-.04em;margin:0 auto 18px
 .em,.priv{color:#fff;font-weight:600}
 .priv{position:relative;display:inline-block;white-space:nowrap;margin-right:1.2em}
 .priv::before,.priv::after{content:"";position:absolute;pointer-events:none}
-.priv::after{left:calc(100% + .3em);top:.44em;width:.74em;height:.56em;border-radius:.13em;background:radial-gradient(circle at 50% 46%,#0a2d57 0 .07em,transparent .075em),#fff}
-.priv::before{left:calc(100% + .3em + .13em);top:.04em;width:.48em;height:.5em;box-sizing:border-box;border:.115em solid #fff;border-bottom:0;border-radius:.3em .3em 0 0;transform-origin:.0575em 100%}
+.priv::after{left:calc(100% + .3em);top:.58em;width:.74em;height:.56em;border-radius:.13em;background:radial-gradient(circle at 50% 46%,#0a2d57 0 .07em,transparent .075em),#fff}
+.priv::before{left:calc(100% + .3em + .13em);top:.18em;width:.48em;height:.5em;box-sizing:border-box;border:.115em solid #fff;border-bottom:0;border-radius:.3em .3em 0 0;transform-origin:.0575em 100%}
 .anim .priv::before{animation:lockTurn 1.05s cubic-bezier(.45,0,.25,1) 2.15s both}
 .anim .priv::after{animation:lockClick .35s ease-out 3.05s both}
 .anim.swapped .priv::before{animation-delay:.4s}.anim.swapped .priv::after{animation-delay:1.3s}
