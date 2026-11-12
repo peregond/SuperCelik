@@ -600,9 +600,12 @@ static DWORD WINAPI MdSignData(PCARD_DATA cd, PCARD_SIGNING_INFO si)
     if (flags & CARD_PADDING_INFO_PRESENT) {
         if (si->dwPaddingType == CARD_PADDING_PKCS1) {
             BCRYPT_PKCS1_PADDING_INFO *pi = (BCRYPT_PKCS1_PADDING_INFO *)si->pPaddingInfo; DWORD pl = 0;
-            const BYTE *pre = prefixFor(pi ? pi->pszAlgId : NULL, 0, &pl);
-            if (pi && pi->pszAlgId && !pre) return SCARD_E_UNSUPPORTED_FEATURE;
-            memcpy(block, pre, pl); memcpy(block + pl, si->pbData, si->cbData);
+            const BYTE *pre = NULL;
+            if (pi && pi->pszAlgId && _wcsicmp(pi->pszAlgId, L"SHAMD5") != 0) {   /* "SHAMD5" = TLS 1.0/1.1: 36 bytes, no DigestInfo */
+                pre = prefixFor(pi->pszAlgId, 0, &pl);
+                if (!pre) return SCARD_E_UNSUPPORTED_FEATURE;
+            }
+            if (pre) memcpy(block, pre, pl); memcpy(block + pl, si->pbData, si->cbData);
             send = block; sn = pl + si->cbData; alg = 0x02;
         } else if (si->dwPaddingType == CARD_PADDING_PSS) {
             BCRYPT_PSS_PADDING_INFO *pi = (BCRYPT_PSS_PADDING_INFO *)si->pPaddingInfo;
@@ -744,7 +747,8 @@ DWORD WINAPI CardAcquireContext(PCARD_DATA cd, DWORD flags)
     rc = loadObjects(cd, m);
     if (rc != SCARD_S_SUCCESS) { LOG("not a CardEdge card (%08lX)", (unsigned long)rc); MdDeleteContext(cd); return SCARD_E_UNKNOWN_CARD; }
 
-    if (cd->dwVersion > CARD_DATA_CURRENT_VERSION) cd->dwVersion = CARD_DATA_CURRENT_VERSION;
+    /* version 6 is all this driver needs (version 7 only adds key import and the CNG algorithm properties) */
+    if (cd->dwVersion > CARD_DATA_VERSION_SIX) cd->dwVersion = CARD_DATA_VERSION_SIX;
 
     cd->pfnCardDeleteContext = MdDeleteContext;
     cd->pfnCardQueryCapabilities = MdQueryCapabilities;

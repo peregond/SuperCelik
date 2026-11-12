@@ -118,10 +118,12 @@ jobs:
       - uses: ilammy/msvc-dev-cmd@v1
         with:
           arch: x64
+      - name: Install the Cryptographic Provider Development Kit (cardmod.h)
+        run: choco install windows-cryptographic-provider-development-kit -y --no-progress
       - name: Build the smart card minidriver (x64)
         shell: cmd
         run: |
-          cl /nologo /O2 /W3 /MT /LD /Fe:dist\win-x64\SuperCelikMD.dll windows\minidriver\scelik_md.c /link /DEF:windows\minidriver\scelik_md.def advapi32.lib winscard.lib bcrypt.lib
+          cl /nologo /O2 /W3 /MT /LD /I"C:\Program Files (x86)\Windows Kits\10\Cryptographic Provider Development Kit\Include" /Fe:dist\win-x64\SuperCelikMD.dll windows\minidriver\scelik_md.c /link /DEF:windows\minidriver\scelik_md.def advapi32.lib winscard.lib bcrypt.lib
           dir dist\win-x64\SuperCelikMD.dll
       - name: Install Inno Setup
         run: choco install innosetup -y --no-progress
