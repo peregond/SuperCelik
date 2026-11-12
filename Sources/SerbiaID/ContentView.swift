@@ -88,18 +88,14 @@ extension AnyTransition {
 }
 
 /// Centered placeholder for a page that has nothing to show yet.
-struct EmptyState<Action: View>: View {
-    let systemImage: String
+struct EmptyState<Icon: View, Action: View>: View {
     let title: String
     let message: String
+    @ViewBuilder var icon: Icon
     @ViewBuilder var action: Action
     var body: some View {
         VStack(spacing: 14) {
-            Image(systemName: systemImage)
-                .font(.system(size: 44, weight: .light))
-                .foregroundStyle(brandTint)
-                .frame(width: 96, height: 96)
-                .background(Circle().fill(brandTint.opacity(0.12)))
+            icon
             Text(title).font(.title2.weight(.semibold)).multilineTextAlignment(.center)
             Text(message).foregroundStyle(.secondary).multilineTextAlignment(.center).frame(maxWidth: 420)
             action.padding(.top, 6)
@@ -130,10 +126,12 @@ struct ContentView: View {
     @EnvironmentObject var prefs: Prefs
     @SceneStorage("page") private var pageRaw = Page.personal.rawValue
 
-    private var page: Page { Page(rawValue: pageRaw) ?? .personal }
+    /// `--shot` asks for a page; SceneStorage does not work outside a scene, so it is kept here.
+    @State private var shotPage: String? = Shot.page
+    private var page: Page { Page(rawValue: shotPage ?? pageRaw) ?? .personal }
 
     private var selection: Binding<Page?> {
-        Binding(get: { page }, set: { if let v = $0 { pageRaw = v.rawValue } })
+        Binding(get: { page }, set: { if let v = $0 { shotPage = nil; pageRaw = v.rawValue } })
     }
 
     private var pageTitle: String {
@@ -172,7 +170,6 @@ struct ContentView: View {
         #if !APPSTORE
         .task { if prefs.autoUpdate { await model.checkUpdates(manual: false) } }
         #endif
-        .onAppear { if let p = Shot.page { pageRaw = p } }
     }
 
     private var sidebar: some View {
@@ -309,7 +306,7 @@ struct PersonalView: View {
                              hint = model.cardPresent ? .emptyReadyH : .emptyNoCardH
         }
         return VStack(spacing: 14) {
-            ReaderMascot(mood: mood, card: model.cardPresent, size: 132)
+            MascotArt(character: .reader, mood: mood, size: 170)
             Text(loc.t(title)).font(.title2.weight(.semibold)).multilineTextAlignment(.center)
                 .contentTransition(.opacity)
             if let hint {
@@ -499,10 +496,15 @@ struct TokenView: View {
     var body: some View {
         Group {
             if model.tokenRows.isEmpty {
-                EmptyState(systemImage: "key.viewfinder", title: loc.t(.certificates), message: loc.t(.hintToken)) {
+                EmptyState(title: loc.t(.certificates), message: loc.t(.hintToken)) {
+                    MascotArt(character: .key, mood: model.readerMood, size: 170)
+                } action: {
                     VStack(spacing: 12) {
-                        readButton.controlSize(.large)
-                        pinButtons
+                        // one row when it fits, two rows in a narrow window
+                        ViewThatFits(in: .horizontal) {
+                            HStack(spacing: 8) { readButton; pinButtons }
+                            VStack(spacing: 10) { readButton; pinButtons }
+                        }
                         Text(loc.t(.pinNote)).font(.caption).foregroundStyle(.secondary)
                             .multilineTextAlignment(.center).frame(maxWidth: 420)
                     }
@@ -539,7 +541,7 @@ struct TokenView: View {
     }
 
     private var pinButtons: some View {
-        HStack {
+        HStack(spacing: 8) {
             Button { Task { await model.changePin() } } label: { Label(loc.t(.changePin), systemImage: "lock.rotation") }
             Button { Task { await model.unblockPin() } } label: { Label(loc.t(.unblockPin), systemImage: "lock.open") }
             Button { Task { await model.signFile() } } label: { Label(loc.t(.signFile), systemImage: "signature") }

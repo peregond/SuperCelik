@@ -47,7 +47,7 @@ enum SignatureVerifier {
     /// Contents/Resources, where make-app.sh puts it) and traps when the bundle is missing,
     /// which crashed the app on "Read token". Here a missing bundle just means no anchors,
     /// so the chain check reports "not trusted" instead of crashing.
-    private static let resourceBundle: Bundle? = {
+    static let resourceBundle: Bundle? = {
         let name = "SerbiaID_SerbiaID.bundle"
         var dirs: [URL?] = [Bundle.main.resourceURL, Bundle.main.bundleURL,
                             Bundle.main.executableURL?.deletingLastPathComponent()]

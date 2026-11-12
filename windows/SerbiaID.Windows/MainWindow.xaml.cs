@@ -245,6 +245,8 @@ public partial class MainWindow : Window
     private void ProblemClose_Click(object s, RoutedEventArgs e) => HideProblem();
 
     // ---------- readers + automatic card detection ----------
+    private readonly MascotArt _keyMascot = new() { Character = MascotCharacter.Key, Width = 170, Height = 170, HorizontalAlignment = HorizontalAlignment.Center };
+
     private ReaderMood Mood =>
         _busy ? ReaderMood.Busy : _readers.Count == 0 ? ReaderMood.NoReader : _hasError ? ReaderMood.Error
         : _cardPresent ? ReaderMood.Ready : ReaderMood.Waiting;
@@ -259,7 +261,8 @@ public partial class MainWindow : Window
         CmbReader.Visibility = _readers.Count > 1 ? Visibility.Visible : Visibility.Collapsed;
 
         // the empty state tells what to do next (the status itself is in the header)
-        EmptyMascot.Set(mood, _cardPresent);
+        EmptyMascot.Set(mood);
+        _keyMascot.Set(mood);
         string title = mood switch
         {
             ReaderMood.Busy => "statusReading",
@@ -623,7 +626,10 @@ public partial class MainWindow : Window
         LblTokenInfo.Text = _token == null ? "" : $"{_token.Label}  {_token.Serial}".Trim();
         if (_token == null)
         {
-            LstCerts.Children.Add(new TextBlock { Text = Loc.T("hintToken"), Foreground = B("MutedBrush"), TextWrapping = TextWrapping.Wrap });
+            _keyMascot.Set(Mood);
+            Fx.FadeIn(_keyMascot);
+            LstCerts.Children.Add(_keyMascot);
+            LstCerts.Children.Add(new TextBlock { Text = Loc.T("hintToken"), Foreground = B("MutedBrush"), TextWrapping = TextWrapping.Wrap, TextAlignment = TextAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 8, 0, 0) });
             return;
         }
         foreach (var c in _token.Certificates)
