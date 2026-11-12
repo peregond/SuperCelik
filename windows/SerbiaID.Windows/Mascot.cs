@@ -92,14 +92,15 @@ public sealed class MascotArt : Grid
         IsVisibleChanged += (_, _) => { if (IsVisible) Loop(); else Stop(); };
     }
 
-    private static string PoseFor(MascotCharacter c, ReaderMood m) => (c, m) switch
+    /// The pose files for a state, best first. "sad" and "worry" stand in for each other until both are drawn.
+    private static string[] PosesFor(MascotCharacter c, ReaderMood m) => (c, m) switch
     {
-        (_, ReaderMood.NoReader) => "sad",
-        (_, ReaderMood.Waiting) => "present",
-        (MascotCharacter.Reader, ReaderMood.Ready or ReaderMood.Busy) => "card",
-        (MascotCharacter.Key, ReaderMood.Ready) => "thumbs",
-        (MascotCharacter.Key, ReaderMood.Busy) => "look",
-        _ => "worry",
+        (_, ReaderMood.NoReader) => new[] { "sad", "worry" },
+        (_, ReaderMood.Waiting) => new[] { "present" },
+        (MascotCharacter.Reader, ReaderMood.Ready or ReaderMood.Busy) => new[] { "card" },
+        (MascotCharacter.Key, ReaderMood.Ready) => new[] { "thumbs" },
+        (MascotCharacter.Key, ReaderMood.Busy) => new[] { "look" },
+        _ => new[] { "worry", "sad" },
     };
 
     private static BitmapSource Load(MascotCharacter c, string pose, bool grey)
@@ -160,9 +161,9 @@ public sealed class MascotArt : Grid
 
     private void Show(bool animated)
     {
-        string wanted = PoseFor(Character, _mood);
-        var bmp = Load(Character, wanted, false);
-        bool grey = false;
+        string wanted = null; BitmapSource bmp = null; bool grey = false;
+        foreach (var pose in PosesFor(Character, _mood))
+            if ((bmp = Load(Character, pose, false)) != null) { wanted = pose; break; }
         if (bmp == null) { bmp = Load(Character, "present", true); wanted = "present-grey"; grey = true; }
         if (bmp == null || wanted == _shown) return;
         _shown = wanted;

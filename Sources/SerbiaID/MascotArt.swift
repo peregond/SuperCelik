@@ -13,15 +13,16 @@ enum ReaderMood: Equatable {
 enum MascotCharacter: String {
     case reader, key
 
-    /// The pose file (Resources/Mascots/<character>-<pose>.png) for a state.
-    func pose(for mood: ReaderMood) -> String {
+    /// The pose files (Resources/Mascots/<character>-<pose>.png) for a state, best first.
+    /// "sad" and "worry" stand in for each other until both are drawn.
+    func poses(for mood: ReaderMood) -> [String] {
         switch (self, mood) {
-        case (_, .noReader): return "sad"
-        case (_, .waiting): return "present"
-        case (.reader, .ready), (.reader, .busy): return "card"
-        case (.key, .ready): return "thumbs"
-        case (.key, .busy): return "look"
-        case (_, .error): return "worry"
+        case (_, .noReader): return ["sad", "worry"]
+        case (_, .waiting): return ["present"]
+        case (.reader, .ready), (.reader, .busy): return ["card"]
+        case (.key, .ready): return ["thumbs"]
+        case (.key, .busy): return ["look"]
+        case (_, .error): return ["worry", "sad"]
         }
     }
 }
@@ -46,8 +47,9 @@ struct MascotArt: View {
 
     private struct Resolved { let name: String; let image: NSImage?; let dim: Bool }
     private var resolved: Resolved {
-        let wanted = character.pose(for: mood)
-        if let img = Self.image(character, wanted) { return Resolved(name: wanted, image: img, dim: false) }
+        for wanted in character.poses(for: mood) {
+            if let img = Self.image(character, wanted) { return Resolved(name: wanted, image: img, dim: false) }
+        }
         return Resolved(name: "present", image: Self.image(character, "present"), dim: true)
     }
 
@@ -78,7 +80,7 @@ struct MascotArt: View {
         .scaleEffect(x: 1, y: (phase ? 1.014 : 1) * (r.dim && mood == .noReader ? 0.96 : 1), anchor: .bottom)
         .offset(y: hop)
         .modifier(MascotShake(animatableData: shakes))
-        .animation(reduceMotion ? nil : .spring(response: 0.42, dampingFraction: 0.7), value: r.name)
+        .animation(reduceMotion ? nil : .spring(response: 0.42, dampingFraction: 0.7), value: r.name + (r.dim ? "-dim" : ""))
         .accessibilityHidden(true)
         .onChange(of: mood) { react(to: $0) }
         .task(id: "\(mood)-\(animates)") {
