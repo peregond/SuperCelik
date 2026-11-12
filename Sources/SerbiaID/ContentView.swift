@@ -500,8 +500,11 @@ struct TokenView: View {
                     MascotArt(character: .key, mood: model.readerMood, size: 170)
                 } action: {
                     VStack(spacing: 12) {
-                        readButton.controlSize(.large)
-                        pinButtons
+                        // one row when it fits, two rows in a narrow window
+                        ViewThatFits(in: .horizontal) {
+                            HStack(spacing: 8) { readButton; pinButtons }
+                            VStack(spacing: 10) { readButton; pinButtons }
+                        }
                         Text(loc.t(.pinNote)).font(.caption).foregroundStyle(.secondary)
                             .multilineTextAlignment(.center).frame(maxWidth: 420)
                     }
@@ -538,7 +541,7 @@ struct TokenView: View {
     }
 
     private var pinButtons: some View {
-        HStack {
+        HStack(spacing: 8) {
             Button { Task { await model.changePin() } } label: { Label(loc.t(.changePin), systemImage: "lock.rotation") }
             Button { Task { await model.unblockPin() } } label: { Label(loc.t(.unblockPin), systemImage: "lock.open") }
             Button { Task { await model.signFile() } } label: { Label(loc.t(.signFile), systemImage: "signature") }
