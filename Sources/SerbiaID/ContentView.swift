@@ -212,7 +212,8 @@ struct ContentView: View {
                 }
                 .labelsHidden().pickerStyle(.menu).controlSize(.small)
             } else {
-                Text(model.readers.first ?? loc.t(.noReader))
+                // no reader: the empty state in the middle already says so, so only offer to look again
+                Text(model.readers.first ?? loc.t(.refresh))
                     .font(.caption).foregroundStyle(.secondary)
                     .lineLimit(1).truncationMode(.middle)
             }
