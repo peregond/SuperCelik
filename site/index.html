@@ -155,6 +155,9 @@ section{padding:110px 0}
 .rail-head{padding:0 24px;max-width:1100px;margin:0 auto 40px}
 .rail{display:flex;gap:20px;overflow-x:auto;scroll-snap-type:x mandatory;padding:6px max(24px,calc((100vw - 1100px)/2 + 24px)) 40px;scrollbar-width:none;scroll-padding-inline:max(24px,calc((100vw - 1100px)/2 + 24px))}
 .rail::-webkit-scrollbar{display:none}
+.rail{cursor:grab}
+.rail.drag,.cards.drag{cursor:grabbing;scroll-snap-type:none;scroll-behavior:auto;user-select:none;-webkit-user-select:none}
+.rail.drag *,.cards.drag *{pointer-events:none}
 .fc{flex:0 0 min(360px,82vw);height:430px;scroll-snap-align:start;border-radius:var(--r);padding:34px 30px;color:#fff;position:relative;overflow:hidden;display:flex;flex-direction:column}
 .fc h3{font-size:30px;line-height:1.1;letter-spacing:-.025em;margin:0 0 12px;font-weight:750;position:relative;z-index:1}
 .fc p{margin:0;font-size:16.5px;line-height:1.45;color:rgba(255,255,255,.88);position:relative;z-index:1}
@@ -212,6 +215,7 @@ section{padding:110px 0}
 @media(max-width:760px){
  .cards{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:24px;margin:30px -24px 0;padding:8px 24px 30px;max-width:none;scrollbar-width:none;-webkit-overflow-scrolling:touch}
  .cards::-webkit-scrollbar{display:none}
+ .cards{cursor:grab}
  .cards>.sc{flex:0 0 84%;scroll-snap-align:start}
  .sc-tx{padding:18px 22px 24px}.sc-tx h3{font-size:20px}.sc-tx p{font-size:15.5px}
  .appmenu{min-width:236px;font-size:17px}
@@ -646,6 +650,42 @@ function splitH1(){const h=document.getElementById("h1");
 const rail=document.getElementById("rail");
 document.getElementById("prev").onclick=()=>rail.scrollBy({left:-380,behavior:"smooth"});
 document.getElementById("next").onclick=()=>rail.scrollBy({left:380,behavior:"smooth"});
+// drag the cards with the mouse (touch already scrolls natively): grab, pull, a little momentum, then settle on a card
+function dragScroll(el){
+ let down=false,moved=false,sx=0,sl=0,lx=0,lt=0,v=0;
+ const calmMotion=matchMedia("(prefers-reduced-motion: reduce)").matches;
+ el.addEventListener("pointerdown",e=>{
+  if(e.pointerType!=="mouse"||e.button!==0||el.scrollWidth<=el.clientWidth+2)return;
+  down=true;moved=false;sx=lx=e.clientX;sl=el.scrollLeft;lt=performance.now();v=0;
+  el.getAnimations&&el.scrollTo({left:el.scrollLeft,behavior:"instant"});   // stop a running smooth scroll
+ });
+ addEventListener("pointermove",e=>{
+  if(!down)return;
+  const dx=e.clientX-sx;
+  if(!moved&&Math.abs(dx)<4)return;
+  if(!moved){moved=true;el.classList.add("drag");try{el.setPointerCapture&&el.setPointerCapture(e.pointerId)}catch(_){}}
+  el.scrollLeft=sl-dx;
+  const now=performance.now(),dt=now-lt;
+  if(dt>0){v=0.8*v+0.2*((e.clientX-lx)/dt)}                                  // px per ms, smoothed
+  lx=e.clientX;lt=now;e.preventDefault();
+ });
+ const end=()=>{
+  if(!down)return;down=false;
+  if(!moved)return;
+  // where the momentum would carry it, then the nearest card edge
+  const pad=parseFloat(getComputedStyle(el).scrollPaddingLeft)||0,box=el.getBoundingClientRect().left;
+  const carry=Math.max(-560,Math.min(560,v*220));                           // a hard flick still travels at most about a card and a half
+  const raw=Math.max(0,Math.min(el.scrollWidth-el.clientWidth,el.scrollLeft-carry));
+  let best=raw,bd=1e9;
+  [...el.children].forEach(c=>{const x=c.getBoundingClientRect().left-box+el.scrollLeft-pad,d=Math.abs(x-raw);if(d<bd){bd=d;best=x}});
+  best=Math.max(0,Math.min(el.scrollWidth-el.clientWidth,best));
+  el.classList.remove("drag");
+  el.scrollTo({left:best,behavior:calmMotion?"auto":"smooth"});
+ };
+ addEventListener("pointerup",end);addEventListener("pointercancel",end);
+ el.addEventListener("dragstart",e=>e.preventDefault());
+}
+dragScroll(rail);document.querySelectorAll(".cards").forEach(dragScroll);
 // scroll reveal + light parallax on the hero devices
 const rm=matchMedia("(prefers-reduced-motion: reduce)").matches;
 if("IntersectionObserver" in window&&!rm){const io=new IntersectionObserver(es=>es.forEach(e=>{if(e.isIntersecting){e.target.classList.add("in");io.unobserve(e.target)}}),{threshold:.12});
