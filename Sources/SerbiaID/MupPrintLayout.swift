@@ -35,20 +35,55 @@ final class MupPrintLayout {
     private var lineWidth: CGFloat = 1
     private var fontSize: CGFloat = 13.5
     private var kern: CGFloat = -0.1
+    /// Fitting: the form is laid out top to bottom, so long data (wrapped addresses, a note) pushes the footnotes
+    /// off the page. A dry run measures the height first; if it does not fit, the rows are packed a little
+    /// tighter and, as a last resort, the whole page is scaled down a few percent.
+    private var measuring = false
+    private var rowStep: CGFloat = 24.67
+    private var rowCount = 0
+    private static let bottomLimit: CGFloat = 826
 
     init(_ p: PersonalData, includeJmbg: Bool = true, printDate: Date = .now) {
         self.p = p; self.includeJmbg = includeJmbg; self.printDate = printDate
     }
 
     func draw() {
+        rowStep = 24.67
+        let natural = layout()
+        var scale: CGFloat = 1
+        if natural > Self.bottomLimit {
+            rowStep = max(18, rowStep - (natural - Self.bottomLimit) / CGFloat(max(rowCount, 1)))
+            let packed = layout()
+            if packed > Self.bottomLimit { scale = Self.bottomLimit / packed }
+        }
         PColor.white.setFill()
         PBezierPath(rect: CGRect(origin: .zero, size: Self.pageSize)).fill()
-        y = 0; lineWidth = 1; fontSize = 13.5; kern = -0.1
+        if let ctx = Self.context {
+            ctx.saveGState()
+            ctx.scaleBy(x: scale, y: scale)
+        }
+        _ = layout(drawing: true)
+        Self.context?.restoreGState()
+    }
+
+    private static var context: CGContext? {
+        #if os(macOS)
+        return NSGraphicsContext.current?.cgContext
+        #else
+        return UIGraphicsGetCurrentContext()
+        #endif
+    }
+
+    /// Lays the page out (drawing it only when `drawing`) and returns the y where it ends.
+    private func layout(drawing: Bool = false) -> CGFloat {
+        measuring = !drawing
+        y = 0; lineWidth = 1; fontSize = 13.5; kern = -0.1; rowCount = 0
         switch p.cardType {
         case .if2020: drawForeigner(permit: false)
         case .rp2024: drawForeigner(permit: true)
         default: drawRegular()
         }
+        return y
     }
 
     // MARK: Pages
@@ -146,6 +181,7 @@ final class MupPrintLayout {
     }
 
     private func photo(top: CGFloat) {
+        guard !measuring else { lineWidth = 0.48; return }
         let frame = CGRect(x: leftMargin, y: top, width: 179 - leftMargin, height: 159)
         if let d = p.portrait, let img = PImage(data: d) {
             let r = CGRect(x: leftMargin, y: top, width: 119.9, height: 159)
@@ -212,7 +248,8 @@ final class MupPrintLayout {
         let l = wrap(label, width: 120), v = wrap(value, width: 350)
         for (i, s) in l.enumerated() { text(s, x: textLeftMargin, y: top + CGFloat(i) * 12) }
         for (i, s) in v.enumerated() { text(s, x: textLeftMargin + 128, y: top + CGFloat(i) * 12) }
-        y = top + CGFloat(max(l.count, v.count, 1) - 1) * 12 + 24.67
+        y = top + CGFloat(max(l.count, v.count, 1) - 1) * 12 + rowStep
+        rowCount += 1
     }
 
     // MARK: Primitives
@@ -223,12 +260,14 @@ final class MupPrintLayout {
     }
 
     private func text(_ s: String, x: CGFloat, y: CGFloat) {
+        guard !measuring else { return }
         (s as NSString).draw(at: CGPoint(x: x, y: y), withAttributes: attrs)
     }
 
     /// Horizontal rule across the page at the current y; `nil` keeps the previous width.
     private func line(_ width: CGFloat?) {
         if let width { lineWidth = width }
+        guard !measuring else { return }
         PColor.black.setStroke()
         let path = PBezierPath()
         path.move(to: CGPoint(x: leftMargin, y: y))

@@ -43,6 +43,12 @@ public partial class App : Application
             Dispatcher.InvokeAsync(() => { w.SaveScreenshot(e.Args[si + 1]); Shutdown(); }, System.Windows.Threading.DispatcherPriority.ContextIdle);
             return;
         }
+        var shi = Array.IndexOf(e.Args, "--sheet");   // the printout as a PNG (testing the page fit)
+        if (shi >= 0 && shi + 1 < e.Args.Length)
+        {
+            var w = new MainWindow(); w.LoadDemo(0, false, false);
+            w.ExportDemoSheetPng(e.Args[shi + 1], e.Args.Contains("--long")); Shutdown(); return;
+        }
         var pi = Array.IndexOf(e.Args, "--pdf");     // demo-data PDF export (for testing)
         if (pi >= 0 && pi + 1 < e.Args.Length)
         {

@@ -805,6 +805,24 @@ public partial class MainWindow : Window
         if (state == "error") ShowProblem(new CardException("Unsupported card (demo)"));
     }
 
+    /// The printout as a PNG (testing the page fit): `longData` makes the rows wrap, like a real permit with long entries.
+    internal void ExportDemoSheetPng(string path, bool longData)
+    {
+        _personal.CardType = CardType.RP2024;
+        if (longData)
+        {
+            _personal.Fixed.ENote = "Strani državljanin sa dugotrajnim boravkom, napomena u čipu koja se proteže kroz dva reda teksta na obrascu";
+            _personal.Fixed.PlaceOfBirth = "Novi Sad, Autonomna Pokrajina Vojvodina, Republika Srbija, Evropa";
+            _personal.Variable.Street = "Bulevar despota Stefana Lazarevića i Knjaza Miloša Obrenovića";
+            _personal.Variable.HouseNumber = "128";
+        }
+        var el = PrintSheet.Build(_personal, 793.7, 1122.5, true);
+        var rtb = new RenderTargetBitmap(794, 1123, 96, 96, PixelFormats.Pbgra32);
+        rtb.Render(el);
+        var enc = new PngBitmapEncoder(); enc.Frames.Add(BitmapFrame.Create(rtb));
+        using var fs = File.Create(path); enc.Save(fs);
+    }
+
     internal void ExportDemoPdf(string path) => PdfWriter.SaveSheet(PrintSheet.Build(_personal, 793.7, 1122.5, true), path);
 
     internal void SaveScreenshot(string path)
@@ -848,16 +866,39 @@ internal static class PrintSheet
         private readonly bool _jmbg;
         private readonly Canvas _c = new() { Width = PageW, Height = PageH, Background = Brushes.White };
         private readonly Typeface _face = new(new FontFamily("Arial"), FontStyles.Normal, FontWeights.Normal, FontStretches.Normal);
-        private double _y, _lineWidth = 1, _fontSize = 13.5;
+        private readonly Canvas _content = new() { Width = PageW, Height = PageH };   // the form itself; may be scaled to fit
+        private double _y, _lineWidth = 1, _fontSize = 13.5, _rowStep = 24.67;
+        private int _rowCount;
+        private const double BottomLimit = 826;
 
-        public Sheet(PersonalData p, bool includeJmbg) { _p = p; _jmbg = includeJmbg; }
+        public Sheet(PersonalData p, bool includeJmbg) { _p = p; _jmbg = includeJmbg; _c.Children.Add(_content); }
 
+        /// The form is laid out top to bottom, so long data (wrapped addresses, a note) pushes the footnotes off the page.
+        /// If it does not fit, the rows are packed a little tighter and, as a last resort, the page is scaled down a few percent.
         public Canvas Draw()
         {
+            _rowStep = 24.67;
+            double natural = Layout();
+            double scale = 1;
+            if (natural > BottomLimit)
+            {
+                _rowStep = Math.Max(18, _rowStep - (natural - BottomLimit) / Math.Max(_rowCount, 1));
+                double packed = Layout();
+                if (packed > BottomLimit) scale = BottomLimit / packed;
+            }
+            _content.RenderTransform = new ScaleTransform(scale, scale);
+            return _c;
+        }
+
+        /// Draws the whole page afresh and returns the y where it ends.
+        private double Layout()
+        {
+            _content.Children.Clear();
+            _y = 0; _lineWidth = 1; _fontSize = 13.5; _rowCount = 0;
             if (_p.CardType == CardType.IF2020) Foreigner(false);
             else if (_p.CardType == CardType.RP2024) Foreigner(true);
             else Regular();
-            return _c;
+            return _y;
         }
 
         private void Regular()
@@ -960,11 +1001,11 @@ internal static class PrintSheet
             {
                 var i = new Image { Source = img, Width = 119.9, Height = 159, Stretch = Stretch.Fill };
                 Canvas.SetLeft(i, LeftMargin); Canvas.SetTop(i, top);
-                _c.Children.Add(i);
+                _content.Children.Add(i);
             }
             var r = new System.Windows.Shapes.Rectangle { Width = 179 - LeftMargin, Height = 159, Stroke = Brushes.Black, StrokeThickness = 0.48 };
             Canvas.SetLeft(r, LeftMargin); Canvas.SetTop(r, top);
-            _c.Children.Add(r);
+            _content.Children.Add(r);
             _lineWidth = 0.48;
         }
 
@@ -1015,20 +1056,21 @@ internal static class PrintSheet
             var l = Wrap(label, 120); var v = Wrap(value ?? "", 350);
             for (int i = 0; i < l.Count; i++) Text(l[i], TextLeftMargin, top + i * 12);
             for (int i = 0; i < v.Count; i++) Text(v[i], TextLeftMargin + 128, top + i * 12);
-            _y = top + (Math.Max(Math.Max(l.Count, v.Count), 1) - 1) * 12 + 24.67;
+            _y = top + (Math.Max(Math.Max(l.Count, v.Count), 1) - 1) * 12 + _rowStep;
+            _rowCount++;
         }
 
         private void Text(string s, double x, double y)
         {
             var t = new TextBlock { Text = s, FontFamily = _face.FontFamily, FontSize = _fontSize, Foreground = Brushes.Black };
             Canvas.SetLeft(t, x); Canvas.SetTop(t, y);
-            _c.Children.Add(t);
+            _content.Children.Add(t);
         }
 
         private void Line(double? width)
         {
             if (width.HasValue) _lineWidth = width.Value;
-            _c.Children.Add(new System.Windows.Shapes.Line { X1 = LeftMargin, X2 = RightMargin, Y1 = _y, Y2 = _y, Stroke = Brushes.Black, StrokeThickness = _lineWidth });
+            _content.Children.Add(new System.Windows.Shapes.Line { X1 = LeftMargin, X2 = RightMargin, Y1 = _y, Y2 = _y, Stroke = Brushes.Black, StrokeThickness = _lineWidth });
         }
 
         private double Measure(string s) =>

@@ -64,6 +64,8 @@ jobs:
             set -- $line; n="$1"; shift
             ./out/SuperCelik.exe --shot "$(pwd -W)/shots/win-$n.png" "$@" || echo "shot $n failed"
           done < shots.txt
+          ./out/SuperCelik.exe --sheet "$(pwd -W)/shots/win-sheet.png" || echo "sheet failed"
+          ./out/SuperCelik.exe --sheet "$(pwd -W)/shots/win-sheet-long.png" --long || echo "sheet-long failed"
           ls -l shots
       - uses: actions/upload-artifact@v4
         with: { name: shots-windows, path: shots/*.png }
