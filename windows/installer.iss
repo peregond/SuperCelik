@@ -16,7 +16,7 @@ Compression=lzma2
 SolidCompression=yes
 ArchitecturesAllowed=x64compatible
 ArchitecturesInstallIn64BitMode=x64compatible
-PrivilegesRequiredOverridesAllowed=dialog
+PrivilegesRequired=admin
 WizardStyle=modern
 UninstallDisplayIcon={app}\SuperCelik.exe
 SetupIconFile=SerbiaID.Windows\app.ico
@@ -30,6 +30,9 @@ Name: "serbian"; MessagesFile: "Serbian.isl"
 ; self-contained publish output (see build.yml): dotnet publish -c Release -r win-x64 --self-contained
 Source: "..\dist\win-x64\*"; DestDir: "{app}"; Flags: recursesubdirs ignoreversion
 
+; the smart card minidriver for browser login (Chrome / Edge) goes next to the system DLLs, where Windows looks for it
+Source: "..\dist\win-x64\SuperCelikMD.dll"; DestDir: "{sys}"; Flags: ignoreversion restartreplace uninsrestartdelete
+
 [Icons]
 Name: "{group}\Super Celik"; Filename: "{app}\SuperCelik.exe"
 Name: "{autodesktop}\Super Celik"; Filename: "{app}\SuperCelik.exe"; Tasks: desktopicon
@@ -38,10 +41,22 @@ Name: "{autodesktop}\Super Celik"; Filename: "{app}\SuperCelik.exe"; Tasks: desk
 [Registry]
 Root: HKCU; Subkey: "Software\SuperCelik"; ValueType: string; ValueName: "Lang"; ValueData: "{language}"; Flags: uninsdeletekey
 
+; Smart card driver registration (Windows matches a card to its minidriver by ATR). The Gemalto-based Serbian
+; eID family is registered here; other ATRs are registered by `SuperCelik.exe --register-driver auto` right after
+; the install (cards in a reader now) and by the app itself the first time such a card is inserted. The driver
+; checks the CardEdge applet itself, so a card of the same family with another applet is declined.
+Root: HKLM; Subkey: "SOFTWARE\Microsoft\Cryptography\Calais\SmartCards\SuperCelik-Gemalto-eID"; ValueType: binary; ValueName: "ATR"; ValueData: "3B FF 94 00 00 81 31 80 43 80 31 B8 65 B0 85 02 01 F3 12 0F FF 82 90 00 79"; Flags: uninsdeletekey
+Root: HKLM; Subkey: "SOFTWARE\Microsoft\Cryptography\Calais\SmartCards\SuperCelik-Gemalto-eID"; ValueType: binary; ValueName: "ATRMask"; ValueData: "FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF 00 00 00 00 00 00 00 00 00 00"
+Root: HKLM; Subkey: "SOFTWARE\Microsoft\Cryptography\Calais\SmartCards\SuperCelik-Gemalto-eID"; ValueType: string; ValueName: "Crypto Provider"; ValueData: "Microsoft Base Smart Card Crypto Provider"
+Root: HKLM; Subkey: "SOFTWARE\Microsoft\Cryptography\Calais\SmartCards\SuperCelik-Gemalto-eID"; ValueType: string; ValueName: "Smart Card Key Storage Provider"; ValueData: "Microsoft Smart Card Key Storage Provider"
+Root: HKLM; Subkey: "SOFTWARE\Microsoft\Cryptography\Calais\SmartCards\SuperCelik-Gemalto-eID"; ValueType: string; ValueName: "80000001"; ValueData: "SuperCelikMD.dll"
+
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"
 
 [Run]
+; register the driver for the cards that are in a reader right now (the installer is elevated); never fails the install
+Filename: "{app}\SuperCelik.exe"; Parameters: "--register-driver auto"; Flags: runhidden waituntilterminated
 ; interactive install: "Launch Super Celik" checkbox on the last page
 Filename: "{app}\SuperCelik.exe"; Description: "{cm:LaunchProgram,Super Celik}"; Flags: nowait postinstall skipifsilent runasoriginaluser
 ; silent install (auto-update from inside the app): start the new version again automatically

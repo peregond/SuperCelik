@@ -348,7 +348,8 @@ public partial class MainWindow : Window
     {
         if (LblDriverStatus == null) return;
         bool avail = DriverSetup.Available, on = avail && DriverSetup.AnyRegistered();
-        LblDriverStatus.Text = Loc.T(!avail ? "driverMissing" : on ? "driverOn" : "driverOff");
+        LblDriverStatus.Text = Loc.T(!avail ? "driverMissing" : on ? "driverOn" : "driverOff")
+            + (_lastTokenAtr != null ? "\nATR: " + DriverSetup.Hex(_lastTokenAtr) : "");
         BtnDriverInstall.Visibility = avail ? Visibility.Visible : Visibility.Collapsed;
         BtnDriverRemove.Visibility = avail && on ? Visibility.Visible : Visibility.Collapsed;
     }
