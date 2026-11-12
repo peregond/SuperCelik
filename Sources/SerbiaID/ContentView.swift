@@ -5,11 +5,11 @@ import AppKit
 let brandBlue = Color(red: 0.047, green: 0.251, blue: 0.463)
 let brandRed = Color(red: 0.776, green: 0.212, blue: 0.235)
 
-/// Accent colour: the brand navy in light mode, a lighter blue in dark mode where navy is unreadable.
+/// Accent colour: the red of the Serbian flag in light mode, a lighter red in dark mode where it reads better.
 let brandTint = Color(nsColor: NSColor(name: nil) { appearance in
     appearance.bestMatch(from: [.aqua, .darkAqua]) == .darkAqua
-        ? NSColor(srgbRed: 0.36, green: 0.62, blue: 0.96, alpha: 1)
-        : NSColor(srgbRed: 0.047, green: 0.251, blue: 0.463, alpha: 1)
+        ? NSColor(srgbRed: 0.94, green: 0.39, blue: 0.42, alpha: 1)
+        : NSColor(srgbRed: 0.776, green: 0.212, blue: 0.235, alpha: 1)
 })
 
 enum Page: String, Hashable { case personal, token, settings, about }
