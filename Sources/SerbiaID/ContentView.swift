@@ -126,10 +126,12 @@ struct ContentView: View {
     @EnvironmentObject var prefs: Prefs
     @SceneStorage("page") private var pageRaw = Page.personal.rawValue
 
-    private var page: Page { Page(rawValue: pageRaw) ?? .personal }
+    /// `--shot` asks for a page; SceneStorage does not work outside a scene, so it is kept here.
+    @State private var shotPage: String? = Shot.page
+    private var page: Page { Page(rawValue: shotPage ?? pageRaw) ?? .personal }
 
     private var selection: Binding<Page?> {
-        Binding(get: { page }, set: { if let v = $0 { pageRaw = v.rawValue } })
+        Binding(get: { page }, set: { if let v = $0 { shotPage = nil; pageRaw = v.rawValue } })
     }
 
     private var pageTitle: String {
@@ -168,7 +170,6 @@ struct ContentView: View {
         #if !APPSTORE
         .task { if prefs.autoUpdate { await model.checkUpdates(manual: false) } }
         #endif
-        .onAppear { if let p = Shot.page { pageRaw = p } }
     }
 
     private var sidebar: some View {
