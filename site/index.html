@@ -1,0 +1,387 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Super Celik — чтение сербской ID-карты на Mac, Windows, Android и iPhone</title>
+<meta name="description" content="Super Celik считывает сербскую электронную ID-карту, карту иностранца и вид на жительство. Бесплатно, без аккаунта, данные не покидают устройство.">
+<meta property="og:title" content="Super Celik">
+<meta property="og:description" content="Чтение сербской ID-карты, карты иностранца и вида на жительство. macOS, Windows, Android, iPhone.">
+<meta property="og:image" content="img/icon.png">
+<meta name="theme-color" content="#0C4076">
+<link rel="icon" href="img/favicon.png">
+<style>
+:root{--red:#C6363C;--red-d:#a82a30;--blue:#0C4076;--ink:#1c2230;--muted:#5b6475;--bg:#fbfaf8;--card:#fff;--line:#e8e4de;--r:20px}
+@media (prefers-color-scheme:dark){:root{--ink:#eef0f5;--muted:#a3abbb;--bg:#0f1420;--card:#171e2d;--line:#263046;--red:#e0555b;--red-d:#c6363c}}
+*{box-sizing:border-box}html{scroll-behavior:smooth}
+body{margin:0;font:17px/1.55 -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Inter,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased}
+a{color:inherit}
+.wrap{max-width:1080px;margin:0 auto;padding:0 24px}
+header{position:sticky;top:0;z-index:10;backdrop-filter:blur(14px);background:color-mix(in srgb,var(--bg) 82%,transparent);border-bottom:1px solid var(--line)}
+header .wrap{display:flex;align-items:center;gap:20px;height:64px}
+.brand{display:flex;align-items:center;gap:10px;font-weight:700;text-decoration:none;font-size:18px}
+.brand img{width:32px;height:32px}
+nav{margin-left:auto;display:flex;gap:22px;align-items:center;font-size:15px}
+nav a{text-decoration:none;color:var(--muted)}nav a:hover{color:var(--ink)}
+.lang{display:flex;border:1px solid var(--line);border-radius:999px;overflow:hidden;background:var(--card)}
+.lang button{border:0;background:none;color:var(--muted);padding:6px 11px;font:600 13px inherit;font-family:inherit;cursor:pointer}
+.lang button[aria-pressed=true]{background:var(--blue);color:#fff}
+@media(max-width:760px){nav a{display:none}}
+/* hero */
+.hero{padding:72px 0 56px;background:radial-gradient(900px 420px at 85% -10%,color-mix(in srgb,var(--red) 14%,transparent),transparent),radial-gradient(700px 400px at -5% 10%,color-mix(in srgb,var(--blue) 14%,transparent),transparent)}
+.hero .wrap{display:grid;grid-template-columns:1.15fr .85fr;gap:40px;align-items:center}
+@media(max-width:860px){.hero .wrap{grid-template-columns:1fr;text-align:center}.hero .cta,.hero .badges{justify-content:center}.hero .art{order:-1}}
+.pill{display:inline-block;font-size:13px;font-weight:600;color:var(--blue);background:color-mix(in srgb,var(--blue) 10%,transparent);padding:5px 12px;border-radius:999px;margin-bottom:18px}
+@media(prefers-color-scheme:dark){.pill{color:#9cc2f0}}
+h1{font-size:clamp(34px,5.2vw,56px);line-height:1.08;margin:0 0 18px;letter-spacing:-.025em}
+h1 em{font-style:normal;color:var(--red)}
+.lead{font-size:19px;color:var(--muted);max-width:560px;margin:0 0 30px}
+@media(max-width:860px){.lead{margin-inline:auto}}
+.cta{display:flex;gap:12px;flex-wrap:wrap;align-items:center}
+.btn{display:inline-flex;align-items:center;gap:10px;padding:15px 26px;border-radius:14px;font-weight:700;text-decoration:none;font-size:17px;border:2px solid transparent;transition:.15s;cursor:pointer}
+.btn.primary{background:var(--red);color:#fff;box-shadow:0 8px 24px -8px var(--red)}
+.btn.primary:hover{background:var(--red-d);transform:translateY(-1px)}
+.btn.ghost{border-color:var(--line);background:var(--card)}.btn.ghost:hover{border-color:var(--blue)}
+.btn svg{width:20px;height:20px;flex:none}
+.ver{font-size:14px;color:var(--muted);margin-top:14px;min-height:22px}
+.badges{display:flex;gap:18px;flex-wrap:wrap;margin-top:22px;font-size:14px;color:var(--muted)}
+.badges span::before{content:"✓ ";color:#2e9e5b;font-weight:800}
+.art{display:flex;justify-content:center;position:relative}
+.art img.mascot{width:min(360px,80%);filter:drop-shadow(0 20px 30px rgba(0,0,0,.18));animation:float 5s ease-in-out infinite}
+@keyframes float{50%{transform:translateY(-10px) rotate(1.5deg)}}
+@media(prefers-reduced-motion:reduce){.art img.mascot{animation:none}}
+/* screenshots */
+.shots-d{display:grid;grid-template-columns:repeat(2,1fr);gap:28px;align-items:end}
+.shots-m{display:grid;grid-template-columns:repeat(4,1fr);gap:26px;margin-top:44px;align-items:end}
+@media(max-width:860px){.shots-d{grid-template-columns:1fr}.shots-m{grid-template-columns:repeat(2,1fr)}}
+figure{margin:0;text-align:center}
+figcaption{margin-top:14px;font-weight:650;font-size:15px}
+figcaption small{display:block;font-weight:400;color:var(--muted);font-size:13px;margin-top:2px}
+.win{border-radius:14px;overflow:hidden;border:1px solid var(--line);box-shadow:0 24px 50px -22px rgba(12,64,118,.45),0 4px 14px rgba(0,0,0,.06);background:var(--card)}
+.win img{display:block;width:100%;height:auto}
+.mac img{display:block;width:100%;height:auto;filter:drop-shadow(0 22px 28px rgba(12,64,118,.28))}
+.phone{border-radius:34px;overflow:hidden;border:7px solid #11151f;background:#11151f;box-shadow:0 26px 50px -22px rgba(12,64,118,.5);max-width:270px;margin-inline:auto}
+.phone img{display:block;width:100%;height:auto;border-radius:26px}
+.demo{margin-top:30px;text-align:center;color:var(--muted);font-size:13.5px}
+/* sections */
+section{padding:72px 0}
+h2{font-size:clamp(28px,3.6vw,38px);letter-spacing:-.02em;margin:0 0 10px;line-height:1.15}
+.sub{color:var(--muted);margin:0 0 38px;max-width:640px}
+.center{text-align:center}.center .sub{margin-inline:auto}
+.grid{display:grid;gap:18px}
+.g4{grid-template-columns:repeat(4,1fr)}.g3{grid-template-columns:repeat(3,1fr)}.g2{grid-template-columns:repeat(2,1fr)}
+@media(max-width:960px){.g4{grid-template-columns:repeat(2,1fr)}.g3{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:600px){.g4,.g3,.g2{grid-template-columns:1fr}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:var(--r);padding:26px}
+.plat{display:flex;flex-direction:column;gap:6px;transition:.15s}
+.plat.me{border-color:var(--red);box-shadow:0 0 0 3px color-mix(in srgb,var(--red) 18%,transparent)}
+.plat .ic{width:44px;height:44px;border-radius:12px;background:color-mix(in srgb,var(--blue) 9%,transparent);display:grid;place-items:center;margin-bottom:8px;color:var(--blue)}
+@media(prefers-color-scheme:dark){.plat .ic{color:#9cc2f0}}
+.plat .ic svg{width:24px;height:24px}
+.plat h3{margin:0;font-size:20px}
+.plat p{margin:0;color:var(--muted);font-size:14.5px;flex:1}
+.plat .btn{margin-top:14px;padding:11px 16px;font-size:15px;justify-content:center;background:var(--blue);color:#fff;border-radius:12px}
+.plat .btn:hover{filter:brightness(1.15)}
+.plat .btn.off{background:var(--line);color:var(--muted);pointer-events:none}
+.plat small{color:var(--muted);font-size:12.5px;text-align:center;margin-top:6px;min-height:18px}
+.feat .ic{font-size:26px;margin-bottom:10px}
+.feat h3{margin:0 0 6px;font-size:18px}.feat p{margin:0;color:var(--muted);font-size:15px}
+.alt{background:color-mix(in srgb,var(--blue) 5%,var(--bg));border-block:1px solid var(--line)}
+/* steps */
+.tabs{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:22px}
+.tabs button{padding:9px 18px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 15px inherit;font-family:inherit;cursor:pointer}
+.tabs button[aria-selected=true]{background:var(--blue);border-color:var(--blue);color:#fff}
+.panel{display:none}.panel.on{display:block}
+ol.steps{list-style:none;counter-reset:s;margin:0;padding:0;display:grid;gap:14px}
+ol.steps li{counter-increment:s;position:relative;padding-left:52px}
+ol.steps li::before{content:counter(s);position:absolute;left:0;top:0;width:36px;height:36px;border-radius:50%;background:var(--red);color:#fff;font-weight:800;display:grid;place-items:center}
+ol.steps b{display:block}
+code{font:14px ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:color-mix(in srgb,var(--ink) 8%,transparent);padding:2px 7px;border-radius:6px;word-break:break-all}
+pre{margin:8px 0 0;padding:14px 16px;border-radius:12px;background:#10192b;color:#e8edf7;overflow-x:auto;font:14px ui-monospace,Menlo,Consolas,monospace}
+.note{margin-top:22px;padding:16px 18px;border-radius:14px;background:color-mix(in srgb,#f0a21b 14%,transparent);border:1px solid color-mix(in srgb,#f0a21b 40%,transparent);font-size:15px}
+/* faq */
+details{border:1px solid var(--line);border-radius:14px;background:var(--card);padding:0 20px;margin-bottom:10px}
+summary{cursor:pointer;font-weight:650;padding:17px 0;list-style:none;display:flex;justify-content:space-between;gap:12px}
+summary::after{content:"+";font-size:22px;line-height:1;color:var(--red)}details[open] summary::after{content:"–"}
+summary::-webkit-details-marker{display:none}
+details p{margin:0 0 18px;color:var(--muted)}
+/* final cta + footer */
+.final{text-align:center;background:linear-gradient(135deg,var(--blue),#0a2f57);color:#fff;border-radius:28px;padding:56px 24px;position:relative;overflow:hidden}
+.final::before{content:"";position:absolute;inset:auto -60px -80px auto;width:280px;height:280px;border-radius:50%;background:var(--red);opacity:.35;filter:blur(20px)}
+.final h2{color:#fff;position:relative}.final p{color:#c9d6ea;position:relative;margin:0 0 26px}
+.final .btn{position:relative}
+footer{padding:36px 0 56px;color:var(--muted);font-size:14px}
+footer .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer a{color:var(--muted)}
+.disc{max-width:640px}
+</style>
+</head>
+<body>
+<header><div class="wrap">
+  <a class="brand" href="#top"><img src="img/favicon.png" alt="">Super Celik</a>
+  <nav>
+    <a href="#download" data-i18n="nav_dl">Скачать</a>
+    <a href="#screens" data-i18n="nav_scr">Скриншоты</a>
+    <a href="#features" data-i18n="nav_feat">Возможности</a>
+    <a href="#install" data-i18n="nav_inst">Установка</a>
+    <a href="#faq" data-i18n="nav_faq">Вопросы</a>
+  </nav>
+  <div class="lang" role="group" aria-label="Language">
+    <button data-l="ru" aria-pressed="true">RU</button><button data-l="en" aria-pressed="false">EN</button><button data-l="sr" aria-pressed="false">SR</button>
+  </div>
+</div></header>
+
+<main id="top">
+<div class="hero"><div class="wrap">
+  <div>
+    <span class="pill" data-i18n="pill">Бесплатно · без аккаунта · без серверов</span>
+    <h1 data-i18n-html="h1">Ваша сербская ID-карта — <em>на экране за секунду</em></h1>
+    <p class="lead" data-i18n="lead">Super Celik читает электронную ID-карту, карту иностранца и вид на жительство: личные данные, фото, срок действия, проверка подписи МУП, печать в PDF и вход на eid.gov.rs.</p>
+    <div class="cta">
+      <a class="btn primary" id="heroBtn" href="https://github.com/peregond/SuperCelik/releases/latest">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 20h16"/></svg>
+        <span id="heroLabel" data-i18n="dl">Скачать</span>
+      </a>
+      <a class="btn ghost" href="#download" data-i18n="other">Другие платформы</a>
+    </div>
+    <div class="ver" id="ver"></div>
+    <div class="badges"><span data-i18n="b1">Данные остаются на устройстве</span><span data-i18n="b2">RU · EN · SR</span><span data-i18n="b3">Открытый код</span></div>
+  </div>
+  <div class="art"><img class="mascot" src="img/key-thumbs.png" alt="Талисман Super Celik — ключик с большими пальцами вверх" width="360" height="360"></div>
+</div></div>
+
+<section id="screens"><div class="wrap">
+  <div class="center"><h2 data-i18n="sc_h">Как это выглядит</h2>
+  <p class="sub" data-i18n="sc_sub">Одинаковые возможности на всех платформах: данные, подпись, токен, печать.</p></div>
+  <div class="shots-d">
+    <figure class="mac"><img src="img/shot-mac.webp" alt="Super Celik на macOS: личные данные и проверка подписи" loading="lazy" width="1024" height="674"><figcaption>macOS<small data-i18n="sc_mac">Apple Silicon и Intel</small></figcaption></figure>
+    <figure><div class="win"><img src="img/shot-win.webp" alt="Super Celik на Windows: личные данные и проверка подписи" loading="lazy" width="1020" height="720"></div><figcaption>Windows<small data-i18n="sc_win">Windows 10 / 11</small></figcaption></figure>
+  </div>
+  <div class="shots-m">
+    <figure><div class="phone"><img src="img/shot-iphone.webp" alt="Super Celik на iPhone, светлая тема" loading="lazy" width="560" height="1218"></div><figcaption>iPhone / iPad<small data-i18n="sc_ios">Светлая тема</small></figcaption></figure>
+    <figure><div class="phone"><img src="img/shot-iphone-dark.webp" alt="Super Celik на iPhone, тёмная тема" loading="lazy" width="560" height="1218"></div><figcaption>iPhone / iPad<small data-i18n="sc_dark">Тёмная тема</small></figcaption></figure>
+    <figure><div class="phone"><img src="img/shot-android.webp" alt="Super Celik на Android: карточка" loading="lazy" width="560" height="1244"></div><figcaption>Android<small data-i18n="sc_and">Данные карты</small></figcaption></figure>
+    <figure><div class="phone"><img src="img/shot-android-token.webp" alt="Super Celik на Android: токен, смена PIN и подпись файла" loading="lazy" width="560" height="1244"></div><figcaption>Android<small data-i18n="sc_tok">Токен, PIN и подпись</small></figcaption></figure>
+  </div>
+  <p class="demo" data-i18n="sc_demo">На скриншотах демо-режим с вымышленными данными.</p>
+</div></section>
+
+<section id="download" class="alt"><div class="wrap">
+  <div class="center"><h2 data-i18n="dl_h">Скачать для вашего устройства</h2>
+  <p class="sub" data-i18n="dl_sub">Всегда последняя версия. Выберите свою платформу.</p></div>
+  <div class="grid g4">
+    <div class="card plat" data-os="mac">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></div>
+      <h3>macOS</h3><p data-i18n="p_mac">macOS 13 и новее. Через Apple Silicon (M1 и новее) или Intel.</p>
+      <a class="btn" id="dl-mac-arm" href="#" data-i18n="mac_arm">Apple Silicon (M1+)</a>
+      <a class="btn" id="dl-mac-intel" href="#" style="margin-top:8px;background:transparent;color:var(--blue);border:2px solid var(--blue)" data-i18n="mac_intel">Intel</a>
+      <small data-i18n="s_mac">Нужен USB-ридер смарт-карт</small>
+    </div>
+    <div class="card plat" data-os="win">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.5l7.5-1v7H3zM11.5 4.3L21 3v8.5h-9.5zM3 12.5h7.5v7L3 18.5zM11.5 12.5H21V21l-9.5-1.3z"/></svg></div>
+      <h3>Windows</h3><p data-i18n="p_win">Windows 10 / 11 (64-бит). Установщик .exe.</p>
+      <a class="btn" id="dl-win" href="#" data-i18n="dl_inst">Скачать установщик</a>
+      <small data-i18n="s_win">Нужен USB-ридер смарт-карт</small>
+    </div>
+    <div class="card plat" data-os="android">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="7" y="2" width="10" height="20" rx="2.5"/><path d="M11 18.5h2"/></svg></div>
+      <h3>Android</h3><p data-i18n="p_and">Android 8+. Чтение по NFC или через ридер (OTG).</p>
+      <a class="btn" id="dl-android" href="#" data-i18n="dl_apk">Скачать APK</a>
+      <small data-i18n="s_and">Установка «из неизвестных источников»</small>
+    </div>
+    <div class="card plat" data-os="ios">
+      <div class="ic"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3"/><path d="M10 5h4"/></svg></div>
+      <h3>iPhone / iPad</h3><p data-i18n="p_ios">Чтение по NFC (если в карте есть бесконтактный чип).</p>
+      <a class="btn" id="dl-ios" href="https://github.com/peregond/SuperCelik/releases/latest" data-i18n="dl_ios">Сборка для iOS</a>
+      <small data-i18n="s_ios">Неподписанный .ipa — см. инструкцию</small>
+    </div>
+  </div>
+</div></section>
+
+<section id="features"><div class="wrap">
+  <div class="center"><h2 data-i18n="f_h">Всё, что нужно от карты — в одном приложении</h2>
+  <p class="sub" data-i18n="f_sub">Единая замена Čelik + TrustEdge ID для сербской электронной карты.</p></div>
+  <div class="grid g3">
+    <div class="card feat"><div class="ic">🪪</div><h3 data-i18n="f1h">Личные данные и фото</h3><p data-i18n="f1p">Имя, личный номер, адрес, документ и фото. Чувствительные поля скрыты, пока вы их не покажете.</p></div>
+    <div class="card feat"><div class="ic">✅</div><h3 data-i18n="f2h">Проверка подлинности</h3><p data-i18n="f2p">Подпись карты проверяется по цепочке сертификатов МУП. Видно, что данные не подделаны.</p></div>
+    <div class="card feat"><div class="ic">🖨️</div><h3 data-i18n="f3h">Печать и PDF</h3><p data-i18n="f3p">Печатная форма в стиле официальной: сохраните в PDF или отправьте на принтер.</p></div>
+    <div class="card feat"><div class="ic">🌐</div><h3 data-i18n="f4h">Вход на eid.gov.rs</h3><p data-i18n="f4p">На Mac приложение ставит драйвер карты, и Chrome / Safari видят сертификат для входа на государственные порталы.</p></div>
+    <div class="card feat"><div class="ic">🔐</div><h3 data-i18n="f5h">PIN и подпись файлов</h3><p data-i18n="f5p">Смена PIN, разблокировка по PUK, электронная подпись документов (.p7s) ключом карты.</p></div>
+    <div class="card feat"><div class="ic">🔒</div><h3 data-i18n="f6h">Приватность</h3><p data-i18n="f6p">Нет аккаунта, аналитики и серверов. Данные карты не покидают устройство и стираются автоматически.</p></div>
+  </div>
+</div></section>
+
+<section id="install" class="alt"><div class="wrap">
+  <h2 data-i18n="i_h">Как установить</h2>
+  <p class="sub" data-i18n="i_sub">Приложение независимое и пока без платной подписи разработчика, поэтому система при первом запуске может спросить подтверждение. Это нормально.</p>
+  <div class="tabs" role="tablist">
+    <button role="tab" aria-selected="true" data-t="mac">macOS</button>
+    <button role="tab" aria-selected="false" data-t="win">Windows</button>
+    <button role="tab" aria-selected="false" data-t="android">Android</button>
+    <button role="tab" aria-selected="false" data-t="ios">iPhone / iPad</button>
+  </div>
+  <div class="panel on" id="t-mac"><ol class="steps">
+    <li><b data-i18n="m1h">Скачайте .dmg</b><span data-i18n="m1p">Для M1 и новее — Apple Silicon, для старых Mac — Intel (меню  → «Об этом Mac»).</span></li>
+    <li><b data-i18n="m2h">Перетащите в «Программы»</b><span data-i18n="m2p">Откройте dmg и перетащите Super Celik в папку «Программы».</span></li>
+    <li><b data-i18n="m3h">Первый запуск</b><span data-i18n="m3p">Правый клик по приложению → «Открыть». Если macOS всё равно блокирует, выполните в Терминале:</span><pre>xattr -dr com.apple.quarantine /Applications/SuperCelik.app</pre></li>
+    <li><b data-i18n="m4h">Для входа в браузере</b><span data-i18n="m4p">Запустите приложение один раз, вставьте карту, затем полностью закройте Chrome (⌘Q) и откройте сайт снова.</span></li>
+  </ol></div>
+  <div class="panel" id="t-win"><ol class="steps">
+    <li><b data-i18n="w1h">Скачайте установщик</b><span data-i18n="w1p">Файл вида SuperCelik-…-windows-x64-setup.exe.</span></li>
+    <li><b data-i18n="w2h">Запустите</b><span data-i18n="w2p">Если SmartScreen пишет «Windows защитила ваш компьютер», нажмите «Подробнее» → «Выполнить в любом случае».</span></li>
+    <li><b data-i18n="w3h">Подключите ридер и вставьте карту</b><span data-i18n="w3p">Программа сама найдёт ридер и прочитает карту. Для входа в браузере по сертификату на Windows нужен официальный драйвер МУП / NetSeT.</span></li>
+  </ol></div>
+  <div class="panel" id="t-android"><ol class="steps">
+    <li><b data-i18n="a1h">Скачайте APK</b><span data-i18n="a1p">Откройте эту страницу на телефоне и нажмите «Скачать APK».</span></li>
+    <li><b data-i18n="a2h">Разрешите установку</b><span data-i18n="a2p">Android предложит разрешить установку из неизвестных источников для браузера. Разрешите и подтвердите установку.</span></li>
+    <li><b data-i18n="a3h">Приложите карту к телефону</b><span data-i18n="a3p">Чтение по NFC (если в карте есть чип) или через USB-ридер с переходником OTG.</span></li>
+  </ol></div>
+  <div class="panel" id="t-ios"><ol class="steps">
+    <li><b data-i18n="o1h">Чтение по NFC</b><span data-i18n="o1p">iPhone читает карту только по NFC, поэтому подходят карты с бесконтактным чипом.</span></li>
+    <li><b data-i18n="o2h">Установка</b><span data-i18n="o2p">Сборка в релизах неподписанная: её нужно переподписать своим Apple Developer-аккаунтом (NFC недоступен бесплатным аккаунтам). Подробности — в инструкции на GitHub.</span></li>
+  </ol>
+  <p style="margin-top:18px"><a class="btn ghost" href="https://github.com/peregond/SuperCelik/blob/main/ios/README.md" data-i18n="o_btn">Инструкция для iOS</a></p></div>
+  <div class="note" data-i18n="warn">⚠️ Неверный PIN тратит попытку: после нескольких ошибок карта блокируется. Вводите PIN только в системном окне или в самом приложении.</div>
+</div></section>
+
+<section id="faq"><div class="wrap" style="max-width:780px">
+  <h2 class="center" data-i18n="q_h">Частые вопросы</h2><p class="sub center">&nbsp;</p>
+  <details><summary data-i18n="q1">Это безопасно? Куда уходят мои данные?</summary><p data-i18n="a1">Никуда. У приложения нет аккаунтов, аналитики и серверов. Карта читается локально, данные хранятся только в памяти и стираются при закрытии или по таймеру. Код открыт, его можно проверить.</p></details>
+  <details><summary data-i18n="q2">Что за предупреждение при запуске?</summary><p data-i18n="a2">Приложение пока не подписано платным сертификатом разработчика (Apple / Microsoft), поэтому система просит подтвердить запуск. Порядок действий — в разделе «Установка».</p></details>
+  <details><summary data-i18n="q3">Нужен ли специальный ридер?</summary><p data-i18n="a3">На компьютере — любой USB-ридер смарт-карт (PC/SC). На Android и iPhone можно читать по NFC, если в карте есть бесконтактный чип.</p></details>
+  <details><summary data-i18n="q4">Какие карты поддерживаются?</summary><p data-i18n="a4">Электронная ID-карта, карта иностранца и вид на жительство нового образца (RP2024). Старая карта Apollo пока не поддерживается.</p></details>
+  <details><summary data-i18n="q5">Это официальное приложение МУП?</summary><p data-i18n="a5">Нет. Это независимая реализация, не связанная с МУП РС и NetSeT/Veridos.</p></details>
+</div></section>
+
+<section><div class="wrap">
+  <div class="final">
+    <h2 data-i18n="c_h">Готовы попробовать?</h2>
+    <p data-i18n="c_p">Скачайте Super Celik — это займёт меньше минуты.</p>
+    <a class="btn primary" id="finalBtn" href="https://github.com/peregond/SuperCelik/releases/latest"><span data-i18n="dl">Скачать</span></a>
+  </div>
+</div></section>
+</main>
+
+<footer><div class="wrap">
+  <div class="disc" data-i18n="disc">Super Celik — независимое приложение, не связано с МУП Республики Сербия и NetSeT/Veridos.</div>
+  <div><a href="https://github.com/peregond/SuperCelik" data-i18n="gh">GitHub</a> · <a href="https://github.com/peregond/SuperCelik/releases" data-i18n="rel">Все версии</a> · <a href="https://github.com/peregond/SuperCelik/blob/main/docs/PRIVACY.md" data-i18n="priv">Приватность</a></div>
+</div></footer>
+
+<script>
+const REPO="peregond/SuperCelik",REL="https://github.com/"+REPO+"/releases/latest";
+const T={
+ru:{},
+en:{sc_h:"What it looks like",sc_sub:"The same features on every platform: data, signature, token, printing.",sc_mac:"Apple Silicon and Intel",sc_win:"Windows 10 / 11",sc_ios:"Light theme",sc_dark:"Dark theme",sc_and:"Card data",sc_tok:"Token, PIN and signing",sc_demo:"Screenshots show demo mode with fictional data.",nav_scr:"Screenshots",nav_dl:"Download",nav_feat:"Features",nav_inst:"Install",nav_faq:"FAQ",pill:"Free · no account · no servers",
+h1:"Your Serbian ID card — <em>on screen in a second</em>",lead:"Super Celik reads the Serbian electronic ID card, foreigner ID card and residence permit: personal data, photo, validity, MUP signature check, PDF printout and eid.gov.rs login.",
+dl:"Download",other:"Other platforms",b1:"Data stays on your device",b2:"RU · EN · SR",b3:"Open source",
+dl_h:"Download for your device",dl_sub:"Always the latest version. Pick your platform.",
+p_mac:"macOS 13 or newer. Apple Silicon (M1+) or Intel.",mac_arm:"Apple Silicon (M1+)",mac_intel:"Intel",s_mac:"USB smart-card reader required",
+p_win:"Windows 10 / 11 (64-bit). .exe installer.",dl_inst:"Download installer",s_win:"USB smart-card reader required",
+p_and:"Android 8+. Read via NFC or a reader (OTG).",dl_apk:"Download APK",s_and:"Install from “unknown sources”",
+p_ios:"Reads via NFC (if the card has a contactless chip).",dl_ios:"iOS build",s_ios:"Unsigned .ipa — see instructions",
+f_h:"Everything you need from the card, in one app",f_sub:"A single replacement for Čelik + TrustEdge ID for the Serbian electronic card.",
+f1h:"Personal data & photo",f1p:"Name, personal number, address, document and photo. Sensitive fields stay hidden until you reveal them.",
+f2h:"Authenticity check",f2p:"The card signature is verified against the MUP certificate chain, so you can see the data is genuine.",
+f3h:"Print & PDF",f3p:"An official-style printout: save as PDF or send to a printer.",
+f4h:"eid.gov.rs login",f4p:"On Mac the app installs a card driver, so Chrome / Safari can see the certificate for government portals.",
+f5h:"PIN & file signing",f5p:"Change PIN, unblock with PUK, sign documents (.p7s) with the card key.",
+f6h:"Privacy",f6p:"No account, analytics or servers. Card data never leaves the device and is wiped automatically.",
+i_h:"How to install",i_sub:"The app is independent and not yet signed with a paid developer certificate, so your system may ask for confirmation on first launch. That is normal.",
+m1h:"Download the .dmg",m1p:"Apple Silicon for M1 and newer, Intel for older Macs ( menu → About This Mac).",
+m2h:"Drag to Applications",m2p:"Open the dmg and drag Super Celik into Applications.",
+m3h:"First launch",m3p:"Right-click the app → Open. If macOS still blocks it, run in Terminal:",
+m4h:"For browser login",m4p:"Launch the app once, insert the card, fully quit Chrome (⌘Q) and open the site again.",
+w1h:"Download the installer",w1p:"A file like SuperCelik-…-windows-x64-setup.exe.",
+w2h:"Run it",w2p:"If SmartScreen says “Windows protected your PC”, click “More info” → “Run anyway”.",
+w3h:"Connect a reader and insert the card",w3p:"The app finds the reader and reads the card. Browser certificate login on Windows still needs the official MUP / NetSeT driver.",
+a1h:"Download the APK",a1p:"Open this page on your phone and tap “Download APK”.",
+a2h:"Allow installation",a2p:"Android will ask to allow installs from unknown sources for your browser. Allow it and confirm.",
+a3h:"Tap the card to the phone",a3p:"Read over NFC (if the card has a chip) or via a USB reader with an OTG adapter.",
+o1h:"NFC reading",o1p:"iPhone reads the card over NFC only, so cards with a contactless chip are required.",
+o2h:"Installing",o2p:"The release build is unsigned: it must be re-signed with your own Apple Developer account (NFC is unavailable to free accounts). See the guide on GitHub.",o_btn:"iOS guide",
+warn:"⚠️ A wrong PIN uses up an attempt: after a few mistakes the card locks. Enter the PIN only in the system dialog or in the app itself.",
+q_h:"FAQ",q1:"Is it safe? Where does my data go?",a1:"Nowhere. No accounts, analytics or servers. The card is read locally, data lives only in memory and is wiped on close or by a timer. The code is open for inspection.",
+q2:"What is that warning on launch?",a2:"The app is not yet signed with a paid developer certificate (Apple / Microsoft), so the system asks you to confirm. See the Install section.",
+q3:"Do I need a special reader?",a3:"On a computer, any USB smart-card (PC/SC) reader. On Android and iPhone you can read via NFC if the card has a contactless chip.",
+q4:"Which cards are supported?",a4:"Electronic ID card, foreigner ID card and residence permit of the new type (RP2024). The old Apollo card is not supported yet.",
+q5:"Is this an official MUP app?",a5:"No. It is an independent implementation, not affiliated with MUP RS or NetSeT/Veridos.",
+c_h:"Ready to try it?",c_p:"Download Super Celik — it takes less than a minute.",
+disc:"Super Celik is an independent app, not affiliated with the Ministry of Interior of the Republic of Serbia or NetSeT/Veridos.",gh:"GitHub",rel:"All versions",priv:"Privacy",
+dl_for:"Download for ",ver_l:"Version "},
+sr:{sc_h:"Kako izgleda",sc_sub:"Iste mogućnosti na svim platformama: podaci, potpis, token, štampa.",sc_mac:"Apple Silicon i Intel",sc_win:"Windows 10 / 11",sc_ios:"Svetla tema",sc_dark:"Tamna tema",sc_and:"Podaci kartice",sc_tok:"Token, PIN i potpis",sc_demo:"Snimci ekrana prikazuju demo režim sa izmišljenim podacima.",nav_scr:"Snimci ekrana",nav_dl:"Preuzmi",nav_feat:"Mogućnosti",nav_inst:"Instalacija",nav_faq:"Pitanja",pill:"Besplatno · bez naloga · bez servera",
+h1:"Vaša srpska ID kartica — <em>na ekranu za sekundu</em>",lead:"Super Celik čita elektronsku ličnu kartu, ličnu kartu za strance i boravišnu dozvolu: lične podatke, fotografiju, rok važenja, proveru potpisa MUP-a, PDF štampu i prijavu na eid.gov.rs.",
+dl:"Preuzmi",other:"Druge platforme",b1:"Podaci ostaju na uređaju",b2:"RU · EN · SR",b3:"Otvoreni kod",
+dl_h:"Preuzmite za svoj uređaj",dl_sub:"Uvek najnovija verzija. Izaberite platformu.",
+p_mac:"macOS 13 i noviji. Apple Silicon (M1+) ili Intel.",mac_arm:"Apple Silicon (M1+)",mac_intel:"Intel",s_mac:"Potreban USB čitač smart kartica",
+p_win:"Windows 10 / 11 (64-bit). .exe instalater.",dl_inst:"Preuzmi instalater",s_win:"Potreban USB čitač smart kartica",
+p_and:"Android 8+. Čitanje preko NFC-a ili čitača (OTG).",dl_apk:"Preuzmi APK",s_and:"Instalacija iz „nepoznatih izvora“",
+p_ios:"Čitanje preko NFC-a (ako kartica ima beskontaktni čip).",dl_ios:"iOS verzija",s_ios:"Nepotpisan .ipa — pogledajte uputstvo",
+f_h:"Sve što vam treba od kartice, u jednoj aplikaciji",f_sub:"Jedna zamena za Čelik + TrustEdge ID za srpsku elektronsku karticu.",
+f1h:"Lični podaci i fotografija",f1p:"Ime, JMBG, adresa, dokument i fotografija. Osetljiva polja su skrivena dok ih ne prikažete.",
+f2h:"Provera autentičnosti",f2p:"Potpis kartice se proverava prema lancu sertifikata MUP-a, pa se vidi da su podaci verodostojni.",
+f3h:"Štampa i PDF",f3p:"Štampani obrazac u stilu zvaničnog: sačuvajte kao PDF ili pošaljite na štampač.",
+f4h:"Prijava na eid.gov.rs",f4p:"Na Mac-u aplikacija instalira drajver kartice pa Chrome / Safari vide sertifikat za državne portale.",
+f5h:"PIN i potpisivanje fajlova",f5p:"Promena PIN-a, otključavanje PUK-om, potpisivanje dokumenata (.p7s) ključem kartice.",
+f6h:"Privatnost",f6p:"Bez naloga, analitike i servera. Podaci kartice ne napuštaju uređaj i automatski se brišu.",
+i_h:"Kako instalirati",i_sub:"Aplikacija je nezavisna i još nije potpisana plaćenim sertifikatom, pa sistem pri prvom pokretanju može tražiti potvrdu. To je normalno.",
+m1h:"Preuzmite .dmg",m1p:"Apple Silicon za M1 i novije, Intel za starije Mac-ove (meni  → O ovom Mac-u).",
+m2h:"Prevucite u Applications",m2p:"Otvorite dmg i prevucite Super Celik u Applications.",
+m3h:"Prvo pokretanje",m3p:"Desni klik na aplikaciju → Open. Ako macOS i dalje blokira, u Terminalu pokrenite:",
+m4h:"Za prijavu u pregledaču",m4p:"Pokrenite aplikaciju jednom, ubacite karticu, potpuno zatvorite Chrome (⌘Q) i ponovo otvorite sajt.",
+w1h:"Preuzmite instalater",w1p:"Fajl poput SuperCelik-…-windows-x64-setup.exe.",
+w2h:"Pokrenite",w2p:"Ako SmartScreen piše „Windows protected your PC“, kliknite „More info“ → „Run anyway“.",
+w3h:"Povežite čitač i ubacite karticu",w3p:"Aplikacija sama pronalazi čitač i čita karticu. Za prijavu u pregledaču na Windows-u i dalje treba zvanični MUP / NetSeT drajver.",
+a1h:"Preuzmite APK",a1p:"Otvorite ovu stranicu na telefonu i dodirnite „Preuzmi APK“.",
+a2h:"Dozvolite instalaciju",a2p:"Android će tražiti dozvolu za instalaciju iz nepoznatih izvora za pregledač. Dozvolite i potvrdite.",
+a3h:"Prislonite karticu uz telefon",a3p:"Čitanje preko NFC-a (ako kartica ima čip) ili preko USB čitača sa OTG adapterom.",
+o1h:"Čitanje preko NFC-a",o1p:"iPhone čita karticu samo preko NFC-a, pa su potrebne kartice sa beskontaktnim čipom.",
+o2h:"Instalacija",o2p:"Verzija u izdanjima je nepotpisana: treba je ponovo potpisati svojim Apple Developer nalogom (NFC nije dostupan besplatnim nalozima). Uputstvo je na GitHub-u.",o_btn:"iOS uputstvo",
+warn:"⚠️ Pogrešan PIN troši pokušaj: posle nekoliko grešaka kartica se blokira. PIN unosite samo u sistemskom prozoru ili u aplikaciji.",
+q_h:"Česta pitanja",q1:"Da li je bezbedno? Kuda idu moji podaci?",a1:"Nikuda. Bez naloga, analitike i servera. Kartica se čita lokalno, podaci su samo u memoriji i brišu se pri zatvaranju ili tajmerom. Kod je otvoren.",
+q2:"Šta je ovo upozorenje pri pokretanju?",a2:"Aplikacija još nije potpisana plaćenim sertifikatom (Apple / Microsoft), pa sistem traži potvrdu. Pogledajte odeljak Instalacija.",
+q3:"Treba li poseban čitač?",a3:"Na računaru bilo koji USB čitač smart kartica (PC/SC). Na Android-u i iPhone-u može preko NFC-a ako kartica ima beskontaktni čip.",
+q4:"Koje kartice su podržane?",a4:"Elektronska lična karta, lična karta za strance i boravišna dozvola novog tipa (RP2024). Stara Apollo kartica još nije podržana.",
+q5:"Da li je ovo zvanična aplikacija MUP-a?",a5:"Ne. Nezavisna je implementacija, nije povezana sa MUP RS niti NetSeT/Veridos.",
+c_h:"Spremni da probate?",c_p:"Preuzmite Super Celik — traje manje od minuta.",
+disc:"Super Celik je nezavisna aplikacija, nije povezana sa MUP Republike Srbije niti NetSeT/Veridos.",gh:"GitHub",rel:"Sve verzije",priv:"Privatnost",
+dl_for:"Preuzmi za ",ver_l:"Verzija "}
+};
+// remember Russian defaults from the markup
+document.querySelectorAll("[data-i18n]").forEach(e=>T.ru[e.dataset.i18n]=e.textContent);
+document.querySelectorAll("[data-i18n-html]").forEach(e=>T.ru[e.dataset.i18nHtml]=e.innerHTML);
+Object.assign(T.ru,{dl_for:"Скачать для ",ver_l:"Версия "});
+let lang=localStorage.getItem("sc-lang")||((navigator.language||"ru").startsWith("sr")?"sr":(navigator.language||"").startsWith("ru")?"ru":(navigator.language||"").startsWith("en")?"en":"ru");
+const OS=(()=>{const u=navigator.userAgent,p=navigator.platform||"";
+ if(/android/i.test(u))return"android";if(/iPhone|iPad|iPod/.test(u)||(p==="MacIntel"&&navigator.maxTouchPoints>1))return"ios";
+ if(/Win/.test(p)||/Windows/.test(u))return"win";if(/Mac/.test(p)||/Mac OS/.test(u))return"mac";return null})();
+const NAMES={mac:"macOS",win:"Windows",android:"Android",ios:"iPhone"};
+let assets={},version="";
+function setLang(l){lang=l;localStorage.setItem("sc-lang",l);document.documentElement.lang=l;
+ document.querySelectorAll("[data-i18n]").forEach(e=>{const v=(T[l]||{})[e.dataset.i18n]??T.ru[e.dataset.i18n];if(v!=null)e.textContent=v});
+ document.querySelectorAll("[data-i18n-html]").forEach(e=>{const v=(T[l]||{})[e.dataset.i18nHtml]??T.ru[e.dataset.i18nHtml];if(v!=null)e.innerHTML=v});
+ document.querySelectorAll(".lang button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l===l));
+ hero()}
+function hero(){const t=T[lang]||T.ru;const lab=document.getElementById("heroLabel");
+ lab.textContent=OS?t.dl_for+NAMES[OS]:t.dl;
+ document.getElementById("ver").textContent=version?t.ver_l+version:""}
+function pick(re){return (assets.list||[]).find(a=>re.test(a.name))}
+function wire(id,a){const el=document.getElementById(id);if(!el)return;if(a){el.href=a.browser_download_url}else{el.href=REL}}
+function heroTarget(){const m={mac:/macOS-apple-silicon\.dmg$/i,win:/setup\.exe$/i,android:/\.apk$/i,ios:/iOS-unsigned\.ipa$/i};
+ if(OS==="mac"){const arm=pick(m.mac);return arm}
+ return OS&&m[OS]?pick(m[OS]):null}
+document.querySelectorAll(".lang button").forEach(b=>b.onclick=()=>setLang(b.dataset.l));
+document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button").forEach(x=>x.setAttribute("aria-selected",x===b));
+ document.querySelectorAll(".panel").forEach(p=>p.classList.toggle("on",p.id==="t-"+b.dataset.t))});
+if(OS){const c=document.querySelector('.plat[data-os="'+OS+'"]');c&&c.classList.add("me");
+ const tb=document.querySelector('.tabs button[data-t="'+OS+'"]');tb&&tb.click()}
+setLang(lang);
+fetch("https://api.github.com/repos/"+REPO+"/releases/latest").then(r=>r.ok?r.json():Promise.reject()).then(rel=>{
+ assets.list=rel.assets||[];version=(rel.tag_name||"").replace(/^v/,"");
+ wire("dl-mac-arm",pick(/macOS-apple-silicon\.dmg$/i));wire("dl-mac-intel",pick(/macOS-intel\.dmg$/i));
+ wire("dl-win",pick(/setup\.exe$/i));wire("dl-android",pick(/\.apk$/i));wire("dl-ios",pick(/iOS-unsigned\.ipa$/i));
+ const h=heroTarget();if(h){document.getElementById("heroBtn").href=h.browser_download_url;document.getElementById("finalBtn").href=h.browser_download_url}
+ hero()}).catch(()=>{["dl-mac-arm","dl-mac-intel","dl-win","dl-android"].forEach(id=>wire(id,null))});
+["dl-mac-arm","dl-mac-intel","dl-win","dl-android"].forEach(id=>{const e=document.getElementById(id);if(e.getAttribute("href")==="#")e.href=REL});
+</script>
+</body>
+</html>
