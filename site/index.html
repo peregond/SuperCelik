@@ -57,15 +57,21 @@ h1{font-size:var(--h1);line-height:1.05;letter-spacing:-.04em;margin:0 auto 18px
 .grad{background:linear-gradient(100deg,#8cc2ff 0%,#b9a9ff 45%,#ff7f88 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
 .nb{white-space:nowrap}
 .lead{text-wrap:balance;font-size:clamp(15.5px,1.45vw,18px);color:#c3d6f1;max-width:620px;margin:0 auto;line-height:1.4}
-/* the word "private" carries a padlock that closes once the line has appeared */
-.priv{position:relative;display:inline-block;white-space:nowrap;margin-right:1.15em;color:#fff;font-weight:600}
+/* two emphasised words in the subtitle; "private" also carries a padlock that turns shut once the line has appeared */
+.em,.priv{color:#fff;font-weight:600}
+.priv{position:relative;display:inline-block;white-space:nowrap;margin-right:1.2em}
 .priv::before,.priv::after{content:"";position:absolute;pointer-events:none}
-.priv::after{left:calc(100% + .3em);top:.3em;width:.74em;height:.56em;border-radius:.13em;background:linear-gradient(160deg,#ff9aa0,#e23d47);box-shadow:0 .2em .6em -.1em rgba(226,61,71,.7)}
-.priv::before{left:calc(100% + .3em + .13em);top:-.12em;width:.48em;height:.5em;box-sizing:border-box;border:.115em solid #ffb3b8;border-bottom:0;border-radius:.3em .3em 0 0;transform-origin:100% 100%}
-.anim .priv::before{animation:lockShut .7s cubic-bezier(.3,1.5,.5,1) 2.15s both}
-.anim .priv::after{animation:lockClick .35s ease-out 2.6s both}
-.anim.swapped .priv::before{animation-delay:.4s}.anim.swapped .priv::after{animation-delay:.85s}
-@keyframes lockShut{0%{transform:translateY(-.2em) rotate(-24deg)}100%{transform:none}}
+.priv::after{left:calc(100% + .3em);top:.44em;width:.74em;height:.56em;border-radius:.13em;background:radial-gradient(circle at 50% 46%,#0a2d57 0 .07em,transparent .075em),#fff}
+.priv::before{left:calc(100% + .3em + .13em);top:.04em;width:.48em;height:.5em;box-sizing:border-box;border:.115em solid #fff;border-bottom:0;border-radius:.3em .3em 0 0;transform-origin:.0575em 100%}
+.anim .priv::before{animation:lockTurn 1.05s cubic-bezier(.45,0,.25,1) 2.15s both}
+.anim .priv::after{animation:lockClick .35s ease-out 3.05s both}
+.anim.swapped .priv::before{animation-delay:.4s}.anim.swapped .priv::after{animation-delay:1.3s}
+/* open: lifted and turned over to the left of its left leg; it swings left to right over that leg, then drops into the body */
+@keyframes lockTurn{
+ 0%{transform:translateY(-.24em) perspective(2.2em) rotateY(180deg)}
+ 62%{transform:translateY(-.24em) perspective(2.2em) rotateY(0deg)}
+ 82%{transform:translateY(.03em) perspective(2.2em) rotateY(0deg)}
+ 100%{transform:translateY(0) perspective(2.2em) rotateY(0deg)}}
 @keyframes lockClick{0%{transform:none}45%{transform:scale(1.14)}100%{transform:none}}
 /* intro animation (only when the visitor has not asked for reduced motion; see .anim in <head>) */
 .w{display:inline-block}
@@ -239,7 +245,7 @@ footer a{color:#a9c3e6}
   <div class="aurora" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
   <div class="wrap">
     <h1 id="h1" data-i18n-html="h1b">Считывайте вашу <span class="grad">ID-карту</span><br>на любом устройстве</h1>
-    <p class="lead" data-i18n-html="lead2">ВНЖ, ПМЖ, ID-карта: считывайте, подписывайте, управляйте <span class="nb">PIN-кодом</span>. Безопасно и <span class="priv">приватно</span> с Super Celik</p>
+    <p class="lead" data-i18n-html="lead2">ВНЖ, ПМЖ, ID-карта: считывайте, подписывайте, управляйте <span class="nb">PIN-кодом</span>. <span class="em">Безопасно</span> и <span class="priv">приватно</span> с Super Celik</p>
   </div>
   <div class="stage" id="stage">
     <div class="dev mac"><div class="fly" style="--d:.55s"><img src="img/shot-mac.webp" alt="Super Celik на macOS" width="1024" height="674"></div></div>
@@ -436,8 +442,8 @@ Object.assign(T.en,{h1b:"Your <span class=\"grad\">ID card</span><br>on any devi
 Object.assign(T.sr,{h1b:"Vaša <span class=\"grad\">ID kartica</span><br>na svakom uređaju",lead2:"Super Celik čita karticu, pravi PDF i ume još mnogo toga — bez instalacije drajvera, na svim uređajima."});
 Object.assign(T.en,{soon:"Coming soon"});
 Object.assign(T.sr,{soon:"Uskoro"});
-Object.assign(T.en,{h1b:"Read your <span class=\"grad\">ID card</span><br>on any device",lead2:"Residence permit, permanent residence, ID card: read, sign, manage your PIN. Secure and <span class=\"priv\">private</span> with Super Celik"});
-Object.assign(T.sr,{h1b:"Čitajte vašu <span class=\"grad\">ID karticu</span><br>na svakom uređaju",lead2:"Boravišna dozvola, stalni boravak, ID kartica: čitajte, potpisujte, upravljajte <span class=\"nb\">PIN-om</span>. Bezbedno i <span class=\"priv\">privatno</span> uz Super Celik"});
+Object.assign(T.en,{h1b:"Read your <span class=\"grad\">ID card</span><br>on any device",lead2:"Residence permit, permanent residence, ID card: read, sign, manage your PIN. <span class=\"em\">Secure</span> and <span class=\"priv\">private</span> with Super Celik"});
+Object.assign(T.sr,{h1b:"Čitajte vašu <span class=\"grad\">ID karticu</span><br>na svakom uređaju",lead2:"Boravišna dozvola, stalni boravak, ID kartica: čitajte, potpisujte, upravljajte <span class=\"nb\">PIN-om</span>. <span class=\"em\">Bezbedno</span> i <span class=\"priv\">privatno</span> uz Super Celik"});
 
 // remember Russian defaults from the markup
 document.querySelectorAll("[data-i18n]").forEach(e=>{if(!(e.dataset.i18n in T.ru))T.ru[e.dataset.i18n]=e.textContent});
