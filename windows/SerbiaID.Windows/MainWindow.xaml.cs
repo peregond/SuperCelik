@@ -327,7 +327,7 @@ public partial class MainWindow : Window
             if (!hasToken || atr == null) return;
             _lastTokenAtr = atr;
             var hex = DriverSetup.Hex(atr);
-            if (DriverSetup.IsRegistered(atr) || _cfg.DriverDeclined.Contains(hex + ";") || !_driverAsked.Add(hex)) { UpdateDriverStatus(); return; }
+            if (DriverSetup.IsRegistered(atr) || DriverSetup.HandledByOtherDriver(atr) || _cfg.DriverDeclined.Contains(hex + ";") || !_driverAsked.Add(hex)) { UpdateDriverStatus(); return; }
             var answer = MessageBox.Show(this, Loc.T("driverAsk"), Loc.T("appTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question);
             if (answer != MessageBoxResult.Yes) { _cfg.DriverDeclined += hex + ";"; _cfg.Save(); return; }
             await InstallDriverAsync(atr);

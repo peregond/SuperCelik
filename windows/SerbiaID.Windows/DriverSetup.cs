@@ -34,6 +34,30 @@ internal static class DriverSetup
         catch { return false; }
     }
 
+    /// Another driver (the official MUP / NetSeT one) is already registered for this ATR: two drivers for one card
+    /// would fight over it, so Super Celik leaves such a card alone.
+    public static bool HandledByOtherDriver(byte[] atr)
+    {
+        try
+        {
+            using var all = Registry.LocalMachine.OpenSubKey(SmartCards);
+            if (all == null) return false;
+            foreach (var name in all.GetSubKeyNames())
+            {
+                if (name.StartsWith(KeyPrefix, StringComparison.OrdinalIgnoreCase)) continue;
+                using var k = all.OpenSubKey(name);
+                if (k?.GetValue("ATR") is not byte[] a || k.GetValue("80000001") == null) continue;
+                var mask = k.GetValue("ATRMask") as byte[] ?? Enumerable.Repeat((byte)0xFF, a.Length).ToArray();
+                if (a.Length != atr.Length || mask.Length != a.Length) continue;
+                bool same = true;
+                for (int i = 0; i < a.Length && same; i++) same = (atr[i] & mask[i]) == (a[i] & mask[i]);
+                if (same) return true;
+            }
+        }
+        catch { }
+        return false;
+    }
+
     /// Any card type registered (Settings status).
     public static bool AnyRegistered()
     {
