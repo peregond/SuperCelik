@@ -8,7 +8,9 @@
 <meta property="og:title" content="Super Celik">
 <meta property="og:description" content="Сербская ID-карта на любом устройстве. macOS, Windows, Android, iPhone.">
 <meta property="og:image" content="img/icon.png">
-<meta name="theme-color" content="#061a36">
+<meta name="theme-color" content="#05162f">
+<script>if(!matchMedia("(prefers-reduced-motion: reduce)").matches)document.documentElement.classList.add("anim")</script>
+<noscript><style>.anim h1{opacity:1}.anim .fly,.anim .lead,.anim .dl-float,.anim .langbox{animation:none}</style></noscript>
 <link rel="icon" href="img/favicon.png">
 <style>
 :root{--navy:#061a36;--navy2:#0a2d57;--blue:#0C4076;--blue2:#1b6fd1;--sky:#7db7ff;--red:#E23D47;--red-d:#C6363C;
@@ -18,65 +20,106 @@
 body{margin:0;font:17px/1.5 -apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Inter,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;overflow-x:hidden}
 a{color:inherit}img{max-width:100%}
 .wrap{max-width:1100px;margin:0 auto;padding:0 24px}
-/* language switcher (the only thing left of the top bar) */
-.langbox{position:fixed;top:14px;right:16px;z-index:60;display:flex;gap:2px;padding:3px;border-radius:999px;background:rgba(6,26,54,.72);backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);border:1px solid rgba(255,255,255,.14);box-shadow:0 8px 24px -10px rgba(0,0,0,.5)}
-.langbox button{border:0;background:none;color:rgba(255,255,255,.75);padding:6px 12px;font:600 13px inherit;font-family:inherit;border-radius:999px;cursor:pointer;transition:.15s;white-space:nowrap}
-.langbox button:hover{color:#fff}
-.langbox button[aria-pressed=true]{background:#fff;color:var(--navy)}
-@media(max-width:480px){.langbox{top:10px;right:10px}.langbox button{padding:6px 9px;font-size:12.5px}}
-/* hero */
-.hero{position:relative;overflow:hidden;color:#fff;text-align:center;padding:104px 0 0;background:
- radial-gradient(900px 520px at 85% 0%,rgba(226,61,71,.30),transparent 60%),
- radial-gradient(1000px 640px at 10% 8%,rgba(46,128,235,.42),transparent 62%),
- linear-gradient(180deg,#061a36 0%,#0a2d57 70%,#0c3868 100%)}
-.hero::before{content:"";position:absolute;inset:0;background-image:radial-gradient(rgba(255,255,255,.22) 1px,transparent 1px);background-size:46px 46px;mask-image:radial-gradient(ellipse at 50% 20%,#000 0,transparent 65%);-webkit-mask-image:radial-gradient(ellipse at 50% 20%,#000 0,transparent 65%);opacity:.5;pointer-events:none}
-.eyebrow{display:inline-flex;align-items:center;gap:8px;font-size:14px;font-weight:600;color:#cfe3ff;background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.14);padding:6px 14px;border-radius:999px;margin-bottom:22px}
-.eyebrow i{width:8px;height:8px;border-radius:50%;background:var(--red);box-shadow:0 0 12px var(--red)}
-h1{font-size:clamp(30px,6.4vw,84px);line-height:1.05;letter-spacing:-.04em;margin:0 auto 18px;font-weight:800;max-width:1000px;text-wrap:balance}
+/* language: a globe that opens on hover */
+.langbox{position:fixed;top:14px;right:16px;z-index:60}
+.globe{width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.22);background:rgba(6,26,54,.55);backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);color:#fff;display:grid;place-items:center;cursor:pointer;transition:background .2s,transform .2s;box-shadow:0 8px 24px -10px rgba(0,0,0,.55)}
+.globe svg{width:22px;height:22px}
+.langbox.open .globe,.globe:focus-visible{background:rgba(255,255,255,.2)}
+.langmenu{position:absolute;right:0;top:100%;padding-top:8px;opacity:0;visibility:hidden;transform:translateY(-6px) scale(.96);transform-origin:top right;transition:opacity .18s,transform .18s,visibility .18s}
+.langmenu .in{display:flex;flex-direction:column;min-width:156px;padding:6px;border-radius:16px;background:rgba(9,30,60,.88);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border:1px solid rgba(255,255,255,.16);box-shadow:0 24px 50px -16px rgba(0,0,0,.6)}
+.langmenu button{display:flex;justify-content:space-between;align-items:center;gap:16px;text-align:left;border:0;background:none;color:#c9dcf5;padding:9px 12px;border-radius:10px;font:600 14px inherit;font-family:inherit;cursor:pointer;transition:background .15s,color .15s}
+.langmenu button:hover{background:rgba(255,255,255,.12);color:#fff}
+.langmenu button[aria-pressed=true]{color:#fff}
+.langmenu button[aria-pressed=true]::after{content:"✓";color:#ff8e95;font-weight:800}
+.langbox.open .langmenu,.langbox:focus-within .langmenu{opacity:1;visibility:visible;transform:none}
+@media(hover:hover){.langbox:hover .langmenu{opacity:1;visibility:visible;transform:none}.globe:hover{background:rgba(255,255,255,.2)}}
+@media(max-width:480px){.langbox{top:10px;right:10px}}
+/* hero: flowing red aurora + fine grain, headline / devices animate in */
+.hero{--h1:clamp(30px,6.4vw,84px);position:relative;overflow:hidden;color:#fff;text-align:center;padding:104px 0 0;min-height:100vh;min-height:100svh;background:linear-gradient(180deg,#05162f 0%,#08234a 55%,#0a2b55 100%)}
+.hero>.wrap,.hero>.stage{position:relative;z-index:2}
+.aurora{position:absolute;inset:0;overflow:hidden;z-index:0;pointer-events:none}
+.aurora i{position:absolute;border-radius:50%;will-change:transform}
+.aurora i:nth-child(1){width:78vmax;height:78vmax;left:-24vmax;bottom:-46vmax;background:radial-gradient(closest-side,rgba(226,61,71,.7),rgba(226,61,71,0) 70%);animation:fl1 15s ease-in-out infinite alternate}
+.aurora i:nth-child(2){width:70vmax;height:70vmax;right:-26vmax;top:-30vmax;background:radial-gradient(closest-side,rgba(190,28,62,.66),rgba(190,28,62,0) 70%);animation:fl2 19s ease-in-out infinite alternate}
+.aurora i:nth-child(3){width:54vmax;height:54vmax;left:30%;bottom:-30vmax;background:radial-gradient(closest-side,rgba(255,122,132,.34),rgba(255,122,132,0) 70%);animation:fl3 22s ease-in-out infinite alternate}
+.aurora i:nth-child(5){width:48vmax;height:48vmax;left:44%;top:-26vmax;background:radial-gradient(closest-side,rgba(216,52,112,.48),rgba(216,52,112,0) 70%);animation:fl5 17s ease-in-out infinite alternate}
+.aurora i:nth-child(4){width:72vmax;height:72vmax;left:-28vmax;top:-38vmax;background:radial-gradient(closest-side,rgba(46,128,235,.5),rgba(46,128,235,0) 70%);animation:fl4 18s ease-in-out infinite alternate}
+@keyframes fl5{to{transform:translate3d(-32vmax,15vmax,0) scale(1.28)}}
+@keyframes fl1{to{transform:translate3d(18vmax,-9vmax,0) scale(1.18)}}
+@keyframes fl2{to{transform:translate3d(-16vmax,12vmax,0) scale(1.12)}}
+@keyframes fl3{to{transform:translate3d(-22vmax,-6vmax,0) scale(1.3)}}
+@keyframes fl4{to{transform:translate3d(14vmax,10vmax,0) scale(1.15)}}
+.hero::after,.final::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.14;mix-blend-mode:overlay;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");background-size:220px 220px}
+h1{font-size:var(--h1);line-height:1.05;letter-spacing:-.04em;margin:0 auto 18px;font-weight:800;max-width:1000px;text-wrap:balance}
+@media(max-width:480px){.hero{--h1:8.1vw}}
+@supports (height:100svh){.stage{--sw:clamp(480px,calc((100svh - 104px - var(--h1)*2.1 - 118px)*1.85),1060px)}}
 .grad{background:linear-gradient(100deg,#8cc2ff 0%,#b9a9ff 45%,#ff7f88 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
-.lead{font-size:clamp(15.5px,1.45vw,18px);color:#b9d0ee;max-width:560px;margin:0 auto;line-height:1.4}
-/* device stage */
-.stage{position:relative;max-width:1060px;margin:40px auto 0;aspect-ratio:1000/540;overflow:hidden;-webkit-mask-image:linear-gradient(180deg,#000 0%,#000 52%,transparent 97%);mask-image:linear-gradient(180deg,#000 0%,#000 52%,transparent 97%)}
-.stage .mac{position:absolute;left:50%;top:2%;width:76%;transform:translateX(-50%) translateY(calc(var(--s,0)*.03px));filter:drop-shadow(0 40px 60px rgba(0,0,0,.55))}
-.stage .mac img{display:block;width:100%;height:auto}
-.stage .phone{position:absolute;bottom:-9%;width:25%;transition:transform .2s}
-.stage .p-ios{right:3%;transform:translateY(calc(var(--s,0)*-.05px))}
-.stage .p-and{left:3%;transform:translateY(calc(var(--s,0)*-.03px))}
-.phone{border-radius:11% / 5%;overflow:hidden;border:6px solid #0a1220;background:#0a1220;box-shadow:0 0 0 1.5px rgba(255,255,255,.2),0 40px 70px -20px rgba(0,0,0,.65),0 0 80px -20px rgba(80,150,255,.35)}
+.lead{font-size:clamp(15.5px,1.45vw,18px);color:#c3d6f1;max-width:560px;margin:0 auto;line-height:1.4}
+/* intro animation (only when the visitor has not asked for reduced motion; see .anim in <head>) */
+.w{display:inline-block}
+.anim h1{opacity:0;animation:show .01s 1.6s forwards}
+.anim h1.go{opacity:1}
+.anim .w{animation:wordIn 1.05s cubic-bezier(.16,1,.3,1) both;animation-delay:calc(var(--i)*.11s + .15s)}
+.anim .grad .w{background:linear-gradient(100deg,#8cc2ff 0%,#b9a9ff 45%,#ff7f88 100%);background-size:160% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;animation:wordIn 1.05s cubic-bezier(.16,1,.3,1) both,shimmer 6s ease-in-out 1.6s infinite alternate;animation-delay:calc(var(--i)*.11s + .15s),0s}
+.anim .grad{background:none;color:inherit;-webkit-background-clip:border-box}
+@keyframes wordIn{from{opacity:0;transform:translateY(.5em) scale(.96);filter:blur(12px)}to{opacity:1;transform:none;filter:blur(0)}}
+@keyframes shimmer{to{background-position:100% 0}}
+@keyframes show{to{opacity:1}}
+@keyframes up{from{opacity:0;transform:translateY(22px)}to{opacity:1;transform:none}}
+.anim .lead{animation:up 1s cubic-bezier(.16,1,.3,1) .85s both}
+.anim .dl-float{animation:up 1s cubic-bezier(.16,1,.3,1) 1.5s both}
+.anim .langbox{animation:up .8s cubic-bezier(.16,1,.3,1) .4s both}
+/* devices fly in from below */
+.stage{--sw:clamp(480px,calc((100vh - 104px - var(--h1)*2.1 - 118px)*1.85),1060px);position:relative;width:var(--sw);max-width:100%;margin:36px auto 0;aspect-ratio:1000/540;overflow:hidden;-webkit-mask-image:linear-gradient(180deg,#000 0%,#000 55%,transparent 98%);mask-image:linear-gradient(180deg,#000 0%,#000 55%,transparent 98%)}
+.dev{position:absolute}
+.dev.mac{left:50%;top:2%;width:76%;transform:translateX(-50%) translateY(calc(var(--s,0)*.03px))}
+.dev.p-and{left:3%;bottom:-9%;width:25%;transform:translateY(calc(var(--s,0)*-.03px))}
+.dev.p-ios{right:3%;bottom:-9%;width:25%;transform:translateY(calc(var(--s,0)*-.05px))}
+.dev img{display:block;width:100%;height:auto}
+.dev.mac .fly{filter:drop-shadow(0 40px 60px rgba(0,0,0,.55))}
+.anim .fly{animation:fly 1.6s cubic-bezier(.16,1,.3,1) both;animation-delay:var(--d,.5s)}
+@keyframes fly{0%{opacity:0;transform:translateY(115%) rotate(var(--r,0deg)) scale(.94)}35%{opacity:1}100%{opacity:1;transform:none}}
+.phone{border-radius:11% / 5%;overflow:hidden;border:6px solid #0a1220;background:#0a1220;box-shadow:0 0 0 1.5px rgba(255,255,255,.2),0 40px 70px -20px rgba(0,0,0,.65),0 0 80px -20px rgba(255,110,120,.35)}
 .phone img{display:block;width:100%;height:auto;border-radius:9% / 4.2%}
-@media(max-width:480px){h1{font-size:8.1vw}}
-@media(max-width:720px){.stage{aspect-ratio:1/1.08;margin-top:40px}.stage .mac{width:100%;top:5%}.stage .phone{width:37%;bottom:-3%}.stage .p-ios{right:2%}.stage .p-and{left:2%}}
-/* download bar */
-.dl-wrap{position:relative;z-index:6;margin-top:-3%;padding-bottom:60px}
-.dl-title{font-size:15px;font-weight:600;color:#9fbde3;letter-spacing:.14em;text-transform:uppercase;margin:0 0 20px}
-.dl-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:22px;max-width:1040px;margin:0 auto;align-items:stretch}
-@media(max-width:900px){.dl-bar{grid-template-columns:repeat(2,1fr)}}
-@media(max-width:460px){.dl-bar{gap:14px}.dl-tile{padding:20px 10px 16px}.dl-tile .nm{font-size:17px}.dl-tile .meta{font-size:12px}.dl-tile.me .nm{font-size:22px}.go{font-size:14px;padding:11px 8px}.dl-title{margin-bottom:16px}}
-.dl-tile{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:26px 18px 20px;border-radius:26px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.16);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);transition:transform .25s,box-shadow .25s,background .25s;color:#fff}
-.dl-tile:hover{background:rgba(255,255,255,.12);transform:translateY(-3px)}
-.dl-tile .ti{width:50px;height:50px;border-radius:15px;background:rgba(255,255,255,.1);display:grid;place-items:center;margin-bottom:4px}
-.dl-tile .ti svg{width:26px;height:26px}
-.dl-tile .nm{font-size:20px;letter-spacing:-.01em}
-.dl-tile .meta{font-size:13px;color:#a9c3e6;min-height:20px;margin-bottom:14px}
+/* compact download buttons floating at the bottom of the first screen */
+.dl-float{position:absolute;left:0;right:0;margin:0 auto;width:min(980px,94%);top:calc(100vh - 112px);top:calc(100svh - 112px);z-index:5}
+.dl-bar{display:flex;justify-content:center;gap:clamp(12px,2.2vw,30px)}
+.dl-float .dl-tile{flex:1 1 0;max-width:236px;min-width:0}
+.dl-flow .dl-bar{flex-wrap:wrap}.dl-flow .dl-tile{flex:0 1 224px}
+.dl-tile{position:relative;color:#fff}
+.dl-tile .go{display:flex;align-items:center;gap:12px;height:62px;padding:0 16px 0 12px;border-radius:18px;text-decoration:none;color:#fff;background:rgba(255,255,255,.11);border:1px solid rgba(255,255,255,.24);backdrop-filter:blur(16px) saturate(160%);-webkit-backdrop-filter:blur(16px) saturate(160%);box-shadow:0 12px 30px -14px rgba(0,0,0,.6);transition:transform .25s,background .25s,box-shadow .25s}
+.dl-tile .go:hover{background:rgba(255,255,255,.22);transform:translateY(-3px)}
+.dl-tile .ti{width:38px;height:38px;border-radius:11px;background:rgba(255,255,255,.15);display:grid;place-items:center;flex:none}
+.dl-tile .ti svg{width:21px;height:21px}
+.dl-tile .tx{display:flex;flex-direction:column;line-height:1.18;min-width:0;text-align:left}
+.dl-tile .nm{font-size:16px;letter-spacing:-.01em;white-space:nowrap}
+.dl-tile .tx small{font-size:12px;color:#c3d6f1}
+.dl-tile .go>svg{width:18px;height:18px;margin-left:auto;opacity:.85;flex:none}
 .dl-tile .rec{display:none}
-.go{margin-top:auto;display:inline-flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:12px 16px;border-radius:14px;font-weight:700;font-size:15px;text-decoration:none;color:#fff;background:rgba(125,183,255,.2);border:1px solid rgba(125,183,255,.4);transition:.15s}
-.go:hover{background:rgba(125,183,255,.34)}
-.go svg{width:18px;height:18px;flex:none}
-.go span{white-space:nowrap}
-.alt-link{font-size:12.5px;color:#a9c3e6;text-decoration:underline;text-underline-offset:3px;margin:-8px 0 14px}.alt-link:hover{color:#fff}
-.dl-tile.me{background:linear-gradient(160deg,#f2525c 0%,#c6363c 55%,#a22830 100%);border-color:rgba(255,255,255,.45);transform:scale(1.05);z-index:2;padding-top:36px;box-shadow:0 0 0 4px rgba(226,61,71,.28),0 30px 70px -14px rgba(226,61,71,.75),0 0 90px rgba(226,61,71,.45);animation:glow 3.2s ease-in-out infinite}
-.dl-tile.me:hover{transform:scale(1.07)}
-.dl-tile.me .ti{background:rgba(255,255,255,.22)}
-.dl-tile.me .meta,.dl-tile.me .alt-link{color:#ffe3e5}
-.dl-tile.me .rec{display:block;position:absolute;top:-13px;left:50%;transform:translateX(-50%);white-space:nowrap;background:#fff;color:var(--red-d);font-size:12px;font-weight:800;letter-spacing:.02em;padding:5px 13px;border-radius:999px;box-shadow:0 6px 16px rgba(0,0,0,.25)}
-.dl-tile.me .go{background:#fff;color:var(--red-d);border-color:#fff;font-size:16px;padding:14px 16px;box-shadow:0 8px 22px rgba(0,0,0,.22)}
-.dl-tile.me .go:hover{background:#fff;filter:brightness(.96)}
-@keyframes glow{50%{box-shadow:0 0 0 7px rgba(226,61,71,.2),0 30px 80px -14px rgba(226,61,71,.9),0 0 110px rgba(226,61,71,.6)}}
-@media(max-width:900px){.dl-tile.me{order:-1;grid-column:1/-1;transform:none}.dl-tile.me:hover{transform:translateY(-2px)}}
-.ver{margin:26px 0 0;font-size:14px;color:#9fbde3;min-height:20px}
-.ver:not(:empty)::before{content:"";}
-.dl-note{display:flex;gap:22px;justify-content:center;flex-wrap:wrap;margin-top:6px;font-size:14px;color:#9fbde3}
-.dl-note span::before{content:"✓ ";color:#5fe0a0;font-weight:800}
+.dl-tile.me .go{background:linear-gradient(160deg,#f6565f 0%,#c6363c 60%,#a22830 100%);border-color:rgba(255,255,255,.55);transform:scale(1.07);box-shadow:0 0 0 3px rgba(226,61,71,.32),0 22px 50px -12px rgba(226,61,71,.85),0 0 70px rgba(226,61,71,.5);animation:glow 3.2s ease-in-out infinite}
+.dl-tile.me .go:hover{transform:scale(1.09)}
+.dl-tile.me .ti{background:rgba(255,255,255,.24)}
+.dl-tile.me .tx small{color:#ffe3e5}
+.dl-tile.me .rec{display:block;position:absolute;top:-13px;left:50%;transform:translateX(-50%);z-index:2;white-space:nowrap;background:#fff;color:#c6363c;font-size:10.5px;font-weight:800;letter-spacing:.02em;padding:4px 11px;border-radius:999px;box-shadow:0 6px 16px rgba(0,0,0,.3)}
+@keyframes glow{50%{box-shadow:0 0 0 6px rgba(226,61,71,.2),0 22px 56px -12px rgba(226,61,71,.95),0 0 90px rgba(226,61,71,.65)}}
+.alt-link{position:absolute;top:calc(100% + 10px);left:0;right:0;text-align:center;font-size:12px;color:#d6e4f8;text-decoration:underline;text-underline-offset:3px}
+.alt-link:hover{color:#fff}
+.ver{margin:30px 0 0;font-size:14px;color:#9fbde3;min-height:20px}
+@media(max-width:720px){
+ .hero{padding-top:84px}
+ .stage{width:100%;aspect-ratio:1/1.02;margin-top:28px}
+ .dev.mac{width:100%;top:5%}.dev.p-and,.dev.p-ios{width:37%;bottom:-3%}
+ .dl-float{position:relative;top:auto;margin:-40px auto 0;width:calc(100% - 28px);padding:0 0 44px}
+ .dl-bar{display:grid;grid-template-columns:1fr 1fr;gap:14px}
+ .dl-float .dl-tile{max-width:none}
+ .dl-tile .go{height:58px;padding:0 12px 0 10px;gap:10px}
+ .dl-tile .go>svg{display:none}
+ .dl-tile .ti{width:34px;height:34px}
+ .dl-tile.me{grid-column:1/-1;order:-1}
+ .dl-tile.me .go{transform:none}.dl-tile.me .go:hover{transform:translateY(-2px)}
+ .alt-link{position:static;margin-top:7px}
+}
+@media(max-width:380px){.dl-tile .nm{font-size:14.5px}}
 /* sections */
 section{padding:110px 0}
 .hl{font-size:clamp(34px,5.6vw,68px);line-height:1.06;letter-spacing:-.035em;font-weight:800;margin:0 0 18px}
@@ -146,12 +189,12 @@ summary::after{content:"+";font-size:26px;line-height:1;color:var(--red);transit
 summary::-webkit-details-marker{display:none}
 details p{margin:0 0 24px;color:var(--muted)}
 /* final */
-.final{position:relative;overflow:hidden;color:#fff;text-align:center;padding:110px 0 100px;background:
- radial-gradient(800px 460px at 90% 100%,rgba(226,61,71,.32),transparent 60%),
- radial-gradient(900px 520px at 5% 0%,rgba(46,128,235,.4),transparent 62%),linear-gradient(180deg,#0a2d57,#061a36)}
+.final{position:relative;overflow:hidden;color:#fff;text-align:center;padding:110px 0 100px;background:linear-gradient(180deg,#0a2b55,#05162f)}
+.final>.wrap{position:relative;z-index:2}
+.final .aurora i:nth-child(1){bottom:-50vmax}
 .final .hl{color:#fff}
 .final .sub{color:#b9d0ee;margin-bottom:46px}
-.mascot{position:absolute;width:210px;right:3%;top:14%;opacity:.95;filter:drop-shadow(0 20px 30px rgba(0,0,0,.4));animation:float 5s ease-in-out infinite}
+.mascot{z-index:2;position:absolute;width:210px;right:3%;top:14%;opacity:.95;filter:drop-shadow(0 20px 30px rgba(0,0,0,.4));animation:float 5s ease-in-out infinite}
 @keyframes float{50%{transform:translateY(-12px) rotate(2deg)}}
 @media(max-width:1100px){.mascot{display:none}}
 footer{background:#041227;color:#8aa3c6;padding:36px 0 56px;font-size:14px}
@@ -161,57 +204,49 @@ footer a{color:#a9c3e6}
 /* reveal */
 .rv{opacity:0;transform:translateY(28px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1)}
 .rv.in{opacity:1;transform:none}
-@media(prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}.dl-tile.me,.mascot{animation:none}html{scroll-behavior:auto}}
+@media(prefers-reduced-motion:reduce){.rv{opacity:1;transform:none;transition:none}.dl-tile.me .go,.mascot,.aurora i{animation:none}html{scroll-behavior:auto}}
 
 </style>
 </head>
 <body>
-<div class="langbox" role="group" aria-label="Language">
-  <button data-l="ru" aria-pressed="false">RU</button><button data-l="en" aria-pressed="false">EN</button><button data-l="sr" aria-pressed="false">Srpski</button><button data-l="sc" aria-pressed="false">Српски</button>
+<div class="langbox" id="langbox">
+  <button class="globe" id="globe" type="button" aria-label="Language" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.2"/><path d="M2.8 12h18.4M12 2.8c3.1 3.4 3.1 14 0 18.4M12 2.8c-3.1 3.4-3.1 14 0 18.4"/></svg></button>
+  <div class="langmenu" role="menu"><div class="in">
+    <button type="button" role="menuitem" data-l="ru" aria-pressed="false">Русский</button>
+    <button type="button" role="menuitem" data-l="en" aria-pressed="false">English</button>
+    <button type="button" role="menuitem" data-l="sr" aria-pressed="false">Srpski</button>
+    <button type="button" role="menuitem" data-l="sc" aria-pressed="false">Српски</button>
+  </div></div>
 </div>
 
 <main id="top">
 <div class="hero" id="hero">
+  <div class="aurora" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
   <div class="wrap">
-    <h1 data-i18n-html="h1b">Ваша <span class="grad">ID-карта</span><br>на любом устройстве</h1>
+    <h1 id="h1" data-i18n-html="h1b">Ваша <span class="grad">ID-карта</span><br>на любом устройстве</h1>
     <p class="lead" data-i18n="lead2">Super Celik читает карту, делает PDF и умеет ещё много чего — без установки драйверов, на всех удобных устройствах.</p>
   </div>
-  <div class="stage" id="stage" aria-hidden="false">
-    <div class="mac"><img src="img/shot-mac-dark.webp" alt="Super Celik на macOS" width="1024" height="674"></div>
-    <div class="phone p-and"><img src="img/shot-android.webp" alt="Super Celik на Android" width="560" height="1244"></div>
-    <div class="phone p-ios"><img src="img/shot-iphone-dark.webp" alt="Super Celik на iPhone" width="560" height="1218"></div>
+  <div class="stage" id="stage">
+    <div class="dev mac"><div class="fly" style="--d:.55s"><img src="img/shot-mac.webp" alt="Super Celik на macOS" width="1024" height="674"></div></div>
+    <div class="dev p-and"><div class="phone fly" style="--d:.85s;--r:-7deg"><img src="img/shot-android.webp" alt="Super Celik на Android" width="560" height="1244"></div></div>
+    <div class="dev p-ios"><div class="phone fly" style="--d:1.05s;--r:7deg"><img src="img/shot-iphone.webp" alt="Super Celik на iPhone" width="560" height="1218"></div></div>
   </div>
-  <div class="dl-wrap" id="download"><div class="wrap">
-    <p class="dl-title" data-i18n="dl_title">Скачать</p>
+  <div class="dl-float" id="download">
     <div class="dl-bar"><div class="dl-tile" data-os="mac">
   <span class="rec" data-i18n="rec">Для вашего устройства</span>
-  <span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></span>
-  <b class="nm">macOS</b>
-  <span class="meta" data-i18n="t_mac">macOS 13+ · Apple Silicon</span>
-    <a class="alt-link" data-dl="mac-intel" href="https://github.com/peregond/SuperCelik/releases/latest" data-i18n="mac_intel_l">Mac с процессором Intel</a>
-  <a class="go" data-dl="mac-arm" href="https://github.com/peregond/SuperCelik/releases/latest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg><span data-i18n="dl">Скачать</span></a>
+  <a class="go" data-dl="mac-arm" href="https://github.com/peregond/SuperCelik/releases/latest"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></span><span class="tx"><b class="nm">macOS</b><small data-i18n="dl">Скачать</small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg></a>
+  <a class="alt-link" data-dl="mac-intel" href="https://github.com/peregond/SuperCelik/releases/latest" data-i18n="mac_intel_l">Mac с процессором Intel</a>
 </div><div class="dl-tile" data-os="win">
   <span class="rec" data-i18n="rec">Для вашего устройства</span>
-  <span class="ti"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.5l7.5-1v7H3zM11.5 4.3L21 3v8.5h-9.5zM3 12.5h7.5v7L3 18.5zM11.5 12.5H21V21l-9.5-1.3z"/></svg></span>
-  <b class="nm">Windows</b>
-  <span class="meta" data-i18n="t_win">Windows 10 / 11 · x64</span>
-  <a class="go" data-dl="win" href="https://github.com/peregond/SuperCelik/releases/latest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg><span data-i18n="dl">Скачать</span></a>
+  <a class="go" data-dl="win" href="https://github.com/peregond/SuperCelik/releases/latest"><span class="ti"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.5l7.5-1v7H3zM11.5 4.3L21 3v8.5h-9.5zM3 12.5h7.5v7L3 18.5zM11.5 12.5H21V21l-9.5-1.3z"/></svg></span><span class="tx"><b class="nm">Windows</b><small data-i18n="dl">Скачать</small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg></a>
 </div><div class="dl-tile" data-os="android">
   <span class="rec" data-i18n="rec">Для вашего устройства</span>
-  <span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6.5" y="2" width="11" height="20" rx="2.6"/><circle cx="12" cy="5.2" r=".7" fill="currentColor"/><path d="M10.5 19h3"/></svg></span>
-  <b class="nm">Android</b>
-  <span class="meta" data-i18n="t_and">Android 8+ · APK</span>
-  <a class="go" data-dl="android" href="https://github.com/peregond/SuperCelik/releases/latest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg><span data-i18n="dl">Скачать</span></a>
+  <a class="go" data-dl="android" href="https://github.com/peregond/SuperCelik/releases/latest"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6.5" y="2" width="11" height="20" rx="2.6"/><circle cx="12" cy="5.2" r=".7" fill="currentColor"/><path d="M10.5 19h3"/></svg></span><span class="tx"><b class="nm">Android</b><small data-i18n="dl">Скачать</small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg></a>
 </div><div class="dl-tile" data-os="ios">
   <span class="rec" data-i18n="rec">Для вашего устройства</span>
-  <span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3.2"/><path d="M10 5.2h4"/></svg></span>
-  <b class="nm">iPhone / iPad</b>
-  <span class="meta" data-i18n="t_ios">iOS · IPA (NFC)</span>
-  <a class="go" data-dl="ios" href="https://github.com/peregond/SuperCelik/releases/latest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg><span data-i18n="dl">Скачать</span></a>
+  <a class="go" data-dl="ios" href="https://github.com/peregond/SuperCelik/releases/latest"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3.2"/><path d="M10 5.2h4"/></svg></span><span class="tx"><b class="nm">iPhone / iPad</b><small data-i18n="dl">Скачать</small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg></a>
 </div></div>
-<p class="ver"><span class="verv"></span></p>
-    <div class="dl-note"><span data-i18n="n1">Бесплатно</span><span data-i18n="n2">Без аккаунта</span><span data-i18n="b3">Открытый код</span></div>
-  </div></div>
+  </div>
 </div>
 
 <section class="statement"><div class="wrap center">
@@ -242,7 +277,7 @@ footer a{color:#a9c3e6}
     <button role="tab" aria-selected="false" data-d="android">Android</button>
   </div>
 
-  <div class="panel on" id="d-mac"><div class="pair"><div class="mac"><img src="img/shot-mac.webp" alt="Super Celik на macOS, светлая тема" loading="lazy" width="1024" height="674"></div><div class="mac"><img src="img/shot-mac-dark.webp" alt="Super Celik на macOS, тёмная тема" loading="lazy" width="1024" height="674"></div></div><p class="cap" data-i18n="dv_mac">Данные карты и проверка подписи, светлая и тёмная тема</p></div>
+  <div class="panel on" id="d-mac"><div class="pair"><div class="mac"><img src="img/shot-mac.webp" alt="Super Celik на macOS: данные карты" loading="lazy" width="1024" height="674"></div><div class="mac"><img src="img/shot-mac-token.webp" alt="Super Celik на macOS: токен и сертификаты" loading="lazy" width="1024" height="674"></div></div><p class="cap" data-i18n="dv_win">Данные карты, токен и сертификаты</p></div>
   <div class="panel" id="d-win"><div class="pair"><div class="win"><img src="img/shot-win.webp" alt="Super Celik на Windows: данные" loading="lazy" width="1024" height="674"></div><div class="win"><img src="img/shot-win-token.webp" alt="Super Celik на Windows: токен и сертификаты" loading="lazy" width="1024" height="674"></div></div><p class="cap" data-i18n="dv_win">Данные карты, токен и сертификаты</p></div>
   <div class="panel" id="d-ios"><div class="pair ph2"><div class="phone"><img src="img/shot-iphone.webp" alt="Super Celik на iPhone, светлая тема" loading="lazy" width="560" height="1218"></div><div class="phone"><img src="img/shot-iphone-dark.webp" alt="Super Celik на iPhone, тёмная тема" loading="lazy" width="560" height="1218"></div></div><p class="cap" data-i18n="dv_ios">Светлая и тёмная тема. Чтение по NFC</p></div>
   <div class="panel" id="d-android"><div class="pair ph2"><div class="phone"><img src="img/shot-android.webp" alt="Super Celik на Android: карточка" loading="lazy" width="560" height="1218"></div><div class="phone"><img src="img/shot-android-token.webp" alt="Super Celik на Android: токен, PIN и подпись" loading="lazy" width="560" height="1218"></div></div><p class="cap" data-i18n="dv_and">Карточка, токен, смена PIN и подпись файлов</p></div>
@@ -292,37 +327,25 @@ footer a{color:#a9c3e6}
   <details><summary data-i18n="q5">Это официальное приложение МУП?</summary><p data-i18n="a5">Нет. Это независимая реализация, не связанная с МУП РС и NetSeT/Veridos.</p></details>
 </div></section>
 
-<section class="final"><div class="wrap">
+<section class="final"><div class="aurora" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div><div class="wrap">
   <img class="mascot" src="img/key-thumbs.png" alt="" width="210" height="210" loading="lazy">
   <h2 class="hl rv" data-i18n="c_h">Готовы попробовать?</h2>
   <p class="sub rv" style="margin-inline:auto" data-i18n="c_p">Скачайте Super Celik — это займёт меньше минуты.</p>
-  <div class="dl-bar"><div class="dl-tile" data-os="mac">
+  <div class="dl-flow"><div class="dl-bar"><div class="dl-tile" data-os="mac">
   <span class="rec" data-i18n="rec">Для вашего устройства</span>
-  <span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></span>
-  <b class="nm">macOS</b>
-  <span class="meta" data-i18n="t_mac">macOS 13+ · Apple Silicon</span>
-    <a class="alt-link" data-dl="mac-intel" href="https://github.com/peregond/SuperCelik/releases/latest" data-i18n="mac_intel_l">Mac с процессором Intel</a>
-  <a class="go" data-dl="mac-arm" href="https://github.com/peregond/SuperCelik/releases/latest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg><span data-i18n="dl">Скачать</span></a>
+  <a class="go" data-dl="mac-arm" href="https://github.com/peregond/SuperCelik/releases/latest"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></span><span class="tx"><b class="nm">macOS</b><small data-i18n="dl">Скачать</small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg></a>
+  <a class="alt-link" data-dl="mac-intel" href="https://github.com/peregond/SuperCelik/releases/latest" data-i18n="mac_intel_l">Mac с процессором Intel</a>
 </div><div class="dl-tile" data-os="win">
   <span class="rec" data-i18n="rec">Для вашего устройства</span>
-  <span class="ti"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.5l7.5-1v7H3zM11.5 4.3L21 3v8.5h-9.5zM3 12.5h7.5v7L3 18.5zM11.5 12.5H21V21l-9.5-1.3z"/></svg></span>
-  <b class="nm">Windows</b>
-  <span class="meta" data-i18n="t_win">Windows 10 / 11 · x64</span>
-  <a class="go" data-dl="win" href="https://github.com/peregond/SuperCelik/releases/latest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg><span data-i18n="dl">Скачать</span></a>
+  <a class="go" data-dl="win" href="https://github.com/peregond/SuperCelik/releases/latest"><span class="ti"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.5l7.5-1v7H3zM11.5 4.3L21 3v8.5h-9.5zM3 12.5h7.5v7L3 18.5zM11.5 12.5H21V21l-9.5-1.3z"/></svg></span><span class="tx"><b class="nm">Windows</b><small data-i18n="dl">Скачать</small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg></a>
 </div><div class="dl-tile" data-os="android">
   <span class="rec" data-i18n="rec">Для вашего устройства</span>
-  <span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6.5" y="2" width="11" height="20" rx="2.6"/><circle cx="12" cy="5.2" r=".7" fill="currentColor"/><path d="M10.5 19h3"/></svg></span>
-  <b class="nm">Android</b>
-  <span class="meta" data-i18n="t_and">Android 8+ · APK</span>
-  <a class="go" data-dl="android" href="https://github.com/peregond/SuperCelik/releases/latest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg><span data-i18n="dl">Скачать</span></a>
+  <a class="go" data-dl="android" href="https://github.com/peregond/SuperCelik/releases/latest"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6.5" y="2" width="11" height="20" rx="2.6"/><circle cx="12" cy="5.2" r=".7" fill="currentColor"/><path d="M10.5 19h3"/></svg></span><span class="tx"><b class="nm">Android</b><small data-i18n="dl">Скачать</small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg></a>
 </div><div class="dl-tile" data-os="ios">
   <span class="rec" data-i18n="rec">Для вашего устройства</span>
-  <span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3.2"/><path d="M10 5.2h4"/></svg></span>
-  <b class="nm">iPhone / iPad</b>
-  <span class="meta" data-i18n="t_ios">iOS · IPA (NFC)</span>
-  <a class="go" data-dl="ios" href="https://github.com/peregond/SuperCelik/releases/latest"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg><span data-i18n="dl">Скачать</span></a>
-</div></div>
-<p class="ver"><span class="verv"></span></p>
+  <a class="go" data-dl="ios" href="https://github.com/peregond/SuperCelik/releases/latest"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3.2"/><path d="M10 5.2h4"/></svg></span><span class="tx"><b class="nm">iPhone / iPad</b><small data-i18n="dl">Скачать</small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg></a>
+</div></div></div>
+  <p class="ver"><span class="verv"></span></p>
 </div></section>
 </main>
 
@@ -470,8 +493,8 @@ let version="";
 function setLang(l){lang=l;localStorage.setItem("sc-lang",l);document.documentElement.lang={ru:"ru",en:"en",sr:"sr-Latn",sc:"sr-Cyrl"}[l];
  document.querySelectorAll("[data-i18n]").forEach(e=>{const v=tr(l,e.dataset.i18n);if(v!=null)e.textContent=v});
  document.querySelectorAll("[data-i18n-html]").forEach(e=>{const v=tr(l,e.dataset.i18nHtml);if(v!=null)e.innerHTML=v});
- document.querySelectorAll(".langbox button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l===l));
- labels()}
+ document.querySelectorAll(".langmenu button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l===l));
+ labels();splitH1()}
 function labels(){
  // the tile of the visitor's device says "Download for <OS>", the others just "Download"
   document.querySelectorAll(".verv").forEach(e=>e.textContent=version?tr(lang,"ver_l")+version:"")}
@@ -485,7 +508,25 @@ if(OS){const tb=document.querySelector('.tabs button[data-t="'+OS+'"]');tb&&tb.c
 document.querySelectorAll(".seg button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".seg button").forEach(x=>x.setAttribute("aria-selected",x===b));
  document.querySelectorAll(".devices .panel").forEach(p=>p.classList.toggle("on",p.id==="d-"+b.dataset.d))});
 if(OS){const sb=document.querySelector('.seg button[data-d="'+OS+'"]');sb&&sb.click()}
-document.querySelectorAll(".langbox button").forEach(b=>b.onclick=()=>setLang(b.dataset.l));
+// language menu: opens on hover (CSS), on tap / keyboard (class), closes on pick, outside click or Esc
+const lbox=document.getElementById("langbox"),globe=document.getElementById("globe");
+const setOpen=o=>{lbox.classList.toggle("open",o);globe.setAttribute("aria-expanded",o)};
+globe.onclick=e=>{e.stopPropagation();setOpen(!lbox.classList.contains("open"))};
+document.addEventListener("click",e=>{if(!lbox.contains(e.target))setOpen(false)});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){setOpen(false);globe.blur()}});
+document.querySelectorAll(".langmenu button").forEach(b=>b.onclick=()=>{setLang(b.dataset.l);setOpen(false);b.blur();globe.blur()});
+// headline: every word gets its own entrance (re-played when the language changes)
+function splitH1(){const h=document.getElementById("h1");
+ if(!document.documentElement.classList.contains("anim")){h.classList.add("go");return}
+ let i=0;
+ const walk=n=>[...n.childNodes].forEach(c=>{
+  if(c.nodeType===3){const f=document.createDocumentFragment();
+   c.textContent.split(/(\s+)/).forEach(t=>{if(!t)return;
+    if(/^\s+$/.test(t))f.appendChild(document.createTextNode(" "));
+    else{const s=document.createElement("span");s.className="w";s.style.setProperty("--i",i++);s.textContent=t;f.appendChild(s)}});
+   c.replaceWith(f)}
+  else if(c.nodeType===1&&c.tagName!=="BR")walk(c)});
+ walk(h);h.classList.add("go")}
 // feature rail arrows
 const rail=document.getElementById("rail");
 document.getElementById("prev").onclick=()=>rail.scrollBy({left:-380,behavior:"smooth"});
