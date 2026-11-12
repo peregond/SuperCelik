@@ -14,6 +14,33 @@ let brandTint = Color(nsColor: NSColor(name: nil) { appearance in
 
 enum Page: String, Hashable { case personal, token, settings }
 
+/// One row of the sidebar: flag red when selected, a soft highlight on hover.
+struct SidebarRow: View {
+    let title: String
+    let icon: String
+    let selected: Bool
+    let action: () -> Void
+    @State private var hovering = false
+
+    var body: some View {
+        Button(action: action) {
+            Label(title, systemImage: icon)
+                .fontWeight(selected ? .semibold : .regular)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 10).padding(.vertical, 7)
+                .foregroundStyle(selected ? Color.white : Color.primary)
+                .background(RoundedRectangle(cornerRadius: 9, style: .continuous)
+                    .fill(selected ? brandRed : Color.primary.opacity(hovering ? 0.07 : 0)))
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .onHover { hovering = $0 }
+        .animation(.easeInOut(duration: 0.15), value: hovering)
+        .animation(.easeInOut(duration: 0.2), value: selected)
+        .accessibilityAddTraits(selected ? .isSelected : [])
+    }
+}
+
 // MARK: - Reusable pieces
 
 /// Content surface: a flat, softly rounded panel (the toolbar and sidebar carry the system glass).
@@ -130,10 +157,6 @@ struct ContentView: View {
     @State private var shotPage: String? = Shot.page
     private var page: Page { Page(rawValue: shotPage ?? pageRaw) ?? .personal }
 
-    private var selection: Binding<Page?> {
-        Binding(get: { page }, set: { if let v = $0 { shotPage = nil; pageRaw = v.rawValue } })
-    }
-
     private var pageTitle: String {
         switch page {
         case .personal: return loc.t(.tabPersonal)
@@ -171,19 +194,22 @@ struct ContentView: View {
         #endif
     }
 
+    /// Own sidebar rows instead of a List: the system draws a selected List row in the user's accent colour
+    /// (blue), and the app's accent is the red of the flag.
     private var sidebar: some View {
-        List(selection: selection) {
-            Section {
-                Label(loc.t(.tabPersonal), systemImage: "person.text.rectangle").tag(Page.personal)
-                Label(loc.t(.tabToken), systemImage: "key.viewfinder").tag(Page.token)
-            }
-            Section {
-                Label(loc.t(.tabSettings), systemImage: "gearshape").tag(Page.settings)
-            }
+        VStack(alignment: .leading, spacing: 2) {
+            SidebarRow(title: loc.t(.tabPersonal), icon: "person.text.rectangle", selected: page == .personal) { go(.personal) }
+            SidebarRow(title: loc.t(.tabToken), icon: "key.viewfinder", selected: page == .token) { go(.token) }
+            Spacer().frame(height: 14)
+            SidebarRow(title: loc.t(.tabSettings), icon: "gearshape", selected: page == .settings) { go(.settings) }
+            Spacer(minLength: 0)
         }
-        .listStyle(.sidebar)
+        .padding(.horizontal, 10)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .safeAreaInset(edge: .top, spacing: 0) { brandHeader }
     }
+
+    private func go(_ p: Page) { shotPage = nil; pageRaw = p.rawValue }
 
     /// Logo and name at the top of the sidebar. The status (the reader's face) lives in the middle of the window.
     private var brandHeader: some View {
