@@ -33,15 +33,43 @@ class MupPrintLayout(private val p: PersonalData, private val includeJmbg: Boole
         typeface = font; textSize = fontSize; color = Color.BLACK; letterSpacing = kern / fontSize
     }
 
+    /**
+     * Fitting: the form is laid out top to bottom, so long data (wrapped addresses, a note) pushes the footnotes off
+     * the page. A dry run measures the height first; if it does not fit, the rows are packed a little tighter and,
+     * as a last resort, the whole page is scaled down a few percent.
+     */
+    private var measuring = false
+    private var rowStep = 24.67f
+    private var rowCount = 0
+    private val bottomLimit = 826f
+
     fun draw(canvas: Canvas) {
         c = canvas
+        rowStep = 24.67f
+        val natural = layout(drawing = false)
+        var scale = 1f
+        if (natural > bottomLimit) {
+            rowStep = maxOf(18f, rowStep - (natural - bottomLimit) / maxOf(rowCount, 1))
+            val packed = layout(drawing = false)
+            if (packed > bottomLimit) scale = bottomLimit / packed
+        }
         c.drawColor(Color.WHITE)
-        y = 0f; lineWidth = 1f; fontSize = 13.5f; kern = -0.1f
+        c.save()
+        c.scale(scale, scale)
+        layout(drawing = true)
+        c.restore()
+    }
+
+    /** Lays the page out (drawing it only when [drawing]) and returns the y where it ends. */
+    private fun layout(drawing: Boolean): Float {
+        measuring = !drawing
+        y = 0f; lineWidth = 1f; fontSize = 13.5f; kern = -0.1f; rowCount = 0
         when (p.cardType) {
             CardType.IF2020 -> drawForeigner(permit = false)
             CardType.RP2024 -> drawForeigner(permit = true)
             else -> drawRegular()
         }
+        return y
     }
 
     // ---- pages ----
@@ -137,6 +165,7 @@ class MupPrintLayout(private val p: PersonalData, private val includeJmbg: Boole
     }
 
     private fun photo(top: Float) {
+        if (measuring) { lineWidth = 0.48f; return }
         val frame = RectF(leftMargin, top, 179f, top + 159f)
         p.portrait?.let { d ->
             BitmapFactory.decodeByteArray(d, 0, d.size)?.let { bmp: Bitmap ->
@@ -191,13 +220,15 @@ class MupPrintLayout(private val p: PersonalData, private val includeJmbg: Boole
         val v = wrap(value, 350f)
         l.forEachIndexed { i, s -> text(s, textLeftMargin, top + i * 12f) }
         v.forEachIndexed { i, s -> text(s, textLeftMargin + 128f, top + i * 12f) }
-        y = top + (maxOf(l.size, v.size, 1) - 1) * 12f + 24.67f
+        y = top + (maxOf(l.size, v.size, 1) - 1) * 12f + rowStep
+        rowCount++
     }
 
     // ---- primitives ----
 
     /** `y` is the top of the text line (like NSString.draw(at:)); Canvas wants the baseline. */
     private fun text(s: String, x: Float, y: Float) {
+        if (measuring) return
         val paint = textPaint()
         c.drawText(s, x, y - paint.ascent(), paint)
     }
@@ -205,6 +236,7 @@ class MupPrintLayout(private val p: PersonalData, private val includeJmbg: Boole
     /** Horizontal rule across the page at the current y; null keeps the previous width. */
     private fun line(width: Float?) {
         if (width != null) lineWidth = width
+        if (measuring) return
         val paint = Paint().apply { color = Color.BLACK; strokeWidth = lineWidth; style = Paint.Style.STROKE }
         c.drawLine(leftMargin, y, rightMargin, y, paint)
     }
