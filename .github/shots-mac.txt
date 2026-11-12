@@ -2,7 +2,6 @@ personal personal
 personal-dark personal --dark
 token token
 settings settings
-about about
 empty-noreader personal --state noreader
 empty-nocard personal --state nocard
 empty-ready personal --state ready

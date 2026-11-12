@@ -12,7 +12,7 @@ let brandTint = Color(nsColor: NSColor(name: nil) { appearance in
         : NSColor(srgbRed: 0.776, green: 0.212, blue: 0.235, alpha: 1)
 })
 
-enum Page: String, Hashable { case personal, token, settings, about }
+enum Page: String, Hashable { case personal, token, settings }
 
 // MARK: - Reusable pieces
 
@@ -139,7 +139,6 @@ struct ContentView: View {
         case .personal: return loc.t(.tabPersonal)
         case .token: return loc.t(.tabToken)
         case .settings: return loc.t(.tabSettings)
-        case .about: return loc.t(.tabAbout)
         }
     }
 
@@ -157,12 +156,12 @@ struct ContentView: View {
                     case .personal: PersonalView()
                     case .token: TokenView()
                     case .settings: SettingsView()
-                    case .about: AboutView()
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
             .navigationTitle(pageTitle)
+            .toolbar { readerToolbar }
         }
         .tint(brandTint)
         .sheet(isPresented: $model.showPreview) { PreviewSheet() }
@@ -180,12 +179,10 @@ struct ContentView: View {
             }
             Section {
                 Label(loc.t(.tabSettings), systemImage: "gearshape").tag(Page.settings)
-                Label(loc.t(.tabAbout), systemImage: "info.circle").tag(Page.about)
             }
         }
         .listStyle(.sidebar)
         .safeAreaInset(edge: .top, spacing: 0) { brandHeader }
-        .safeAreaInset(edge: .bottom, spacing: 0) { readerRow }
     }
 
     /// Logo and name at the top of the sidebar. The status (the reader's face) lives in the middle of the window.
@@ -202,29 +199,19 @@ struct ContentView: View {
         .padding(.horizontal, 14).padding(.top, 6).padding(.bottom, 8)
     }
 
-    /// The reader itself at the bottom of the sidebar: its name (or a picker when there are several) and refresh.
-    private var readerRow: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "creditcard.and.123").foregroundStyle(.secondary)
+    /// Refresh (look for the reader again) is one button in the toolbar on every page; with several readers
+    /// there is also a menu to choose which one to use.
+    @ToolbarContentBuilder private var readerToolbar: some ToolbarContent {
+        ToolbarItemGroup(placement: .primaryAction) {
             if model.readers.count > 1 {
                 Picker(loc.t(.reader), selection: $model.selectedReader) {
                     ForEach(model.readers, id: \.self) { Text($0).tag($0) }
                 }
-                .labelsHidden().pickerStyle(.menu).controlSize(.small)
-            } else {
-                // no reader: the empty state in the middle already says so, so only offer to look again
-                Text(model.readers.first ?? loc.t(.refresh))
-                    .font(.caption).foregroundStyle(.secondary)
-                    .lineLimit(1).truncationMode(.middle)
+                .pickerStyle(.menu).help(loc.t(.reader))
             }
-            Spacer(minLength: 0)
-            Button { model.refresh() } label: { Image(systemName: "arrow.clockwise") }
-                .buttonStyle(.borderless).help(loc.t(.refresh))
+            Button { model.refresh() } label: { Label(loc.t(.refresh), systemImage: "arrow.clockwise") }
+                .help(model.readers.first.map { "\(loc.t(.refresh)) — \($0)" } ?? loc.t(.refresh))
         }
-        .padding(10)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Color.primary.opacity(0.06)))
-        .padding(.horizontal, 10).padding(.top, 4).padding(.bottom, 8)
     }
 
     @ViewBuilder private var updateBanner: some View {
@@ -632,6 +619,7 @@ struct SettingsView: View {
                     get: { model.demoActive },
                     set: { $0 ? model.showDemoData() : model.hideDemoData() }))
             } footer: { Text(loc.t(.demoHint)) }
+            Section(loc.t(.tabAbout)) { AboutView() }
         }
         .formStyle(.grouped)
         .frame(maxWidth: 680)
@@ -646,24 +634,24 @@ struct AboutView: View {
     @EnvironmentObject var model: AppModel
 
     var body: some View {
-        VStack(spacing: 10) {
-            Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 112, height: 112)
-            Text(loc.t(.appTitle)).font(.system(size: 30, weight: .bold))
+        VStack(spacing: 8) {
+            Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 72, height: 72)
+            Text(loc.t(.appTitle)).font(.title2.weight(.bold))
             Text("\(loc.t(.version)) \(Updater.currentVersion)").foregroundStyle(.secondary)
             Text(loc.t(.aboutText)).multilineTextAlignment(.center).foregroundStyle(.secondary)
-                .frame(maxWidth: 400).padding(.top, 6)
+                .font(.callout).frame(maxWidth: 400).padding(.top, 2)
             #if !APPSTORE
             Button { Task { await model.checkUpdates(manual: true) } } label: {
                 Label(loc.t(.checkUpdates), systemImage: "arrow.triangle.2.circlepath")
             }
-            .controlSize(.large).padding(.top, 10)
+            .padding(.top, 6)
             if let s = model.updateStatus {
                 Text(s).font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.center).frame(maxWidth: 400)
             }
             #endif
         }
-        .padding(32)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 6)
     }
 }
 
