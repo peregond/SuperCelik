@@ -57,15 +57,21 @@ h1{font-size:var(--h1);line-height:1.05;letter-spacing:-.04em;margin:0 auto 18px
 .grad{background:linear-gradient(100deg,#8cc2ff 0%,#b9a9ff 45%,#ff7f88 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
 .nb{white-space:nowrap}
 .lead{text-wrap:balance;font-size:clamp(15.5px,1.45vw,18px);color:#c3d6f1;max-width:620px;margin:0 auto;line-height:1.4}
-/* the word "private" carries a padlock that closes once the line has appeared */
-.priv{position:relative;display:inline-block;white-space:nowrap;margin-right:1.15em;color:#fff;font-weight:600}
+/* two emphasised words in the subtitle; "private" also carries a padlock that turns shut once the line has appeared */
+.em,.priv{color:#fff;font-weight:600}
+.priv{position:relative;display:inline-block;white-space:nowrap;margin-right:1.2em}
 .priv::before,.priv::after{content:"";position:absolute;pointer-events:none}
-.priv::after{left:calc(100% + .3em);top:.3em;width:.74em;height:.56em;border-radius:.13em;background:linear-gradient(160deg,#ff9aa0,#e23d47);box-shadow:0 .2em .6em -.1em rgba(226,61,71,.7)}
-.priv::before{left:calc(100% + .3em + .13em);top:-.12em;width:.48em;height:.5em;box-sizing:border-box;border:.115em solid #ffb3b8;border-bottom:0;border-radius:.3em .3em 0 0;transform-origin:100% 100%}
-.anim .priv::before{animation:lockShut .7s cubic-bezier(.3,1.5,.5,1) 2.15s both}
-.anim .priv::after{animation:lockClick .35s ease-out 2.6s both}
-.anim.swapped .priv::before{animation-delay:.4s}.anim.swapped .priv::after{animation-delay:.85s}
-@keyframes lockShut{0%{transform:translateY(-.2em) rotate(-24deg)}100%{transform:none}}
+.priv::after{left:calc(100% + .3em);top:.44em;width:.74em;height:.56em;border-radius:.13em;background:radial-gradient(circle at 50% 46%,#0a2d57 0 .07em,transparent .075em),#fff}
+.priv::before{left:calc(100% + .3em + .13em);top:.04em;width:.48em;height:.5em;box-sizing:border-box;border:.115em solid #fff;border-bottom:0;border-radius:.3em .3em 0 0;transform-origin:.0575em 100%}
+.anim .priv::before{animation:lockTurn 1.05s cubic-bezier(.45,0,.25,1) 2.15s both}
+.anim .priv::after{animation:lockClick .35s ease-out 3.05s both}
+.anim.swapped .priv::before{animation-delay:.4s}.anim.swapped .priv::after{animation-delay:1.3s}
+/* open: lifted and turned over to the left of its left leg; it swings left to right over that leg, then drops into the body */
+@keyframes lockTurn{
+ 0%{transform:translateY(-.24em) perspective(2.2em) rotateY(180deg)}
+ 62%{transform:translateY(-.24em) perspective(2.2em) rotateY(0deg)}
+ 82%{transform:translateY(.03em) perspective(2.2em) rotateY(0deg)}
+ 100%{transform:translateY(0) perspective(2.2em) rotateY(0deg)}}
 @keyframes lockClick{0%{transform:none}45%{transform:scale(1.14)}100%{transform:none}}
 /* intro animation (only when the visitor has not asked for reduced motion; see .anim in <head>) */
 .w{display:inline-block}
@@ -160,36 +166,79 @@ section{padding:110px 0}
 .rail-nav button{width:44px;height:44px;border-radius:50%;border:0;background:rgba(12,64,118,.12);color:var(--blue);font-size:20px;cursor:pointer;transition:.15s}
 .rail-nav button:hover{background:var(--blue);color:#fff}
 @media(prefers-color-scheme:dark){.rail-nav button{background:rgba(255,255,255,.1);color:#fff}}
-/* device picker */
+/* "One app" section: the heading is a platform picker, the screenshots are cards that open full screen */
 .devices{background:linear-gradient(180deg,#fff,#eaf1fb)}
 @media(prefers-color-scheme:dark){.devices{background:linear-gradient(180deg,#0b1830,#0a2145)}}
-.seg{display:inline-flex;flex-wrap:wrap;justify-content:center;gap:4px;background:rgba(12,64,118,.09);padding:5px;border-radius:999px;margin:34px 0 46px}
-@media(prefers-color-scheme:dark){.seg{background:rgba(255,255,255,.08)}}
-.seg button{border:0;background:none;color:var(--ink);font:600 15px inherit;font-family:inherit;padding:10px 22px;border-radius:999px;cursor:pointer;transition:.2s}
-.seg button[aria-selected=true]{background:var(--blue);color:#fff;box-shadow:0 6px 18px -6px var(--blue)}
+.devices .hl{margin-bottom:14px}
+.devices .sub{text-wrap:balance}
+.appwrap{position:relative;display:inline-block}
+.appchip{display:inline-flex;align-items:baseline;gap:.14em;margin:0;padding:0;border:0;background:none;font:inherit;letter-spacing:inherit;cursor:pointer;color:var(--blue2)}
+.appchip>span{background:linear-gradient(100deg,var(--blue),var(--blue2));-webkit-background-clip:text;background-clip:text;color:transparent;transition:filter .2s}
+@media(prefers-color-scheme:dark){.appchip>span{background:linear-gradient(100deg,#8fc1ff,#4f9bf0);-webkit-background-clip:text;background-clip:text}.appchip{color:#6fb0ff}}
+.appchip:hover>span{filter:brightness(1.2)}
+.appchip:focus-visible{outline:3px solid rgba(226,61,71,.65);outline-offset:6px;border-radius:.2em}
+.appchip .chev{align-self:center;width:.34em;height:.22em;margin-left:.08em;opacity:.9;transition:transform .25s}
+.appchip[aria-expanded=true] .chev{transform:rotate(180deg)}
+.anim .appchip .chev{animation:bob 1.4s ease-in-out 1.2s 3}
+@keyframes bob{50%{translate:0 .1em}}
+.appmenu{position:absolute;left:50%;top:calc(100% + 16px);z-index:20;display:flex;flex-direction:column;min-width:230px;padding:8px;border-radius:20px;background:#fff;color:var(--ink);font-size:18px;font-weight:650;letter-spacing:0;line-height:1.2;text-align:left;box-shadow:0 30px 70px -20px rgba(12,64,118,.55),0 0 0 1px rgba(12,64,118,.1);opacity:0;visibility:hidden;transform:translateX(-50%) translateY(-8px) scale(.96);transform-origin:top center;transition:opacity .18s,transform .18s,visibility .18s}
+@media(prefers-color-scheme:dark){.appmenu{background:#0f2040;color:#eaf1fc;box-shadow:0 30px 70px -20px rgba(0,0,0,.7),0 0 0 1px rgba(255,255,255,.12)}}
+.appmenu.open{opacity:1;visibility:visible;transform:translateX(-50%)}
+.appmenu button{display:flex;align-items:center;gap:14px;white-space:nowrap;padding:12px 14px;border:0;border-radius:13px;background:none;color:inherit;font:inherit;cursor:pointer;text-align:left;transition:background .15s}
+.appmenu button svg{width:22px;height:22px;flex:none}
+.appmenu button:hover,.appmenu button:focus-visible{background:rgba(12,64,118,.09);outline:0}
+.appmenu button[aria-checked=true]::after{content:"✓";margin-left:auto;padding-left:14px;color:var(--red);font-weight:800}
 .panel{display:none}.panel.on{display:block;animation:fade .5s}
 @keyframes fade{from{opacity:0;transform:translateY(14px)}}
-.pair{display:grid;grid-template-columns:1fr 1fr;gap:26px;max-width:1040px;margin:0 auto;align-items:center}
-.pair.ph2{grid-template-columns:repeat(2,minmax(0,290px));justify-content:center;gap:40px}
-/* phones: the screenshots become a swipeable strip instead of a long stack */
+.cards{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:24px;max-width:1040px;margin:46px auto 0;text-align:left}
+.sc{display:flex;flex-direction:column;background:var(--card);border:1px solid var(--line);border-radius:28px;overflow:hidden;box-shadow:0 28px 56px -34px rgba(12,64,118,.5)}
+.shot{position:relative;display:block;width:100%;aspect-ratio:16/11;padding:0;border:0;overflow:hidden;cursor:zoom-in;background:linear-gradient(160deg,#eaf1fb,#d9e6f8)}
+.shot::after{content:"";position:absolute;right:14px;bottom:14px;width:38px;height:38px;border-radius:50%;background:rgba(6,26,54,.72) url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='2.2' stroke-linecap='round' stroke-linejoin='round'><path d='M14 4h6v6M10 20H4v-6M20 4l-7 7M4 20l7-7'/></svg>") center/18px no-repeat;opacity:.0;transform:scale(.85);transition:opacity .2s,transform .2s}
+.shot:hover::after,.shot:focus-visible::after{opacity:1;transform:none}
+@media(hover:none){.shot::after{opacity:1;transform:none}}
+.shot:focus-visible{outline:3px solid rgba(226,61,71,.65);outline-offset:-3px}
+.shot .win-img{position:absolute;left:5.5%;top:8%;width:89%;height:auto;border-radius:12px 12px 0 0;box-shadow:0 22px 44px -20px rgba(12,64,118,.55);transition:transform .55s cubic-bezier(.2,.8,.2,1)}
+.shot:hover .win-img{transform:translateY(-6px) scale(1.015)}
+.shot .phone{position:absolute;left:50%;top:9%;width:47%;border-radius:11% / 5%;transform:translateX(-50%);box-shadow:0 0 0 1.5px rgba(255,255,255,.25),0 26px 50px -22px rgba(12,64,118,.7);transition:transform .55s cubic-bezier(.2,.8,.2,1)}
+.shot:hover .phone{transform:translateX(-50%) translateY(-6px) scale(1.015)}
+.sc-tx{padding:22px 28px 28px}
+.sc-tx h3{margin:0 0 6px;font-size:22px;line-height:1.15;letter-spacing:-.02em}
+.sc-tx p{margin:0;color:var(--muted);font-size:16.5px;line-height:1.45}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 @media(max-width:760px){
- .seg{display:flex;width:100%;max-width:420px;margin:26px auto 26px;padding:4px;gap:2px}
- .seg button{flex:1 1 0;min-width:0;padding:9px 2px;font-size:13px;white-space:nowrap}
- .pair,.pair.ph2{display:flex;grid-template-columns:none;justify-content:flex-start;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:24px;margin:0 -24px;padding:8px 24px 30px;max-width:none;scrollbar-width:none;-webkit-overflow-scrolling:touch}
- .pair::-webkit-scrollbar{display:none}
- .pair>*{flex:0 0 86%;scroll-snap-align:start}
- .pair.ph2>*{flex:0 0 60%;max-width:260px}
- /* the app windows have a lot of empty space at the bottom: show the top part, bigger */
- .pair .mac,.pair .win{border-radius:14px;overflow:hidden;filter:none;border:1px solid var(--line);box-shadow:0 12px 24px -14px rgba(12,64,118,.5)}
- .pair .phone{box-shadow:0 0 0 1.5px rgba(255,255,255,.2),0 14px 26px -14px rgba(12,64,118,.6)}
- .pair .mac img,.pair .win img{aspect-ratio:1024/600;object-fit:cover;object-position:top;height:auto}
+ .cards{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:24px;margin:30px -24px 0;padding:8px 24px 30px;max-width:none;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+ .cards::-webkit-scrollbar{display:none}
+ .cards>.sc{flex:0 0 84%;scroll-snap-align:start}
+ .sc-tx{padding:18px 22px 24px}.sc-tx h3{font-size:20px}.sc-tx p{font-size:15.5px}
+ .appmenu{min-width:236px;font-size:17px}
 }
-@media(max-width:560px){.seg .md{display:none}}
 @media(max-width:720px){section{padding:64px 0}.statement{padding:40px 0 36px}.statement .rail{margin-top:40px}}
-.pair .mac{filter:drop-shadow(0 28px 40px rgba(12,64,118,.35))}
-.pair .mac img,.pair .win img{display:block;width:100%;height:auto}
-.pair .win{border-radius:14px;overflow:hidden;border:1px solid var(--line);box-shadow:0 30px 60px -26px rgba(12,64,118,.55)}
-.pair .phone{box-shadow:0 0 0 1.5px rgba(255,255,255,.2),0 34px 60px -24px rgba(12,64,118,.6)}
+/* full-screen view of a screenshot */
+.lb{position:fixed;inset:0;z-index:100;display:grid;grid-template-rows:minmax(0,1fr) auto;place-items:center;padding:28px 28px 26px;background:rgba(4,14,32,0);transition:background .35s,backdrop-filter .35s,-webkit-backdrop-filter .35s}
+.lb[hidden]{display:none}
+.lb.on{background:rgba(4,14,32,.9);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
+.lb-stage{display:grid;place-items:center;width:100%;height:100%;min-height:0}
+.lb-stage img{max-width:min(96vw,1500px);max-height:calc(100vh - 215px);width:auto;height:auto;border-radius:16px;box-shadow:0 50px 120px -30px rgba(0,0,0,.8);background:#0a1220}
+.lb-stage img.ph{border:9px solid #0a1220;border-radius:46px}
+.lb-stage img.ph.ios{border:6px solid #0a0b0f;border-radius:15% / 6.9%;box-shadow:0 0 0 2px #b3b7bf,0 0 0 3.5px #3d4047,0 50px 120px -30px rgba(0,0,0,.8)}
+@supports (height:100dvh){.lb-stage img{max-height:calc(100dvh - 215px)}}
+.lb-cap{max-width:680px;padding:18px 70px 0;text-align:center;color:#fff;opacity:0;transform:translateY(8px);transition:opacity .35s .15s,transform .35s .15s}
+.lb.on .lb-cap{opacity:1;transform:none}
+.lb-cap h3{margin:0 0 4px;font-size:21px;letter-spacing:-.01em}
+.lb-cap p{margin:0;font-size:15.5px;line-height:1.45;color:#c3d6f1}
+.lb-x,.lb-nav{position:absolute;display:grid;place-items:center;width:46px;height:46px;border:0;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;cursor:pointer;transition:background .2s,transform .2s;z-index:2}
+.lb-x:hover,.lb-nav:hover{background:rgba(255,255,255,.28)}
+.lb-x{top:18px;right:18px}
+.lb-nav{top:50%;margin-top:-23px}.lb-nav.prev{left:18px}.lb-nav.next{right:18px}
+.lb-x svg,.lb-nav svg{width:22px;height:22px}
+@media(max-width:620px){.lb-stage img{max-height:calc(100vh - 270px)}@supports (height:100dvh){.lb-stage img{max-height:calc(100dvh - 270px)}}.lb{padding:70px 14px 20px}.lb-cap{padding:14px 8px 0}.lb-nav{top:auto;bottom:18px;margin:0}.lb-nav.prev{left:calc(50% - 60px)}.lb-nav.next{right:calc(50% - 60px)}.lb-cap{padding-bottom:62px}.lb-stage img.ph{border-width:7px;border-radius:36px}.lb-stage img.ph.ios{border-width:5px;border-radius:15% / 6.9%}}
+/* iPhone: round corners of one radius, a thin bezel, a titanium rim and the side buttons */
+.phone.ios,.shot .phone.ios{position:relative;overflow:visible;border:5px solid #0a0b0f;border-radius:15% / 6.9%;background:#0a0b0f;box-shadow:0 0 0 1.5px #b3b7bf,0 0 0 2.6px #3d4047,0 40px 70px -20px rgba(0,0,0,.65),0 0 80px -20px rgba(255,110,120,.3)}
+.phone.ios img{border-radius:12.6% / 5.8%}
+.phone.ios::before,.phone.ios::after{content:"";position:absolute;pointer-events:none}
+.phone.ios::before{left:-6px;top:12%;width:3px;height:27%;border-radius:2px 0 0 2px;background:linear-gradient(#a7abb3,#a7abb3) 0 0/100% 13%,linear-gradient(#a7abb3,#a7abb3) 0 36%/100% 27%,linear-gradient(#a7abb3,#a7abb3) 0 73%/100% 27%;background-repeat:no-repeat}
+.phone.ios::after{right:-6px;top:20%;width:3px;height:14%;border-radius:0 2px 2px 0;background:#a7abb3}
+.shot .phone.ios{box-shadow:0 0 0 1.5px #b3b7bf,0 0 0 2.6px #3d4047,0 26px 50px -22px rgba(12,64,118,.7)}
 /* install */
 .install{background:var(--bg)}
 .install h2,.faq h2{font-size:clamp(32px,4.6vw,52px);letter-spacing:-.03em;margin:0 0 12px;font-weight:800;line-height:1.08}
@@ -239,12 +288,12 @@ footer a{color:#a9c3e6}
   <div class="aurora" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
   <div class="wrap">
     <h1 id="h1" data-i18n-html="h1b">Считывайте вашу <span class="grad">ID-карту</span><br>на любом устройстве</h1>
-    <p class="lead" data-i18n-html="lead2">ВНЖ, ПМЖ, ID-карта: считывайте, подписывайте, управляйте <span class="nb">PIN-кодом</span>. Безопасно и <span class="priv">приватно</span> с Super Celik</p>
+    <p class="lead" data-i18n-html="lead2">ВНЖ, ПМЖ, ID-карта: считывайте, подписывайте, управляйте <span class="nb">PIN-кодом</span>. <span class="em">Безопасно</span> и <span class="priv">приватно</span> с Super Celik</p>
   </div>
   <div class="stage" id="stage">
     <div class="dev mac"><div class="fly" style="--d:.55s"><img src="img/shot-mac.webp" alt="Super Celik на macOS" width="1024" height="674"></div></div>
     <div class="dev p-and"><div class="phone and fly" style="--d:.85s;--r:-7deg"><img src="img/shot-android.webp" alt="Super Celik на Android" width="560" height="1244"></div></div>
-    <div class="dev p-ios"><div class="phone fly" style="--d:1.05s;--r:7deg"><img src="img/shot-iphone.webp" alt="Super Celik на iPhone" width="560" height="1218"></div></div>
+    <div class="dev p-ios"><div class="phone ios fly" style="--d:1.05s;--r:7deg"><img src="img/shot-iphone.webp" alt="Super Celik на iPhone" width="560" height="1218"></div></div>
   </div>
   <div class="dl-float" id="download">
     <div class="dl-bar"><div class="dl-tile" data-os="mac">
@@ -276,21 +325,30 @@ footer a{color:#a9c3e6}
 </section>
 
 <section class="devices" id="devices"><div class="wrap center">
-  <h2 class="hl rv" data-i18n="dv_h">Одно приложение. Любой экран.</h2>
+  <h2 class="hl rv"><span data-i18n="dv_one">Одно</span> <span class="appwrap"><button class="appchip" id="appchip" type="button" aria-haspopup="true" aria-expanded="false"><span data-i18n="dv_app">приложение</span><svg class="chev" viewBox="0 0 12 8" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M1.5 1.5L6 6l4.5-4.5"/></svg></button><span class="appmenu" id="appmenu" role="menu"><button type="button" role="menuitemradio" aria-checked="false" data-d="mac"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/></svg><span>macOS</span></button><button type="button" role="menuitemradio" aria-checked="false" data-d="win"><svg aria-hidden="true" viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.5l7.5-1v7H3zM11.5 4.3L21 3v8.5h-9.5zM3 12.5h7.5v7L3 18.5zM11.5 12.5H21V21l-9.5-1.3z"/></svg><span>Windows</span></button><button type="button" role="menuitemradio" aria-checked="false" data-d="ios"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12.152 6.896c-.948 0-2.415-1.078-3.96-1.04-2.04.027-3.91 1.183-4.961 3.014-2.117 3.675-.546 9.103 1.519 12.09 1.013 1.454 2.208 3.09 3.792 3.039 1.52-.065 2.09-.987 3.935-.987 1.831 0 2.35.987 3.96.948 1.637-.026 2.676-1.48 3.676-2.948 1.156-1.688 1.636-3.325 1.662-3.415-.039-.013-3.182-1.221-3.22-4.857-.026-3.04 2.48-4.494 2.597-4.559-1.429-2.09-3.623-2.324-4.39-2.376-2-.156-3.675 1.09-4.61 1.09zM15.53 3.83c.843-1.012 1.4-2.427 1.245-3.83-1.207.052-2.662.805-3.532 1.818-.78.896-1.454 2.338-1.273 3.714 1.338.104 2.715-.688 3.559-1.701"/></svg><span>iPhone / iPad</span></button><button type="button" role="menuitemradio" aria-checked="false" data-d="android"><svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M17.523 15.3414c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993.0004.5511-.4482.9997-.9993.9997m-11.046 0c-.5511 0-.9993-.4486-.9993-.9997s.4482-.9993.9993-.9993c.5511 0 .9993.4482.9993.9993 0 .5511-.4482.9997-.9993.9997m11.4045-6.02l1.9973-3.4592a.416.416 0 00-.1521-.5676.416.416 0 00-.5676.1521l-2.0223 3.503C15.5902 8.2439 13.8533 7.8508 12 7.8508s-3.5902.3931-5.1367 1.0989L4.841 5.4467a.4161.4161 0 00-.5677-.1521.4157.4157 0 00-.1521.5676l1.9973 3.4592C2.6889 11.1867.3432 14.6589 0 18.761h24c-.3435-4.1021-2.6892-7.5743-6.1185-9.4396"/></svg><span>Android</span></button></span></span></h2>
   <p class="sub rv" data-i18n="dv_sub">Одинаковые возможности на macOS, Windows, Android и iPhone.</p>
-  <div class="seg" role="tablist">
-    <button role="tab" aria-selected="true" data-d="mac">macOS</button>
-    <button role="tab" aria-selected="false" data-d="win">Windows</button>
-    <button role="tab" aria-selected="false" data-d="ios">iPhone<span class="md"> / iPad</span></button>
-    <button role="tab" aria-selected="false" data-d="android">Android</button>
-  </div>
 
-  <div class="panel on" id="d-mac"><div class="pair"><div class="mac"><img src="img/shot-mac.webp" alt="Super Celik на macOS: данные карты" loading="lazy" width="1024" height="674"></div><div class="mac"><img src="img/shot-mac-token.webp" alt="Super Celik на macOS: токен и сертификаты" loading="lazy" width="1024" height="674"></div></div></div>
-  <div class="panel" id="d-win"><div class="pair"><div class="win"><img src="img/shot-win.webp" alt="Super Celik на Windows: данные" loading="lazy" width="1024" height="674"></div><div class="win"><img src="img/shot-win-token.webp" alt="Super Celik на Windows: токен и сертификаты" loading="lazy" width="1024" height="674"></div></div></div>
-  <div class="panel" id="d-ios"><div class="pair ph2"><div class="phone"><img src="img/shot-iphone.webp" alt="Super Celik на iPhone, светлая тема" loading="lazy" width="560" height="1218"></div><div class="phone"><img src="img/shot-iphone-dark.webp" alt="Super Celik на iPhone, тёмная тема" loading="lazy" width="560" height="1218"></div></div></div>
-  <div class="panel" id="d-android"><div class="pair ph2"><div class="phone and"><img src="img/shot-android.webp" alt="Super Celik на Android: карточка" loading="lazy" width="560" height="1218"></div><div class="phone and"><img src="img/shot-android-token.webp" alt="Super Celik на Android: токен, PIN и подпись" loading="lazy" width="560" height="1218"></div></div></div>
+  <div class="panel on" id="d-mac"><div class="cards"><article class="sc rv"><button class="shot" type="button" data-full="img/shot-mac.webp"><span class="sr" data-i18n="zoom">Увеличить скриншот</span><img class="win-img" src="img/shot-mac.webp" alt="Super Celik на macOS: данные карты" loading="lazy" width="1024" height="674"></button>
+    <div class="sc-tx"><h3 data-i18n="cd_t">Данные карты</h3><p data-i18n="cd_d">Личные данные, фото, срок действия и проверка подписи МУП. Личный номер и адрес скрыты, пока вы их не покажете.</p></div></article><article class="sc rv"><button class="shot" type="button" data-full="img/shot-mac-token.webp"><span class="sr" data-i18n="zoom">Увеличить скриншот</span><img class="win-img" src="img/shot-mac-token.webp" alt="Super Celik на macOS: токен и сертификаты" loading="lazy" width="1024" height="674"></button>
+    <div class="sc-tx"><h3 data-i18n="tk_t">Токен и сертификаты</h3><p data-i18n="tk_d">Сертификаты карты с проверкой цепочки до МУП, смена PIN, разблокировка по PUK и подпись файлов.</p></div></article></div></div>
+  <div class="panel" id="d-win"><div class="cards"><article class="sc rv"><button class="shot" type="button" data-full="img/shot-win.webp"><span class="sr" data-i18n="zoom">Увеличить скриншот</span><img class="win-img" src="img/shot-win.webp" alt="Super Celik на Windows: данные карты" loading="lazy" width="1024" height="674"></button>
+    <div class="sc-tx"><h3 data-i18n="cd_t">Данные карты</h3><p data-i18n="cd_d">Личные данные, фото, срок действия и проверка подписи МУП. Личный номер и адрес скрыты, пока вы их не покажете.</p></div></article><article class="sc rv"><button class="shot" type="button" data-full="img/shot-win-token.webp"><span class="sr" data-i18n="zoom">Увеличить скриншот</span><img class="win-img" src="img/shot-win-token.webp" alt="Super Celik на Windows: токен и сертификаты" loading="lazy" width="1024" height="674"></button>
+    <div class="sc-tx"><h3 data-i18n="tk_t">Токен и сертификаты</h3><p data-i18n="tk_d">Сертификаты карты с проверкой цепочки до МУП, смена PIN, разблокировка по PUK и подпись файлов.</p></div></article></div></div>
+  <div class="panel" id="d-ios"><div class="cards"><article class="sc rv"><button class="shot ph" type="button" data-full="img/full-iphone.webp"><span class="sr" data-i18n="zoom">Увеличить скриншот</span><div class="phone ios"><img src="img/shot-iphone.webp" alt="Super Celik на iPhone, светлая тема" loading="lazy" width="560" height="1244"></div></button>
+    <div class="sc-tx"><h3 data-i18n="nfc_t">Чтение по NFC</h3><p data-i18n="nfc_d">Приложите карту к iPhone: данные и подпись появятся на экране. Нужна карта с бесконтактным чипом.</p></div></article><article class="sc rv"><button class="shot ph" type="button" data-full="img/full-iphone-dark.webp"><span class="sr" data-i18n="zoom">Увеличить скриншот</span><div class="phone ios"><img src="img/shot-iphone-dark.webp" alt="Super Celik на iPhone, тёмная тема" loading="lazy" width="560" height="1244"></div></button>
+    <div class="sc-tx"><h3 data-i18n="th_t">Светлая и тёмная тема</h3><p data-i18n="th_d">Приложение подстраивается под тему системы. Данные скрываются и стираются сами.</p></div></article></div></div>
+  <div class="panel" id="d-android"><div class="cards"><article class="sc rv"><button class="shot ph" type="button" data-full="img/full-android.webp"><span class="sr" data-i18n="zoom">Увеличить скриншот</span><div class="phone and"><img src="img/shot-android.webp" alt="Super Celik на Android: данные карты" loading="lazy" width="560" height="1244"></div></button>
+    <div class="sc-tx"><h3 data-i18n="cd_t">Данные карты</h3><p data-i18n="an_d">Чтение по NFC или через USB-ридер с переходником OTG: данные, фото и проверка подписи.</p></div></article><article class="sc rv"><button class="shot ph" type="button" data-full="img/full-android-token.webp"><span class="sr" data-i18n="zoom">Увеличить скриншот</span><div class="phone and"><img src="img/shot-android-token.webp" alt="Super Celik на Android: токен, PIN и подпись" loading="lazy" width="560" height="1244"></div></button>
+    <div class="sc-tx"><h3 data-i18n="at_t">Токен, PIN и подпись</h3><p data-i18n="at_d">Смена PIN, разблокировка по PUK и подпись файла ключом карты.</p></div></article></div></div>
 
 </div></section>
+<div class="lb" id="lb" hidden role="dialog" aria-modal="true" aria-label="Screenshot">
+  <button class="lb-x" id="lbX" type="button" aria-label="×"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+  <button class="lb-nav prev" id="lbPrev" type="button" aria-label="←"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+  <button class="lb-nav next" id="lbNext" type="button" aria-label="→"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
+  <div class="lb-stage" id="lbStage"><img id="lbImg" alt=""></div>
+  <div class="lb-cap"><h3 id="lbT"></h3><p id="lbD"></p></div>
+</div>
 
 <section id="install" class="install"><div class="wrap">
   <h2 data-i18n="i_h">Как установить</h2>
@@ -436,8 +494,22 @@ Object.assign(T.en,{h1b:"Your <span class=\"grad\">ID card</span><br>on any devi
 Object.assign(T.sr,{h1b:"Vaša <span class=\"grad\">ID kartica</span><br>na svakom uređaju",lead2:"Super Celik čita karticu, pravi PDF i ume još mnogo toga — bez instalacije drajvera, na svim uređajima."});
 Object.assign(T.en,{soon:"Coming soon"});
 Object.assign(T.sr,{soon:"Uskoro"});
-Object.assign(T.en,{h1b:"Read your <span class=\"grad\">ID card</span><br>on any device",lead2:"Residence permit, permanent residence, ID card: read, sign, manage your PIN. Secure and <span class=\"priv\">private</span> with Super Celik"});
-Object.assign(T.sr,{h1b:"Čitajte vašu <span class=\"grad\">ID karticu</span><br>na svakom uređaju",lead2:"Boravišna dozvola, stalni boravak, ID kartica: čitajte, potpisujte, upravljajte <span class=\"nb\">PIN-om</span>. Bezbedno i <span class=\"priv\">privatno</span> uz Super Celik"});
+Object.assign(T.en,{h1b:"Read your <span class=\"grad\">ID card</span><br>on any device",lead2:"Residence permit, permanent residence, ID card: read, sign, manage your PIN. <span class=\"em\">Secure</span> and <span class=\"priv\">private</span> with Super Celik"});
+Object.assign(T.sr,{h1b:"Čitajte vašu <span class=\"grad\">ID karticu</span><br>na svakom uređaju",lead2:"Boravišna dozvola, stalni boravak, ID kartica: čitajte, potpisujte, upravljajte <span class=\"nb\">PIN-om</span>. <span class=\"em\">Bezbedno</span> i <span class=\"priv\">privatno</span> uz Super Celik"});
+Object.assign(T.en,{dv_one:"One",dv_app:"app",zoom:"Enlarge screenshot",
+cd_t:"Card data",cd_d:"Personal data, photo, validity and the MUP signature check. Personal number and address stay hidden until you reveal them.",
+tk_t:"Token and certificates",tk_d:"The card's certificates with chain verification up to MUP, PIN change, unblock with PUK and file signing.",
+nfc_t:"Reading over NFC",nfc_d:"Hold the card to the iPhone and the data and signature check appear on screen. The card needs a contactless chip.",
+th_t:"Light and dark theme",th_d:"The app follows the system theme. Data is hidden and wiped automatically.",
+an_d:"Read over NFC, or with a USB reader through an OTG adapter: data, photo and the signature check.",
+at_t:"Token, PIN and signing",at_d:"Change the PIN, unblock with PUK and sign a file with the card key."});
+Object.assign(T.sr,{dv_one:"Jedna",dv_app:"aplikacija",zoom:"Uvećaj snimak ekrana",
+cd_t:"Podaci kartice",cd_d:"Lični podaci, fotografija, rok važenja i provera potpisa MUP-a. JMBG i adresa su skriveni dok ih ne prikažete.",
+tk_t:"Token i sertifikati",tk_d:"Sertifikati kartice sa proverom lanca do MUP-a, promena PIN-a, otključavanje PUK-om i potpisivanje fajlova.",
+nfc_t:"Čitanje preko NFC-a",nfc_d:"Prislonite karticu uz iPhone i podaci i provera potpisa se pojavljuju na ekranu. Kartica mora imati beskontaktni čip.",
+th_t:"Svetla i tamna tema",th_d:"Aplikacija prati temu sistema. Podaci se sami sakrivaju i brišu.",
+an_d:"Čitanje preko NFC-a ili USB čitačem sa OTG adapterom: podaci, fotografija i provera potpisa.",
+at_t:"Token, PIN i potpis",at_d:"Promena PIN-a, otključavanje PUK-om i potpisivanje fajla ključem kartice."});
 
 // remember Russian defaults from the markup
 document.querySelectorAll("[data-i18n]").forEach(e=>{if(!(e.dataset.i18n in T.ru))T.ru[e.dataset.i18n]=e.textContent});
@@ -495,10 +567,49 @@ if(OS&&OS!=="ios")document.querySelectorAll('.dl-tile[data-os="'+OS+'"]').forEac
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button").forEach(x=>x.setAttribute("aria-selected",x===b));
  document.querySelectorAll(".ipanel").forEach(p=>p.classList.toggle("on",p.id==="t-"+b.dataset.t))});
 if(OS){const tb=document.querySelector('.tabs button[data-t="'+OS+'"]');tb&&tb.click()}
-// device picker
-document.querySelectorAll(".seg button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".seg button").forEach(x=>x.setAttribute("aria-selected",x===b));
- document.querySelectorAll(".devices .panel").forEach(p=>p.classList.toggle("on",p.id==="d-"+b.dataset.d))});
-if(OS){const sb=document.querySelector('.seg button[data-d="'+OS+'"]');sb&&sb.click()}
+// "One app" picker: the word "app" in the heading is a button; it switches the platform and the cards below
+const chip=document.getElementById("appchip"),amenu=document.getElementById("appmenu");
+const setAppMenu=o=>{amenu.classList.toggle("open",o);chip.setAttribute("aria-expanded",o)};
+function selectDev(d){
+ document.querySelectorAll(".devices .panel").forEach(p=>p.classList.toggle("on",p.id==="d-"+d));
+ document.querySelectorAll("#appmenu button").forEach(b=>b.setAttribute("aria-checked",b.dataset.d===d));
+ setAppMenu(false)}
+chip.onclick=e=>{e.stopPropagation();setAppMenu(!amenu.classList.contains("open"))};
+document.addEventListener("click",e=>{if(!amenu.contains(e.target)&&e.target!==chip)setAppMenu(false)});
+document.addEventListener("keydown",e=>{if(e.key==="Escape")setAppMenu(false)});
+document.querySelectorAll("#appmenu button").forEach(b=>b.onclick=()=>selectDev(b.dataset.d));
+selectDev(OS||"mac");
+// full-screen view of a screenshot (zooms out of the card it came from; arrows / swipe / Esc)
+const lb=document.getElementById("lb"),lbImg=document.getElementById("lbImg"),lbT=document.getElementById("lbT"),lbD=document.getElementById("lbD");
+const calm=matchMedia("(prefers-reduced-motion: reduce)").matches;
+let lbItems=[],lbIdx=0,lbOpen=false;
+function lbRect(btn){const i=btn.querySelector("img");return i.getBoundingClientRect()}
+function flipFrom(btn,opening){
+ if(calm)return Promise.resolve();
+ const f=lbRect(btn),t=lbImg.getBoundingClientRect();if(!t.width)return Promise.resolve();
+ const s=f.width/t.width,dx=f.left+f.width/2-(t.left+t.width/2),dy=f.top+f.height/2-(t.top+t.height/2);
+ const from={transform:`translate(${dx}px,${dy}px) scale(${s})`,opacity:.35},to={transform:"none",opacity:1};
+ return lbImg.animate(opening?[from,to]:[to,{...from,opacity:0}],{duration:opening?520:360,easing:"cubic-bezier(.2,.8,.2,1)",fill:"both"}).finished.catch(()=>{})}
+async function lbShow(i,first){
+ lbIdx=(i+lbItems.length)%lbItems.length;const b=lbItems[lbIdx],card=b.closest(".sc");
+ lbT.textContent=card.querySelector("h3").textContent;lbD.textContent=card.querySelector("p").textContent;
+ lbImg.alt=b.querySelector("img").alt;lbImg.classList.toggle("ph",b.classList.contains("ph"));lbImg.classList.toggle("ios",!!b.querySelector(".phone.ios"));
+ lbImg.src=b.dataset.full;try{await lbImg.decode()}catch(e){}
+ if(first){lb.hidden=false;document.documentElement.style.overflow="hidden";lbOpen=true;
+  requestAnimationFrame(()=>{lb.classList.add("on");flipFrom(b,true)});document.getElementById("lbX").focus({preventScroll:true})}
+ else if(!calm)lbImg.animate([{opacity:0,transform:"scale(.95)"},{opacity:1,transform:"none"}],{duration:300,easing:"cubic-bezier(.2,.8,.2,1)"})}
+async function lbClose(){
+ if(!lbOpen)return;lbOpen=false;const b=lbItems[lbIdx];lb.classList.remove("on");
+ await flipFrom(b,false);lb.hidden=true;lbImg.getAnimations().forEach(a=>a.cancel());lbImg.removeAttribute("src");
+ document.documentElement.style.overflow="";b.focus({preventScroll:true})}
+document.querySelectorAll(".shot").forEach(b=>b.onclick=()=>{lbItems=[...b.closest(".panel").querySelectorAll(".shot")];lbShow(lbItems.indexOf(b),true)});
+document.getElementById("lbX").onclick=lbClose;
+document.getElementById("lbPrev").onclick=e=>{e.stopPropagation();lbShow(lbIdx-1)};
+document.getElementById("lbNext").onclick=e=>{e.stopPropagation();lbShow(lbIdx+1)};
+lb.addEventListener("click",e=>{if(e.target===lb||e.target.id==="lbStage")lbClose()});
+document.addEventListener("keydown",e=>{if(!lbOpen)return;if(e.key==="Escape")lbClose();else if(e.key==="ArrowLeft")lbShow(lbIdx-1);else if(e.key==="ArrowRight")lbShow(lbIdx+1)});
+let tx=null;lb.addEventListener("touchstart",e=>{tx=e.touches[0].clientX},{passive:true});
+lb.addEventListener("touchend",e=>{if(tx===null)return;const d=e.changedTouches[0].clientX-tx;tx=null;if(Math.abs(d)>60)lbShow(lbIdx+(d<0?1:-1))},{passive:true});
 // language menu: opens on hover (CSS), on tap / keyboard (class), closes on pick, outside click or Esc
 const lbox=document.getElementById("langbox"),globe=document.getElementById("globe");
 const setOpen=o=>{lbox.classList.toggle("open",o);globe.setAttribute("aria-expanded",o)};
