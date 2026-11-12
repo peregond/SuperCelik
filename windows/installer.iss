@@ -1,6 +1,6 @@
 ; Inno Setup script for the Windows installer (built in CI: iscc /DAppVersion=x.y.z windows\installer.iss)
 #ifndef AppVersion
-  #define AppVersion "0.9.4"
+  #define AppVersion "0.9.6"
 #endif
 
 [Setup]
