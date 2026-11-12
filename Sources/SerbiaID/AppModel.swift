@@ -77,10 +77,16 @@ final class AppModel: ObservableObject {
     }
 
     /// Fictional data shown from Settings (App Review has no Serbian eID). While it is on, polling is paused.
-    private var demoActive = false
+    @Published private(set) var demoActive = false
     func showDemoData() {
         demoActive = true
         loadDemo(problem: false)
+    }
+
+    /// Switch the demo data off again and go back to the real reader.
+    func hideDemoData() {
+        guard demoActive else { return }
+        refresh()
     }
 
     func refresh() {

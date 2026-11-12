@@ -25,6 +25,7 @@ final class PhoneModel: ObservableObject {
     @Published var tokenRows: [PhoneCertRow] = []
     @Published var revealAll = false
     @Published var busy = false
+    @Published private(set) var demoActive = false     // fictional data on screen (Settings toggle)
     @Published var problem: PhoneProblem?
 
     enum ReadSource { case usb, nfc }
@@ -52,7 +53,11 @@ final class PhoneModel: ObservableObject {
         }
         personal = p
         signatureStatus = .ok
+        demoActive = true
     }
+
+    /// Switch the demo data off again.
+    func hideDemo() { if demoActive { clear() } }
 
     private let nfcReader = NFCCardReader()
     private let usbReader = USBCardReader()
@@ -100,7 +105,7 @@ final class PhoneModel: ObservableObject {
                 catch { status = .invalid(error.localizedDescription) }
                 return (p, status)
             }
-            personal = p; signatureStatus = status; revealAll = false; problem = nil
+            personal = p; signatureStatus = status; revealAll = false; problem = nil; demoActive = false
         } catch { show(error) }
     }
 
@@ -119,7 +124,7 @@ final class PhoneModel: ObservableObject {
     }
 
     func clear() {
-        personal = nil; signatureStatus = nil; token = nil; tokenRows = []; revealAll = false; problem = nil
+        personal = nil; signatureStatus = nil; token = nil; tokenRows = []; revealAll = false; problem = nil; demoActive = false
     }
 
     private func show(_ error: Error) {

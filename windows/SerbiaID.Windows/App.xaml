@@ -5,9 +5,9 @@
     <Application.Resources>
         <!-- Palette (light defaults). Theme.Apply() overwrites these entries at runtime for dark mode,
              so every reference below must be a DynamicResource. -->
-        <SolidColorBrush x:Key="AccentBrush" Color="#0C4076"/>
-        <SolidColorBrush x:Key="AccentHoverBrush" Color="#0A3560"/>
-        <SolidColorBrush x:Key="AccentTextBrush" Color="#0C4076"/>
+        <SolidColorBrush x:Key="AccentBrush" Color="#C6363C"/>
+        <SolidColorBrush x:Key="AccentHoverBrush" Color="#A92D33"/>
+        <SolidColorBrush x:Key="AccentTextBrush" Color="#C6363C"/>
         <SolidColorBrush x:Key="RedBrush" Color="#C6363C"/>
         <SolidColorBrush x:Key="BgBrush" Color="#F3F5F9"/>
         <SolidColorBrush x:Key="SurfaceBrush" Color="#FFFFFF"/>
