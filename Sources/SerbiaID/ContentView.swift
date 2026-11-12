@@ -88,18 +88,14 @@ extension AnyTransition {
 }
 
 /// Centered placeholder for a page that has nothing to show yet.
-struct EmptyState<Action: View>: View {
-    let systemImage: String
+struct EmptyState<Icon: View, Action: View>: View {
     let title: String
     let message: String
+    @ViewBuilder var icon: Icon
     @ViewBuilder var action: Action
     var body: some View {
         VStack(spacing: 14) {
-            Image(systemName: systemImage)
-                .font(.system(size: 44, weight: .light))
-                .foregroundStyle(brandTint)
-                .frame(width: 96, height: 96)
-                .background(Circle().fill(brandTint.opacity(0.12)))
+            icon
             Text(title).font(.title2.weight(.semibold)).multilineTextAlignment(.center)
             Text(message).foregroundStyle(.secondary).multilineTextAlignment(.center).frame(maxWidth: 420)
             action.padding(.top, 6)
@@ -309,7 +305,7 @@ struct PersonalView: View {
                              hint = model.cardPresent ? .emptyReadyH : .emptyNoCardH
         }
         return VStack(spacing: 14) {
-            ReaderMascot(mood: mood, card: model.cardPresent, size: 132)
+            MascotArt(character: .reader, mood: mood, size: 170)
             Text(loc.t(title)).font(.title2.weight(.semibold)).multilineTextAlignment(.center)
                 .contentTransition(.opacity)
             if let hint {
@@ -499,7 +495,9 @@ struct TokenView: View {
     var body: some View {
         Group {
             if model.tokenRows.isEmpty {
-                EmptyState(systemImage: "key.viewfinder", title: loc.t(.certificates), message: loc.t(.hintToken)) {
+                EmptyState(title: loc.t(.certificates), message: loc.t(.hintToken)) {
+                    MascotArt(character: .key, mood: model.readerMood, size: 170)
+                } action: {
                     VStack(spacing: 12) {
                         readButton.controlSize(.large)
                         pinButtons

@@ -54,7 +54,7 @@
                 <Grid Margin="24,18,24,20">
                     <!-- Nothing read yet: the reader's face says what is going on, the text what to do next -->
                     <StackPanel x:Name="EmptyState" VerticalAlignment="Center" HorizontalAlignment="Center" Margin="0,0,0,40">
-                        <local:ReaderMascot x:Name="EmptyMascot" Width="132" Height="132" HorizontalAlignment="Center"/>
+                        <local:MascotArt x:Name="EmptyMascot" Character="Reader" Width="170" Height="170" HorizontalAlignment="Center"/>
                         <TextBlock x:Name="LblEmptyTitle" Foreground="{DynamicResource TextBrush}" FontSize="20" FontWeight="SemiBold" TextAlignment="Center" Margin="0,14,0,0"/>
                         <TextBlock x:Name="LblHint" Foreground="{DynamicResource MutedBrush}" FontSize="14" TextAlignment="Center" TextWrapping="Wrap" MaxWidth="420" Margin="0,8,0,0"/>
                         <Button x:Name="BtnReadBig" Style="{StaticResource PrimaryButton}" HorizontalAlignment="Center" Margin="0,20,0,0" Click="Read_Click"/>

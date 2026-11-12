@@ -16,6 +16,8 @@
   <ItemGroup>
     <Using Include="System.IO" />
     <Resource Include="app.ico" />
+    <!-- the cartoon poses, shared with the macOS app -->
+    <Resource Include="..\..\Sources\SerbiaID\Resources\Mascots\*.png" Link="Mascots\%(Filename)%(Extension)" />
   </ItemGroup>
 
   <ItemGroup>

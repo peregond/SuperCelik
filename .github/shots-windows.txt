@@ -10,3 +10,7 @@ empty-ready-dark 0 --state ready --dark
 empty-busy 0 --state busy
 empty-error 0 --state error
 token-empty 1 --state ready
+token-empty-noreader 1 --state noreader
+token-empty-nocard 1 --state nocard
+token-empty-busy 1 --state busy
+token-empty-error 1 --state error
