@@ -14,15 +14,21 @@
             </DockPanel>
         </Border>
 
-        <!-- Header: reader status. The app name is in the title bar, so it is not repeated here. -->
-        <Border DockPanel.Dock="Top" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,0,1" Padding="24,10">
+        <!-- Header: logo and name on the left, the reader (name or picker) and refresh on the right.
+             The status itself (the face) lives in the middle of the first tab. -->
+        <Border DockPanel.Dock="Top" Background="{DynamicResource SurfaceBrush}" BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,0,0,1" Padding="24,14">
             <DockPanel>
-                <Button x:Name="BtnRefresh" DockPanel.Dock="Right" Style="{StaticResource IconButton}" Width="36" Height="36" VerticalAlignment="Center" Click="Refresh_Click"/>
-                <local:ReaderMascot x:Name="Mascot" DockPanel.Dock="Left" Width="52" Height="52" VerticalAlignment="Center"/>
-                <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
-                    <TextBlock x:Name="LblCard" Foreground="{DynamicResource TextBrush}" FontSize="15" FontWeight="SemiBold"/>
-                    <TextBlock x:Name="LblReader" FontSize="11" Foreground="{DynamicResource MutedBrush}" TextTrimming="CharacterEllipsis" Margin="0,1,0,0"/>
-                    <ComboBox x:Name="CmbReader" Width="300" Height="30" Margin="0,4,0,0" HorizontalAlignment="Left" Visibility="Collapsed" SelectionChanged="CmbReader_Changed"/>
+                <StackPanel DockPanel.Dock="Left" Orientation="Horizontal">
+                    <local:Logo Width="40" Height="40"/>
+                    <StackPanel Margin="12,0,0,0" VerticalAlignment="Center">
+                        <TextBlock x:Name="LblBrand" Foreground="{DynamicResource TextBrush}" FontSize="19" FontWeight="Bold"/>
+                        <TextBlock x:Name="LblBrandSub" FontSize="11" Foreground="{DynamicResource MutedBrush}"/>
+                    </StackPanel>
+                </StackPanel>
+                <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                    <TextBlock x:Name="LblReader" FontSize="12" Foreground="{DynamicResource MutedBrush}" TextTrimming="CharacterEllipsis" MaxWidth="260" VerticalAlignment="Center" Margin="0,0,8,0"/>
+                    <ComboBox x:Name="CmbReader" Width="260" Height="30" Margin="0,0,8,0" VerticalAlignment="Center" Visibility="Collapsed" SelectionChanged="CmbReader_Changed"/>
+                    <Button x:Name="BtnRefresh" Style="{StaticResource IconButton}" Width="36" Height="36" VerticalAlignment="Center" Click="Refresh_Click"/>
                 </StackPanel>
             </DockPanel>
         </Border>

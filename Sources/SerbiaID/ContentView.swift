@@ -187,33 +187,37 @@ struct ContentView: View {
             }
         }
         .listStyle(.sidebar)
-        .safeAreaInset(edge: .top, spacing: 0) { readerStatus }
+        .safeAreaInset(edge: .top, spacing: 0) { brandHeader }
+        .safeAreaInset(edge: .bottom, spacing: 0) { readerRow }
     }
 
-    private var statusTitle: String {
-        if model.busy { return loc.t(.statusReading) }
-        if model.readers.isEmpty { return loc.t(.noReader) }
-        return model.cardPresent ? loc.t(.cardPresent) : loc.t(.noCard)
-    }
-
-    /// Reader and card status, always visible at the top of the sidebar: the reader's face, one status line,
-    /// the reader's name (or a picker when there are several).
-    private var readerStatus: some View {
+    /// Logo and name at the top of the sidebar. The status (the reader's face) lives in the middle of the window.
+    private var brandHeader: some View {
         HStack(spacing: 10) {
-            ReaderMascot(mood: model.readerMood, card: model.cardPresent, size: 44)
-            VStack(alignment: .leading, spacing: 2) {
-                Text(statusTitle)
-                    .font(.callout.weight(.semibold))
+            Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 36, height: 36)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(loc.t(.appTitle)).font(.headline)
+                Text(loc.t(.brandSub)).font(.caption2).foregroundStyle(.secondary)
                     .lineLimit(2).fixedSize(horizontal: false, vertical: true)
-                    .contentTransition(.opacity)
-                if model.readers.count > 1 {
-                    Picker(loc.t(.reader), selection: $model.selectedReader) {
-                        ForEach(model.readers, id: \.self) { Text($0).tag($0) }
-                    }
-                    .labelsHidden().pickerStyle(.menu).controlSize(.small)
-                } else if let name = model.readers.first {
-                    Text(name).font(.caption).foregroundStyle(.secondary).lineLimit(1).truncationMode(.middle)
+            }
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 14).padding(.top, 6).padding(.bottom, 8)
+    }
+
+    /// The reader itself at the bottom of the sidebar: its name (or a picker when there are several) and refresh.
+    private var readerRow: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "creditcard.and.123").foregroundStyle(.secondary)
+            if model.readers.count > 1 {
+                Picker(loc.t(.reader), selection: $model.selectedReader) {
+                    ForEach(model.readers, id: \.self) { Text($0).tag($0) }
                 }
+                .labelsHidden().pickerStyle(.menu).controlSize(.small)
+            } else {
+                Text(model.readers.first ?? loc.t(.noReader))
+                    .font(.caption).foregroundStyle(.secondary)
+                    .lineLimit(1).truncationMode(.middle)
             }
             Spacer(minLength: 0)
             Button { model.refresh() } label: { Image(systemName: "arrow.clockwise") }
@@ -223,7 +227,6 @@ struct ContentView: View {
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Color.primary.opacity(0.06)))
         .padding(.horizontal, 10).padding(.top, 4).padding(.bottom, 8)
-        .animation(.easeInOut(duration: 0.2), value: model.readerMood)
     }
 
     @ViewBuilder private var updateBanner: some View {

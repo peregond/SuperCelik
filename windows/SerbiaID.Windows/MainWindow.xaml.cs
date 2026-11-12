@@ -138,6 +138,7 @@ public partial class MainWindow : Window
     private void ApplyLanguage()
     {
         Title = Loc.T("appTitle");
+        LblBrand.Text = Loc.T("appTitle"); LblBrandSub.Text = Loc.T("brandSub");
         BtnRefresh.Content = Glyph("", 15); BtnRefresh.ToolTip = Loc.T("refresh"); AutomationProperties.SetName(BtnRefresh, Loc.T("refresh"));
         SetBtn(BtnRead, "", Loc.T("readCard"));
         SetBtn(BtnReadBig, "", Loc.T("readCard"));
@@ -252,12 +253,10 @@ public partial class MainWindow : Window
     private void UpdateCardLabel()
     {
         var mood = Mood;
-        LblCard.Text = Loc.T(_busy ? "statusReading" : _readers.Count == 0 ? "noReader" : _cardPresent ? "cardPresent" : "noCard");
         // one reader: its name as plain text; several: a list to choose from; none: nothing (the line above says it)
         LblReader.Text = _readers.Count == 1 ? _readers[0] : "";
         LblReader.Visibility = _readers.Count == 1 ? Visibility.Visible : Visibility.Collapsed;
         CmbReader.Visibility = _readers.Count > 1 ? Visibility.Visible : Visibility.Collapsed;
-        Mascot.Set(mood, _cardPresent);
 
         // the empty state tells what to do next (the status itself is in the header)
         EmptyMascot.Set(mood, _cardPresent);
