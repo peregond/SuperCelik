@@ -272,7 +272,9 @@ details p{margin:0 0 24px;color:var(--muted)}
 footer{background:#041227;color:#8aa3c6;padding:36px 0 56px;font-size:14px}
 footer .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
 footer a{color:#a9c3e6}
-.credit{flex-basis:100%;margin:0;font-size:12px;line-height:1.5;color:#6f87aa}
+.legal{flex-basis:100%;margin-top:14px;padding-top:20px;border-top:1px solid rgba(169,195,230,.12)}
+.credit{max-width:880px;margin:0;font-size:12px;line-height:1.65;letter-spacing:.005em;color:#a9c3e6;opacity:.1;text-wrap:pretty;transition:opacity .35s}
+.credit:hover,.legal:focus-within .credit{opacity:.6}
 .disc{max-width:640px}
 /* reveal */
 .rv{opacity:0;transform:translateY(28px);transition:opacity .8s cubic-bezier(.2,.7,.2,1),transform .8s cubic-bezier(.2,.7,.2,1)}
@@ -406,8 +408,7 @@ footer a{color:#a9c3e6}
 <footer><div class="wrap">
   <div class="disc" data-i18n="disc">Super Celik — независимое приложение, не связано с МУП Республики Сербия и NetSeT/Veridos.</div>
   <div><a href="https://github.com/peregond/SuperCelik" data-i18n="gh">GitHub</a> · <a href="https://github.com/peregond/SuperCelik/releases" data-i18n="rel">Все версии</a> · <a href="https://github.com/peregond/SuperCelik/blob/main/docs/PRIVACY.md" data-i18n="priv">Приватность</a></div>
-</div>
-  <p class="credit">The Android robot is reproduced or modified from work created and shared by Google and used according to terms described in the Creative Commons 3.0 Attribution License. Apple, macOS, iPhone and iPad are trademarks of Apple Inc.; Windows is a trademark of Microsoft Corporation; Android is a trademark of Google LLC.</p>
+  <div class="legal"><p class="credit">The Android robot is reproduced or modified from work created and shared by Google and used according to terms described in the Creative Commons 3.0 Attribution License. Apple, macOS, iPhone and iPad are trademarks of Apple Inc.; Windows is a trademark of Microsoft Corporation; Android is a trademark of Google LLC.</p></div>
 </div></footer>
 
 <script>
