@@ -23,14 +23,27 @@ internal static class DriverSetup
 
     public static string Hex(byte[] b) => Convert.ToHexString(b);
 
-    /// The driver is registered for this ATR and the installed DLL is the one shipped with this version.
+    /// Registered subkeys (name, ours?) whose ATR and mask match this card.
+    private static IEnumerable<(string Name, bool Ours)> Matching(byte[] atr)
+    {
+        using var all = Registry.LocalMachine.OpenSubKey(SmartCards);
+        if (all == null) yield break;
+        foreach (var name in all.GetSubKeyNames())
+        {
+            using var k = all.OpenSubKey(name);
+            if (k?.GetValue("ATR") is not byte[] a || k.GetValue("80000001") == null) continue;
+            var mask = k.GetValue("ATRMask") as byte[] ?? Enumerable.Repeat((byte)0xFF, a.Length).ToArray();
+            if (a.Length != atr.Length || mask.Length != a.Length) continue;
+            bool same = true;
+            for (int i = 0; i < a.Length && same; i++) same = (atr[i] & mask[i]) == (a[i] & mask[i]);
+            if (same) yield return (name, name.StartsWith(KeyPrefix, StringComparison.OrdinalIgnoreCase));
+        }
+    }
+
+    /// Super Celik's driver is registered for this ATR and the installed DLL is the one shipped with this version.
     public static bool IsRegistered(byte[] atr)
     {
-        try
-        {
-            using var k = Registry.LocalMachine.OpenSubKey(SmartCards + "\\" + KeyPrefix + Hex(atr));
-            return k != null && SameFile(Bundled, Installed);
-        }
+        try { return Matching(atr).Any(m => m.Ours) && SameFile(Bundled, Installed); }
         catch { return false; }
     }
 
@@ -38,24 +51,8 @@ internal static class DriverSetup
     /// would fight over it, so Super Celik leaves such a card alone.
     public static bool HandledByOtherDriver(byte[] atr)
     {
-        try
-        {
-            using var all = Registry.LocalMachine.OpenSubKey(SmartCards);
-            if (all == null) return false;
-            foreach (var name in all.GetSubKeyNames())
-            {
-                if (name.StartsWith(KeyPrefix, StringComparison.OrdinalIgnoreCase)) continue;
-                using var k = all.OpenSubKey(name);
-                if (k?.GetValue("ATR") is not byte[] a || k.GetValue("80000001") == null) continue;
-                var mask = k.GetValue("ATRMask") as byte[] ?? Enumerable.Repeat((byte)0xFF, a.Length).ToArray();
-                if (a.Length != atr.Length || mask.Length != a.Length) continue;
-                bool same = true;
-                for (int i = 0; i < a.Length && same; i++) same = (atr[i] & mask[i]) == (a[i] & mask[i]);
-                if (same) return true;
-            }
-        }
-        catch { }
-        return false;
+        try { return Matching(atr).Any(m => !m.Ours); }
+        catch { return false; }
     }
 
     /// Any card type registered (Settings status).
@@ -122,6 +119,23 @@ internal static class DriverSetup
             return 0;
         }
         catch { return 1; }
+    }
+
+    /// Registers the driver for every card with the CardEdge applet that is in a reader now (right after the install).
+    /// Never fails: no reader or no card simply registers nothing.
+    public static int RegisterAuto()
+    {
+        try
+        {
+            using var pc = new PcscService();
+            foreach (var reader in pc.ListReaders())
+            {
+                var (atr, hasToken) = SerbianCard.ProbeToken(pc, reader);
+                if (hasToken && atr != null && !IsRegistered(atr) && !HandledByOtherDriver(atr)) Register(Hex(atr));
+            }
+        }
+        catch { }
+        return 0;
     }
 
     public static int Unregister()

@@ -18,7 +18,9 @@ public partial class App : Application
         var rd = Array.IndexOf(e.Args, "--register-driver");
         if (rd >= 0 && rd + 1 < e.Args.Length)
         {
-            Shutdown(DriverSetup.IsAdmin() ? DriverSetup.Register(e.Args[rd + 1]) : DriverSetup.RunElevated($"--register-driver {e.Args[rd + 1]}") ? 0 : 1);
+            var arg = e.Args[rd + 1];
+            Shutdown(!DriverSetup.IsAdmin() ? (DriverSetup.RunElevated($"--register-driver {arg}") ? 0 : 1)
+                     : arg == "auto" ? DriverSetup.RegisterAuto() : DriverSetup.Register(arg));
             return;
         }
         if (e.Args.Contains("--unregister-driver"))
