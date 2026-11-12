@@ -20,7 +20,7 @@ macOS (Xcode 15+ / Swift 5.9):
 
     swift run                         # с реальным ридером
     SERBIAID_DEMO=1 swift run         # демо-данные без карты
-    bash scripts/make-app.sh 0.8.0 arm64   # или x86_64 / universal → dist/*.dmg
+    bash scripts/make-app.sh 0.9.0 arm64   # или x86_64 / universal → dist/*.dmg
 
 Windows (.NET 8 SDK):
 
