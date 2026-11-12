@@ -52,18 +52,19 @@ enum Printer {
         op.run()
     }
 
-    /// Asks for a file name and writes a vector PDF directly (no print dialog).
+    /// Asks for a file name and writes the vector PDF: the same page the print dialog's "Save as PDF" gives.
+    /// The view draws itself straight into a one-page A4 PDF (no NSPrintOperation, so nothing from the print
+    /// system's saved settings, scaling or pagination can change the page).
     @MainActor static func savePDF(_ p: PersonalData, loc: Loc, includeJmbg: Bool = true) {
         let panel = NSSavePanel()
         panel.allowedContentTypes = [.pdf]
         panel.nameFieldStringValue = "SuperCelik.pdf"
         guard panel.runModal() == .OK, let url = panel.url else { return }
-        let info = baseInfo()
-        info.jobDisposition = .save
-        info.dictionary()[NSPrintInfo.AttributeKey.jobSavingURL] = url
-        let op = NSPrintOperation(view: makeView(p, includeJmbg: includeJmbg), printInfo: info)
-        op.showsPrintPanel = false
-        op.showsProgressPanel = false
-        op.run()
+        let view = makeView(p, includeJmbg: includeJmbg)
+        let data = view.dataWithPDF(inside: view.bounds)
+        do { try data.write(to: url, options: .atomic) } catch {
+            let alert = NSAlert(error: error)
+            alert.runModal()
+        }
     }
 }
