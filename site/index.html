@@ -35,7 +35,7 @@ a{color:inherit}img{max-width:100%}
 @media(hover:hover){.langbox:hover .langmenu{opacity:1;visibility:visible;transform:none}.globe:hover{background:rgba(255,255,255,.2)}}
 @media(max-width:480px){.langbox{top:10px;right:10px}}
 /* hero: flowing red aurora + fine grain, headline / devices animate in */
-.hero{--h1:clamp(30px,6.4vw,84px);position:relative;overflow:hidden;color:#fff;text-align:center;padding:104px 0 0;min-height:100vh;min-height:100svh;background:linear-gradient(180deg,#05162f 0%,#08234a 55%,#0a2b55 100%)}
+.hero{--h1:clamp(30px,6.4vw,84px);position:relative;overflow:hidden;color:#fff;text-align:center;padding:68px 0 0;min-height:100vh;min-height:100svh;background:linear-gradient(180deg,#05162f 0%,#08234a 55%,#0a2b55 100%)}
 .hero>.wrap,.hero>.stage{position:relative;z-index:2}
 .aurora{position:absolute;inset:0;overflow:hidden;z-index:0;pointer-events:none}
 .aurora i{position:absolute;border-radius:50%;will-change:transform}
@@ -52,7 +52,7 @@ a{color:inherit}img{max-width:100%}
 .hero::after,.final::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.14;mix-blend-mode:overlay;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");background-size:220px 220px}
 h1{font-size:var(--h1);line-height:1.05;letter-spacing:-.04em;margin:0 auto 18px;font-weight:800;max-width:1000px;text-wrap:balance}
 @media(max-width:480px){.hero{--h1:8.1vw}}
-@supports (height:100svh){.stage{--sw:clamp(480px,calc((100svh - 104px - var(--h1)*2.1 - 118px)*1.85),1060px)}}
+@supports (height:100svh){.stage{--sw:clamp(480px,calc((100svh - 68px - var(--h1)*2.1 - 118px)*1.85),1060px)}}
 .grad{background:linear-gradient(100deg,#8cc2ff 0%,#b9a9ff 45%,#ff7f88 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
 .lead{font-size:clamp(15.5px,1.45vw,18px);color:#c3d6f1;max-width:560px;margin:0 auto;line-height:1.4}
 /* intro animation (only when the visitor has not asked for reduced motion; see .anim in <head>) */
@@ -102,11 +102,14 @@ h1{font-size:var(--h1);line-height:1.05;letter-spacing:-.04em;margin:0 auto 18px
 .dl-tile.me .tx small{color:#ffe3e5}
 .dl-tile.me .rec{display:block;position:absolute;top:-13px;left:50%;transform:translateX(-50%);z-index:2;white-space:nowrap;background:#fff;color:#c6363c;font-size:10.5px;font-weight:800;letter-spacing:.02em;padding:4px 11px;border-radius:999px;box-shadow:0 6px 16px rgba(0,0,0,.3)}
 @keyframes glow{50%{box-shadow:0 0 0 6px rgba(226,61,71,.2),0 22px 56px -12px rgba(226,61,71,.95),0 0 90px rgba(226,61,71,.65)}}
+.dl-tile .go.off{cursor:not-allowed;pointer-events:none;background:rgba(255,255,255,.05);border:1px dashed rgba(255,255,255,.22);box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;color:rgba(255,255,255,.5)}
+.dl-tile .go.off .ti{background:rgba(255,255,255,.07);color:rgba(255,255,255,.45)}
+.dl-tile .go.off .tx small{color:rgba(255,255,255,.5);font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:11px}
 .alt-link{position:absolute;top:calc(100% + 10px);left:0;right:0;text-align:center;font-size:12px;color:#d6e4f8;text-decoration:underline;text-underline-offset:3px}
 .alt-link:hover{color:#fff}
 .ver{margin:30px 0 0;font-size:14px;color:#9fbde3;min-height:20px}
 @media(max-width:720px){
- .hero{padding-top:84px}
+ .hero{padding-top:66px}
  .stage{width:100%;aspect-ratio:1/1.02;margin-top:28px}
  .dev.mac{width:100%;top:5%}.dev.p-and,.dev.p-ios{width:37%;bottom:-3%}
  .dl-float{position:relative;top:auto;margin:-40px auto 0;width:calc(100% - 28px);padding:0 0 44px}
@@ -126,8 +129,9 @@ section{padding:110px 0}
 .sub{font-size:clamp(18px,2vw,22px);color:var(--muted);max-width:680px;margin:0 auto}
 .center{text-align:center}
 .light{background:#fff}@media(prefers-color-scheme:dark){.light{background:#0b1830}}
-.statement{padding:130px 0 90px;background:var(--card)}
-.statement .hl{font-size:clamp(40px,7vw,88px)}
+.statement{padding:120px 0 70px;background:var(--card)}
+.statement .rail{margin-top:60px}
+.statement .hl{font-size:clamp(33px,7vw,88px)}
 .hl .blue{background:linear-gradient(100deg,var(--blue),var(--blue2));-webkit-background-clip:text;background-clip:text;color:transparent}
 .hl .redw{color:var(--red)}
 @media(prefers-color-scheme:dark){.hl .blue{background:linear-gradient(100deg,#8fc1ff,#4f9bf0);-webkit-background-clip:text;background-clip:text}}
@@ -242,20 +246,17 @@ footer a{color:#a9c3e6}
 </div><div class="dl-tile" data-os="android">
   <span class="rec" data-i18n="rec">Для вашего устройства</span>
   <a class="go" data-dl="android" href="https://github.com/peregond/SuperCelik/releases/latest"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6.5" y="2" width="11" height="20" rx="2.6"/><circle cx="12" cy="5.2" r=".7" fill="currentColor"/><path d="M10.5 19h3"/></svg></span><span class="tx"><b class="nm">Android</b><small data-i18n="dl">Скачать</small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg></a>
-</div><div class="dl-tile" data-os="ios">
-  <span class="rec" data-i18n="rec">Для вашего устройства</span>
-  <a class="go" data-dl="ios" href="https://github.com/peregond/SuperCelik/releases/latest"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3.2"/><path d="M10 5.2h4"/></svg></span><span class="tx"><b class="nm">iPhone / iPad</b><small data-i18n="dl">Скачать</small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg></a>
+</div><div class="dl-tile soon" data-os="ios">
+  <span class="go off" aria-disabled="true"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3.2"/><path d="M10 5.2h4"/></svg></span><span class="tx"><b class="nm">iPhone / iPad</b><small data-i18n="soon">Скоро</small></span></span>
 </div></div>
   </div>
 </div>
 
-<section class="statement"><div class="wrap center">
-  <h2 class="hl rv" data-i18n-html="st_h"><span class="blue">Одно приложение</span> вместо <span class="redw">двух.</span></h2>
-  <p class="sub rv" data-i18n="st_p">Super Celik заменяет Čelik и TrustEdge ID: читает карту, проверяет подпись МУП, печатает, подписывает файлы и помогает войти на eid.gov.rs.</p>
-</div></section>
-
-<section class="rail-sec" id="features">
-  <div class="rail-head"><h2 class="hl rv" data-i18n="f_h">Всё, что нужно от карты — в одном приложении</h2><p class="sub rv" style="margin-left:0" data-i18n="f_sub">Единая замена Čelik + TrustEdge ID для сербской электронной карты.</p></div>
+<section class="statement" id="features">
+  <div class="wrap center">
+    <h2 class="hl rv" data-i18n-html="st_h"><span class="blue">Одно приложение</span> вместо <span class="redw">двух.</span></h2>
+    <p class="sub rv" data-i18n="st_p">Super Celik заменяет Čelik и TrustEdge ID: читает карту, проверяет подпись МУП, печатает, подписывает файлы и помогает войти на eid.gov.rs.</p>
+  </div>
   <div class="rail" id="rail">
 <article class="fc c1 rv"><h3 data-i18n="f1h">Личные данные и фото</h3><p data-i18n="f1p">Имя, личный номер, адрес, документ и фото. Чувствительные поля скрыты, пока вы их не покажете.</p><div class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><circle cx="9" cy="11" r="2"/><path d="M5.8 16c.7-2.2 5.7-2.2 6.4 0M14 10h4M14 13.5h4"/></svg></div></article>
 <article class="fc c2 rv"><h3 data-i18n="f2h">Проверка подлинности</h3><p data-i18n="f2p">Подпись карты проверяется по цепочке сертификатов МУП. Видно, что данные не подделаны.</p><div class="fi"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 3v6c0 5-3.5 8-8 9-4.5-1-8-4-8-9V6z"/><path d="M8.5 12l2.5 2.5 4.5-5"/></svg></div></article>
@@ -341,9 +342,8 @@ footer a{color:#a9c3e6}
 </div><div class="dl-tile" data-os="android">
   <span class="rec" data-i18n="rec">Для вашего устройства</span>
   <a class="go" data-dl="android" href="https://github.com/peregond/SuperCelik/releases/latest"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6.5" y="2" width="11" height="20" rx="2.6"/><circle cx="12" cy="5.2" r=".7" fill="currentColor"/><path d="M10.5 19h3"/></svg></span><span class="tx"><b class="nm">Android</b><small data-i18n="dl">Скачать</small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg></a>
-</div><div class="dl-tile" data-os="ios">
-  <span class="rec" data-i18n="rec">Для вашего устройства</span>
-  <a class="go" data-dl="ios" href="https://github.com/peregond/SuperCelik/releases/latest"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3.2"/><path d="M10 5.2h4"/></svg></span><span class="tx"><b class="nm">iPhone / iPad</b><small data-i18n="dl">Скачать</small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg></a>
+</div><div class="dl-tile soon" data-os="ios">
+  <span class="go off" aria-disabled="true"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3.2"/><path d="M10 5.2h4"/></svg></span><span class="tx"><b class="nm">iPhone / iPad</b><small data-i18n="soon">Скоро</small></span></span>
 </div></div></div>
   <p class="ver"><span class="verv"></span></p>
 </div></section>
@@ -447,6 +447,8 @@ dv_mac:"Podaci kartice i provera potpisa, svetla i tamna tema",dv_win:"Podaci ka
 dl_title:"Preuzmi",n1:"Besplatno",n2:"Bez naloga",n3:"Otvoreni kod",nav_scr:"Ekrani"});
 Object.assign(T.en,{h1b:"Your <span class=\"grad\">ID card</span><br>on any device",lead2:"Super Celik reads your card, makes a PDF and does a lot more — no drivers to install, on all your devices."});
 Object.assign(T.sr,{h1b:"Vaša <span class=\"grad\">ID kartica</span><br>na svakom uređaju",lead2:"Super Celik čita karticu, pravi PDF i ume još mnogo toga — bez instalacije drajvera, na svim uređajima."});
+Object.assign(T.en,{soon:"Coming soon"});
+Object.assign(T.sr,{soon:"Uskoro"});
 
 // remember Russian defaults from the markup
 document.querySelectorAll("[data-i18n]").forEach(e=>{if(!(e.dataset.i18n in T.ru))T.ru[e.dataset.i18n]=e.textContent});
@@ -499,7 +501,7 @@ function labels(){
  // the tile of the visitor's device says "Download for <OS>", the others just "Download"
   document.querySelectorAll(".verv").forEach(e=>e.textContent=version?tr(lang,"ver_l")+version:"")}
 // mark the visitor's device
-if(OS)document.querySelectorAll('.dl-tile[data-os="'+OS+'"]').forEach(t=>t.classList.add("me"));
+if(OS&&OS!=="ios")document.querySelectorAll('.dl-tile[data-os="'+OS+'"]').forEach(t=>t.classList.add("me"));  // iOS has no build yet: nothing to highlight there
 // install tabs (preselect visitor's OS)
 document.querySelectorAll(".tabs button").forEach(b=>b.onclick=()=>{document.querySelectorAll(".tabs button").forEach(x=>x.setAttribute("aria-selected",x===b));
  document.querySelectorAll(".ipanel").forEach(p=>p.classList.toggle("on",p.id==="t-"+b.dataset.t))});
