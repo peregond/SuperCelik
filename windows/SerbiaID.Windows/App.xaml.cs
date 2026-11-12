@@ -13,6 +13,19 @@ public partial class App : Application
             Shutdown();
             return;
         }
+        // `--register-driver <ATR hex>` / `--unregister-driver`: browser-login driver (needs administrator rights;
+        // started by the app itself with a UAC prompt, or by the uninstaller). No window.
+        var rd = Array.IndexOf(e.Args, "--register-driver");
+        if (rd >= 0 && rd + 1 < e.Args.Length)
+        {
+            Shutdown(DriverSetup.IsAdmin() ? DriverSetup.Register(e.Args[rd + 1]) : DriverSetup.RunElevated($"--register-driver {e.Args[rd + 1]}") ? 0 : 1);
+            return;
+        }
+        if (e.Args.Contains("--unregister-driver"))
+        {
+            Shutdown(DriverSetup.IsAdmin() ? DriverSetup.Unregister() : DriverSetup.RunElevated("--unregister-driver") ? 0 : 1);
+            return;
+        }
         // `--updatetest` checks GitHub and downloads+verifies the installer (does NOT run it); writes updatetest.txt
         if (e.Args.Contains("--updatetest"))
         {

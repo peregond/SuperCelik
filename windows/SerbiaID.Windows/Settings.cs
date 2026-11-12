@@ -13,6 +13,7 @@ public sealed class AppSettings
     public bool AutoUpdate { get; set; } = true;
     public bool MaskSensitive { get; set; } = true;  // hide JMBG / address / document number behind •••
     public bool AutoRead { get; set; } = true;       // read the card as soon as it is inserted
+    public string DriverDeclined { get; set; } = "";   // ATRs (hex;) for which the user said "no" to the browser-login driver
     public int Version { get; set; }                 // settings schema; 2 = auto-read is on by default
     public bool PrintJmbg { get; set; } = true;      // include the personal number on printouts / PDF
     public int AutoHideMinutes { get; set; } = 3;    // clear data after N idle minutes (0 = never)
@@ -30,7 +31,7 @@ public sealed class AppSettings
     {
         try
         {
-            return Registry.GetValue(@"HKEY_CURRENT_USER\Software\SuperCelik", "Lang", null) as string switch
+            return (Registry.GetValue(@"HKEY_CURRENT_USER\Software\SuperCelik", "Lang", null) as string) switch
             {
                 "russian" => "ru", "serbian" => "sr", "english" => "en", _ => null,
             };
