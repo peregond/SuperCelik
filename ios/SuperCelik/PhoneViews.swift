@@ -400,7 +400,9 @@ struct SettingsTab: View {
                     Toggle(loc.t(.setPrintJmbg), isOn: $prefs.printJmbg)
                 }
                 Section {
-                    Button(loc.t(.demoData)) { model.loadDemo(); dismiss() }
+                    Toggle(loc.t(.demoData), isOn: Binding(
+                        get: { model.demoActive },
+                        set: { $0 ? model.loadDemo() : model.hideDemo() }))
                 } footer: { Text(loc.t(.demoHint)) }
                 Section(loc.t(.tabAbout)) {
                     Text(loc.t(.aboutTextIOS)).font(.subheadline)

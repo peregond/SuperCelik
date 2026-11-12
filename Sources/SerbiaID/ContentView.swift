@@ -627,7 +627,9 @@ struct SettingsView: View {
                 #endif
             }
             Section {
-                Button(loc.t(.demoData)) { model.showDemoData() }
+                Toggle(loc.t(.demoData), isOn: Binding(
+                    get: { model.demoActive },
+                    set: { $0 ? model.showDemoData() : model.hideDemoData() }))
             } footer: { Text(loc.t(.demoHint)) }
         }
         .formStyle(.grouped)
