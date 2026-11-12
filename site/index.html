@@ -26,11 +26,12 @@ a{color:inherit}img{max-width:100%}
 .globe svg{width:22px;height:22px}
 .langbox.open .globe,.globe:focus-visible{background:rgba(255,255,255,.2)}
 .langmenu{position:absolute;right:0;top:100%;padding-top:8px;opacity:0;visibility:hidden;transform:translateY(-6px) scale(.96);transform-origin:top right;transition:opacity .18s,transform .18s,visibility .18s}
-.langmenu .in{display:flex;flex-direction:column;min-width:156px;padding:6px;border-radius:16px;background:rgba(9,30,60,.88);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border:1px solid rgba(255,255,255,.16);box-shadow:0 24px 50px -16px rgba(0,0,0,.6)}
-.langmenu button{display:flex;justify-content:space-between;align-items:center;gap:16px;text-align:left;border:0;background:none;color:#c9dcf5;padding:9px 12px;border-radius:10px;font:600 14px inherit;font-family:inherit;cursor:pointer;transition:background .15s,color .15s}
+.langmenu .in{display:flex;flex-direction:column;min-width:216px;padding:8px;border-radius:18px;background:rgba(9,30,60,.88);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border:1px solid rgba(255,255,255,.16);box-shadow:0 24px 50px -16px rgba(0,0,0,.6)}
+.langmenu button{display:flex;align-items:center;gap:14px;text-align:left;border:0;background:none;color:#c9dcf5;padding:12px 14px;border-radius:12px;font:600 17px inherit;font-family:inherit;cursor:pointer;transition:background .15s,color .15s}
+.langmenu .fl{width:28px;height:19px;border-radius:4px;flex:none;box-shadow:0 0 0 1px rgba(255,255,255,.28)}
 .langmenu button:hover{background:rgba(255,255,255,.12);color:#fff}
 .langmenu button[aria-pressed=true]{color:#fff}
-.langmenu button[aria-pressed=true]::after{content:"✓";color:#ff8e95;font-weight:800}
+.langmenu button[aria-pressed=true]::after{content:"✓";color:#ff8e95;font-weight:800;margin-left:auto;padding-left:10px}
 .langbox.open .langmenu,.langbox:focus-within .langmenu{opacity:1;visibility:visible;transform:none}
 @media(hover:hover){.langbox:hover .langmenu{opacity:1;visibility:visible;transform:none}.globe:hover{background:rgba(255,255,255,.2)}}
 @media(max-width:480px){.langbox{top:10px;right:10px}}
@@ -97,18 +98,14 @@ h1{font-size:var(--h1);line-height:1.05;letter-spacing:-.04em;margin:0 auto 18px
 .dl-tile .nm{font-size:16px;letter-spacing:-.01em;white-space:nowrap}
 .dl-tile .tx small{font-size:12px;color:#c3d6f1}
 .dl-tile .go>svg{width:18px;height:18px;margin-left:auto;opacity:.85;flex:none}
-.dl-tile .rec{display:none}
 .dl-tile.me .go{background:linear-gradient(160deg,#f6565f 0%,#c6363c 60%,#a22830 100%);border-color:rgba(255,255,255,.55);transform:scale(1.07);box-shadow:0 0 0 3px rgba(226,61,71,.32),0 22px 50px -12px rgba(226,61,71,.85),0 0 70px rgba(226,61,71,.5);animation:glow 3.2s ease-in-out infinite}
 .dl-tile.me .go:hover{transform:scale(1.09)}
 .dl-tile.me .ti{background:rgba(255,255,255,.24)}
 .dl-tile.me .tx small{color:#ffe3e5}
-.dl-tile.me .rec{display:block;position:absolute;top:-13px;left:50%;transform:translateX(-50%);z-index:2;white-space:nowrap;background:#fff;color:#c6363c;font-size:10.5px;font-weight:800;letter-spacing:.02em;padding:4px 11px;border-radius:999px;box-shadow:0 6px 16px rgba(0,0,0,.3)}
 @keyframes glow{50%{box-shadow:0 0 0 6px rgba(226,61,71,.2),0 22px 56px -12px rgba(226,61,71,.95),0 0 90px rgba(226,61,71,.65)}}
 .dl-tile .go.off{cursor:not-allowed;pointer-events:none;background:rgba(255,255,255,.05);border:1px dashed rgba(255,255,255,.22);box-shadow:none;backdrop-filter:none;-webkit-backdrop-filter:none;color:rgba(255,255,255,.5)}
 .dl-tile .go.off .ti{background:rgba(255,255,255,.07);color:rgba(255,255,255,.45)}
 .dl-tile .go.off .tx small{color:rgba(255,255,255,.5);font-weight:700;letter-spacing:.04em;text-transform:uppercase;font-size:11px}
-.alt-link{position:absolute;top:calc(100% + 10px);left:0;right:0;text-align:center;font-size:12px;color:#d6e4f8;text-decoration:underline;text-underline-offset:3px}
-.alt-link:hover{color:#fff}
 @media(max-width:720px){
  .hero{padding-top:66px}
  .stage{width:100%;aspect-ratio:1/1.02;margin-top:28px}
@@ -121,7 +118,6 @@ h1{font-size:var(--h1);line-height:1.05;letter-spacing:-.04em;margin:0 auto 18px
  .dl-tile .ti{width:34px;height:34px}
  .dl-tile.me{grid-column:1/-1;order:-1}
  .dl-tile.me .go{transform:none}.dl-tile.me .go:hover{transform:translateY(-2px)}
- .alt-link{position:static;margin-top:7px}
 }
 @media(max-width:380px){.dl-tile .nm{font-size:14.5px}}
 /* sections */
@@ -130,7 +126,7 @@ section{padding:110px 0}
 .sub{font-size:clamp(18px,2vw,22px);color:var(--muted);max-width:680px;margin:0 auto}
 .center{text-align:center}
 .light{background:#fff}@media(prefers-color-scheme:dark){.light{background:#0b1830}}
-.statement{padding:120px 0 70px;background:var(--card)}
+.statement{padding:68px 0 70px;background:var(--card)}
 .statement .rail{margin-top:60px}
 .statement .hl{font-size:clamp(33px,7vw,88px)}
 .hl .blue{background:linear-gradient(100deg,var(--blue),var(--blue2));-webkit-background-clip:text;background-clip:text;color:transparent}
@@ -179,7 +175,7 @@ section{padding:110px 0}
  .cap{margin-top:6px}
 }
 @media(max-width:560px){.seg .md{display:none}}
-@media(max-width:720px){section{padding:64px 0}.statement{padding:80px 0 36px}.statement .rail{margin-top:40px}}
+@media(max-width:720px){section{padding:64px 0}.statement{padding:40px 0 36px}.statement .rail{margin-top:40px}}
 .pair .mac{filter:drop-shadow(0 28px 40px rgba(12,64,118,.35))}
 .pair .mac img,.pair .win img{display:block;width:100%;height:auto}
 .pair .win{border-radius:14px;overflow:hidden;border:1px solid var(--line);box-shadow:0 30px 60px -26px rgba(12,64,118,.55)}
@@ -194,11 +190,11 @@ section{padding:110px 0}
 .tabs button{padding:10px 20px;border-radius:999px;border:1px solid var(--line);background:var(--card);color:var(--ink);font:600 15px inherit;font-family:inherit;cursor:pointer;transition:.15s}
 .tabs button[aria-selected=true]{background:var(--blue);border-color:var(--blue);color:#fff}
 .ipanel{display:none}.ipanel.on{display:block}
-ol.steps{list-style:none;counter-reset:s;margin:0;padding:0;display:grid;gap:18px;max-width:760px}
-ol.steps li{counter-increment:s;position:relative;padding-left:56px}
+ol.steps{list-style:none;counter-reset:s;margin:0;padding:0;display:grid;grid-template-columns:minmax(0,1fr);gap:18px;max-width:760px}
+ol.steps li{counter-increment:s;position:relative;padding-left:56px;min-width:0}
 ol.steps li::before{content:counter(s);position:absolute;left:0;top:0;width:38px;height:38px;border-radius:50%;background:linear-gradient(150deg,#f2525c,#c6363c);color:#fff;font-weight:800;display:grid;place-items:center;box-shadow:0 8px 18px -6px rgba(226,61,71,.6)}
 ol.steps b{display:block;font-size:18px;margin-bottom:2px}ol.steps span{color:var(--muted)}
-pre{margin:10px 0 0;padding:14px 16px;border-radius:14px;background:#061a36;color:#dbe8fb;overflow-x:auto;font:14px ui-monospace,Menlo,Consolas,monospace}
+pre{max-width:100%;margin:10px 0 0;padding:14px 16px;border-radius:14px;background:#061a36;color:#dbe8fb;overflow-x:auto;font:14px ui-monospace,Menlo,Consolas,monospace}
 .note{margin-top:30px;max-width:760px;padding:16px 20px;border-radius:16px;background:rgba(226,61,71,.09);border:1px solid rgba(226,61,71,.3);font-size:15px}
 /* faq */
 .faq{background:var(--card)}
@@ -223,10 +219,10 @@ footer a{color:#a9c3e6}
 <div class="langbox" id="langbox">
   <button class="globe" id="globe" type="button" aria-label="Language" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.2"/><path d="M2.8 12h18.4M12 2.8c3.1 3.4 3.1 14 0 18.4M12 2.8c-3.1 3.4-3.1 14 0 18.4"/></svg></button>
   <div class="langmenu" role="menu"><div class="in">
-    <button type="button" role="menuitem" data-l="ru" aria-pressed="false">Русский</button>
-    <button type="button" role="menuitem" data-l="en" aria-pressed="false">English</button>
-    <button type="button" role="menuitem" data-l="sr" aria-pressed="false">Srpski</button>
-    <button type="button" role="menuitem" data-l="sc" aria-pressed="false">Српски</button>
+    <button type="button" role="menuitem" data-l="ru" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#fff"/><rect y="5.33" width="24" height="5.34" fill="#0039A6"/><rect y="10.67" width="24" height="5.33" fill="#D52B1E"/></svg><span>Русский</span></button>
+    <button type="button" role="menuitem" data-l="en" aria-pressed="false"><svg class="fl" viewBox="0 0 60 40" preserveAspectRatio="none" aria-hidden="true"><rect width="60" height="40" fill="#012169"/><path d="M0 0L60 40M60 0L0 40" stroke="#fff" stroke-width="8"/><path d="M0 0L60 40M60 0L0 40" stroke="#C8102E" stroke-width="3"/><path d="M30 0V40M0 20H60" stroke="#fff" stroke-width="13"/><path d="M30 0V40M0 20H60" stroke="#C8102E" stroke-width="8"/></svg><span>English</span></button>
+    <button type="button" role="menuitem" data-l="sr" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#fff"/><rect width="24" height="5.33" fill="#C6363C"/><rect y="5.33" width="24" height="5.34" fill="#0C4076"/></svg><span>Srpski</span></button>
+    <button type="button" role="menuitem" data-l="sc" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#fff"/><rect width="24" height="5.33" fill="#C6363C"/><rect y="5.33" width="24" height="5.34" fill="#0C4076"/></svg><span>Српски</span></button>
   </div></div>
 </div>
 
@@ -244,14 +240,10 @@ footer a{color:#a9c3e6}
   </div>
   <div class="dl-float" id="download">
     <div class="dl-bar"><div class="dl-tile" data-os="mac">
-  <span class="rec" data-i18n="rec">Для вашего устройства</span>
-  <a class="go" data-dl="mac-arm" href="https://github.com/peregond/SuperCelik/releases/latest"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></span><span class="tx"><b class="nm">macOS</b><small data-i18n="dl">Скачать</small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg></a>
-  <a class="alt-link" data-dl="mac-intel" href="https://github.com/peregond/SuperCelik/releases/latest" data-i18n="mac_intel_l">Mac с процессором Intel</a>
+  <a class="go" data-dl="mac" href="https://github.com/peregond/SuperCelik/releases/latest"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg></span><span class="tx"><b class="nm">macOS</b><small data-i18n="dl">Скачать</small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg></a>
 </div><div class="dl-tile" data-os="win">
-  <span class="rec" data-i18n="rec">Для вашего устройства</span>
   <a class="go" data-dl="win" href="https://github.com/peregond/SuperCelik/releases/latest"><span class="ti"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M3 5.5l7.5-1v7H3zM11.5 4.3L21 3v8.5h-9.5zM3 12.5h7.5v7L3 18.5zM11.5 12.5H21V21l-9.5-1.3z"/></svg></span><span class="tx"><b class="nm">Windows</b><small data-i18n="dl">Скачать</small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg></a>
 </div><div class="dl-tile" data-os="android">
-  <span class="rec" data-i18n="rec">Для вашего устройства</span>
   <a class="go" data-dl="android" href="https://github.com/peregond/SuperCelik/releases/latest"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6.5" y="2" width="11" height="20" rx="2.6"/><circle cx="12" cy="5.2" r=".7" fill="currentColor"/><path d="M10.5 19h3"/></svg></span><span class="tx"><b class="nm">Android</b><small data-i18n="dl">Скачать</small></span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M12 4v11m0 0l-4.5-4.5M12 15l4.5-4.5M5 20h14"/></svg></a>
 </div><div class="dl-tile soon" data-os="ios">
   <span class="go off" aria-disabled="true"><span class="ti"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="3.2"/><path d="M10 5.2h4"/></svg></span><span class="tx"><b class="nm">iPhone / iPad</b><small data-i18n="soon">Скоро</small></span></span>
@@ -303,7 +295,7 @@ footer a{color:#a9c3e6}
     <button role="tab" aria-selected="false" data-t="ios">iPhone / iPad</button>
   </div>
   <div class="ipanel on" id="t-mac"><ol class="steps">
-    <li><b data-i18n="m1h">Скачайте .dmg</b><span data-i18n="m1p">Для M1 и новее — Apple Silicon, для старых Mac — Intel (меню  → «Об этом Mac»).</span></li>
+    <li><b data-i18n="m1h">Скачайте .dmg</b><span data-i18n="m1p">Страница сама подбирает версию под ваш Mac (Apple Silicon или Intel). Если приложение не запускается, скачайте другую версию по ссылке «Все версии» внизу страницы.</span></li>
     <li><b data-i18n="m2h">Перетащите в «Программы»</b><span data-i18n="m2p">Откройте dmg и перетащите Super Celik в папку «Программы».</span></li>
     <li><b data-i18n="m3h">Первый запуск</b><span data-i18n="m3p">Правый клик по приложению → «Открыть». Если macOS всё равно блокирует, выполните в Терминале:</span><pre>xattr -dr com.apple.quarantine /Applications/SuperCelik.app</pre></li>
     <li><b data-i18n="m4h">Для входа в браузере</b><span data-i18n="m4p">Запустите приложение один раз, вставьте карту, затем полностью закройте Chrome (⌘Q) и откройте сайт снова.</span></li>
@@ -531,10 +523,19 @@ if(!rm){const st=document.getElementById("stage");let tk=false;
 setLang(lang);
 // real download links from the latest release
 function wire(sel,a){document.querySelectorAll(sel).forEach(el=>el.href=a?a.browser_download_url:REL)}
-fetch("https://api.github.com/repos/"+REPO+"/releases/latest").then(r=>r.ok?r.json():Promise.reject()).then(rel=>{
+// Which Mac build? Chromium says it directly; elsewhere the GPU name tells Apple Silicon from Intel.
+async function macArch(){
+ try{const u=navigator.userAgentData;
+  if(u&&u.getHighEntropyValues){const v=await u.getHighEntropyValues(["architecture"]);
+   if(v.architecture==="arm")return"arm";if(v.architecture==="x86")return"intel"}}catch(e){}
+ try{const gl=document.createElement("canvas").getContext("webgl")||document.createElement("canvas").getContext("experimental-webgl");
+  const x=gl&&gl.getExtension("WEBGL_debug_renderer_info");const r=x?String(gl.getParameter(x.UNMASKED_RENDERER_WEBGL)):"";
+  if(/apple/i.test(r))return"arm";if(/intel|amd|radeon|nvidia|geforce/i.test(r))return"intel"}catch(e){}
+  return"arm"}   // undecided: most Macs sold since 2020 are Apple Silicon
+Promise.all([fetch("https://api.github.com/repos/"+REPO+"/releases/latest").then(r=>r.ok?r.json():Promise.reject()),macArch()]).then(([rel,arch])=>{
  const L=rel.assets||[],pick=re=>L.find(a=>re.test(a.name));version=(rel.tag_name||"").replace(/^v/,"");
- wire('[data-dl="mac-arm"]',pick(/macOS-apple-silicon\.dmg$/i));wire('[data-dl="mac-intel"]',pick(/macOS-intel\.dmg$/i));
- wire('[data-dl="win"]',pick(/setup\.exe$/i));wire('[data-dl="android"]',pick(/\.apk$/i));wire('[data-dl="ios"]',pick(/iOS-unsigned\.ipa$/i));
+ wire('[data-dl="mac"]',pick(arch==="intel"?/macOS-intel\.dmg$/i:/macOS-apple-silicon\.dmg$/i));
+ wire('[data-dl="win"]',pick(/setup\.exe$/i));wire('[data-dl="android"]',pick(/\.apk$/i));
  labels()}).catch(()=>{});
 
 </script>
