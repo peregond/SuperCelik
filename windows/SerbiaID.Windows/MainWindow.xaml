@@ -151,6 +151,16 @@
                                 </DockPanel>
                             </StackPanel>
                         </Border>
+                        <Border Style="{StaticResource Card}" Margin="0,0,0,16">
+                            <StackPanel>
+                                <TextBlock x:Name="LblSetBrowser" Foreground="{DynamicResource TextBrush}" FontSize="15" FontWeight="Bold" Margin="0,0,0,6"/>
+                                <TextBlock x:Name="LblDriverStatus" Foreground="{DynamicResource MutedBrush}" TextWrapping="Wrap" Margin="0,0,0,10"/>
+                                <WrapPanel>
+                                    <Button x:Name="BtnDriverInstall" Style="{StaticResource SecondaryButton}" Click="DriverInstall_Click" Margin="0,0,10,0"/>
+                                    <Button x:Name="BtnDriverRemove" Style="{StaticResource SecondaryButton}" Click="DriverRemove_Click"/>
+                                </WrapPanel>
+                            </StackPanel>
+                        </Border>
                         <Border Style="{StaticResource Card}">
                             <StackPanel>
                                 <TextBlock x:Name="LblSetBehavior" Foreground="{DynamicResource TextBrush}" FontSize="15" FontWeight="Bold" Margin="0,0,0,6"/>

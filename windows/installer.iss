@@ -46,3 +46,7 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"
 Filename: "{app}\SuperCelik.exe"; Description: "{cm:LaunchProgram,Super Celik}"; Flags: nowait postinstall skipifsilent runasoriginaluser
 ; silent install (auto-update from inside the app): start the new version again automatically
 Filename: "{app}\SuperCelik.exe"; Flags: nowait runasoriginaluser; Check: WizardSilent
+
+[UninstallRun]
+; take the browser-login driver out of Windows (asks for administrator rights); nothing happens if it was never installed
+Filename: "{app}\SuperCelik.exe"; Parameters: "--unregister-driver"; RunOnceId: "UnregisterDriver"; Flags: runhidden waituntilterminated

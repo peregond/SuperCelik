@@ -263,6 +263,18 @@ public static class SerbianCard
             throw new CardException("No token applet on this card");
     }
 
+    /// The card's ATR and whether it carries the CardEdge token applet (the card the browser-login driver is for).
+    public static (byte[] Atr, bool HasToken) ProbeToken(PcscService pc, string reader)
+    {
+        try
+        {
+            using var s = pc.Connect(reader);
+            var atr = s.Atr();
+            return (atr, s.Tx(Apdu(0, 0xA4, 4, 0, Hex(Pkcs15Aid))).Sw == 0x9000);
+        }
+        catch (CardException) { return (null, false); }
+    }
+
     public static TokenInfo ReadToken(PcscService pc, string reader)
     {
         using var s = pc.Connect(reader);

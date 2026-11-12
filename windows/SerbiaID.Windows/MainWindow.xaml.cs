@@ -166,6 +166,9 @@ public partial class MainWindow : Window
         LblSetAppearance.Text = Loc.T("setAppearance"); LblSetTheme.Text = Loc.T("setTheme");
         LblSetPrivacy.Text = Loc.T("setPrivacy"); LblSetBehavior.Text = Loc.T("setBehavior");
         ChkMask.Content = Loc.T("setMask"); ChkPrintJmbg.Content = Loc.T("setPrintJmbg");
+        LblSetBrowser.Text = Loc.T("setBrowser");
+        BtnDriverInstall.Content = Loc.T("driverInstall"); BtnDriverRemove.Content = Loc.T("driverRemove");
+        UpdateDriverStatus();
         ChkAutoRead.Content = Loc.T("setAutoRead"); ChkAutoUpdate.Content = Loc.T("setAutoUpdate");
         LblSetAutoHide.Text = Loc.T("setAutoHide");
         _loading = true;
@@ -303,8 +306,68 @@ public partial class MainWindow : Window
             _cardPresent = _readers.Count > 0 && _pc.Atr(Reader) != null;
             UpdateCardLabel();
             HideProblem();
+            if (_cardPresent) _ = OfferDriverAsync();
         }
         catch (Exception ex) { ShowProblem(ex); }
+    }
+
+    // ---- browser-login driver (Windows card minidriver, see DriverSetup.cs) ----
+
+    private byte[] _lastTokenAtr;                  // ATR of the last card that has the CardEdge token applet
+    private readonly HashSet<string> _driverAsked = new();
+
+    /// A card with the CardEdge applet was inserted and the driver is not set up for it: ask once, then register it.
+    private async Task OfferDriverAsync()
+    {
+        try
+        {
+            if (_demo || !DriverSetup.Available || !_cardPresent || _readers.Count == 0) return;
+            var reader = Reader;
+            var (atr, hasToken) = await Task.Run(() => SerbianCard.ProbeToken(_pc, reader));
+            if (!hasToken || atr == null) return;
+            _lastTokenAtr = atr;
+            var hex = DriverSetup.Hex(atr);
+            if (DriverSetup.IsRegistered(atr) || DriverSetup.HandledByOtherDriver(atr) || _cfg.DriverDeclined.Contains(hex + ";") || !_driverAsked.Add(hex)) { UpdateDriverStatus(); return; }
+            var answer = MessageBox.Show(this, Loc.T("driverAsk"), Loc.T("appTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question);
+            if (answer != MessageBoxResult.Yes) { _cfg.DriverDeclined += hex + ";"; _cfg.Save(); return; }
+            await InstallDriverAsync(atr);
+        }
+        catch { /* the offer is optional: never disturb the reading */ }
+    }
+
+    private async Task InstallDriverAsync(byte[] atr)
+    {
+        var hex = DriverSetup.Hex(atr);
+        bool ok = await Task.Run(() => DriverSetup.RunElevated("--register-driver " + hex));
+        if (ok) { _cfg.DriverDeclined = _cfg.DriverDeclined.Replace(hex + ";", ""); _cfg.Save(); }
+        ShowInfo(Loc.T(ok ? "driverDone" : "driverFail"));
+        UpdateDriverStatus();
+    }
+
+    private void UpdateDriverStatus()
+    {
+        if (LblDriverStatus == null) return;
+        bool avail = DriverSetup.Available, on = avail && DriverSetup.AnyRegistered();
+        LblDriverStatus.Text = Loc.T(!avail ? "driverMissing" : on ? "driverOn" : "driverOff");
+        BtnDriverInstall.Visibility = avail ? Visibility.Visible : Visibility.Collapsed;
+        BtnDriverRemove.Visibility = avail && on ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private async void DriverInstall_Click(object s, RoutedEventArgs e)
+    {
+        if (_lastTokenAtr == null)
+        {
+            if (_cardPresent) await Task.Run(() => { var (a, t) = SerbianCard.ProbeToken(_pc, Reader); if (t) _lastTokenAtr = a; });
+            if (_lastTokenAtr == null) { ShowInfo(Loc.T("driverNoCard")); return; }
+        }
+        await InstallDriverAsync(_lastTokenAtr);
+    }
+
+    private async void DriverRemove_Click(object s, RoutedEventArgs e)
+    {
+        bool ok = await Task.Run(() => DriverSetup.RunElevated("--unregister-driver"));
+        if (!ok) ShowInfo(Loc.T("driverFail"));
+        UpdateDriverStatus();
     }
 
     private void Refresh_Click(object s, RoutedEventArgs e) => Refresh();
@@ -325,6 +388,7 @@ public partial class MainWindow : Window
             if (present)
             {
                 HideProblem();
+                _ = OfferDriverAsync();
                 if (_cfg.AutoRead) await Run(ReadCardAsync);
             }
             else if (_personal != null || _token != null)
