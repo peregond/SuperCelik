@@ -12,7 +12,34 @@ let brandTint = Color(nsColor: NSColor(name: nil) { appearance in
         : NSColor(srgbRed: 0.776, green: 0.212, blue: 0.235, alpha: 1)
 })
 
-enum Page: String, Hashable { case personal, token, settings, about }
+enum Page: String, Hashable { case personal, token, settings }
+
+/// One row of the sidebar: flag red when selected, a soft highlight on hover.
+struct SidebarRow: View {
+    let title: String
+    let icon: String
+    let selected: Bool
+    let action: () -> Void
+    @State private var hovering = false
+
+    var body: some View {
+        Button(action: action) {
+            Label(title, systemImage: icon)
+                .fontWeight(selected ? .semibold : .regular)
+                .frame(maxWidth: .infinity, alignment: .leading)
+                .padding(.horizontal, 10).padding(.vertical, 7)
+                .foregroundStyle(selected ? Color.white : Color.primary)
+                .background(RoundedRectangle(cornerRadius: 9, style: .continuous)
+                    .fill(selected ? brandRed : Color.primary.opacity(hovering ? 0.07 : 0)))
+                .contentShape(Rectangle())
+        }
+        .buttonStyle(.plain)
+        .onHover { hovering = $0 }
+        .animation(.easeInOut(duration: 0.15), value: hovering)
+        .animation(.easeInOut(duration: 0.2), value: selected)
+        .accessibilityAddTraits(selected ? .isSelected : [])
+    }
+}
 
 // MARK: - Reusable pieces
 
@@ -130,16 +157,11 @@ struct ContentView: View {
     @State private var shotPage: String? = Shot.page
     private var page: Page { Page(rawValue: shotPage ?? pageRaw) ?? .personal }
 
-    private var selection: Binding<Page?> {
-        Binding(get: { page }, set: { if let v = $0 { shotPage = nil; pageRaw = v.rawValue } })
-    }
-
     private var pageTitle: String {
         switch page {
         case .personal: return loc.t(.tabPersonal)
         case .token: return loc.t(.tabToken)
         case .settings: return loc.t(.tabSettings)
-        case .about: return loc.t(.tabAbout)
         }
     }
 
@@ -157,12 +179,12 @@ struct ContentView: View {
                     case .personal: PersonalView()
                     case .token: TokenView()
                     case .settings: SettingsView()
-                    case .about: AboutView()
                     }
                 }
                 .frame(maxWidth: .infinity, maxHeight: .infinity)
             }
             .navigationTitle(pageTitle)
+            .toolbar { readerToolbar }
         }
         .tint(brandTint)
         .sheet(isPresented: $model.showPreview) { PreviewSheet() }
@@ -172,21 +194,22 @@ struct ContentView: View {
         #endif
     }
 
+    /// Own sidebar rows instead of a List: the system draws a selected List row in the user's accent colour
+    /// (blue), and the app's accent is the red of the flag.
     private var sidebar: some View {
-        List(selection: selection) {
-            Section {
-                Label(loc.t(.tabPersonal), systemImage: "person.text.rectangle").tag(Page.personal)
-                Label(loc.t(.tabToken), systemImage: "key.viewfinder").tag(Page.token)
-            }
-            Section {
-                Label(loc.t(.tabSettings), systemImage: "gearshape").tag(Page.settings)
-                Label(loc.t(.tabAbout), systemImage: "info.circle").tag(Page.about)
-            }
+        VStack(alignment: .leading, spacing: 2) {
+            SidebarRow(title: loc.t(.tabPersonal), icon: "person.text.rectangle", selected: page == .personal) { go(.personal) }
+            SidebarRow(title: loc.t(.tabToken), icon: "key.viewfinder", selected: page == .token) { go(.token) }
+            Spacer().frame(height: 14)
+            SidebarRow(title: loc.t(.tabSettings), icon: "gearshape", selected: page == .settings) { go(.settings) }
+            Spacer(minLength: 0)
         }
-        .listStyle(.sidebar)
+        .padding(.horizontal, 10)
+        .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
         .safeAreaInset(edge: .top, spacing: 0) { brandHeader }
-        .safeAreaInset(edge: .bottom, spacing: 0) { readerRow }
     }
+
+    private func go(_ p: Page) { shotPage = nil; pageRaw = p.rawValue }
 
     /// Logo and name at the top of the sidebar. The status (the reader's face) lives in the middle of the window.
     private var brandHeader: some View {
@@ -202,29 +225,19 @@ struct ContentView: View {
         .padding(.horizontal, 14).padding(.top, 6).padding(.bottom, 8)
     }
 
-    /// The reader itself at the bottom of the sidebar: its name (or a picker when there are several) and refresh.
-    private var readerRow: some View {
-        HStack(spacing: 8) {
-            Image(systemName: "creditcard.and.123").foregroundStyle(.secondary)
+    /// Refresh (look for the reader again) is one button in the toolbar on every page; with several readers
+    /// there is also a menu to choose which one to use.
+    @ToolbarContentBuilder private var readerToolbar: some ToolbarContent {
+        ToolbarItemGroup(placement: .primaryAction) {
             if model.readers.count > 1 {
                 Picker(loc.t(.reader), selection: $model.selectedReader) {
                     ForEach(model.readers, id: \.self) { Text($0).tag($0) }
                 }
-                .labelsHidden().pickerStyle(.menu).controlSize(.small)
-            } else {
-                // no reader: the empty state in the middle already says so, so only offer to look again
-                Text(model.readers.first ?? loc.t(.refresh))
-                    .font(.caption).foregroundStyle(.secondary)
-                    .lineLimit(1).truncationMode(.middle)
+                .pickerStyle(.menu).help(loc.t(.reader))
             }
-            Spacer(minLength: 0)
-            Button { model.refresh() } label: { Image(systemName: "arrow.clockwise") }
-                .buttonStyle(.borderless).help(loc.t(.refresh))
+            Button { model.refresh() } label: { Label(loc.t(.refresh), systemImage: "arrow.clockwise") }
+                .help(model.readers.first.map { "\(loc.t(.refresh)) — \($0)" } ?? loc.t(.refresh))
         }
-        .padding(10)
-        .frame(maxWidth: .infinity, alignment: .leading)
-        .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Color.primary.opacity(0.06)))
-        .padding(.horizontal, 10).padding(.top, 4).padding(.bottom, 8)
     }
 
     @ViewBuilder private var updateBanner: some View {
@@ -632,6 +645,7 @@ struct SettingsView: View {
                     get: { model.demoActive },
                     set: { $0 ? model.showDemoData() : model.hideDemoData() }))
             } footer: { Text(loc.t(.demoHint)) }
+            Section(loc.t(.tabAbout)) { AboutView() }
         }
         .formStyle(.grouped)
         .frame(maxWidth: 680)
@@ -646,24 +660,24 @@ struct AboutView: View {
     @EnvironmentObject var model: AppModel
 
     var body: some View {
-        VStack(spacing: 10) {
-            Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 112, height: 112)
-            Text(loc.t(.appTitle)).font(.system(size: 30, weight: .bold))
+        VStack(spacing: 8) {
+            Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 72, height: 72)
+            Text(loc.t(.appTitle)).font(.title2.weight(.bold))
             Text("\(loc.t(.version)) \(Updater.currentVersion)").foregroundStyle(.secondary)
             Text(loc.t(.aboutText)).multilineTextAlignment(.center).foregroundStyle(.secondary)
-                .frame(maxWidth: 400).padding(.top, 6)
+                .font(.callout).frame(maxWidth: 400).padding(.top, 2)
             #if !APPSTORE
             Button { Task { await model.checkUpdates(manual: true) } } label: {
                 Label(loc.t(.checkUpdates), systemImage: "arrow.triangle.2.circlepath")
             }
-            .controlSize(.large).padding(.top, 10)
+            .padding(.top, 6)
             if let s = model.updateStatus {
                 Text(s).font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.center).frame(maxWidth: 400)
             }
             #endif
         }
-        .padding(32)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .frame(maxWidth: .infinity)
+        .padding(.vertical, 6)
     }
 }
 
