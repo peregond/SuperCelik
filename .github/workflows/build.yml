@@ -115,6 +115,14 @@ jobs:
           echo "v=$v" >> "$GITHUB_OUTPUT"
       - name: Publish (self-contained, x64)
         run: dotnet publish windows/SerbiaID.Windows -c Release -r win-x64 --self-contained -p:Version=${{ steps.ver.outputs.v }} -o dist/win-x64
+      - uses: ilammy/msvc-dev-cmd@v1
+        with:
+          arch: x64
+      - name: Build the smart card minidriver (x64)
+        shell: cmd
+        run: |
+          cl /nologo /O2 /W3 /MT /LD /Fe:dist\win-x64\SuperCelikMD.dll windows\minidriver\scelik_md.c /link /DEF:windows\minidriver\scelik_md.def advapi32.lib winscard.lib bcrypt.lib
+          dir dist\win-x64\SuperCelikMD.dll
       - name: Install Inno Setup
         run: choco install innosetup -y --no-progress
       - name: Build installer
