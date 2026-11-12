@@ -7,13 +7,30 @@ namespace SerbiaID;
 internal static class Crypto
 {
     /// MUP root + intermediate CAs, copied next to the exe in the CA folder.
+    /// The files are on disk, so each one is checked against the SHA-256 of the certificates this version shipped
+    /// with: a .crt dropped into (or changed in) the folder is ignored and cannot become a trusted root.
+    private static readonly HashSet<string> PinnedCa = new(StringComparer.OrdinalIgnoreCase)
+    {
+        "DF9F1F1F4844119D9EF60FEC211E19A44E8FD652013299BE0533A5B12EE606F0",   // MUPCAResursi3
+        "68C197522983366A263A5E3BF45E672DF509ADF794B9EB1E9314D7487573DF1F",   // MUPCARoot3
+        "0E3EFEB4F77F95118D2A2D5870709C924647BBDB801CAFDBE727D3F4DC354566",   // MUPGradjaniCA4
+        "5D71C57BA744FFDFD532C7914193A7E1264F2E97D890D69595EDAB2F623544F1",   // MUPResursiCA4
+        "6DCA4AB9CABD18E5CB0023054316ABF78C99B531B2E3AA103109AFB9DFA836D4",   // MUPRootCA4
+        "923234E9382D75390BF2B67595301E2CFE2BB1650F707F5436BDF652D9F339FC",   // MUPStranciCA4
+    };
+
     private static readonly Lazy<List<X509Certificate2>> Anchors = new(() =>
     {
         var dir = Path.Combine(AppContext.BaseDirectory, "CA");
         var list = new List<X509Certificate2>();
         if (Directory.Exists(dir))
             foreach (var f in Directory.GetFiles(dir, "*.crt"))
-                try { list.Add(new X509Certificate2(f)); } catch { }
+                try
+                {
+                    var c = new X509Certificate2(f);
+                    if (PinnedCa.Contains(Convert.ToHexString(SHA256.HashData(c.RawData)))) list.Add(c);
+                }
+                catch { }
         return list;
     });
 

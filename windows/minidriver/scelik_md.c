@@ -24,7 +24,7 @@
  * PIN: VERIFY 00 20 00 80 08 <ASCII digits, 0x00-padded to 8>; 63Cx = x tries left.
  *
  * Debug log: set HKLM\SOFTWARE\SuperCelik\MinidriverLog (DWORD) = 1, the log goes to
- * %ProgramData%\SuperCelik\minidriver.log. HKLM\SOFTWARE\SuperCelik\SigBigEndian = 1 returns signatures big-endian
+ * %ProgramData%\SuperCelik\minidriver.log (never from SYSTEM processes, and never the PIN or card data). HKLM\SOFTWARE\SuperCelik\SigBigEndian = 1 returns signatures big-endian
  * (default: little-endian, the CryptoAPI order).
  */
 #define WIN32_LEAN_AND_MEAN
@@ -43,6 +43,8 @@
 #endif
 
 #define MAX_PAIRS 4
+#define MAX_MOD_BYTES 512     /* RSA up to 4096 bits */
+#define MAX_HASH_BYTES 64
 #define BIT_ATTEMPT_UNKNOWN 0xFFFFFFFF
 
 static const BYTE kAid[] = { 0xA0, 0x00, 0x00, 0x00, 0x63, 0x50, 0x4B, 0x43, 0x53, 0x2D, 0x31, 0x35 };
@@ -82,10 +84,21 @@ static DWORD regDword(const wchar_t *name, DWORD def)
     return v;
 }
 
+/* The log file sits in a folder ordinary users can write to, so a process running as SYSTEM (smart card logon,
+ * certificate propagation) never writes it: a planted link there could redirect the write. */
+static int isSystem(void)
+{
+    HANDLE tok; BYTE buf[256]; DWORD n = 0; int sys = 1;
+    if (!OpenProcessToken(GetCurrentProcess(), TOKEN_QUERY, &tok)) return 1;
+    if (GetTokenInformation(tok, TokenUser, buf, sizeof buf, &n)) sys = IsWellKnownSid(((TOKEN_USER *)buf)->User.Sid, WinLocalSystemSid) ? 1 : 0;
+    CloseHandle(tok);
+    return sys;
+}
+
 static void logf_(const char *fmt, ...)
 {
     char line[512], path[MAX_PATH]; va_list ap; FILE *f; DWORD n; SYSTEMTIME st;
-    if (g_logOn < 0) g_logOn = regDword(L"MinidriverLog", 0) ? 1 : 0;
+    if (g_logOn < 0) g_logOn = regDword(L"MinidriverLog", 0) && !isSystem() ? 1 : 0;
     if (!g_logOn) return;
     n = GetEnvironmentVariableA("ProgramData", path, sizeof path - 32);
     if (n == 0 || n > sizeof path - 32) return;
@@ -107,7 +120,7 @@ static MD *md(PCARD_DATA cd) { return (MD *)cd->pvVendorSpecific; }
 /* One APDU with 61xx / 6Cxx handling. out may be NULL. */
 static LONG apdu(PCARD_DATA cd, const BYTE *cmd, DWORD cmdLen, BYTE *out, DWORD outCap, DWORD *outLen, WORD *sw)
 {
-    BYTE resp[600]; DWORD rl; LONG rc; BYTE again[300]; DWORD total = 0;
+    BYTE resp[600]; DWORD rl; LONG rc; BYTE again[300]; DWORD total = 0; int rounds;
     MD *m = md(cd);
     if (outLen) *outLen = 0;
     rl = sizeof resp;
@@ -121,8 +134,9 @@ static LONG apdu(PCARD_DATA cd, const BYTE *cmd, DWORD cmdLen, BYTE *out, DWORD 
         if (rc != SCARD_S_SUCCESS) return rc;
         if (rl < 2) return SCARD_E_UNEXPECTED;
     }
-    for (;;) {
+    for (rounds = 0;; rounds++) {
         DWORD dl = rl - 2;
+        if (rounds > 64) return SCARD_E_UNEXPECTED;      /* a card that answers 61xx forever */
         if (out && total + dl <= outCap) { memcpy(out + total, resp, dl); }
         else if (dl && out) return SCARD_E_INSUFFICIENT_BUFFER;
         total += dl;
@@ -220,7 +234,7 @@ static LONG loadObjects(PCARD_DATA cd, MD *m)
         if (readFile(cd, metas[j].fid, &pk, &pl) != SCARD_S_SUCCESS) { LocalFree(cert); continue; }
         if (cl < 8 || pl < 9 || pk[0] != 0x00 || pk[1] != 0x05) { LocalFree(cert); LocalFree(pk); continue; }
         modLen = (DWORD)pk[5] << 8 | pk[6];
-        if (modLen == 0 || 7 + modLen + 2 > pl) { LocalFree(cert); LocalFree(pk); continue; }
+        if (modLen == 0 || modLen > MAX_MOD_BYTES || 7 + modLen + 2 > pl) { LocalFree(cert); LocalFree(pk); continue; }   /* the signing buffers are sized for 4096-bit keys */
         expLen = (DWORD)pk[7 + modLen] << 8 | pk[8 + modLen];
         if (expLen == 0 || expLen > 4 || 9 + modLen + expLen > pl) { LocalFree(cert); LocalFree(pk); continue; }
         bits = modLen * 8;
@@ -278,8 +292,9 @@ static DWORD verifyPin(PCARD_DATA cd, const BYTE *pin, DWORD cb, PDWORD attempts
     if (attempts) *attempts = BIT_ATTEMPT_UNKNOWN;
     if (cb < 4 || cb > 8) return SCARD_W_WRONG_CHV;
     for (i = 0; i < cb; i++) { if (pin[i] < '0' || pin[i] > '9') return SCARD_W_WRONG_CHV; cmd[5 + i] = pin[i]; }
-    rc = selectApplet(cd); if (rc) return rc;
+    rc = selectApplet(cd); if (rc) { SecureZeroMemory(cmd, sizeof cmd); return rc; }
     rc = apdu(cd, cmd, sizeof cmd, NULL, 0, NULL, &sw);
+    SecureZeroMemory(cmd, sizeof cmd);                   /* the PIN must not stay on the stack */
     if (rc != SCARD_S_SUCCESS) return rc;
     LOG("VERIFY: %04X", sw);
     if (sw == 0x9000) { md(cd)->authenticated |= (1u << ROLE_USER); return SCARD_S_SUCCESS; }
@@ -596,6 +611,10 @@ static DWORD WINAPI MdSignData(PCARD_DATA cd, PCARD_SIGNING_INFO si)
     flags = si->dwSigningFlags;
     if (flags & CARD_BUFFER_SIZE_ONLY) { si->cbSignedData = k; return SCARD_S_SUCCESS; }
     if (!si->pbData || si->cbData == 0) return ERROR_INVALID_PARAMETER;
+    /* everything below copies the input into fixed buffers: a hash, or one full RSA block, and nothing longer */
+    if (k > MAX_MOD_BYTES || si->cbData > k) return SCARD_E_INVALID_PARAMETER;
+    if (!((flags & CARD_PADDING_INFO_PRESENT) && si->dwPaddingType == CARD_PADDING_NONE) && si->cbData > MAX_HASH_BYTES)
+        return SCARD_E_INVALID_PARAMETER;
 
     if (flags & CARD_PADDING_INFO_PRESENT) {
         if (si->dwPaddingType == CARD_PADDING_PKCS1) {
@@ -610,6 +629,7 @@ static DWORD WINAPI MdSignData(PCARD_DATA cd, PCARD_SIGNING_INFO si)
         } else if (si->dwPaddingType == CARD_PADDING_PSS) {
             BCRYPT_PSS_PADDING_INFO *pi = (BCRYPT_PSS_PADDING_INFO *)si->pPaddingInfo;
             if (!pi || !pi->pszAlgId) return ERROR_INVALID_PARAMETER;
+            if (pi->cbSalt > MAX_HASH_BYTES) return SCARD_E_INVALID_PARAMETER;
             if (!pssEncode(pi->pszAlgId, si->pbData, si->cbData, pi->cbSalt, pr->bits, block + (k - (pr->bits + 6) / 8), (pr->bits + 6) / 8)) return SCARD_E_UNEXPECTED;
             memset(block, 0, k - (pr->bits + 6) / 8);
             send = block; sn = k; alg = 0x00;

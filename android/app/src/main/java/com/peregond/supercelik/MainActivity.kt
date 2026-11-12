@@ -57,6 +57,11 @@ class MainActivity : ComponentActivity() {
     private val vm: CardViewModel by viewModels()
     private var nfc: NfcAdapter? = null
 
+    /** The "demo" launch extra (fictional data, screenshots allowed) works in debug builds only: the activity is
+     *  exported, and no other app should be able to switch the screenshot protection off in a release build. */
+    private val demoAllowed: Boolean
+        get() = applicationInfo.flags and android.content.pm.ApplicationInfo.FLAG_DEBUGGABLE != 0
+
     override fun onStart() {
         super.onStart()
         vm.autoStart(this)
@@ -65,14 +70,16 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         if (intent.action == UsbManager.ACTION_USB_DEVICE_ATTACHED) vm.startUsb(this)
-        if (intent.getBooleanExtra("demo", false)) { vm.demoOpenPdf = intent.getBooleanExtra("pdf", false); vm.showDemo() }
+        if (demoAllowed && intent.getBooleanExtra("demo", false)) { vm.demoOpenPdf = intent.getBooleanExtra("pdf", false); vm.showDemo() }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         enableEdgeToEdge()
         // Personal data must not end up in screenshots or the recent-apps preview (demo mode excepted).
-        val demo = intent?.getBooleanExtra("demo", false) == true
+        val demo = demoAllowed && intent?.getBooleanExtra("demo", false) == true
+        // a printout saved for sharing in an earlier session must not stay in the cache
+        java.io.File(cacheDir, "exports").listFiles()?.forEach { it.delete() }
         if (!demo) window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
         nfc = NfcAdapter.getDefaultAdapter(this)
 

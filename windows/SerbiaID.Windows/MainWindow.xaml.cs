@@ -822,7 +822,7 @@ public partial class MainWindow : Window
         try
         {
             var path = await Updater.DownloadAsync(_update);
-            Updater.RunInstaller(path);
+            Updater.RunInstaller(path, _update.Sha256);
             Application.Current.Shutdown();
         }
         catch (Exception ex)

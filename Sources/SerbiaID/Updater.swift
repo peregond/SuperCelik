@@ -59,8 +59,9 @@ enum Updater {
         guard let a = assets.first(where: { ($0["name"] as? String)?.hasSuffix(assetSuffix) == true }),
               let s = a["browser_download_url"] as? String, let assetURL = URL(string: s), trusted(assetURL),
               let page = (json["html_url"] as? String).flatMap(URL.init(string:)) else { return (nil, true) }
-        var sha: String?
-        if let d = a["digest"] as? String, d.hasPrefix("sha256:") { sha = String(d.dropFirst(7)) }
+        // no published SHA-256 = nothing to check the download against: such a release is not installed automatically
+        guard let d = a["digest"] as? String, d.hasPrefix("sha256:"), d.count == 7 + 64 else { return (nil, true) }
+        let sha: String? = String(d.dropFirst(7))
         return (UpdateInfo(version: remote.map(String.init).joined(separator: "."),
                            assetURL: assetURL, sha256: sha, pageURL: page), true)
     }
@@ -86,9 +87,9 @@ enum Updater {
         try? FileManager.default.removeItem(at: dmg)
         try FileManager.default.moveItem(at: tmp, to: dmg)
 
-        if let want = info.sha256 {
-            let got = SHA256.hash(data: try Data(contentsOf: dmg)).map { String(format: "%02x", $0) }.joined()
-            guard got.lowercased() == want.lowercased() else { try? FileManager.default.removeItem(at: dmg); throw UpdateError.checksum }
+        let got = SHA256.hash(data: try Data(contentsOf: dmg)).map { String(format: "%02x", $0) }.joined()
+        guard let want = info.sha256, got.lowercased() == want.lowercased() else {
+            try? FileManager.default.removeItem(at: dmg); throw UpdateError.checksum
         }
 
         let app = Bundle.main.bundleURL
