@@ -75,7 +75,8 @@ public static class Updater
             }
             break;
         }
-        return (info.AssetUrl.Length > 0 && TrustedHost(info.AssetUrl) ? info : null, true);
+        // no published SHA-256 = nothing to check the download against: such a release is not installed automatically
+        return (info.AssetUrl.Length > 0 && TrustedHost(info.AssetUrl) && info.Sha256.Length == 64 ? info : null, true);
     }
 
     /// Downloads the installer to a temp folder and verifies its hash. Returns the file path.
@@ -90,19 +91,20 @@ public static class Updater
         http.DefaultRequestHeaders.UserAgent.ParseAdd("SuperCelik-updater");
         var bytes = await http.GetByteArrayAsync(info.AssetUrl);
 
-        if (info.Sha256.Length > 0)
-        {
-            var hash = Convert.ToHexString(SHA256.HashData(bytes));
-            if (!hash.Equals(info.Sha256, StringComparison.OrdinalIgnoreCase))
-                throw new InvalidOperationException("Checksum mismatch: download rejected");
-        }
+        if (info.Sha256.Length != 64 || !Convert.ToHexString(SHA256.HashData(bytes)).Equals(info.Sha256, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("Checksum mismatch: download rejected");
         await File.WriteAllBytesAsync(path, bytes);
         return path;
     }
 
     /// Starts the Inno Setup installer silently (it closes and restarts the app itself).
-    public static void RunInstaller(string path)
+    public static void RunInstaller(string path, string sha256)
     {
+        // The installer runs elevated. Keep the file open without write sharing from the check to the start, and
+        // check the hash again on that handle, so nothing can swap the file in the temp folder in between.
+        using var locked = new FileStream(path, FileMode.Open, FileAccess.Read, FileShare.Read);
+        if (!Convert.ToHexString(SHA256.HashData(locked)).Equals(sha256, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidOperationException("Checksum mismatch: installer not started");
         var lang = Loc.Current switch { Lang.ru => "russian", Lang.sr or Lang.srCyrl => "serbian", _ => "english" };
         // the installer relaunches the app itself after a silent install (see installer.iss)
         Process.Start(new ProcessStartInfo(path, $"/SILENT /CLOSEAPPLICATIONS /LANG={lang}") { UseShellExecute = true });
