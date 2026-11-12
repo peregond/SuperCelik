@@ -25,6 +25,7 @@ struct ReaderMascot: View {
     @State private var scan = false
     @State private var bounce = false
     @State private var shakes: CGFloat = 0
+    @State private var wave: Double = 0
 
     private var tint: Color {
         switch mood {
@@ -57,6 +58,29 @@ struct ReaderMascot: View {
         }
     }
 
+    /// Cartoon eye: white with an outline and a pupil that follows the gaze; the lid squeezes it when blinking.
+    private func eye(_ x: CGFloat, _ side: CGFloat) -> some View {
+        ZStack {
+            Ellipse().fill(Color.white)
+            Ellipse().strokeBorder(ink, lineWidth: 2)
+            Circle().fill(Color(white: 0.12)).frame(width: 6.4, height: 6.4)
+                .offset(x: -side * 1.2 + gaze.width * 0.8, y: 1 + gaze.height * 0.8)
+        }
+        .frame(width: 12.5, height: 15)
+        .scaleEffect(CGSize(width: 1, height: eyeOpen), anchor: .center)
+        .position(x: x, y: 59)
+    }
+
+    private func hand(_ x: CGFloat, _ y: CGFloat) -> some View {
+        let inner: CGFloat = x < 50 ? 16 : 84
+        return ZStack {
+            Path { p in p.move(to: CGPoint(x: inner, y: 66)); p.addLine(to: CGPoint(x: x, y: y)) }
+                .stroke(ink, style: StrokeStyle(lineWidth: 2.6, lineCap: .round))
+            Circle().fill(Color.white).overlay(Circle().strokeBorder(ink, lineWidth: 2.4))
+                .frame(width: 10, height: 10).position(x: x, y: y)
+        }
+    }
+
     private var ink: Color { Color.primary.opacity(0.85) }
     private var animates: Bool { !reduceMotion && activeState != .inactive }
 
@@ -79,15 +103,18 @@ struct ReaderMascot: View {
                 .fill(Color(nsColor: .windowBackgroundColor))
                 .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).fill(tint.opacity(0.14)))
                 .overlay(RoundedRectangle(cornerRadius: 18, style: .continuous).strokeBorder(tint, lineWidth: 4))
-                .frame(width: 76, height: 60)
+                .frame(width: 68, height: 60)
                 .position(x: 50, y: 62)
             Capsule().fill(tint.opacity(0.55)).frame(width: 50, height: 4).position(x: 50, y: 39)
 
+            // little gloved hands; the left one waves when a card goes in
+            hand(8.5, 64).rotationEffect(.degrees(wave), anchor: UnitPoint(x: 0.16, y: 0.67))
+            hand(91.5, 64)
+
             // face
-            Ellipse().fill(ink).frame(width: 10, height: 12 * eyeOpen).position(x: 38 + gaze.width, y: 60 + gaze.height)
-            Ellipse().fill(ink).frame(width: 10, height: 12 * eyeOpen).position(x: 62 + gaze.width, y: 60 + gaze.height)
-            Circle().fill(Color.pink.opacity(0.4)).frame(width: 12, height: 12).position(x: 27, y: 71).opacity(mood == .ready ? 1 : 0)
-            Circle().fill(Color.pink.opacity(0.4)).frame(width: 12, height: 12).position(x: 73, y: 71).opacity(mood == .ready ? 1 : 0)
+            eye(37.5, 1); eye(62.5, -1)
+            Circle().fill(Color.pink.opacity(0.4)).frame(width: 12, height: 12).position(x: 29, y: 71).opacity(mood == .ready ? 1 : 0)
+            Circle().fill(Color.pink.opacity(0.4)).frame(width: 12, height: 12).position(x: 71, y: 71).opacity(mood == .ready ? 1 : 0)
             MascotMouth(curve: smile).stroke(ink, style: StrokeStyle(lineWidth: 3.5, lineCap: .round))
         }
         .frame(width: 100, height: 100)
@@ -125,6 +152,14 @@ struct ReaderMascot: View {
                 withAnimation(.spring(response: 0.4, dampingFraction: 0.55)) { bounce = false }
             }
         }
+        if mood == .ready {
+            Task { @MainActor in
+                for a in [-18.0, 6, -18, 6, 0] {
+                    withAnimation(.easeInOut(duration: 0.16)) { wave = a }
+                    try? await Task.sleep(nanoseconds: 160_000_000)
+                }
+            }
+        }
         if mood == .error { withAnimation(.linear(duration: 0.45)) { shakes += 1 } }
     }
 }
@@ -146,7 +181,7 @@ private struct MascotMouth: Shape {
 }
 
 /// A short horizontal shake (three swings), used once when something fails.
-private struct MascotShake: GeometryEffect {
+struct MascotShake: GeometryEffect {
     var animatableData: CGFloat
     func effectValue(size: CGSize) -> ProjectionTransform {
         ProjectionTransform(CGAffineTransform(translationX: 4 * sin(animatableData * .pi * 6), y: 0))

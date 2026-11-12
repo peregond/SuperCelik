@@ -1,4 +1,4 @@
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Media;
 using System.Windows.Media.Animation;
@@ -69,6 +69,7 @@ public sealed class ReaderMascot : Viewbox
     private readonly Ellipse _cheekL, _cheekR;
     private readonly QuadraticBezierSegment _mouth;
     private readonly TranslateTransform _cardMove = new(0, -16), _gaze = new(), _shake = new();
+    private readonly RotateTransform _wave = new(0, 16, 66);
     private readonly ScaleTransform _lids = new(1, 1), _bounce = new(1, 1);
     private readonly DispatcherTimer _blink = new();
     private readonly Random _rnd = new();
@@ -93,21 +94,27 @@ public sealed class ReaderMascot : Viewbox
         Place(c, _card, 28, 8);
 
         _tint = new Border { CornerRadius = new CornerRadius(14), Opacity = 0.13 };
-        _body = new Border { Width = 76, Height = 60, CornerRadius = new CornerRadius(18), BorderThickness = new Thickness(4), Child = _tint };
+        _body = new Border { Width = 68, Height = 60, CornerRadius = new CornerRadius(18), BorderThickness = new Thickness(4), Child = _tint };
         _body.SetResourceReference(Border.BackgroundProperty, "SurfaceBrush");
-        Place(c, _body, 12, 32);
+        Place(c, _body, 16, 32);
 
         _slot = new Border { Width = 50, Height = 4, CornerRadius = new CornerRadius(2), Opacity = 0.55 };
         Place(c, _slot, 25, 37);
 
-        Place(c, Eye(), 33, 54);
-        Place(c, Eye(), 57, 54);
+        // little gloved hands; the left one waves when a card goes in
+        var hands = new Canvas { Width = 100, Height = 100 };
+        hands.Children.Add(Hand(16, 66, 8.5, 64, _wave));
+        hands.Children.Add(Hand(84, 66, 91.5, 64, null));
+        c.Children.Add(hands);
+
+        Place(c, Eye(1), 31.25, 51.5);
+        Place(c, Eye(-1), 56.25, 51.5);
 
         var pink = new SolidColorBrush(Color.FromRgb(0xF2, 0x8B, 0x9B));
         _cheekL = new Ellipse { Width = 12, Height = 12, Fill = pink, Opacity = 0 };
         _cheekR = new Ellipse { Width = 12, Height = 12, Fill = pink, Opacity = 0 };
-        Place(c, _cheekL, 21, 65);
-        Place(c, _cheekR, 67, 65);
+        Place(c, _cheekL, 23, 65);
+        Place(c, _cheekR, 65, 65);
 
         _mouth = new QuadraticBezierSegment(new Point(50, 79), new Point(59, 77), true);
         var figure = new PathFigure { StartPoint = new Point(41, 77), IsClosed = false, IsFilled = false };
@@ -130,12 +137,32 @@ public sealed class ReaderMascot : Viewbox
         Canvas.SetLeft(el, left); Canvas.SetTop(el, top); c.Children.Add(el);
     }
 
-    private Ellipse Eye()
+    /// Cartoon eye: white with an outline and a pupil that follows the gaze; the lid squeezes it when blinking.
+    private Grid Eye(double side)
     {
-        var e = new Ellipse { Width = 10, Height = 12, RenderTransformOrigin = new Point(0.5, 0.5) };
-        e.RenderTransform = new TransformGroup { Children = { _lids, _gaze } };
-        e.SetResourceReference(Shape.FillProperty, "TextBrush");
-        return e;
+        var g = new Grid { Width = 12.5, Height = 15, RenderTransformOrigin = new Point(0.5, 0.5), RenderTransform = _lids };
+        var white = new Ellipse { Fill = Brushes.White, StrokeThickness = 2 };
+        white.SetResourceReference(Shape.StrokeProperty, "TextBrush");
+        g.Children.Add(white);
+        g.Children.Add(new Ellipse
+        {
+            Width = 6.4, Height = 6.4, Fill = new SolidColorBrush(Color.FromRgb(0x1F, 0x1F, 0x1F)),
+            RenderTransform = new TransformGroup { Children = { new TranslateTransform(-side * 1.2, 1), _gaze } },
+        });
+        return g;
+    }
+
+    private static UIElement Hand(double x1, double y1, double x, double y, RotateTransform wave)
+    {
+        var g = new Canvas { Width = 100, Height = 100 };
+        var arm = new System.Windows.Shapes.Path { Data = Geometry.Parse(FormattableString.Invariant($"M{x1},{y1} L{x},{y}")), StrokeThickness = 2.6, StrokeStartLineCap = PenLineCap.Round, StrokeEndLineCap = PenLineCap.Round };
+        arm.SetResourceReference(Shape.StrokeProperty, "TextBrush");
+        var glove = new Ellipse { Width = 10, Height = 10, Fill = Brushes.White, StrokeThickness = 2.4 };
+        glove.SetResourceReference(Shape.StrokeProperty, "TextBrush");
+        Canvas.SetLeft(glove, x - 5); Canvas.SetTop(glove, y - 5);
+        g.Children.Add(arm); g.Children.Add(glove);
+        if (wave != null) g.RenderTransform = wave;
+        return g;
     }
 
     /// Sets the state; the face animates to it.
@@ -193,6 +220,11 @@ public sealed class ReaderMascot : Viewbox
             hop.KeyFrames.Add(new EasingDoubleKeyFrame(1, KeyTime.FromPercent(1), new CubicEase { EasingMode = EasingMode.EaseInOut }));
             _bounce.BeginAnimation(ScaleTransform.ScaleXProperty, hop);
             _bounce.BeginAnimation(ScaleTransform.ScaleYProperty, hop);
+            var wave = new DoubleAnimationUsingKeyFrames { Duration = TimeSpan.FromMilliseconds(800) };
+            double[] angles = { -18, 6, -18, 6, 0 };
+            for (int i = 0; i < angles.Length; i++)
+                wave.KeyFrames.Add(new EasingDoubleKeyFrame(angles[i], KeyTime.FromPercent((i + 1) / (double)angles.Length), new SineEase { EasingMode = EasingMode.EaseInOut }));
+            _wave.BeginAnimation(RotateTransform.AngleProperty, wave);
         }
         else if (_mood == ReaderMood.Error)
         {
