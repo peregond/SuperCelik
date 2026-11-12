@@ -81,6 +81,9 @@ h1{font-size:var(--h1);line-height:1.05;letter-spacing:-.04em;margin:0 auto 18px
 @keyframes fly{0%{opacity:0;transform:translateY(115%) rotate(var(--r,0deg)) scale(.94)}35%{opacity:1}100%{opacity:1;transform:none}}
 .phone{border-radius:11% / 5%;overflow:hidden;border:6px solid #0a1220;background:#0a1220;box-shadow:0 0 0 1.5px rgba(255,255,255,.2),0 40px 70px -20px rgba(0,0,0,.65),0 0 80px -20px rgba(255,110,120,.35)}
 .phone img{display:block;width:100%;height:auto;border-radius:9% / 4.2%}
+/* Android screenshots keep the clock close to the left edge: a smaller corner radius so the frame does not clip it */
+.phone.and{border-radius:7% / 3.2%}
+.phone.and img{border-radius:5% / 2.3%}
 /* compact download buttons floating at the bottom of the first screen */
 .dl-float{position:absolute;left:0;right:0;margin:0 auto;width:min(980px,94%);top:calc(100vh - 112px);top:calc(100svh - 112px);z-index:5}
 .dl-bar{display:flex;justify-content:center;gap:clamp(12px,2.2vw,30px)}
@@ -221,7 +224,7 @@ footer a{color:#a9c3e6}
   </div>
   <div class="stage" id="stage">
     <div class="dev mac"><div class="fly" style="--d:.55s"><img src="img/shot-mac.webp" alt="Super Celik на macOS" width="1024" height="674"></div></div>
-    <div class="dev p-and"><div class="phone fly" style="--d:.85s;--r:-7deg"><img src="img/shot-android.webp" alt="Super Celik на Android" width="560" height="1244"></div></div>
+    <div class="dev p-and"><div class="phone and fly" style="--d:.85s;--r:-7deg"><img src="img/shot-android.webp" alt="Super Celik на Android" width="560" height="1244"></div></div>
     <div class="dev p-ios"><div class="phone fly" style="--d:1.05s;--r:7deg"><img src="img/shot-iphone.webp" alt="Super Celik на iPhone" width="560" height="1218"></div></div>
   </div>
   <div class="dl-float" id="download">
@@ -270,7 +273,7 @@ footer a{color:#a9c3e6}
   <div class="panel on" id="d-mac"><div class="pair"><div class="mac"><img src="img/shot-mac.webp" alt="Super Celik на macOS: данные карты" loading="lazy" width="1024" height="674"></div><div class="mac"><img src="img/shot-mac-token.webp" alt="Super Celik на macOS: токен и сертификаты" loading="lazy" width="1024" height="674"></div></div><p class="cap" data-i18n="dv_win">Данные карты, токен и сертификаты</p></div>
   <div class="panel" id="d-win"><div class="pair"><div class="win"><img src="img/shot-win.webp" alt="Super Celik на Windows: данные" loading="lazy" width="1024" height="674"></div><div class="win"><img src="img/shot-win-token.webp" alt="Super Celik на Windows: токен и сертификаты" loading="lazy" width="1024" height="674"></div></div><p class="cap" data-i18n="dv_win">Данные карты, токен и сертификаты</p></div>
   <div class="panel" id="d-ios"><div class="pair ph2"><div class="phone"><img src="img/shot-iphone.webp" alt="Super Celik на iPhone, светлая тема" loading="lazy" width="560" height="1218"></div><div class="phone"><img src="img/shot-iphone-dark.webp" alt="Super Celik на iPhone, тёмная тема" loading="lazy" width="560" height="1218"></div></div><p class="cap" data-i18n="dv_ios">Светлая и тёмная тема. Чтение по NFC</p></div>
-  <div class="panel" id="d-android"><div class="pair ph2"><div class="phone"><img src="img/shot-android.webp" alt="Super Celik на Android: карточка" loading="lazy" width="560" height="1218"></div><div class="phone"><img src="img/shot-android-token.webp" alt="Super Celik на Android: токен, PIN и подпись" loading="lazy" width="560" height="1218"></div></div><p class="cap" data-i18n="dv_and">Карточка, токен, смена PIN и подпись файлов</p></div>
+  <div class="panel" id="d-android"><div class="pair ph2"><div class="phone and"><img src="img/shot-android.webp" alt="Super Celik на Android: карточка" loading="lazy" width="560" height="1218"></div><div class="phone and"><img src="img/shot-android-token.webp" alt="Super Celik на Android: токен, PIN и подпись" loading="lazy" width="560" height="1218"></div></div><p class="cap" data-i18n="dv_and">Карточка, токен, смена PIN и подпись файлов</p></div>
 
   <p class="demo" data-i18n="sc_demo">На скриншотах демо-режим с вымышленными данными.</p>
 </div></section>
