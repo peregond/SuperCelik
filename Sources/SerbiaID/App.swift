@@ -5,6 +5,7 @@ struct SerbiaIDApp: App {
     @StateObject private var loc = Loc.shared
     @StateObject private var prefs = Prefs.shared
     @StateObject private var model = AppModel()
+    @NSApplicationDelegateAdaptor(ShotDelegate.self) private var shotDelegate
 
     var body: some Scene {
         WindowGroup {

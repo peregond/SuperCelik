@@ -69,10 +69,22 @@ struct CopyButton: View {
             done = true
             DispatchQueue.main.asyncAfter(deadline: .now() + 1) { done = false }
         } label: {
-            Image(systemName: done ? "checkmark" : "doc.on.doc").frame(width: 18, height: 18)
+            Image(systemName: done ? "checkmark" : "doc.on.doc").symbolReplace().frame(width: 18, height: 18)
         }
         .buttonStyle(.plain).foregroundStyle(done ? Color.green : Color.secondary).help(loc.t(.copy))
     }
+}
+
+extension View {
+    /// SF Symbol swaps (copy -> check, eye -> crossed eye) morph on macOS 14+, and simply switch before.
+    @ViewBuilder func symbolReplace() -> some View {
+        if #available(macOS 14.0, *) { self.contentTransition(.symbolEffect(.replace)) } else { self }
+    }
+}
+
+extension AnyTransition {
+    /// Result pills pop in.
+    static var pop: AnyTransition { .scale(scale: 0.8).combined(with: .opacity) }
 }
 
 /// Centered placeholder for a page that has nothing to show yet.
@@ -141,6 +153,7 @@ struct ContentView: View {
             VStack(spacing: 0) {
                 updateBanner
                 problemBanner
+                    .animation(.easeInOut(duration: 0.22), value: model.problem == nil)
                 Group {
                     switch page {
                     case .personal: PersonalView()
@@ -159,7 +172,7 @@ struct ContentView: View {
         #if !APPSTORE
         .task { if prefs.autoUpdate { await model.checkUpdates(manual: false) } }
         #endif
-        .task { await Shot.runIfRequested(setPage: { pageRaw = $0 }) }
+        .onAppear { if let p = Shot.page { pageRaw = p } }
     }
 
     private var sidebar: some View {
@@ -174,41 +187,28 @@ struct ContentView: View {
             }
         }
         .listStyle(.sidebar)
-        .safeAreaInset(edge: .top, spacing: 0) {
-            HStack(spacing: 10) {
-                Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 36, height: 36)
-                VStack(alignment: .leading, spacing: 1) {
-                    Text(loc.t(.appTitle)).font(.headline)
-                    Text(loc.t(.brandSub)).font(.caption2).foregroundStyle(.secondary)
-                        .lineLimit(2).fixedSize(horizontal: false, vertical: true)
-                }
-                Spacer(minLength: 0)
-            }
-            .padding(.horizontal, 14).padding(.top, 6).padding(.bottom, 8)
-        }
-        .safeAreaInset(edge: .bottom, spacing: 0) { readerPanel }
+        .safeAreaInset(edge: .top, spacing: 0) { brandHeader }
+        .safeAreaInset(edge: .bottom, spacing: 0) { readerRow }
     }
 
-    /// Reader and card status, always visible at the bottom of the sidebar.
-    private var readerPanel: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            HStack(spacing: 8) {
-                Group {
-                    if model.busy {
-                        ProgressView().controlSize(.small)
-                    } else {
-                        Image(systemName: model.cardPresent ? "checkmark.circle.fill" : "xmark.circle")
-                            .foregroundStyle(model.cardPresent ? Color.green : Color.secondary)
-                    }
-                }
-                .frame(width: 18, height: 18)
-                Text(model.cardPresent ? loc.t(.cardPresent) : loc.t(.noCard))
-                    .font(.callout.weight(.medium))
+    /// Logo and name at the top of the sidebar. The status (the reader's face) lives in the middle of the window.
+    private var brandHeader: some View {
+        HStack(spacing: 10) {
+            Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 36, height: 36)
+            VStack(alignment: .leading, spacing: 1) {
+                Text(loc.t(.appTitle)).font(.headline)
+                Text(loc.t(.brandSub)).font(.caption2).foregroundStyle(.secondary)
                     .lineLimit(2).fixedSize(horizontal: false, vertical: true)
-                Spacer(minLength: 0)
-                Button { model.refresh() } label: { Image(systemName: "arrow.clockwise") }
-                    .buttonStyle(.borderless).help(loc.t(.refresh))
             }
+            Spacer(minLength: 0)
+        }
+        .padding(.horizontal, 14).padding(.top, 6).padding(.bottom, 8)
+    }
+
+    /// The reader itself at the bottom of the sidebar: its name (or a picker when there are several) and refresh.
+    private var readerRow: some View {
+        HStack(spacing: 8) {
+            Image(systemName: "creditcard.and.123").foregroundStyle(.secondary)
             if model.readers.count > 1 {
                 Picker(loc.t(.reader), selection: $model.selectedReader) {
                     ForEach(model.readers, id: \.self) { Text($0).tag($0) }
@@ -217,13 +217,16 @@ struct ContentView: View {
             } else {
                 Text(model.readers.first ?? loc.t(.noReader))
                     .font(.caption).foregroundStyle(.secondary)
-                    .lineLimit(2).truncationMode(.middle).fixedSize(horizontal: false, vertical: true)
+                    .lineLimit(1).truncationMode(.middle)
             }
+            Spacer(minLength: 0)
+            Button { model.refresh() } label: { Image(systemName: "arrow.clockwise") }
+                .buttonStyle(.borderless).help(loc.t(.refresh))
         }
-        .padding(12)
+        .padding(10)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(RoundedRectangle(cornerRadius: 12, style: .continuous).fill(Color.primary.opacity(0.06)))
-        .padding(10)
+        .padding(.horizontal, 10).padding(.top, 4).padding(.bottom, 8)
     }
 
     @ViewBuilder private var updateBanner: some View {
@@ -263,6 +266,7 @@ struct ContentView: View {
                         .buttonStyle(.borderless).help(loc.t(.close))
                 }
             }
+            .transition(.move(edge: .top).combined(with: .opacity))
         }
     }
 }
@@ -275,7 +279,7 @@ struct PersonalView: View {
     @EnvironmentObject var prefs: Prefs
 
     var body: some View {
-        Group {
+        ZStack {
             if let p = model.personal {
                 ScrollView {
                     summary(p)
@@ -283,23 +287,48 @@ struct PersonalView: View {
                     .frame(maxWidth: 920)
                     .frame(maxWidth: .infinity)
                 }
+                .transition(.opacity.combined(with: .scale(scale: 0.985)))
             } else {
-                EmptyState(systemImage: "person.text.rectangle",
-                           title: model.cardPresent ? loc.t(.cardPresent)
-                                                    : (model.readers.isEmpty ? loc.t(.noReader) : loc.t(.noCard)),
-                           message: loc.t(.hintRead)) {
-                    VStack(spacing: 12) {
-                        Button { Task { await model.readCard() } } label: {
-                            Label(loc.t(.readCard), systemImage: "person.text.rectangle").fontWeight(.semibold)
-                        }
-                        .buttonStyle(.borderedProminent).controlSize(.large)
-                        .disabled(!model.cardPresent || model.busy)
-                        sigPill
-                    }
-                }
+                emptyState.transition(.opacity)
             }
         }
+        .animation(.easeInOut(duration: 0.25), value: model.personal != nil)
         .toolbar { actions }
+    }
+
+    /// Nothing read yet: the reader's face says what is going on, the text says what to do next.
+    /// (The status itself is in the sidebar, so it is not repeated here.)
+    private var emptyState: some View {
+        let mood = model.readerMood
+        let title: Loc.L, hint: Loc.L?
+        switch mood {
+        case .busy: title = .statusReading; hint = nil
+        case .noReader: title = .emptyNoReaderT; hint = .emptyNoReaderH
+        case .waiting: title = .emptyNoCardT; hint = .emptyNoCardH
+        case .ready, .error: title = model.cardPresent ? .emptyReadyT : .emptyNoCardT
+                             hint = model.cardPresent ? .emptyReadyH : .emptyNoCardH
+        }
+        return VStack(spacing: 14) {
+            ReaderMascot(mood: mood, card: model.cardPresent, size: 132)
+            Text(loc.t(title)).font(.title2.weight(.semibold)).multilineTextAlignment(.center)
+                .contentTransition(.opacity)
+            if let hint {
+                Text(loc.t(hint)).foregroundStyle(.secondary).multilineTextAlignment(.center).frame(maxWidth: 420)
+                    .contentTransition(.opacity)
+            }
+            if model.cardPresent && !model.busy {
+                Button { Task { await model.readCard() } } label: {
+                    Label(loc.t(.readCard), systemImage: "person.text.rectangle").fontWeight(.semibold)
+                }
+                .buttonStyle(.borderedProminent).controlSize(.large).padding(.top, 6)
+                .transition(.scale(scale: 0.9).combined(with: .opacity))
+            }
+            sigPill
+        }
+        .padding(32)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .animation(.easeInOut(duration: 0.25), value: mood)
+        .animation(.easeInOut(duration: 0.25), value: model.cardPresent)
     }
 
     // The system toolbar never truncates or wraps: actions that do not fit move into its own overflow menu.
@@ -320,6 +349,7 @@ struct PersonalView: View {
                 Button { model.revealAll.toggle() } label: {
                     Label(model.revealAll ? loc.t(.hideValue) : loc.t(.reveal),
                           systemImage: model.revealAll ? "eye.slash" : "eye")
+                        .symbolReplace()
                 }
                 .disabled(model.personal == nil)
                 .help(model.revealAll ? loc.t(.hideValue) : loc.t(.reveal))
@@ -332,11 +362,14 @@ struct PersonalView: View {
             .disabled(model.personal == nil).help(loc.t(.more))
         }
         ToolbarItem(placement: .primaryAction) {
-            Button { Task { await model.readCard() } } label: {
-                Label(loc.t(.readCard), systemImage: "person.text.rectangle")
+            // while nothing is read, the empty state has the one Read button
+            if model.personal != nil {
+                Button { Task { await model.readCard() } } label: {
+                    Label(loc.t(.readCard), systemImage: "person.text.rectangle")
+                }
+                .labelStyle(.titleAndIcon).buttonStyle(.borderedProminent)
+                .disabled(!model.cardPresent || model.busy).help(loc.t(.readCard))
             }
-            .labelStyle(.titleAndIcon).buttonStyle(.borderedProminent)
-            .disabled(!model.cardPresent || model.busy).help(loc.t(.readCard))
         }
     }
 
@@ -358,6 +391,7 @@ struct PersonalView: View {
                         }
                         sigPill
                     }
+                    .animation(.spring(response: 0.35, dampingFraction: 0.7), value: sigKey)
                     Divider()
                     FieldGrid(rows: p.rows())
                 }
@@ -366,11 +400,22 @@ struct PersonalView: View {
         }
     }
 
+    /// Changes whenever the signature result changes (the status itself is not Equatable).
+    private var sigKey: Int {
+        switch model.signatureStatus {
+        case nil: return 0
+        case .ok: return 1
+        case .chainNotTrusted: return 2
+        case .invalid: return 3
+        case .unavailable: return 4
+        }
+    }
+
     @ViewBuilder private var sigPill: some View {
         switch model.signatureStatus {
-        case .ok: Pill(text: loc.t(.sigOk), color: .green, icon: "checkmark.seal.fill")
-        case .chainNotTrusted: Pill(text: loc.t(.sigChain), color: .orange, icon: "exclamationmark.triangle.fill")
-        case .invalid: Pill(text: loc.t(.sigBad), color: .red, icon: "xmark.seal.fill")
+        case .ok: Pill(text: loc.t(.sigOk), color: .green, icon: "checkmark.seal.fill").transition(.pop)
+        case .chainNotTrusted: Pill(text: loc.t(.sigChain), color: .orange, icon: "exclamationmark.triangle.fill").transition(.pop)
+        case .invalid: Pill(text: loc.t(.sigBad), color: .red, icon: "xmark.seal.fill").transition(.pop)
         case .unavailable: Text(loc.t(.notImplemented)).font(.caption).foregroundStyle(.secondary)
         case nil: EmptyView()
         }
@@ -430,12 +475,18 @@ struct FieldCell: View {
                     .font(.body.weight(.medium))
                     .textSelection(.enabled)
                     .fixedSize(horizontal: false, vertical: true)
+                    .contentTransition(.opacity)
+                    .animation(.easeInOut(duration: 0.2), value: hidden)
             }
             Spacer(minLength: 4)
             CopyButton(value: row.value).opacity(hovering ? 1 : 0)
         }
+        .padding(.horizontal, 6).padding(.vertical, 4)
+        .background(RoundedRectangle(cornerRadius: 8, style: .continuous).fill(Color.primary.opacity(hovering ? 0.05 : 0)))
+        .padding(.horizontal, -6).padding(.vertical, -4)
         .contentShape(Rectangle())
         .onHover { hovering = $0 }
+        .animation(.easeInOut(duration: 0.15), value: hovering)
     }
 }
 
@@ -476,9 +527,13 @@ struct TokenView: View {
                 }
             }
         }
+        .animation(.easeInOut(duration: 0.25), value: model.tokenRows.isEmpty)
         .toolbar {
             ToolbarItem(placement: .primaryAction) {
-                readButton.labelStyle(.titleAndIcon).help(loc.t(.readToken))
+                // while nothing is read, the empty state has the one Read button
+                if !model.tokenRows.isEmpty {
+                    readButton.labelStyle(.titleAndIcon).help(loc.t(.readToken))
+                }
             }
         }
     }

@@ -12,7 +12,8 @@ public sealed class AppSettings
     public string Theme { get; set; } = "system";    // system / light / dark
     public bool AutoUpdate { get; set; } = true;
     public bool MaskSensitive { get; set; } = true;  // hide JMBG / address / document number behind •••
-    public bool AutoRead { get; set; } = false;      // read the card as soon as it is inserted
+    public bool AutoRead { get; set; } = true;       // read the card as soon as it is inserted
+    public int Version { get; set; }                 // settings schema; 2 = auto-read is on by default
     public bool PrintJmbg { get; set; } = true;      // include the personal number on printouts / PDF
     public int AutoHideMinutes { get; set; } = 3;    // clear data after N idle minutes (0 = never)
     public double WindowWidth { get; set; }
@@ -39,9 +40,18 @@ public sealed class AppSettings
 
     public static AppSettings Load()
     {
-        try { if (File.Exists(PathFile)) return JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(PathFile)) ?? new(); }
+        try
+        {
+            if (File.Exists(PathFile))
+            {
+                var s = JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(PathFile)) ?? new();
+                // the old default was "off", and it sits in every saved file: switch it on once, like on macOS
+                if (s.Version < 2) { s.AutoRead = true; s.Version = 2; }
+                return s;
+            }
+        }
         catch { }
-        return new();
+        return new() { Version = 2 };
     }
 
     public void Save()
