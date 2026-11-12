@@ -164,7 +164,22 @@ section{padding:110px 0}
 @keyframes fade{from{opacity:0;transform:translateY(14px)}}
 .pair{display:grid;grid-template-columns:1fr 1fr;gap:26px;max-width:1040px;margin:0 auto;align-items:center}
 .pair.ph2{grid-template-columns:repeat(2,minmax(0,290px));justify-content:center;gap:40px}
-@media(max-width:760px){.pair{grid-template-columns:1fr}.pair.ph2{grid-template-columns:repeat(2,1fr);gap:16px}}
+/* phones: the screenshots become a swipeable strip instead of a long stack */
+@media(max-width:760px){
+ .seg{display:flex;width:100%;max-width:420px;margin:26px auto 26px;padding:4px;gap:2px}
+ .seg button{flex:1 1 0;min-width:0;padding:9px 2px;font-size:13px;white-space:nowrap}
+ .pair,.pair.ph2{display:flex;grid-template-columns:none;justify-content:flex-start;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;scroll-padding-inline:24px;margin:0 -24px;padding:8px 24px 30px;max-width:none;scrollbar-width:none;-webkit-overflow-scrolling:touch}
+ .pair::-webkit-scrollbar{display:none}
+ .pair>*{flex:0 0 86%;scroll-snap-align:start}
+ .pair.ph2>*{flex:0 0 60%;max-width:260px}
+ /* the app windows have a lot of empty space at the bottom: show the top part, bigger */
+ .pair .mac,.pair .win{border-radius:14px;overflow:hidden;filter:none;border:1px solid var(--line);box-shadow:0 12px 24px -14px rgba(12,64,118,.5)}
+ .pair .phone{box-shadow:0 0 0 1.5px rgba(255,255,255,.2),0 14px 26px -14px rgba(12,64,118,.6)}
+ .pair .mac img,.pair .win img{aspect-ratio:1024/600;object-fit:cover;object-position:top;height:auto}
+ .cap{margin-top:6px}
+}
+@media(max-width:560px){.seg .md{display:none}}
+@media(max-width:720px){section{padding:64px 0}.statement{padding:80px 0 36px}.statement .rail{margin-top:40px}}
 .pair .mac{filter:drop-shadow(0 28px 40px rgba(12,64,118,.35))}
 .pair .mac img,.pair .win img{display:block;width:100%;height:auto}
 .pair .win{border-radius:14px;overflow:hidden;border:1px solid var(--line);box-shadow:0 30px 60px -26px rgba(12,64,118,.55)}
@@ -266,7 +281,7 @@ footer a{color:#a9c3e6}
   <div class="seg" role="tablist">
     <button role="tab" aria-selected="true" data-d="mac">macOS</button>
     <button role="tab" aria-selected="false" data-d="win">Windows</button>
-    <button role="tab" aria-selected="false" data-d="ios">iPhone / iPad</button>
+    <button role="tab" aria-selected="false" data-d="ios">iPhone<span class="md"> / iPad</span></button>
     <button role="tab" aria-selected="false" data-d="android">Android</button>
   </div>
 
