@@ -18,7 +18,7 @@ Kotlin + Jetpack Compose, дизайн Material You (динамические ц
 Собирается в CI и запускается в эмуляторе (демо-данные), но **с настоящей картой на телефоне и с USB-ридером не проверялось**. Как и в версии для Mac, разблокировка по PUK не проверена на карте. Пока нет: печатной формы МУП (как в версии для Mac), только простой PDF.
 
 ## Сборка
-Android Studio (Koala или новее) → открыть папку `android` → Run. Или в командной строке (нужны JDK 17, Android SDK и Gradle 8.9):
+Android Studio (Narwhal или новее) → открыть папку `android` → Run. Или в командной строке (нужны JDK 17, Android SDK 36 и Gradle 8.13+):
 
     gradle -p android assembleDebug
 
