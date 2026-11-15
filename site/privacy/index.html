@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Super Čelik — Политика конфиденциальности / Privacy Policy / Politika privatnosti</title>
+<meta name="description" content="Super Čelik: no accounts, no analytics, no tracking, no server. Card data never leaves your device.">
+<meta property="og:title" content="Super Čelik — Privacy Policy">
+<meta property="og:image" content="/img/icon.png">
+<meta name="theme-color" content="#05162f">
+<link rel="icon" href="/img/favicon.png">
+<style>
+:root{--navy:#061a36;--blue:#0C4076;--sky:#7db7ff;--red:#E23D47;--ink:#0b1b33;--muted:#5a6b85;--bg:#f4f7fc;--card:#fff;--line:#dde5f1;--code:#eaf0fa}
+@media(prefers-color-scheme:dark){:root{--ink:#eaf1fc;--muted:#9db0cb;--bg:#08142a;--card:#0f2040;--line:#1d3359;--code:#162b52}}
+*{box-sizing:border-box}
+body{margin:0;font:17px/1.6 -apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Inter,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit}img{max-width:100%}
+.wrap{max-width:1100px;margin:0 auto;padding:0 24px}
+/* language: a globe that opens on hover */
+.langbox{position:fixed;top:14px;right:16px;z-index:60}
+.globe{width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.22);background:rgba(6,26,54,.55);backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);color:#fff;display:grid;place-items:center;cursor:pointer;transition:background .2s,transform .2s;box-shadow:0 8px 24px -10px rgba(0,0,0,.55)}
+.globe svg{width:22px;height:22px}
+.langbox.open .globe,.globe:focus-visible{background:rgba(255,255,255,.2)}
+.langmenu{position:absolute;right:0;top:100%;padding-top:8px;opacity:0;visibility:hidden;transform:translateY(-6px) scale(.96);transform-origin:top right;transition:opacity .18s,transform .18s,visibility .18s}
+.langmenu .in{display:flex;flex-direction:column;min-width:216px;padding:8px;border-radius:18px;background:rgba(9,30,60,.88);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border:1px solid rgba(255,255,255,.16);box-shadow:0 24px 50px -16px rgba(0,0,0,.6)}
+.langmenu button{display:flex;align-items:center;gap:14px;text-align:left;border:0;background:none;color:#c9dcf5;padding:12px 14px;border-radius:12px;font:600 17px inherit;font-family:inherit;cursor:pointer;transition:background .15s,color .15s}
+.langmenu .fl{width:28px;height:19px;border-radius:4px;flex:none;box-shadow:0 0 0 1px rgba(255,255,255,.28)}
+.langmenu button:hover{background:rgba(255,255,255,.12);color:#fff}
+.langmenu button[aria-pressed=true]{color:#fff}
+.langmenu button[aria-pressed=true]::after{content:"✓";color:#ff8e95;font-weight:800;margin-left:auto;padding-left:10px}
+.langbox.open .langmenu,.langbox:focus-within .langmenu{opacity:1;visibility:visible;transform:none}
+@media(hover:hover){.langbox:hover .langmenu{opacity:1;visibility:visible;transform:none}.globe:hover{background:rgba(255,255,255,.2)}}
+@media(max-width:480px){.langbox{top:10px;right:10px}}
+.top{position:relative;overflow:hidden;color:#fff;padding:30px 0 56px;background:linear-gradient(180deg,#05162f 0%,#08234a 60%,#0a2b55 100%)}
+.top::before,.top::after{content:"";position:absolute;border-radius:50%;pointer-events:none}
+.top::before{width:70vmax;height:70vmax;right:-30vmax;top:-42vmax;background:radial-gradient(closest-side,rgba(190,28,62,.55),rgba(190,28,62,0) 70%)}
+.top::after{width:60vmax;height:60vmax;left:-26vmax;bottom:-46vmax;background:radial-gradient(closest-side,rgba(226,61,71,.5),rgba(226,61,71,0) 70%)}
+.top .wrap{position:relative;z-index:2}
+.brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none;font-weight:800;font-size:20px;letter-spacing:-.02em}
+.brand img{width:40px;height:40px;border-radius:10px}
+h1{font-size:clamp(30px,5vw,54px);line-height:1.08;letter-spacing:-.035em;margin:34px 0 10px;font-weight:800}
+.upd{margin:0;color:#c3d6f1;font-size:15px}
+main{padding:36px 0 72px}
+.doc{max-width:780px;margin:0 auto;background:var(--card);border:1px solid var(--line);border-radius:24px;padding:34px 36px 38px}
+.doc p{margin:0 0 16px}
+.doc ul{margin:0 0 20px;padding-left:22px}
+.doc li{margin:0 0 12px}
+.doc li::marker{color:var(--red)}
+.doc strong{font-weight:700}
+.doc code{font:.88em ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--code);padding:1px 6px;border-radius:6px}
+.doc a{color:var(--blue);text-underline-offset:2px;word-break:break-word}
+@media(prefers-color-scheme:dark){.doc a{color:var(--sky)}}
+.doc .contact{margin:26px 0 0;padding-top:18px;border-top:1px solid var(--line);color:var(--muted)}
+.doc [hidden]{display:none}
+@media(max-width:560px){body{font-size:16px}.wrap{padding:0 16px}.doc{padding:24px 20px 28px;border-radius:20px}.top{padding-bottom:44px}.brand{font-size:18px}}
+footer{background:#041227;color:#8aa3c6;padding:36px 0 56px;font-size:14px}
+footer .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer a{color:#a9c3e6}
+.disc{max-width:640px}
+</style>
+<noscript><style>.doc [hidden]{display:block}</style></noscript>
+</head>
+<body>
+<div class="langbox" id="langbox">
+  <button class="globe" id="globe" type="button" aria-label="Language" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.2"/><path d="M2.8 12h18.4M12 2.8c3.1 3.4 3.1 14 0 18.4M12 2.8c-3.1 3.4-3.1 14 0 18.4"/></svg></button>
+  <div class="langmenu" role="menu"><div class="in">
+    <button type="button" role="menuitem" data-l="ru" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#fff"/><rect y="5.33" width="24" height="5.34" fill="#0039A6"/><rect y="10.67" width="24" height="5.33" fill="#D52B1E"/></svg><span>Русский</span></button>
+    <button type="button" role="menuitem" data-l="en" aria-pressed="false"><svg class="fl" viewBox="0 0 60 40" preserveAspectRatio="none" aria-hidden="true"><rect width="60" height="40" fill="#012169"/><path d="M0 0L60 40M60 0L0 40" stroke="#fff" stroke-width="8"/><path d="M0 0L60 40M60 0L0 40" stroke="#C8102E" stroke-width="3"/><path d="M30 0V40M0 20H60" stroke="#fff" stroke-width="13"/><path d="M30 0V40M0 20H60" stroke="#C8102E" stroke-width="8"/></svg><span>English</span></button>
+    <button type="button" role="menuitem" data-l="sr" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#fff"/><rect width="24" height="5.33" fill="#C6363C"/><rect y="5.33" width="24" height="5.34" fill="#0C4076"/></svg><span>Srpski</span></button>
+    <button type="button" role="menuitem" data-l="sc" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#fff"/><rect width="24" height="5.33" fill="#C6363C"/><rect y="5.33" width="24" height="5.34" fill="#0C4076"/></svg><span>Српски</span></button>
+  </div></div>
+</div>
+
+<header class="top"><div class="wrap">
+  <a class="brand" href="/"><img src="/img/icon.png" alt="" width="40" height="40"><span>Super Čelik</span></a>
+  <h1 id="h1">Политика конфиденциальности</h1>
+  <p class="upd" id="upd">Обновлено: 2026-11-11</p>
+</div></header>
+
+<main><div class="wrap"><article class="doc">
+
+<div lang="en" data-l="en" hidden>
+<p><strong>Super Čelik</strong> reads the data of a Serbian electronic ID card, foreigner ID card or residence permit from your own card,
+on your own device, and shows, prints or exports it for you.</p>
+<ul>
+<li><strong>No data leaves your device.</strong> The app has no accounts, no analytics, no advertising, no tracking and no server of ours.
+Card data (name, personal number, address, photo, certificates) is read into memory, shown on screen and cleared when you
+close the app or after the time you set.</li>
+<li><strong>No network access</strong> is used to read the card. (The Windows/direct-download Mac builds can check GitHub for a new
+version; the App Store builds do not contact any server.)</li>
+<li><strong>Files you create</strong> (a PDF printout, a signature <code>.p7s</code>, an exported certificate) are saved only where you choose or
+shared with the app you pick.</li>
+<li><strong>Permissions</strong>: NFC (iPhone, Android) and smart card reader access are used only to read your card when you ask.
+Android uses USB access only for the reader you connect.</li>
+<li><strong>PIN/PUK</strong> typed in the app are sent only to your card and are never stored or logged.</li>
+<li>The app is an independent implementation and is not affiliated with the Ministry of Interior of the Republic of Serbia (MUP RS) or NetSeT/Veridos.</li>
+</ul>
+<p class="contact">Contact: open an issue at <a href="https://github.com/peregond/SuperCelik/issues">https://github.com/peregond/SuperCelik/issues</a></p>
+</div>
+
+<div lang="ru" data-l="ru" hidden>
+<p><strong>Super Čelik</strong> считывает данные сербской электронной ID-карты, карты иностранца или вида на жительство с вашей карты,
+на вашем устройстве, и показывает, печатает или сохраняет их по вашему запросу.</p>
+<ul>
+<li><strong>Данные не покидают устройство.</strong> Нет аккаунтов, аналитики, рекламы, отслеживания и нашего сервера. Данные карты
+(имя, личный номер, адрес, фото, сертификаты) читаются в память, показываются на экране и стираются при закрытии
+приложения или через заданное вами время.</li>
+<li><strong>Сеть для чтения карты не используется.</strong> (Сборки для Windows и Mac с сайта могут проверять GitHub на новую версию;
+сборки из App Store не обращаются ни к какому серверу.)</li>
+<li><strong>Файлы, которые вы создаёте</strong> (PDF, подпись <code>.p7s</code>, экспорт сертификата), сохраняются только туда, куда вы укажете, или
+передаются выбранному вами приложению.</li>
+<li><strong>Разрешения</strong>: NFC (iPhone, Android) и доступ к считывателю смарт-карт нужны только чтобы прочитать карту по вашей команде.
+USB на Android используется только для подключённого вами ридера.</li>
+<li><strong>PIN/PUK</strong>, введённые в приложении, передаются только карте и нигде не сохраняются и не записываются в журнал.</li>
+<li>Приложение независимое и не связано с МУП РС и NetSeT/Veridos.</li>
+</ul>
+<p class="contact">Связь: <a href="https://github.com/peregond/SuperCelik/issues">https://github.com/peregond/SuperCelik/issues</a></p>
+</div>
+
+<div lang="sr-Latn" data-l="sr" id="sr" hidden>
+<p><strong>Super Čelik</strong> čita podatke srpske elektronske lične karte, lične karte za strance ili boravišne dozvole sa vaše kartice,
+na vašem uređaju, i prikazuje ih, štampa ili čuva po vašem zahtevu.</p>
+<ul>
+<li><strong>Podaci ne napuštaju uređaj.</strong> Nema naloga, analitike, reklama, praćenja ni našeg servera. Podaci sa kartice se čitaju u
+memoriju, prikazuju na ekranu i brišu pri zatvaranju aplikacije ili posle vremena koje podesite.</li>
+<li><strong>Mreža se ne koristi</strong> za čitanje kartice. (Windows i Mac verzije sa sajta mogu da proveravaju GitHub za novu verziju;
+App Store verzije ne kontaktiraju nijedan server.)</li>
+<li><strong>Fajlovi koje napravite</strong> (PDF, potpis <code>.p7s</code>, izvezen sertifikat) čuvaju se samo tamo gde odaberete ili se dele aplikaciji koju izaberete.</li>
+<li><strong>Dozvole</strong>: NFC (iPhone, Android) i pristup čitaču pametnih kartica koriste se samo da pročitaju karticu kada to zatražite.</li>
+<li><strong>PIN/PUK</strong> uneti u aplikaciju šalju se samo kartici i nikada se ne čuvaju niti beleže.</li>
+<li>Aplikacija je nezavisna i nije povezana sa MUP RS niti NetSeT/Veridos.</li>
+</ul>
+<p class="contact">Kontakt: <a href="https://github.com/peregond/SuperCelik/issues">https://github.com/peregond/SuperCelik/issues</a></p>
+</div>
+
+<div lang="sr-Cyrl" data-l="sc" id="sc" hidden></div>
+
+</article></div></main>
+
+<footer><div class="wrap">
+  <div class="disc">Super Čelik — Independent app, not affiliated with MUP RS or NetSeT/Veridos.</div>
+  <div><a href="/">Super Čelik</a> · <a href="https://github.com/peregond/SuperCelik">GitHub</a> · <a href="https://github.com/peregond/SuperCelik/releases">Releases</a></div>
+</div></footer>
+
+<script>
+const LANGS=["ru","en","sr","sc"];
+const TITLE={ru:["Политика конфиденциальности","Обновлено: 2026-11-11"],en:["Privacy Policy","Last updated: 2026-11-11"],sr:["Politika privatnosti","Ažurirano: 2026-11-11"],sc:["Политика приватности","Ажурирано: 2026-11-11"]};
+function detectLang(){
+ const list=(navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language||""]).map(x=>String(x).toLowerCase());
+ for(const l of list){
+  if(l.startsWith("sr")) return /cyrl/.test(l)?"sc":"sr";
+  if(/^(bs|hr|me)\b/.test(l)) return "sr";
+  if(/^(ru|uk|be|kk)\b/.test(l)) return "ru";
+  if(l.startsWith("en")) return "en";
+ }
+ return "en";
+}
+let lang=localStorage.getItem("sc-lang");
+if(!LANGS.includes(lang))lang=detectLang();
+// Latin -> Cyrillic for the Serbian text; brand, technical names and links stay Latin
+const CYR={a:"а",b:"б",v:"в",g:"г",d:"д",đ:"ђ",e:"е",ž:"ж",z:"з",i:"и",j:"ј",k:"к",l:"л",m:"м",n:"н",o:"о",p:"п",r:"р",s:"с",t:"т",ć:"ћ",u:"у",f:"ф",h:"х",c:"ц",č:"ч",š:"ш"};
+function cyr(s){let o="",i=0;
+ while(i<s.length){const c=s[i],d=(c+(s[i+1]||"")).toLowerCase(),up=c!==c.toLowerCase();
+  const di={lj:"љ",nj:"њ",dž:"џ"}[d];
+  if(di){o+=up?di.toUpperCase():di;i+=2;continue}
+  const m=CYR[c.toLowerCase()];
+  if(m){o+=up?m.toUpperCase():m}else o+=c;
+  i++}
+ return o}
+const KEEP=/(^|[^\p{L}\p{N}])(https?:\/\/\S+|Super Čelik|NetSeT\/Veridos|NetSeT|Veridos|App Store|GitHub|iPhone|Android|Windows|Mac|NFC|USB|PDF|\.p7s)/gu;
+function translitText(t){let o="",last=0;
+ for(const m of t.matchAll(KEEP)){o+=cyr(t.slice(last,m.index))+m[1]+m[2];last=m.index+m[0].length}
+ return o+cyr(t.slice(last))}
+function buildCyr(){const sc=document.getElementById("sc");if(sc.firstChild)return;
+ const c=document.getElementById("sr").cloneNode(true);c.removeAttribute("id");
+ const w=document.createTreeWalker(c,NodeFilter.SHOW_TEXT);const nodes=[];while(w.nextNode())nodes.push(w.currentNode);
+ nodes.forEach(n=>{if(!n.parentNode.closest("a"))n.nodeValue=translitText(n.nodeValue)});
+ while(c.firstChild)sc.appendChild(c.firstChild)}
+function setLang(l){lang=l;localStorage.setItem("sc-lang",l);
+ document.documentElement.lang={ru:"ru",en:"en",sr:"sr-Latn",sc:"sr-Cyrl"}[l];
+ if(l==="sc")buildCyr();
+ document.querySelectorAll(".doc>div").forEach(d=>d.hidden=d.dataset.l!==l);
+ document.getElementById("h1").textContent=TITLE[l][0];document.getElementById("upd").textContent=TITLE[l][1];
+ document.title="Super Čelik — "+TITLE[l][0];
+ document.querySelectorAll(".langmenu button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l===l))}
+const lbox=document.getElementById("langbox"),globe=document.getElementById("globe");
+const setOpen=o=>{lbox.classList.toggle("open",o);globe.setAttribute("aria-expanded",o)};
+globe.onclick=e=>{e.stopPropagation();setOpen(!lbox.classList.contains("open"))};
+document.addEventListener("click",e=>{if(!lbox.contains(e.target))setOpen(false)});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){setOpen(false);globe.blur()}});
+document.querySelectorAll(".langmenu button").forEach(b=>b.onclick=()=>{setLang(b.dataset.l);setOpen(false);b.blur();globe.blur()});
+setLang(lang);
+</script>
+</body>
+</html>

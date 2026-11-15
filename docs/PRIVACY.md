@@ -1,3 +1,5 @@
+Актуальная версия: https://celik.peregon.cc/privacy
+
 # Privacy Policy / Политика конфиденциальности / Politika privatnosti
 
 _Last updated / Обновлено / Ažurirano: 2026-11-11_

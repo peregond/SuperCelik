@@ -16,6 +16,6 @@ any MUP RS or NetSeT/Veridos code, logo or trademark. "Super Čelik" is a workin
 **Encryption / export compliance.** The app only verifies digital signatures and hashes (standard OS frameworks);
 `ITSAppUsesNonExemptEncryption` is `false`.
 
-**Privacy.** No data collected (see the privacy policy URL and the privacy manifest in the bundle).
+**Privacy.** No data collected (privacy policy: https://celik.peregon.cc/privacy; see also the privacy manifest in the bundle).
 
 Contact: (fill in your name, phone and e-mail in App Store Connect)
