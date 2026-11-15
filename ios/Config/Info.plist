@@ -5,7 +5,7 @@
 	<key>CFBundleDevelopmentRegion</key>
 	<string>en</string>
 	<key>CFBundleDisplayName</key>
-	<string>Super Celik</string>
+	<string>Super Čelik</string>
 	<key>CFBundleExecutable</key>
 	<string>$(EXECUTABLE_NAME)</string>
 	<key>CFBundleIdentifier</key>
@@ -45,7 +45,7 @@
 		<string>UIInterfaceOrientationLandscapeRight</string>
 	</array>
 	<key>NFCReaderUsageDescription</key>
-	<string>Super Celik reads your Serbian ID card over NFC to show and print its data.</string>
+	<string>Super Čelik reads your Serbian ID card over NFC to show and print its data.</string>
 	<!-- Applets iOS may select on the card. Same AIDs as EidCard.applets / EidCard.tokenAID:
 	     SERID (ID card), SERIF (ID for foreigners), SERRP (residence permit), PKCS#15 token. -->
 	<key>com.apple.developer.nfc.readersession.iso7816.select-identifiers</key>

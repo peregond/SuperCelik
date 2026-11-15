@@ -27,7 +27,7 @@ public static class Loc
     private static readonly Dictionary<string, string[]> Table = new()
     {
         // ru, en, sr
-        ["appTitle"] = new[] { "Super Celik", "Super Celik", "Super Celik" },
+        ["appTitle"] = new[] { "Super Čelik", "Super Čelik", "Super Čelik" },
         ["tabPersonal"] = new[] { "Личные данные", "Personal data", "Lični podaci" },
         ["tabToken"] = new[] { "Токен и сертификаты", "Token & certificates", "Token i sertifikati" },
         ["tabAbout"] = new[] { "О программе", "About", "O programu" },
@@ -101,7 +101,7 @@ public static class Loc
         ["setMask"] = new[] { "Скрывать ЕМБГ, адрес и номер документа", "Hide personal number, address and document number", "Sakrij JMBG, adresu i broj dokumenta" },
         ["setAutoHide"] = new[] { "Скрывать данные при бездействии, минут (0 — никогда)", "Hide data when idle, minutes (0 = never)", "Sakrij podatke pri neaktivnosti, minuta (0 = nikad)" },
         ["setBrowser"] = new[] { "Вход в браузере", "Browser login", "Prijava u pregledaču" },
-        ["driverAsk"] = new[] { "Чтобы входить на eid.gov.rs и другие сайты через Chrome или Edge по сертификату с карты, Windows нужен драйвер карты. Super Celik может установить свой (один раз, нужны права администратора). Установить?", "To sign in to eid.gov.rs and other sites with the card certificate in Chrome or Edge, Windows needs a card driver. Super Celik can install its own (once, administrator rights needed). Install it?", "Za prijavu na eid.gov.rs i druge sajtove sertifikatom sa kartice u Chrome-u ili Edge-u, Windows-u treba drajver kartice. Super Celik može da instalira svoj (jednom, potrebna su administratorska prava). Instalirati?" },
+        ["driverAsk"] = new[] { "Чтобы входить на eid.gov.rs и другие сайты через Chrome или Edge по сертификату с карты, Windows нужен драйвер карты. Super Čelik может установить свой (один раз, нужны права администратора). Установить?", "To sign in to eid.gov.rs and other sites with the card certificate in Chrome or Edge, Windows needs a card driver. Super Čelik can install its own (once, administrator rights needed). Install it?", "Za prijavu na eid.gov.rs i druge sajtove sertifikatom sa kartice u Chrome-u ili Edge-u, Windows-u treba drajver kartice. Super Čelik može da instalira svoj (jednom, potrebna su administratorska prava). Instalirati?" },
         ["driverDone"] = new[] { "Драйвер установлен. Выньте карту и вставьте снова, затем перезапустите браузер.", "The driver is installed. Take the card out and put it in again, then restart the browser.", "Drajver je instaliran. Izvadite karticu i umetnite je ponovo, pa ponovo pokrenite pregledač." },
         ["driverFail"] = new[] { "Не удалось установить драйвер (отказано в правах или файл занят браузером).", "Could not install the driver (permission denied, or the file is in use by a browser).", "Instalacija drajvera nije uspela (odbijena prava ili pregledač koristi fajl)." },
         ["driverNoCard"] = new[] { "Вставьте карту: драйвер регистрируется для её типа.", "Insert the card: the driver is registered for its type.", "Umetnite karticu: drajver se registruje za njen tip." },

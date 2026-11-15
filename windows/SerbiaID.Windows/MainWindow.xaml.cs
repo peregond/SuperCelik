@@ -1237,7 +1237,7 @@ internal sealed class PreviewWindow : Window
     {
         var dlg = new PrintDialog();
         if (dlg.ShowDialog() != true) return;
-        dlg.PrintVisual(PrintSheet.Build(_p, dlg.PrintableAreaWidth, dlg.PrintableAreaHeight, _jmbg), "Super Celik");
+        dlg.PrintVisual(PrintSheet.Build(_p, dlg.PrintableAreaWidth, dlg.PrintableAreaHeight, _jmbg), "Super Čelik");
     }
 
     private void DoPdf()

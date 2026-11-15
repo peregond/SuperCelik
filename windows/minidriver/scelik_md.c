@@ -1,14 +1,14 @@
 /*
- * Super Celik: Windows smart card minidriver for the NetSeT CardEdge applet (PKCS#15 AID A000000063504B43532D3135)
+ * Super Čelik: Windows smart card minidriver for the NetSeT CardEdge applet (PKCS#15 AID A000000063504B43532D3135)
  * found on Serbian ID cards, foreigner ID cards, residence permits and CardEdge USB tokens.
  *
  * Why it exists: Chrome and Edge on Windows take TLS client certificates from the Windows certificate store, and a
  * smart card shows up there only through a card minidriver (the "Microsoft Base Smart Card Crypto Provider" calls it).
- * Without one the card is invisible to the browser ("no certificate" on eid.gov.rs) even though Super Celik reads it.
+ * Without one the card is invisible to the browser ("no certificate" on eid.gov.rs) even though Super Čelik reads it.
  * This is the Windows counterpart of the macOS CryptoTokenKit extension (TokenExtension/TokenDriver.swift) and speaks
  * the same card protocol.
  *
- * The driver is registered for a card's ATR by Super Celik itself (elevated, once; see DriverSetup.cs). On
+ * The driver is registered for a card's ATR by Super Čelik itself (elevated, once; see DriverSetup.cs). On
  * CardAcquireContext it checks that the CardEdge applet answers, so a card with the same ATR but another applet
  * is declined (SCARD_E_UNKNOWN_CARD).
  *
@@ -705,7 +705,7 @@ static DWORD WINAPI MdGetProperty(PCARD_DATA cd, LPCWSTR prop, PBYTE data, DWORD
         pi.PinType = AlphaNumericPinType;
         pi.dwFlags = 0;
         pi.PinPurpose = PrimaryCardPin;
-        pi.dwChangePermission = 0;        /* change the PIN in Super Celik */
+        pi.dwChangePermission = 0;        /* change the PIN in Super Čelik */
         pi.dwUnblockPermission = 0;
         pi.PinCachePolicy.dwVersion = PIN_CACHE_POLICY_CURRENT_VERSION;
         pi.PinCachePolicy.PinCachePolicyType = PinCacheNormal;

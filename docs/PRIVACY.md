@@ -3,7 +3,7 @@
 _Last updated / Обновлено / Ažurirano: 2026-11-11_
 
 ## English
-**Super Celik** reads the data of a Serbian electronic ID card, foreigner ID card or residence permit from your own card,
+**Super Čelik** reads the data of a Serbian electronic ID card, foreigner ID card or residence permit from your own card,
 on your own device, and shows, prints or exports it for you.
 
 - **No data leaves your device.** The app has no accounts, no analytics, no advertising, no tracking and no server of ours.
@@ -21,7 +21,7 @@ on your own device, and shows, prints or exports it for you.
 Contact: open an issue at https://github.com/peregond/SuperCelik/issues
 
 ## Русский
-**Super Celik** считывает данные сербской электронной ID-карты, карты иностранца или вида на жительство с вашей карты,
+**Super Čelik** считывает данные сербской электронной ID-карты, карты иностранца или вида на жительство с вашей карты,
 на вашем устройстве, и показывает, печатает или сохраняет их по вашему запросу.
 
 - **Данные не покидают устройство.** Нет аккаунтов, аналитики, рекламы, отслеживания и нашего сервера. Данные карты
@@ -39,7 +39,7 @@ Contact: open an issue at https://github.com/peregond/SuperCelik/issues
 Связь: https://github.com/peregond/SuperCelik/issues
 
 ## Srpski
-**Super Celik** čita podatke srpske elektronske lične karte, lične karte za strance ili boravišne dozvole sa vaše kartice,
+**Super Čelik** čita podatke srpske elektronske lične karte, lične karte za strance ili boravišne dozvole sa vaše kartice,
 na vašem uređaju, i prikazuje ih, štampa ili čuva po vašem zahtevu.
 
 - **Podaci ne napuštaju uređaj.** Nema naloga, analitike, reklama, praćenja ni našeg servera. Podaci sa kartice se čitaju u

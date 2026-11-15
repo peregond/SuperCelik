@@ -19,7 +19,7 @@ UPPER = {k.upper(): v.upper() for k, v in LOWER.items()}
 DIGRAPHS = {'lj': 'љ', 'nj': 'њ', 'dž': 'џ'}
 ACRONYMS = {'PIN': 'ПИН', 'PUK': 'ПУК', 'JMBG': 'ЈМБГ', 'MUP': 'МУП', 'RS': 'РС'}
 INTERNATIONAL = {'NFC', 'USB', 'PDF', 'CMS', 'OTG', 'CCID', 'ID', 'CA', 'OK', 'APDU', 'SHA', 'RSA', 'SIM', 'UI', 'API'}
-PROTECTED = {'Super', 'Celik', 'SuperCelik', 'Material', 'You', 'Liquid', 'Glass', 'iPhone', 'iPad', 'Mac', 'macOS', 'iOS',
+PROTECTED = {'Super', 'Celik', 'Čelik', 'SuperCelik', 'Material', 'You', 'Liquid', 'Glass', 'iPhone', 'iPad', 'Mac', 'macOS', 'iOS',
              'Windows', 'Android', 'Xcode', 'Apollo', 'NetSeT', 'Veridos', 'CardEdge', 'Chrome', 'Safari', 'Firefox',
              'MFi', 'Quick', 'Look', 'GitHub', 'Wi', 'Fi'}
 WORD = re.compile(r"\w+", re.UNICODE)

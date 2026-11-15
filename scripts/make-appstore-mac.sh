@@ -33,7 +33,7 @@ sed "s/__VERSION__/$VERSION/g" scripts/Info.plist > "$PLIST"
 $PB -c "Set :CFBundleVersion $BUILD" "$PLIST"
 $PB -c "Add :LSApplicationCategoryType string public.app-category.utilities" "$PLIST"
 $PB -c "Add :ITSAppUsesNonExemptEncryption bool false" "$PLIST"
-$PB -c "Add :NSHumanReadableCopyright string Super Celik. Independent app, not affiliated with MUP RS or NetSeT/Veridos." "$PLIST"
+$PB -c "Add :NSHumanReadableCopyright string Super Čelik. Independent app, not affiliated with MUP RS or NetSeT/Veridos." "$PLIST"
 
 # CryptoTokenKit extension
 APPEX="$APP/Contents/PlugIns/SuperCelikToken.appex"

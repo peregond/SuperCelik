@@ -175,7 +175,7 @@ final class PhoneModel: ObservableObject {
         guard let data = pdfData(includeJmbg: includeJmbg) else { return }
         let info = UIPrintInfo(dictionary: nil)
         info.outputType = .general
-        info.jobName = "Super Celik"
+        info.jobName = "Super Čelik"
         let pc = UIPrintInteractionController.shared
         pc.printInfo = info
         pc.printingItem = data

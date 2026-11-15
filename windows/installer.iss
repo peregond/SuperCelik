@@ -1,15 +1,15 @@
-; Inno Setup script for the Windows installer (built in CI: iscc /DAppVersion=x.y.z windows\installer.iss)
+﻿; Inno Setup script for the Windows installer (built in CI: iscc /DAppVersion=x.y.z windows\installer.iss)
 #ifndef AppVersion
   #define AppVersion "0.9.8"
 #endif
 
 [Setup]
 AppId={{6B1B3D0E-5A52-4B7A-9C0B-5C0E1A5E7C11}
-AppName=Super Celik
+AppName=Super Čelik
 AppVersion={#AppVersion}
 AppPublisher=peregond
-DefaultDirName={autopf}\Super Celik
-DefaultGroupName=Super Celik
+DefaultDirName={autopf}\Super Čelik
+DefaultGroupName=Super Čelik
 OutputDir=..\dist
 OutputBaseFilename=SuperCelik-{#AppVersion}-windows-x64-setup
 Compression=lzma2
@@ -34,8 +34,8 @@ Source: "..\dist\win-x64\*"; DestDir: "{app}"; Flags: recursesubdirs ignoreversi
 Source: "..\dist\win-x64\SuperCelikMD.dll"; DestDir: "{sys}"; Flags: ignoreversion restartreplace uninsrestartdelete
 
 [Icons]
-Name: "{group}\Super Celik"; Filename: "{app}\SuperCelik.exe"
-Name: "{autodesktop}\Super Celik"; Filename: "{app}\SuperCelik.exe"; Tasks: desktopicon
+Name: "{group}\Super Čelik"; Filename: "{app}\SuperCelik.exe"
+Name: "{autodesktop}\Super Čelik"; Filename: "{app}\SuperCelik.exe"; Tasks: desktopicon
 
 ; remember the installer language: the app uses it on first launch
 [Registry]
@@ -58,8 +58,8 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"
 [Run]
 ; register the driver for the cards that are in a reader right now (the installer is elevated); never fails the install
 Filename: "{app}\SuperCelik.exe"; Parameters: "--register-driver auto"; Flags: runhidden waituntilterminated
-; interactive install: "Launch Super Celik" checkbox on the last page
-Filename: "{app}\SuperCelik.exe"; Description: "{cm:LaunchProgram,Super Celik}"; Flags: nowait postinstall skipifsilent runasoriginaluser
+; interactive install: "Launch Super Čelik" checkbox on the last page
+Filename: "{app}\SuperCelik.exe"; Description: "{cm:LaunchProgram,Super Čelik}"; Flags: nowait postinstall skipifsilent runasoriginaluser
 ; silent install (auto-update from inside the app): start the new version again automatically
 Filename: "{app}\SuperCelik.exe"; Flags: nowait runasoriginaluser; Check: WizardSilent
 

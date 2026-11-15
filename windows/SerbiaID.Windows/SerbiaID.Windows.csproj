@@ -7,7 +7,7 @@
     <Nullable>disable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
     <AssemblyName>SuperCelik</AssemblyName>
-    <Product>Super Celik</Product>
+    <Product>Super Čelik</Product>
     <RootNamespace>SerbiaID</RootNamespace>
     <Version>0.9.8</Version>
     <ApplicationIcon>app.ico</ApplicationIcon>

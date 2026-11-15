@@ -15,7 +15,7 @@ enum SerbianScript {
     private static let acronyms = ["PIN": "ПИН", "PUK": "ПУК", "JMBG": "ЈМБГ", "MUP": "МУП", "RS": "РС"]
     private static let international: Set<String> = ["NFC", "USB", "PDF", "CMS", "OTG", "CCID", "ID", "CA", "OK", "APDU", "SHA", "RSA", "SIM", "UI", "API"]
     private static let protected: Set<String> = [
-        "Super", "Celik", "SuperCelik", "Material", "You", "Liquid", "Glass", "iPhone", "iPad", "Mac", "macOS", "iOS",
+        "Super", "Celik", "Čelik", "SuperCelik", "Material", "You", "Liquid", "Glass", "iPhone", "iPad", "Mac", "macOS", "iOS",
         "Windows", "Android", "Xcode", "Apollo", "NetSeT", "Veridos", "CardEdge", "Chrome", "Safari", "Firefox",
         "MFi", "Quick", "Look", "GitHub", "Wi", "Fi",
     ]
