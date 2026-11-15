@@ -7,7 +7,7 @@ What is **already prepared** in the repository, and what **you** still have to d
 |---|---|
 | Privacy manifest (no tracking, no data collected, UserDefaults reason) | `ios/Config/PrivacyInfo.xcprivacy` (macOS: `macos/PrivacyInfo.xcprivacy`) |
 | Export compliance (`ITSAppUsesNonExemptEncryption = false`), app category | `ios/Config/Info.plist` |
-| Privacy policy (EN / RU / SR) | `docs/PRIVACY.md` |
+| Privacy policy (EN / RU / SR) | `docs/PRIVACY.md`, published at https://celik.peregon.cc/privacy (`site/privacy/`) |
 | Store texts: name, subtitle, description, keywords, promo text, what's new (EN / RU / SR) | `appstore/metadata/<lang>/*.txt` (limits checked) |
 | Notes for App Review + in-app demo data (Settings > Show demo data), so the reviewer needs no Serbian card | `appstore/REVIEW_NOTES.md` |
 | iOS/iPadOS upload from CI (Apple's cloud signing, App Store Connect API key) | `.github/workflows/appstore-ios.yml`, `ios/ExportOptions.plist` |
@@ -16,7 +16,7 @@ What is **already prepared** in the repository, and what **you** still have to d
 ## You need
 1. **Apple Developer Program** membership (99 USD / year). It also gives the *NFC Tag Reading* capability the iOS app needs.
 2. In **App Store Connect**: create the app records (iOS: bundle id `com.peregond.supercelik.ios`; macOS: `com.peregond.supercelik`).
-   Change the ids in the Xcode project if they are taken. Fill in: privacy policy URL (a public link to `docs/PRIVACY.md` on GitHub works),
+   Change the ids in the Xcode project if they are taken. Fill in: privacy policy URL (use `https://celik.peregon.cc/privacy`),
    support URL, category, age rating (no objectionable content), pricing, and paste `appstore/REVIEW_NOTES.md` into *App Review Information*.
 3. **Screenshots** (required sizes): iPhone 6.9" (1320 x 2868), iPad 13" (2064 x 2752), Mac (at least 1280 x 800). The CI screenshot job
    (`Screenshots` workflow, demo data) produces iPhone/iPad images from the simulator; check the sizes and re-shoot at the exact sizes if needed.
