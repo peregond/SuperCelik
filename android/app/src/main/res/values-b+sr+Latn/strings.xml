@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="app_name">Super Celik</string>
+    <string name="app_name">Super Čelik</string>
     <string name="title_personal">Lični podaci</string>
     <string name="read_nfc">Čitaj preko NFC-a</string>
     <string name="read_usb">Čitaj preko USB čitača</string>

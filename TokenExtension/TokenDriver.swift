@@ -11,7 +11,7 @@ let ctkLog = Logger(subsystem: "com.peregond.supercelik.token", category: "drive
 //
 // Why it exists: on macOS, Chrome and Safari take TLS client certificates only from the keychain,
 // and a smart card shows up in the keychain only through a CryptoTokenKit extension. Without one the
-// card is invisible to the browser ("no certificate" on eid.gov.rs) even though Super Celik reads it.
+// card is invisible to the browser ("no certificate" on eid.gov.rs) even though Super Čelik reads it.
 //
 // Info.plist deliberately has no com.apple.ctk.aid: with it, ctkd never started the driver for the
 // Gemalto "ESCE 8.0" eID card (its own probe SELECT did not count as a match). So the driver is
@@ -19,7 +19,7 @@ let ctkLog = Logger(subsystem: "com.peregond.supercelik.token", category: "drive
 // at insertion time; the PIN is asked by macOS itself (system dialog) and only when the browser
 // wants a signature.
 //
-// Card layout (same as srb-id-pkcs11 and Super Celik's own reader):
+// Card layout (same as srb-id-pkcs11 and Super Čelik's own reader):
 //   8FFF = index: [count LE16] + count * [file id LE16] of meta files
 //   meta file = [class][file id BE16][label len][label][id len = 20][id]
 //               class 1 = certificate, 2 = public key, 3 = private key
@@ -123,7 +123,7 @@ struct CardKeyPair {
 }
 
 enum CardObjects {
-    /// Reads all certificate / key pairs. Falls back to the fixed layout Super Celik already reads
+    /// Reads all certificate / key pairs. Falls back to the fixed layout Super Čelik already reads
     /// (certificate 7102, key 6005) when the index cannot be parsed.
     static func load(_ card: TKSmartCard) throws -> [CardKeyPair] {
         try CardIO.selectApplet(card)

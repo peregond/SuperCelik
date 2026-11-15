@@ -2,7 +2,7 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<!-- Super Celik reads the card on the device and shows / prints it there. It has no accounts, no analytics,
+	<!-- Super Čelik reads the card on the device and shows / prints it there. It has no accounts, no analytics,
 	     no network access to any server of ours and sends nothing anywhere. -->
 	<key>NSPrivacyTracking</key>
 	<false/>

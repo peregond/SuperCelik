@@ -1,4 +1,4 @@
-# Super Celik для Android
+# Super Čelik для Android
 
 Kotlin + Jetpack Compose, дизайн Material You (динамические цвета с Android 12, на Android 8–11 палитра из цветов флага).
 Читает личные данные и фото сербской ID-карты, карты иностранца и вида на жительство:

@@ -20,7 +20,7 @@ public static class SerbianScript
     private static readonly HashSet<string> International = new() { "NFC", "USB", "PDF", "CMS", "OTG", "CCID", "ID", "CA", "OK", "APDU", "SHA", "RSA", "SIM", "UI", "API" };
     private static readonly HashSet<string> Protected = new()
     {
-        "Super", "Celik", "SuperCelik", "Material", "You", "Liquid", "Glass", "iPhone", "iPad", "Mac", "macOS", "iOS",
+        "Super", "Celik", "Čelik", "SuperCelik", "Material", "You", "Liquid", "Glass", "iPhone", "iPad", "Mac", "macOS", "iOS",
         "Windows", "Android", "Xcode", "Apollo", "NetSeT", "Veridos", "CardEdge", "Chrome", "Safari", "Firefox",
         "MFi", "Quick", "Look", "GitHub", "Wi", "Fi",
     };

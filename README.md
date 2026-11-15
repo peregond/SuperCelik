@@ -1,13 +1,13 @@
-<p align="center"><img src="assets/icon-mac-1024.png" width="128" alt="Super Celik"></p>
+<p align="center"><img src="assets/icon-mac-1024.png" width="128" alt="Super Čelik"></p>
 
-# Super Celik
+# Super Čelik
 
 Единое приложение вместо Čelik + TrustEdge ID для сербской электронной ID-карты, карты иностранца и вида на жительство.
 Языки: RU / EN / SR (латиница) / SR (кириллица): сербская кириллица получается из сербской латиницы автоматической транслитерацией (`scripts/translit_sr.py`, те же правила в Swift и C#). Версии: **macOS** (SwiftUI), **Windows** (WPF, .NET 8), **Android** (Kotlin + Jetpack Compose, Material You, см. [android/README.md](android/README.md)) и **iPhone / iPad** (SwiftUI, чтение по NFC, см. [ios/README.md](ios/README.md); работает только с картами, у которых есть NFC-чип).
 Независимая реализация, не связана с МУП РС и NetSeT/Veridos.
 
 ## Установка (готовые сборки — раздел Releases)
-- **macOS 13+**: `SuperCelik-<версия>-macOS-apple-silicon.dmg` (M1 и новее) или `...-intel.dmg`. Откройте dmg и перетащите Super Celik в «Программы».
+- **macOS 13+**: `SuperCelik-<версия>-macOS-apple-silicon.dmg` (M1 и новее) или `...-intel.dmg`. Откройте dmg и перетащите Super Čelik в «Программы».
   Приложение подписано ad-hoc и не нотаризовано: при первом запуске — правый клик → «Открыть», либо
   `xattr -dr com.apple.quarantine /Applications/SuperCelik.app`.
 - **Android 8+**: `SuperCelik-<версия>-android.apk` (для установки вручную: разрешите установку из неизвестных источников). Читает карту по NFC или через USB-ридер (OTG), в том числе проверка подписи МУП, токен, смена PIN, подпись файла.
@@ -38,10 +38,10 @@ Windows (.NET 8 SDK):
 ## Вход на eid.gov.rs через Chrome / Safari (macOS)
 Chrome и Safari на Mac берут клиентские сертификаты только из связки ключей macOS. Карта попадает туда
 только через системный драйвер (CryptoTokenKit), а у MUP / NetSeT драйвера для macOS нет, поэтому
-раньше сайт писал, что сертификат не найден, хотя Super Celik карту читал.
+раньше сайт писал, что сертификат не найден, хотя Super Čelik карту читал.
 
 Теперь драйвер лежит внутри приложения (`SuperCelik.app/Contents/PlugIns/SuperCelikToken.appex`):
-1. Установите Super Celik в «Программы» и запустите его один раз: приложение регистрирует драйвер
+1. Установите Super Čelik в «Программы» и запустите его один раз: приложение регистрирует драйвер
    и кладёт промежуточные сертификаты МУП в связку ключей «Вход» (только сертификаты, доверие не меняется).
 2. Вставьте карту (если была вставлена до установки, выньте и вставьте снова). Проверка в Терминале: `security list-smartcards` (должна появиться строка
    `com.peregond.supercelik.token:SuperCelik-…`) и `pluginkit -m -p com.apple.ctk-tokens`.

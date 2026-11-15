@@ -6,7 +6,7 @@ using Microsoft.Win32;
 namespace SerbiaID;
 
 /// Browser login on Windows: Chrome and Edge take client certificates from the Windows certificate store, and a smart
-/// card gets there through a card minidriver. Super Celik ships its own (SuperCelikMD.dll, windows/minidriver) and
+/// card gets there through a card minidriver. Super Čelik ships its own (SuperCelikMD.dll, windows/minidriver) and
 /// registers it for the card's ATR. Registering needs administrator rights (HKLM and System32), so it is done by this
 /// same exe started elevated (`--register-driver <ATR hex>`), once per card type, after a question in the app.
 internal static class DriverSetup
@@ -40,7 +40,7 @@ internal static class DriverSetup
         }
     }
 
-    /// Super Celik's driver is registered for this ATR and the installed DLL is the one shipped with this version.
+    /// Super Čelik's driver is registered for this ATR and the installed DLL is the one shipped with this version.
     public static bool IsRegistered(byte[] atr)
     {
         try { return Matching(atr).Any(m => m.Ours) && SameFile(Bundled, Installed); }
@@ -48,7 +48,7 @@ internal static class DriverSetup
     }
 
     /// Another driver (the official MUP / NetSeT one) is already registered for this ATR: two drivers for one card
-    /// would fight over it, so Super Celik leaves such a card alone.
+    /// would fight over it, so Super Čelik leaves such a card alone.
     public static bool HandledByOtherDriver(byte[] atr)
     {
         try { return Matching(atr).Any(m => !m.Ours); }

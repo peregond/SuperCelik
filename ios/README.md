@@ -1,4 +1,4 @@
-# Super Celik для iPhone и iPad (чтение по NFC)
+# Super Čelik для iPhone и iPad (чтение по NFC)
 
 Приложение читает карту через NFC iPhone и использует тот же код, что и версия для Mac:
 протокол карты (`Sources/SerbiaID/EidCard.swift`), проверку подписи МУП, разбор сертификата

@@ -176,7 +176,7 @@ final class Loc: ObservableObject {
         .certSign: [.ru: "Сертификат подписи", .en: "Signing certificate", .sr: "Sertifikat za potpisivanje"],
         .certSigFixed: [.ru: "Подписант неизменяемых данных", .en: "Fixed-data signer", .sr: "Potpisnik nepromenljivih podataka"],
         .certSigVariable: [.ru: "Подписант изменяемых данных", .en: "Variable-data signer", .sr: "Potpisnik promenljivih podataka"],
-        .appTitle: [.ru: "Super Celik", .en: "Super Celik", .sr: "Super Celik"],
+        .appTitle: [.ru: "Super Čelik", .en: "Super Čelik", .sr: "Super Čelik"],
         .tabPersonal: [.ru: "Личные данные", .en: "Personal data", .sr: "Lični podaci"],
         .tabToken: [.ru: "Токен и сертификаты", .en: "Token & certificates", .sr: "Token i sertifikati"],
         .tabAbout: [.ru: "О программе", .en: "About", .sr: "O programu"],

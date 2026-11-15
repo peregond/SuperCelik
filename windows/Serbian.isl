@@ -1,4 +1,4 @@
-; *** Inno Setup: Serbian (Latin) messages for Super Celik ***
+; *** Inno Setup: Serbian (Latin) messages for Super Čelik ***
 ; Messages that are not listed here fall back to the built-in English text.
 
 [LangOptions]
