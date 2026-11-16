@@ -14,7 +14,7 @@ What is **already prepared** in the repository, and what **you** still have to d
 | Mac App Store build (sandbox, no self-updater) | see `macos/` and the macOS section below |
 
 ## You need
-1. **Apple Developer Program** membership (99 USD / year). It also gives the *NFC Tag Reading* capability the iOS app needs.
+1. **Apple Developer Program** membership (99 USD / year).
 2. In **App Store Connect**: create one app record with both iOS and macOS platforms (universal purchase, shared bundle id `app.supercelik`; the Mac token extension uses `app.supercelik.token`).
    Change the ids in the Xcode project if they are taken. Fill in: privacy policy URL (use `https://celik.peregon.cc/privacy`),
    support URL, category, age rating (no objectionable content), pricing, and paste `appstore/REVIEW_NOTES.md` into *App Review Information*.
@@ -35,6 +35,6 @@ no self-updater, no helper processes (`pluginkit`, `pkill`, `security`), smart c
 - **Guideline 5.2 (Intellectual property) / government-related apps**: this is an independent app for government ID cards and the name
   contains "Celik" (the official MUP app is "Čelik"). Apple may ask for proof of authorization or a rename. The description states that the app is
   independent. If asked, a different name (e.g. "Super eID Reader") avoids the question.
-- **iPad has no NFC**: the app says so on iPad; reading there needs a USB reader, and whether iPadOS/iOS hand a CCID reader to the app is **not verified**.
+- **No NFC**: card reading on iPhone and iPad goes through a USB-C smart card reader (verified on both). NFC reading is parked, the app has no NFC entitlement.
 - **Minimum functionality (4.2)**: the app has real functionality (reading, signature check, PDF, token, signing on Mac), but without a card the reviewer only
   sees the demo; make sure the review notes are filled in.

@@ -7,8 +7,8 @@ and shares its data. Everything happens on the device; the app has no accounts, 
 a fictional person, the signature check result, the PDF printout (View PDF / Print / Share) and the Token tab. No sign-in is required.
 
 **Reading a real card** needs a Serbian eID card and a smart card reader connected over USB-C (or an MFi reader). The app
-shows at once whether a reader is connected and whether a card is inserted. NFC reading is switched off in this version
-(the code is kept for later); the NFC entitlement and usage description in the bundle are left in place for that.
+shows at once whether a reader is connected and whether a card is inserted. The app does not use NFC
+(NFC reading is switched off and the bundle has no NFC entitlement). Reader support was tested on iPhone and iPad.
 
 **Not affiliated.** The app is an independent implementation and says so in its description and About text. It does not use
 any MUP RS or NetSeT/Veridos code, logo or trademark. "Super Čelik" is a working name; we will rename it on request.
