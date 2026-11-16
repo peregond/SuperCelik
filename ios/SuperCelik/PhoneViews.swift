@@ -4,6 +4,9 @@ import UIKit
 struct PhoneRootView: View {
     @EnvironmentObject var loc: Loc
     @EnvironmentObject var model: PhoneModel
+    // screenshots only: `--token` / `--settings` open that tab at launch
+    @State private var tab = CommandLine.arguments.contains("--token") ? 1 : (CommandLine.arguments.contains("--settings") ? 2 : 0)
+
     var body: some View {
         tabs
             .minimizingTabBar()
@@ -13,20 +16,20 @@ struct PhoneRootView: View {
     /// iPhone: tab bar (Liquid Glass). iPad: iOS 18+ turns the same tabs into a sidebar like the Mac app.
     @ViewBuilder private var tabs: some View {
         if #available(iOS 18.0, *) {
-            TabView {
-                Tab(loc.t(.tabCardShort), systemImage: "person.text.rectangle") { CardTab() }
-                Tab(loc.t(.tabTokenShort), systemImage: "checkmark.seal") { TokenTab() }
-                Tab(loc.t(.tabSettings), systemImage: "gearshape") { SettingsTab() }
+            TabView(selection: $tab) {
+                Tab(loc.t(.tabCardShort), systemImage: "person.text.rectangle", value: 0) { CardTab() }
+                Tab(loc.t(.tabTokenShort), systemImage: "checkmark.seal", value: 1) { TokenTab() }
+                Tab(loc.t(.tabSettings), systemImage: "gearshape", value: 2) { SettingsTab() }
             }
             .tabViewStyle(.sidebarAdaptable)
         } else {
-            TabView {
+            TabView(selection: $tab) {
                 CardTab()
-                    .tabItem { Label(loc.t(.tabCardShort), systemImage: "person.text.rectangle") }
+                    .tabItem { Label(loc.t(.tabCardShort), systemImage: "person.text.rectangle") }.tag(0)
                 TokenTab()
-                    .tabItem { Label(loc.t(.tabTokenShort), systemImage: "checkmark.seal") }
+                    .tabItem { Label(loc.t(.tabTokenShort), systemImage: "checkmark.seal") }.tag(1)
                 SettingsTab()
-                    .tabItem { Label(loc.t(.tabSettings), systemImage: "gearshape") }
+                    .tabItem { Label(loc.t(.tabSettings), systemImage: "gearshape") }.tag(2)
             }
         }
     }
@@ -124,27 +127,53 @@ struct ScanButton: View {
     @EnvironmentObject var loc: Loc
     @EnvironmentObject var model: PhoneModel
     let title: Loc.L
+    var collapsed = false
     let action: () async -> Void
 
+    /// Full width with a caption at the top of the screen; a round button in the bottom-right corner while scrolling down
+    /// (like the tab bar shrinking into the bottom-left corner).
     var body: some View {
-        Button {
-            Task { await action() }
-        } label: {
-            HStack {
-                if model.busy { ProgressView() } else { Image(systemName: model.autoIcon) }
-                Text(loc.t(title)).fontWeight(.semibold)
+        HStack(spacing: 0) {
+            if collapsed { Spacer(minLength: 0) }
+            Button {
+                Task { await action() }
+            } label: {
+                HStack {
+                    if model.busy { ProgressView() } else { Image(systemName: model.autoIcon) }
+                    if !collapsed { Text(loc.t(title)).fontWeight(.semibold) }
+                }
+                .frame(maxWidth: collapsed ? 28 : .infinity)
+                .padding(.vertical, collapsed ? 14 : 8)
+                .padding(.horizontal, collapsed ? 14 : 0)
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 8)
+            .glassButton(prominent: true)
+            .buttonBorderShape(.capsule)
+            .tint(.blue)
+            .controlSize(.large)
+            .disabled(model.busy)
+            .accessibilityLabel(loc.t(title))
         }
-        .glassButton(prominent: true)
-        .tint(.blue)
-        .controlSize(.large)
-        .disabled(model.busy)
+        .animation(.spring(response: 0.38, dampingFraction: 0.8), value: collapsed)
     }
 }
 
-/// Settings gear in the top-right corner of every screen.
+/// Reports "scrolled down" for the scan button: collapses when scrolling down, comes back when scrolling up or at the top.
+/// (iOS 18+; older systems keep the full button.)
+struct ScrollCollapse: ViewModifier {
+    @Binding var collapsed: Bool
+    func body(content: Content) -> some View {
+        if #available(iOS 18.0, *) {
+            content.onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.y + $0.contentInsets.top } action: { old, new in
+                if new < 24 { collapsed = false }
+                else if new > old + 3 { collapsed = true }
+                else if new < old - 3 { collapsed = false }
+            }
+        } else {
+            content
+        }
+    }
+}
+
 // MARK: - Card
 
 struct CardTab: View {
@@ -155,6 +184,7 @@ struct CardTab: View {
     @State private var share: ShareItem?
     @State private var pdf: ShareItem?
     @State private var photoOpen = false
+    @State private var scanCollapsed = false
 
     var body: some View {
         NavigationStack {
@@ -174,11 +204,12 @@ struct CardTab: View {
                 .frame(maxWidth: 1100)
                 .frame(maxWidth: .infinity)
             }
+            .modifier(ScrollCollapse(collapsed: $scanCollapsed))
             .background(GlassBackdrop())
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .safeAreaInset(edge: .bottom) {
-                ScanButton(title: .readCardAuto) { await model.scanCardAuto() }
+                ScanButton(title: .readCardAuto, collapsed: scanCollapsed) { await model.scanCardAuto() }
                     .padding(.horizontal, 20).padding(.bottom, 8)
             }
             .toolbar {
@@ -192,7 +223,7 @@ struct CardTab: View {
                 }
                 ToolbarItemGroup(placement: .navigationBarLeading) {
                     if model.personal != nil {
-                        Button(role: .destructive) { model.clear() } label: { Image(systemName: "trash") }
+                        Button(role: .destructive) { model.clear() } label: { Image(systemName: "xmark").foregroundStyle(.red) }
                             .accessibilityLabel(loc.t(.close))
                     }
                 }
@@ -215,9 +246,6 @@ struct CardTab: View {
     /// iPhone: one column.
     @ViewBuilder private func compactLayout(_ p: PersonalData) -> some View {
         header(p).padding(16).frame(maxWidth: .infinity, alignment: .leading).glassCard()
-        if let s = model.signatureStatus {
-            signatureRow(s).padding(16).frame(maxWidth: .infinity, alignment: .leading).glassCard(cornerRadius: 22)
-        }
         fieldsCard(p, columns: 1)
         actions
     }
@@ -227,9 +255,6 @@ struct CardTab: View {
         HStack(alignment: .top, spacing: 16) {
             VStack(spacing: 16) {
                 header(p).padding(16).frame(maxWidth: .infinity, alignment: .leading).glassCard()
-                if let s = model.signatureStatus {
-                    signatureRow(s).padding(16).frame(maxWidth: .infinity, alignment: .leading).glassCard(cornerRadius: 22)
-                }
                 actions
             }
             .frame(width: 380)
@@ -285,6 +310,7 @@ struct CardTab: View {
                     Text(docTitle(p.cardType)).font(.caption).foregroundStyle(.secondary)
                     Text("\(p.fixed.givenName) \(p.fixed.surname)").font(.title3.bold())
                     if let exp = p.expiryDate { expiry(exp) }
+                    if let sig = model.signatureStatus { signatureRow(sig).font(.caption) }
                 }
             }
         }
@@ -314,16 +340,16 @@ struct CardTab: View {
     @ViewBuilder private func signatureRow(_ s: PhoneModel.SigStatus) -> some View {
         switch s {
         case .ok:
-            Label(loc.t(.sigOk), systemImage: "checkmark.seal.fill").foregroundStyle(.green)
+            Label(loc.t(.sigOk), systemImage: "signature").foregroundStyle(.green)
         case .chainNotTrusted(let m):
             VStack(alignment: .leading, spacing: 4) {
                 Label(loc.t(.sigChain), systemImage: "exclamationmark.triangle.fill").foregroundStyle(.orange)
-                Text(m).font(.caption).foregroundStyle(.secondary)
+                Text(m).font(.caption2).foregroundStyle(.secondary)
             }
         case .invalid(let m):
             VStack(alignment: .leading, spacing: 4) {
                 Label(loc.t(.sigBad), systemImage: "xmark.seal.fill").foregroundStyle(.red)
-                Text(m).font(.caption).foregroundStyle(.secondary)
+                Text(m).font(.caption2).foregroundStyle(.secondary)
             }
         case .unavailable:
             EmptyView()
@@ -358,35 +384,43 @@ struct TokenTab: View {
     @EnvironmentObject var loc: Loc
     @EnvironmentObject var model: PhoneModel
     @State private var share: ShareItem?
+    @State private var scanCollapsed = false
 
     var body: some View {
         NavigationStack {
             List {
+                // intro: no white card behind it, the text sits on the backdrop like on the Card tab
                 Section {
                     ReaderStatusBlock(character: .key, size: model.token == nil ? 190 : 120, done: model.token != nil)
                         .frame(maxWidth: .infinity)
-                        .listRowBackground(Color.clear)
+                        .listRowBackground(Color.clear).listRowSeparator(.hidden)
                     if let problem = model.problem, model.token == nil {
                         ProblemBanner(problem: problem)
+                            .listRowBackground(Rectangle().fill(.regularMaterial))
                     }
                     Text(loc.t(.pinNote)).font(.footnote).foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .listRowBackground(Color.clear).listRowSeparator(.hidden)
                 }
                 if let t = model.token {
                     Section {
                         if !t.tokenLabel.isEmpty { LabeledContent("Token", value: t.tokenLabel) }
                         if !t.tokenSerial.isEmpty { LabeledContent("Serial", value: t.tokenSerial) }
                     }
+                    .listRowBackground(Rectangle().fill(.regularMaterial))
                     Section(loc.t(.certificates)) {
                         ForEach(model.tokenRows) { row in certificate(row) }
                     }
+                    .listRowBackground(Rectangle().fill(.regularMaterial))
                 }
             }
+            .modifier(ScrollCollapse(collapsed: $scanCollapsed))
             .scrollContentBackground(.hidden)
             .background(GlassBackdrop())
             .navigationTitle(loc.t(.tabToken))
             .navigationBarTitleDisplayMode(.inline)
             .safeAreaInset(edge: .bottom) {
-                ScanButton(title: .readToken) { await model.scanTokenAuto() }
+                ScanButton(title: .readToken, collapsed: scanCollapsed) { await model.scanTokenAuto() }
                     .padding(.horizontal, 20).padding(.bottom, 8)
             }
             .sheet(item: $share) { ShareSheet(url: $0.url) }
@@ -442,19 +476,27 @@ struct SettingsTab: View {
                         Text(loc.t(.themeDark)).tag("dark")
                     }
                 }
+                .listRowBackground(Rectangle().fill(.regularMaterial))
+                Section(loc.t(.setBehavior)) {
+                    Toggle(loc.t(.setAutoRead), isOn: $prefs.autoRead)
+                }
+                .listRowBackground(Rectangle().fill(.regularMaterial))
                 Section(loc.t(.setPrivacy)) {
                     Toggle(loc.t(.setMask), isOn: $prefs.maskSensitive)
                     Toggle(loc.t(.setPrintJmbg), isOn: $prefs.printJmbg)
                 }
+                .listRowBackground(Rectangle().fill(.regularMaterial))
                 Section {
                     Toggle(loc.t(.demoData), isOn: Binding(
                         get: { model.demoActive },
                         set: { $0 ? model.loadDemo() : model.hideDemo() }))
                 } footer: { Text(loc.t(.demoHint)) }
+                .listRowBackground(Rectangle().fill(.regularMaterial))
                 Section(loc.t(.tabAbout)) {
                     Text(loc.t(.aboutTextIOS)).font(.subheadline)
                     LabeledContent(loc.t(.version), value: version)
                 }
+                .listRowBackground(Rectangle().fill(.regularMaterial))
             }
             .scrollContentBackground(.hidden)
             .background(GlassBackdrop())

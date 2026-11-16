@@ -84,6 +84,10 @@ final class PhoneModel: ObservableObject {
                 if now == .cardReady || (before == .none && now == .noCard) {
                     UINotificationFeedbackGenerator().notificationOccurred(.success)
                 }
+                // A card went into the reader (or the app opened with one inserted): read it by itself if the setting is on.
+                if now == .cardReady, before != .cardReady, Prefs.shared.autoRead, !busy {
+                    await scanCardAuto()
+                }
             }
             try? await Task.sleep(nanoseconds: 1_000_000_000)
         }
