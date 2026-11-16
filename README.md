@@ -3,7 +3,7 @@
 # Super Čelik
 
 Единое приложение вместо Čelik + TrustEdge ID для сербской электронной ID-карты, карты иностранца и вида на жительство.
-Языки: RU / EN / SR (латиница) / SR (кириллица): сербская кириллица получается из сербской латиницы автоматической транслитерацией (`scripts/translit_sr.py`, те же правила в Swift и C#). Версии: **macOS** (SwiftUI), **Windows** (WPF, .NET 8), **Android** (Kotlin + Jetpack Compose, Material You, см. [android/README.md](android/README.md)) и **iPhone / iPad** (SwiftUI, чтение по NFC, см. [ios/README.md](ios/README.md); работает только с картами, у которых есть NFC-чип).
+Языки: RU / EN / SR (латиница) / SR (кириллица): сербская кириллица получается из сербской латиницы автоматической транслитерацией (`scripts/translit_sr.py`, те же правила в Swift и C#). Версии: **macOS** (SwiftUI), **Windows** (WPF, .NET 8), **Android** (Kotlin + Jetpack Compose, Material You, см. [android/README.md](android/README.md)) и **iPhone / iPad** (SwiftUI, чтение через USB-C ридер, см. [ios/README.md](ios/README.md)). iPhone / iPad доступны в [App Store](https://apps.apple.com/app/id6835244146).
 Независимая реализация, не связана с МУП РС и NetSeT/Veridos.
 
 ## Установка (готовые сборки — раздел Releases)
