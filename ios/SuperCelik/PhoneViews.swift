@@ -3,28 +3,28 @@ import UIKit
 
 struct PhoneRootView: View {
     @EnvironmentObject var loc: Loc
-    @State private var showSettings = false
-
     var body: some View {
         tabs
             .minimizingTabBar()
-            .sheet(isPresented: $showSettings) { SettingsTab() }
     }
 
     /// iPhone: tab bar (Liquid Glass). iPad: iOS 18+ turns the same tabs into a sidebar like the Mac app.
     @ViewBuilder private var tabs: some View {
         if #available(iOS 18.0, *) {
             TabView {
-                Tab(loc.t(.tabCardShort), systemImage: "person.text.rectangle") { CardTab(showSettings: $showSettings) }
-                Tab(loc.t(.tabTokenShort), systemImage: "checkmark.seal") { TokenTab(showSettings: $showSettings) }
+                Tab(loc.t(.tabCardShort), systemImage: "person.text.rectangle") { CardTab() }
+                Tab(loc.t(.tabTokenShort), systemImage: "checkmark.seal") { TokenTab() }
+                Tab(loc.t(.tabSettings), systemImage: "gearshape") { SettingsTab() }
             }
             .tabViewStyle(.sidebarAdaptable)
         } else {
             TabView {
-                CardTab(showSettings: $showSettings)
+                CardTab()
                     .tabItem { Label(loc.t(.tabCardShort), systemImage: "person.text.rectangle") }
-                TokenTab(showSettings: $showSettings)
+                TokenTab()
                     .tabItem { Label(loc.t(.tabTokenShort), systemImage: "checkmark.seal") }
+                SettingsTab()
+                    .tabItem { Label(loc.t(.tabSettings), systemImage: "gearshape") }
             }
         }
     }
@@ -89,15 +89,6 @@ struct ScanButton: View {
 }
 
 /// Settings gear in the top-right corner of every screen.
-struct SettingsButton: View {
-    @EnvironmentObject var loc: Loc
-    @Binding var show: Bool
-    var body: some View {
-        Button { show = true } label: { Image(systemName: "gearshape") }
-            .accessibilityLabel(loc.t(.tabSettings))
-    }
-}
-
 // MARK: - Card
 
 struct CardTab: View {
@@ -105,7 +96,6 @@ struct CardTab: View {
     @EnvironmentObject var prefs: Prefs
     @EnvironmentObject var model: PhoneModel
     @Environment(\.horizontalSizeClass) private var sizeClass
-    @Binding var showSettings: Bool
     @State private var share: ShareItem?
     @State private var pdf: ShareItem?
     @State private var photoOpen = false
@@ -148,7 +138,6 @@ struct CardTab: View {
                         }
                         .accessibilityLabel(loc.t(model.revealAll ? .hideValue : .reveal))
                     }
-                    SettingsButton(show: $showSettings)
                 }
                 ToolbarItemGroup(placement: .navigationBarLeading) {
                     if model.personal != nil {
@@ -317,7 +306,6 @@ struct FieldRow: View {
 struct TokenTab: View {
     @EnvironmentObject var loc: Loc
     @EnvironmentObject var model: PhoneModel
-    @Binding var showSettings: Bool
     @State private var share: ShareItem?
 
     var body: some View {
@@ -356,7 +344,6 @@ struct TokenTab: View {
                 ScanButton(title: .readToken) { await model.scanTokenAuto() }
                     .padding(.horizontal, 20).padding(.bottom, 8)
             }
-            .toolbar { ToolbarItem(placement: .navigationBarTrailing) { SettingsButton(show: $showSettings) } }
             .sheet(item: $share) { ShareSheet(url: $0.url) }
         }
     }
@@ -389,7 +376,6 @@ struct TokenTab: View {
 // MARK: - Settings / about
 
 struct SettingsTab: View {
-    @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var model: PhoneModel
     @EnvironmentObject var loc: Loc
     @EnvironmentObject var prefs: Prefs
@@ -426,8 +412,9 @@ struct SettingsTab: View {
                     Link("github.com/peregond/SuperCelik", destination: URL(string: "https://github.com/peregond/SuperCelik")!)
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(GlassBackdrop())
             .navigationTitle(loc.t(.tabSettings))
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button(loc.t(.ok)) { dismiss() } } }
         }
     }
 }
