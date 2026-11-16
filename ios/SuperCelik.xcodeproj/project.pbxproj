@@ -26,6 +26,8 @@
 		1F6D8B4A2E9C0357B8D5A3C1 /* USBCardReader.swift in Sources */ = {isa = PBXBuildFile; fileRef = 7C3E9A1D5B0F2486D9A3E1B7 /* USBCardReader.swift */; };
 		6A2E7C9B1D4F0835C7E9A2B4 /* SerbianScript.swift in Sources */ = {isa = PBXBuildFile; fileRef = 3B8F1D6A0C5E4972A1D4B6E8 /* SerbianScript.swift */; };
 		8D3B6F1A4C9E2057B1D7A9C2 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 4C7A2E9B1D5F3086A8B1C3E5 /* PrivacyInfo.xcprivacy */; };
+		A1C2E3F4B5D60718293A4B5C /* PhoneMascot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2D3F4A5C6E7819A2B3C4D5E /* PhoneMascot.swift */; };
+		C3E4A5B6D7F8920A3B4C5D6E /* Mascots in Resources */ = {isa = PBXBuildFile; fileRef = D4F5B6C7E8A9031B4C5D6E7F /* Mascots */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -51,6 +53,8 @@
 		7C3E9A1D5B0F2486D9A3E1B7 /* USBCardReader.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = USBCardReader.swift; sourceTree = "<group>"; };
 		3B8F1D6A0C5E4972A1D4B6E8 /* SerbianScript.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SerbianScript.swift; sourceTree = "<group>"; };
 		4C7A2E9B1D5F3086A8B1C3E5 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		B2D3F4A5C6E7819A2B3C4D5E /* PhoneMascot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneMascot.swift; sourceTree = "<group>"; };
+		D4F5B6C7E8A9031B4C5D6E7F /* Mascots */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Mascots; path = Resources/Mascots; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -80,6 +84,7 @@
 				B6A9443BC53EB311ED927118,
 				C85CB36E74AF9D06F4C2C244,
 				E5956581239ED5DE9BFB2439,
+				B2D3F4A5C6E7819A2B3C4D5E,
 				492A73205AAE534941E47FAD,
 				7C3E9A1D5B0F2486D9A3E1B7,
 				5D1A0C3E7B2F4A9086E1C7D3,
@@ -102,6 +107,7 @@
 				3B8F1D6A0C5E4972A1D4B6E8,
 				58324604F865E53A71B5811D,
 				6B4A331ACAAFD2EB8C66B299,
+				D4F5B6C7E8A9031B4C5D6E7F,
 			);
 			name = "Shared (macOS app sources)";
 			path = ../Sources/SerbiaID;
@@ -185,6 +191,7 @@
 			files = (
 				2B4A2C08D382ED0CB67D3F18 /* Assets.xcassets in Resources */,
 				243866D0C6E614680F031BFA /* CA in Resources */,
+				C3E4A5B6D7F8920A3B4C5D6E /* Mascots in Resources */,
 				8D3B6F1A4C9E2057B1D7A9C2 /* PrivacyInfo.xcprivacy in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
@@ -199,6 +206,7 @@
 				076F477AFBB34016C0DCD226 /* SuperCelikApp.swift in Sources */,
 				A0CD34D9E0004D0C44D04EF4 /* PhoneModel.swift in Sources */,
 				0FDAD66B44FCA1C5261B7DF4 /* PhoneViews.swift in Sources */,
+				A1C2E3F4B5D60718293A4B5C /* PhoneMascot.swift in Sources */,
 				88A55BCC54A2427357D27C34 /* NFCCardReader.swift in Sources */,
 				1F6D8B4A2E9C0357B8D5A3C1 /* USBCardReader.swift in Sources */,
 				9E4B2F6A1C8D3057A2B6E0F4 /* Glass.swift in Sources */,

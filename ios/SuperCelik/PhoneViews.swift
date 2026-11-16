@@ -116,9 +116,14 @@ struct CardTab: View {
                 VStack(spacing: 16) {
                     if let problem = model.problem {
                         ProblemBanner(problem: problem).padding(16).frame(maxWidth: .infinity, alignment: .leading).glassCard()
-                    } else if model.personal == nil {
-                        Text(loc.t(.hintAuto)).font(.subheadline).foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center).padding(.horizontal).padding(.top, 40)
+                    }
+                    if model.personal == nil {
+                        PhoneMascot(character: .reader, mood: model.problem != nil ? .error : (model.busy ? .busy : .waiting))
+                            .padding(.top, model.problem == nil ? 56 : 8)
+                        if model.problem == nil {
+                            Text(loc.t(.hintAuto)).font(.subheadline).foregroundStyle(.secondary)
+                                .multilineTextAlignment(.center).padding(.horizontal)
+                        }
                     }
                     if let p = model.personal {
                         if sizeClass == .regular { regularLayout(p) } else { compactLayout(p) }
@@ -319,6 +324,15 @@ struct TokenTab: View {
         NavigationStack {
             List {
                 Section {
+                    HStack {
+                        Spacer()
+                        PhoneMascot(character: .key,
+                                    mood: model.problem != nil && model.token == nil ? .error
+                                        : (model.busy ? .busy : (model.token != nil ? .done : .waiting)),
+                                    size: model.token == nil ? 190 : 120)
+                        Spacer()
+                    }
+                    .listRowBackground(Color.clear)
                     if let problem = model.problem, model.token == nil {
                         ProblemBanner(problem: problem)
                     }
