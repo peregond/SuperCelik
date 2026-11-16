@@ -2,11 +2,9 @@
 <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
 <plist version="1.0">
 <dict>
-	<!-- NFC tag reading (ISO 7816 smart cards). Needs a paid Apple Developer Program team:
-	     the "NFC Tag Reading" capability is not available to free personal teams. -->
-	<key>com.apple.developer.nfc.readersession.formats</key>
-	<array>
-		<string>TAG</string>
-	</array>
+	<!-- Empty on purpose: NFC reading is switched off (PhoneModel.nfcEnabled). To bring it back, add the
+	     com.apple.developer.nfc.readersession.formats = [TAG] entitlement, the NFCReaderUsageDescription and the
+	     ISO 7816 select identifiers (AIDs F381000002534552494401, ...494601, ...525001, A000000063504B43532D3135)
+	     to Info.plist again. -->
 </dict>
 </plist>

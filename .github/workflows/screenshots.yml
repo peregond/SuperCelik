@@ -1,5 +1,5 @@
 name: Screenshots
-# (trigger: touching this file in a PR runs the job) [android print layout check]
+# (trigger: touching this file in a PR runs the job) [iOS store sizes + reader screens]
 
 on:
   pull_request:
@@ -40,20 +40,24 @@ jobs:
         run: |
           mkdir -p shots
           shot() { # name, device-substring, appearance, launch args
-            UDID=$(xcrun simctl list devices available | grep "$2" | head -1 | grep -oE '[0-9A-F-]{36}')
+            UDID=$(xcrun simctl list devices available | grep -E "$2" | head -1 | grep -oE '[0-9A-F-]{36}')
             xcrun simctl boot "$UDID"; xcrun simctl bootstatus "$UDID" -b
             xcrun simctl ui "$UDID" appearance "$3"
             xcrun simctl install "$UDID" build/Build/Products/Debug-iphonesimulator/SuperCelik.app
-            xcrun simctl launch "$UDID" app.supercelik --demo $4
+            xcrun simctl launch "$UDID" app.supercelik $4
             sleep 6
             xcrun simctl io "$UDID" screenshot "shots/$1.png"
             xcrun simctl shutdown "$UDID"
           }
-          shot iphone-light "iPhone" light
-          shot iphone-dark "iPhone" dark
-          shot iphone-pdf "iPhone" light --pdf
-          shot ipad-light "iPad" light
-          shot ipad-pdf "iPad" light --pdf
+          # App Store sizes: iPhone 6.9" (1320x2868, a Pro Max) and iPad 13" (2064x2752, iPad Pro / Air 13-inch)
+          PHONE='iPhone [0-9]+ Pro Max'; PAD='iPad (Pro|Air) 13-inch'
+          shot iphone-light "$PHONE" light --demo
+          shot iphone-dark "$PHONE" dark --demo
+          shot iphone-pdf "$PHONE" light "--demo --pdf"
+          shot iphone-empty "$PHONE" light ""
+          shot ipad-light "$PAD" light --demo
+          shot ipad-pdf "$PAD" light "--demo --pdf"
+          shot ipad-empty "$PAD" light ""
       - uses: actions/upload-artifact@v4
         with: { name: shots-ios, path: shots/*.png }
 
