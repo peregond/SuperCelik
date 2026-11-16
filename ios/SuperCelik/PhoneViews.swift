@@ -476,22 +476,27 @@ struct SettingsTab: View {
                         Text(loc.t(.themeDark)).tag("dark")
                     }
                 }
+                .listRowBackground(Rectangle().fill(.regularMaterial))
                 Section(loc.t(.setBehavior)) {
                     Toggle(loc.t(.setAutoRead), isOn: $prefs.autoRead)
                 }
+                .listRowBackground(Rectangle().fill(.regularMaterial))
                 Section(loc.t(.setPrivacy)) {
                     Toggle(loc.t(.setMask), isOn: $prefs.maskSensitive)
                     Toggle(loc.t(.setPrintJmbg), isOn: $prefs.printJmbg)
                 }
+                .listRowBackground(Rectangle().fill(.regularMaterial))
                 Section {
                     Toggle(loc.t(.demoData), isOn: Binding(
                         get: { model.demoActive },
                         set: { $0 ? model.loadDemo() : model.hideDemo() }))
                 } footer: { Text(loc.t(.demoHint)) }
+                .listRowBackground(Rectangle().fill(.regularMaterial))
                 Section(loc.t(.tabAbout)) {
                     Text(loc.t(.aboutTextIOS)).font(.subheadline)
                     LabeledContent(loc.t(.version), value: version)
                 }
+                .listRowBackground(Rectangle().fill(.regularMaterial))
             }
             .scrollContentBackground(.hidden)
             .background(GlassBackdrop())
