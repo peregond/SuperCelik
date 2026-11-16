@@ -124,27 +124,53 @@ struct ScanButton: View {
     @EnvironmentObject var loc: Loc
     @EnvironmentObject var model: PhoneModel
     let title: Loc.L
+    var collapsed = false
     let action: () async -> Void
 
+    /// Full width with a caption at the top of the screen; a round button in the bottom-right corner while scrolling down
+    /// (like the tab bar shrinking into the bottom-left corner).
     var body: some View {
-        Button {
-            Task { await action() }
-        } label: {
-            HStack {
-                if model.busy { ProgressView() } else { Image(systemName: model.autoIcon) }
-                Text(loc.t(title)).fontWeight(.semibold)
+        HStack(spacing: 0) {
+            if collapsed { Spacer(minLength: 0) }
+            Button {
+                Task { await action() }
+            } label: {
+                HStack {
+                    if model.busy { ProgressView() } else { Image(systemName: model.autoIcon) }
+                    if !collapsed { Text(loc.t(title)).fontWeight(.semibold) }
+                }
+                .frame(maxWidth: collapsed ? 28 : .infinity)
+                .padding(.vertical, collapsed ? 14 : 8)
+                .padding(.horizontal, collapsed ? 14 : 0)
             }
-            .frame(maxWidth: .infinity)
-            .padding(.vertical, 8)
+            .glassButton(prominent: true)
+            .buttonBorderShape(.capsule)
+            .tint(.blue)
+            .controlSize(.large)
+            .disabled(model.busy)
+            .accessibilityLabel(loc.t(title))
         }
-        .glassButton(prominent: true)
-        .tint(.blue)
-        .controlSize(.large)
-        .disabled(model.busy)
+        .animation(.spring(response: 0.38, dampingFraction: 0.8), value: collapsed)
     }
 }
 
-/// Settings gear in the top-right corner of every screen.
+/// Reports "scrolled down" for the scan button: collapses when scrolling down, comes back when scrolling up or at the top.
+/// (iOS 18+; older systems keep the full button.)
+struct ScrollCollapse: ViewModifier {
+    @Binding var collapsed: Bool
+    func body(content: Content) -> some View {
+        if #available(iOS 18.0, *) {
+            content.onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.y + $0.contentInsets.top } action: { old, new in
+                if new < 24 { collapsed = false }
+                else if new > old + 3 { collapsed = true }
+                else if new < old - 3 { collapsed = false }
+            }
+        } else {
+            content
+        }
+    }
+}
+
 // MARK: - Card
 
 struct CardTab: View {
@@ -155,6 +181,7 @@ struct CardTab: View {
     @State private var share: ShareItem?
     @State private var pdf: ShareItem?
     @State private var photoOpen = false
+    @State private var scanCollapsed = false
 
     var body: some View {
         NavigationStack {
@@ -174,11 +201,12 @@ struct CardTab: View {
                 .frame(maxWidth: 1100)
                 .frame(maxWidth: .infinity)
             }
+            .modifier(ScrollCollapse(collapsed: $scanCollapsed))
             .background(GlassBackdrop())
             .navigationTitle("")
             .navigationBarTitleDisplayMode(.inline)
             .safeAreaInset(edge: .bottom) {
-                ScanButton(title: .readCardAuto) { await model.scanCardAuto() }
+                ScanButton(title: .readCardAuto, collapsed: scanCollapsed) { await model.scanCardAuto() }
                     .padding(.horizontal, 20).padding(.bottom, 8)
             }
             .toolbar {
@@ -353,6 +381,7 @@ struct TokenTab: View {
     @EnvironmentObject var loc: Loc
     @EnvironmentObject var model: PhoneModel
     @State private var share: ShareItem?
+    @State private var scanCollapsed = false
 
     var body: some View {
         NavigationStack {
@@ -376,12 +405,13 @@ struct TokenTab: View {
                     }
                 }
             }
+            .modifier(ScrollCollapse(collapsed: $scanCollapsed))
             .scrollContentBackground(.hidden)
             .background(GlassBackdrop())
             .navigationTitle(loc.t(.tabToken))
             .navigationBarTitleDisplayMode(.inline)
             .safeAreaInset(edge: .bottom) {
-                ScanButton(title: .readToken) { await model.scanTokenAuto() }
+                ScanButton(title: .readToken, collapsed: scanCollapsed) { await model.scanTokenAuto() }
                     .padding(.horizontal, 20).padding(.bottom, 8)
             }
             .sheet(item: $share) { ShareSheet(url: $0.url) }
@@ -436,6 +466,9 @@ struct SettingsTab: View {
                         Text(loc.t(.themeLight)).tag("light")
                         Text(loc.t(.themeDark)).tag("dark")
                     }
+                }
+                Section(loc.t(.setBehavior)) {
+                    Toggle(loc.t(.setAutoRead), isOn: $prefs.autoRead)
                 }
                 Section(loc.t(.setPrivacy)) {
                     Toggle(loc.t(.setMask), isOn: $prefs.maskSensitive)
