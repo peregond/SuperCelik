@@ -44,12 +44,12 @@ Chrome и Safari на Mac берут клиентские сертификаты
 1. Установите Super Čelik в «Программы» и запустите его один раз: приложение регистрирует драйвер
    и кладёт промежуточные сертификаты МУП в связку ключей «Вход» (только сертификаты, доверие не меняется).
 2. Вставьте карту (если была вставлена до установки, выньте и вставьте снова). Проверка в Терминале: `security list-smartcards` (должна появиться строка
-   `com.peregond.supercelik.token:SuperCelik-…`) и `pluginkit -m -p com.apple.ctk-tokens`.
+   `app.supercelik.token:SuperCelik-…`) и `pluginkit -m -p com.apple.ctk-tokens`.
 3. Полностью закройте Chrome (⌘Q, не только окно) и откройте сайт снова. Это обязательно после каждой установки или обновления приложения и после вставки карты: если Chrome обращался к сайту, пока карты в системе не было, он запоминает «сертификата нет» и не показывает выбор, пока его не перезапустить. Chrome покажет выбор сертификата,
    а PIN попросит сама macOS в системном окне. Неверный PIN тратит попытку.
 
 Если драйвер не появился в `pluginkit -m -p com.apple.ctk-tokens`: `pluginkit -a /Applications/SuperCelik.app/Contents/PlugIns/SuperCelikToken.appex`,
-затем вытащить и вставить карту. Журнал драйвера: `log show --last 10m --predicate 'subsystem == "com.peregond.supercelik.token"'`. Firefox можно настроить и без этого, через PKCS#11-модуль
+затем вытащить и вставить карту. Журнал драйвера: `log show --last 10m --predicate 'subsystem == "app.supercelik.token"'`. Firefox можно настроить и без этого, через PKCS#11-модуль
 [srb-id-pkcs11](https://github.com/ubavic/srb-id-pkcs11).
 
 ## Безопасность

@@ -44,7 +44,7 @@ jobs:
             xcrun simctl boot "$UDID"; xcrun simctl bootstatus "$UDID" -b
             xcrun simctl ui "$UDID" appearance "$3"
             xcrun simctl install "$UDID" build/Build/Products/Debug-iphonesimulator/SuperCelik.app
-            xcrun simctl launch "$UDID" com.peregond.supercelik.ios --demo $4
+            xcrun simctl launch "$UDID" app.supercelik --demo $4
             sleep 6
             xcrun simctl io "$UDID" screenshot "shots/$1.png"
             xcrun simctl shutdown "$UDID"

@@ -4,7 +4,7 @@ import CryptoKit
 import Security
 import os
 
-let ctkLog = Logger(subsystem: "com.peregond.supercelik.token", category: "driver")
+let ctkLog = Logger(subsystem: "app.supercelik.token", category: "driver")
 
 // CryptoTokenKit smart-card driver for the NetSeT CardEdge applet (PKCS#15 AID A000000063504B43532D3135)
 // found on Serbian ID cards, foreigner ID cards, residence permits and CardEdge USB tokens.

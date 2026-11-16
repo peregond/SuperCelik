@@ -15,7 +15,7 @@ What is **already prepared** in the repository, and what **you** still have to d
 
 ## You need
 1. **Apple Developer Program** membership (99 USD / year). It also gives the *NFC Tag Reading* capability the iOS app needs.
-2. In **App Store Connect**: create the app records (iOS: bundle id `com.peregond.supercelik.ios`; macOS: `com.peregond.supercelik`).
+2. In **App Store Connect**: create one app record with both iOS and macOS platforms (universal purchase, shared bundle id `app.supercelik`; the Mac token extension uses `app.supercelik.token`).
    Change the ids in the Xcode project if they are taken. Fill in: privacy policy URL (use `https://celik.peregon.cc/privacy`),
    support URL, category, age rating (no objectionable content), pricing, and paste `appstore/REVIEW_NOTES.md` into *App Review Information*.
 3. **Screenshots** (required sizes): iPhone 6.9" (1320 x 2868), iPad 13" (2064 x 2752), Mac (at least 1280 x 800). The CI screenshot job

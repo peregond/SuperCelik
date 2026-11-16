@@ -15,7 +15,7 @@ Build (on a Mac): `bash scripts/make-appstore-mac.sh <version> <build>`.
 | Team id (`TEAM_ID`) | developer.apple.com > Membership |
 | *3rd Party Mac Developer Application* (or *Apple Distribution*) certificate | Certificates, Identifiers & Profiles |
 | *3rd Party Mac Developer Installer* certificate | same |
-| App IDs `com.peregond.supercelik` and `com.peregond.supercelik.token` (Mac) | Identifiers |
+| App IDs `app.supercelik` and `app.supercelik.token` (Mac) | Identifiers |
 | Two *Mac App Store* provisioning profiles, one per App ID | Profiles |
 | App Store Connect API key (to upload) | App Store Connect > Users and Access > Integrations |
 

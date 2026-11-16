@@ -9,7 +9,7 @@
 #   APP_IDENTITY                     "3rd Party Mac Developer Application: Name (TEAMID)" (or "Apple Distribution: ...")
 #   INSTALLER_IDENTITY               "3rd Party Mac Developer Installer: Name (TEAMID)"
 #   APP_PROFILE, EXT_PROFILE         paths of the Mac App Store provisioning profiles (.provisionprofile)
-#                                    for com.peregond.supercelik and com.peregond.supercelik.token
+#                                    for app.supercelik and app.supercelik.token
 # Result: dist/SuperCelik-<version>-appstore.pkg  (upload with Transporter or `xcrun altool --upload-app`)
 set -euo pipefail
 cd "$(dirname "$0")/.."

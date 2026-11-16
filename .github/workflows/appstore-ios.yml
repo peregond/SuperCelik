@@ -6,7 +6,7 @@ name: App Store (iOS / iPadOS)
 #   ASC_KEY_ID               App Store Connect API key id
 #   ASC_ISSUER_ID            issuer id (App Store Connect > Users and Access > Integrations)
 #   ASC_KEY_P8_BASE64        the AuthKey_XXXX.p8 file, base64 (base64 -w0 AuthKey_XXXX.p8)
-# The app record with the bundle id com.peregond.supercelik.ios (or yours, change it in the project) must exist in App Store Connect.
+# The app record with the bundle id app.supercelik (or yours, change it in the project) must exist in App Store Connect.
 on:
   workflow_dispatch:
     inputs:
