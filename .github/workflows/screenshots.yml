@@ -1,5 +1,5 @@
 name: Screenshots
-# (trigger: touching this file in a PR runs the job) [iOS store sizes + reader screens]
+# (trigger: touching this file in a PR runs the job) [iOS header, token and settings screens]
 
 on:
   pull_request:
@@ -55,6 +55,9 @@ jobs:
           shot iphone-dark "$PHONE" dark --demo
           shot iphone-pdf "$PHONE" light "--demo --pdf"
           shot iphone-empty "$PHONE" light ""
+          shot iphone-token "$PHONE" light "--token"
+          shot iphone-settings "$PHONE" light "--demo --settings"
+          shot iphone-empty-dark "$PHONE" dark ""
           shot ipad-light "$PAD" light --demo
           shot ipad-pdf "$PAD" light "--demo --pdf"
           shot ipad-empty "$PAD" light ""

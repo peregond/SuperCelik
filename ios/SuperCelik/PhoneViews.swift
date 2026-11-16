@@ -4,6 +4,9 @@ import UIKit
 struct PhoneRootView: View {
     @EnvironmentObject var loc: Loc
     @EnvironmentObject var model: PhoneModel
+    // screenshots only: `--token` / `--settings` open that tab at launch
+    @State private var tab = CommandLine.arguments.contains("--token") ? 1 : (CommandLine.arguments.contains("--settings") ? 2 : 0)
+
     var body: some View {
         tabs
             .minimizingTabBar()
@@ -13,20 +16,20 @@ struct PhoneRootView: View {
     /// iPhone: tab bar (Liquid Glass). iPad: iOS 18+ turns the same tabs into a sidebar like the Mac app.
     @ViewBuilder private var tabs: some View {
         if #available(iOS 18.0, *) {
-            TabView {
-                Tab(loc.t(.tabCardShort), systemImage: "person.text.rectangle") { CardTab() }
-                Tab(loc.t(.tabTokenShort), systemImage: "checkmark.seal") { TokenTab() }
-                Tab(loc.t(.tabSettings), systemImage: "gearshape") { SettingsTab() }
+            TabView(selection: $tab) {
+                Tab(loc.t(.tabCardShort), systemImage: "person.text.rectangle", value: 0) { CardTab() }
+                Tab(loc.t(.tabTokenShort), systemImage: "checkmark.seal", value: 1) { TokenTab() }
+                Tab(loc.t(.tabSettings), systemImage: "gearshape", value: 2) { SettingsTab() }
             }
             .tabViewStyle(.sidebarAdaptable)
         } else {
-            TabView {
+            TabView(selection: $tab) {
                 CardTab()
-                    .tabItem { Label(loc.t(.tabCardShort), systemImage: "person.text.rectangle") }
+                    .tabItem { Label(loc.t(.tabCardShort), systemImage: "person.text.rectangle") }.tag(0)
                 TokenTab()
-                    .tabItem { Label(loc.t(.tabTokenShort), systemImage: "checkmark.seal") }
+                    .tabItem { Label(loc.t(.tabTokenShort), systemImage: "checkmark.seal") }.tag(1)
                 SettingsTab()
-                    .tabItem { Label(loc.t(.tabSettings), systemImage: "gearshape") }
+                    .tabItem { Label(loc.t(.tabSettings), systemImage: "gearshape") }.tag(2)
             }
         }
     }
