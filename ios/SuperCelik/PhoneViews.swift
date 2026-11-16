@@ -153,7 +153,7 @@ struct CardTab: View {
                 }
             }
             .sheet(item: $share) { ShareSheet(url: $0.url) }
-            .sheet(item: $pdf) { PDFPreview(url: $0.url).ignoresSafeArea() }
+            .sheet(item: $pdf) { PDFPreview(url: $0.url) }
             .sheet(isPresented: $photoOpen) {
                 if let d = model.personal?.portrait, let img = UIImage(data: d) {
                     Image(uiImage: img).resizable().scaledToFit().padding().presentationDetents([.medium, .large])

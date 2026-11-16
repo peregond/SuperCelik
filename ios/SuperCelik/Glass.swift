@@ -86,12 +86,21 @@ struct FlagStripe: View {
     }
 }
 
-/// System Quick Look: shows the PDF with the system's own share and print buttons.
-struct PDFPreview: UIViewControllerRepresentable {
+/// System Quick Look: shows the PDF with the system's own share and print buttons, a close (x) button
+/// on the left, and the sheet can still be swiped down.
+struct PDFPreview: View {
     let url: URL
+    @Environment(\.dismiss) private var dismiss
+    var body: some View { PDFPreviewController(url: url, onClose: { dismiss() }).ignoresSafeArea() }
+}
+
+private struct PDFPreviewController: UIViewControllerRepresentable {
+    let url: URL
+    let onClose: () -> Void
     func makeUIViewController(context: Context) -> UINavigationController {
         let q = QLPreviewController()
         q.dataSource = context.coordinator
+        q.navigationItem.leftBarButtonItem = UIBarButtonItem(systemItem: .close, primaryAction: UIAction { _ in onClose() })
         return UINavigationController(rootViewController: q)
     }
     func updateUIViewController(_ vc: UINavigationController, context: Context) {}
