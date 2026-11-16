@@ -192,7 +192,7 @@ struct CardTab: View {
                 }
                 ToolbarItemGroup(placement: .navigationBarLeading) {
                     if model.personal != nil {
-                        Button(role: .destructive) { model.clear() } label: { Image(systemName: "trash") }
+                        Button(role: .destructive) { model.clear() } label: { Image(systemName: "xmark").foregroundStyle(.red) }
                             .accessibilityLabel(loc.t(.close))
                     }
                 }
@@ -215,9 +215,6 @@ struct CardTab: View {
     /// iPhone: one column.
     @ViewBuilder private func compactLayout(_ p: PersonalData) -> some View {
         header(p).padding(16).frame(maxWidth: .infinity, alignment: .leading).glassCard()
-        if let s = model.signatureStatus {
-            signatureRow(s).padding(16).frame(maxWidth: .infinity, alignment: .leading).glassCard(cornerRadius: 22)
-        }
         fieldsCard(p, columns: 1)
         actions
     }
@@ -227,9 +224,6 @@ struct CardTab: View {
         HStack(alignment: .top, spacing: 16) {
             VStack(spacing: 16) {
                 header(p).padding(16).frame(maxWidth: .infinity, alignment: .leading).glassCard()
-                if let s = model.signatureStatus {
-                    signatureRow(s).padding(16).frame(maxWidth: .infinity, alignment: .leading).glassCard(cornerRadius: 22)
-                }
                 actions
             }
             .frame(width: 380)
@@ -285,6 +279,7 @@ struct CardTab: View {
                     Text(docTitle(p.cardType)).font(.caption).foregroundStyle(.secondary)
                     Text("\(p.fixed.givenName) \(p.fixed.surname)").font(.title3.bold())
                     if let exp = p.expiryDate { expiry(exp) }
+                    if let sig = model.signatureStatus { signatureRow(sig).font(.caption) }
                 }
             }
         }
@@ -314,16 +309,16 @@ struct CardTab: View {
     @ViewBuilder private func signatureRow(_ s: PhoneModel.SigStatus) -> some View {
         switch s {
         case .ok:
-            Label(loc.t(.sigOk), systemImage: "checkmark.seal.fill").foregroundStyle(.green)
+            Label(loc.t(.sigOk), systemImage: "signature").foregroundStyle(.green)
         case .chainNotTrusted(let m):
             VStack(alignment: .leading, spacing: 4) {
                 Label(loc.t(.sigChain), systemImage: "exclamationmark.triangle.fill").foregroundStyle(.orange)
-                Text(m).font(.caption).foregroundStyle(.secondary)
+                Text(m).font(.caption2).foregroundStyle(.secondary)
             }
         case .invalid(let m):
             VStack(alignment: .leading, spacing: 4) {
                 Label(loc.t(.sigBad), systemImage: "xmark.seal.fill").foregroundStyle(.red)
-                Text(m).font(.caption).foregroundStyle(.secondary)
+                Text(m).font(.caption2).foregroundStyle(.secondary)
             }
         case .unavailable:
             EmptyView()
