@@ -348,6 +348,8 @@ struct TokenTab: View {
                     }
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(GlassBackdrop())
             .navigationTitle(loc.t(.tabToken))
             .navigationBarTitleDisplayMode(.inline)
             .safeAreaInset(edge: .bottom) {
