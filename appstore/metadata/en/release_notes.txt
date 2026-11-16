@@ -1,1 +1,1 @@
-Liquid Glass design, one Read button (wired reader or NFC), PDF preview with print and share, Serbian in Latin and Cyrillic.
+Liquid Glass design, reader status shown live, one Read button, PDF preview with print and share, Serbian in Latin and Cyrillic.

@@ -71,6 +71,7 @@ final class Loc: ObservableObject {
         // iOS (NFC)
         case statusReading, emptyNoReaderT, emptyNoReaderH, emptyNoCardT, emptyNoCardH, emptyReadyT, emptyReadyH, demoData, demoHint, tabCardShort, tabTokenShort, readCardAuto, hintAuto, viewPdf, photo, scanUsb, usbNoReaderT, usbNoReaderH, hintUsb, scanCard, nfcPrompt, nfcReading, nfcDone, sharePdf, hintNfc, aboutTextIOS
         case nfcUnavailableT, nfcUnavailableH, nfcNoCardT, nfcNoCardH, nfcLostT, nfcLostH
+        case iosNoReaderH, iosNoCardH, iosReadyH
     }
 
     // swiftlint:disable line_length
@@ -92,7 +93,7 @@ final class Loc: ObservableObject {
         .photo: [.ru: "Фото", .en: "Photo", .sr: "Fotografija"],
         .scanUsb: [.ru: "Прочитать через USB-ридер", .en: "Read card via USB reader", .sr: "Pročitaj karticu preko USB čitača"],
         .usbNoReaderT: [.ru: "USB-ридер не виден системе", .en: "No USB reader visible to the system", .sr: "USB čitač nije vidljiv sistemu"],
-        .usbNoReaderH: [.ru: "Подключите ридер смарт-карт (iPhone 15 и новее по USB-C, либо MFi-ридер) и вставьте карту. Если iOS ридер не показывает, используйте чтение по NFC (если в карте есть бесконтактный чип) или версию для Mac / Windows / Android.", .en: "Connect a smart card reader (iPhone 15 or newer over USB-C, or an MFi reader) and insert the card. If iOS does not expose the reader, use NFC (if the card has a contactless chip) or the Mac / Windows / Android app.", .sr: "Povežite čitač kartica (iPhone 15 i noviji preko USB-C, ili MFi čitač) i umetnite karticu. Ako iOS ne prikazuje čitač, koristite NFC (ako kartica ima beskontaktni čip) ili aplikaciju za Mac / Windows / Android."],
+        .usbNoReaderH: [.ru: "Подключите считыватель смарт-карт (iPhone 15 и новее по USB-C, либо MFi-считыватель) и вставьте карту.", .en: "Connect a smart card reader (iPhone 15 or newer over USB-C, or an MFi reader) and insert the card.", .sr: "Povežite čitač kartica (iPhone 15 i noviji preko USB-C, ili MFi čitač) i umetnite karticu."],
         .hintUsb: [.ru: "Подключите USB-ридер, вставьте карту и нажмите «Прочитать через USB-ридер». Если в карте есть NFC-чип, можно читать и по NFC.", .en: "Connect a USB reader, insert the card and tap “Read card via USB reader”. If the card has an NFC chip you can read it over NFC too.", .sr: "Povežite USB čitač, umetnite karticu i dodirnite „Pročitaj karticu preko USB čitača“. Ako kartica ima NFC čip, možete je čitati i preko NFC-a."],
         .scanCard: [.ru: "Прочитать карту по NFC", .en: "Read card via NFC", .sr: "Pročitaj karticu preko NFC-a"],
         .nfcPrompt: [.ru: "Приложите карту к верхней части iPhone и не двигайте её", .en: "Hold the card against the top of your iPhone and keep it still", .sr: "Prislonite karticu uz gornji deo iPhone-a i ne pomerajte je"],
@@ -100,7 +101,10 @@ final class Loc: ObservableObject {
         .nfcDone: [.ru: "Готово", .en: "Done", .sr: "Gotovo"],
         .sharePdf: [.ru: "Поделиться", .en: "Share PDF", .sr: "Podeli PDF"],
         .hintNfc: [.ru: "Нажмите «Прочитать карту по NFC» и приложите карту к верхней части iPhone.", .en: "Tap “Read card via NFC” and hold the card against the top of your iPhone.", .sr: "Dodirnite „Pročitaj karticu preko NFC-a“ i prislonite karticu uz gornji deo iPhone-a."],
-        .aboutTextIOS: [.ru: "Чтение электронной ID-карты Сербии по NFC. Независимая реализация, не связана с МУП РС и NetSeT/Veridos.", .en: "Reads the Serbian electronic ID card over NFC. Independent implementation, not affiliated with MUP RS or NetSeT/Veridos.", .sr: "Čitanje elektronske lične karte Srbije preko NFC-a. Nezavisna implementacija, nije povezana sa MUP RS i NetSeT/Veridos."],
+        .aboutTextIOS: [.ru: "Чтение электронной ID-карты Сербии через считыватель смарт-карт. Независимая реализация, не связана с МУП РС и NetSeT/Veridos.", .en: "Reads the Serbian electronic ID card through a smart card reader. Independent implementation, not affiliated with MUP RS or NetSeT/Veridos.", .sr: "Čitanje elektronske lične karte Srbije preko čitača pametnih kartica. Nezavisna implementacija, nije povezana sa MUP RS i NetSeT/Veridos."],
+        .iosNoReaderH: [.ru: "Подключите считыватель смарт-карт к iPhone или iPad по USB-C: приложение увидит его само.", .en: "Plug a smart card reader into your iPhone or iPad over USB-C: the app will notice it by itself.", .sr: "Povežite čitač pametnih kartica na iPhone ili iPad preko USB-C: aplikacija će ga sama prepoznati."],
+        .iosNoCardH: [.ru: "Считыватель подключён. Вставьте карту в него до конца.", .en: "The reader is connected. Push the card all the way into it.", .sr: "Čitač je povezan. Umetnite karticu u njega do kraja."],
+        .iosReadyH: [.ru: "Нажмите «Прочитать карту». Данные останутся на этом устройстве.", .en: "Tap “Read card”. The data stays on this device.", .sr: "Dodirnite „Pročitaj karticu“. Podaci ostaju na ovom uređaju."],
         .nfcUnavailableT: [.ru: "NFC недоступен", .en: "NFC is not available", .sr: "NFC nije dostupan"],
         .nfcUnavailableH: [.ru: "Это устройство не умеет читать карты по NFC. Нужен iPhone 7 или новее.", .en: "This device cannot read cards over NFC. An iPhone 7 or newer is required.", .sr: "Ovaj uređaj ne može da čita kartice preko NFC-a. Potreban je iPhone 7 ili noviji."],
         .nfcNoCardT: [.ru: "Карта не найдена", .en: "No card found", .sr: "Kartica nije pronađena"],

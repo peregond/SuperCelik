@@ -6,7 +6,7 @@ import UIKit
 /// Reduce Motion is on.
 struct PhoneMascot: View {
     enum Character: String { case reader, key }
-    enum Mood: Equatable { case waiting, busy, error, done }
+    enum Mood: Equatable { case noReader, waiting, ready, busy, error, done }
 
     let character: Character
     let mood: Mood
@@ -15,12 +15,15 @@ struct PhoneMascot: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @State private var phase = false
     @State private var shakes: CGFloat = 0
+    @State private var hop: CGFloat = 0
 
     /// Pose files (Mascots/<character>-<pose>.png) for a mood, best first.
     private var poses: [String] {
         switch (character, mood) {
+        case (_, .noReader): return ["sad", "worry"]
         case (_, .waiting): return ["present"]
-        case (.reader, .busy), (.reader, .done): return ["card"]
+        case (.reader, .ready), (.reader, .busy), (.reader, .done): return ["card"]
+        case (.key, .ready): return ["thumbs"]
         case (.key, .busy): return ["look"]
         case (.key, .done): return ["thumbs"]
         case (_, .error): return ["worry", "sad"]
@@ -42,11 +45,20 @@ struct PhoneMascot: View {
         .frame(width: size, height: size)
         .rotationEffect(.degrees(phase ? sway.deg : -sway.deg), anchor: .bottom)
         .scaleEffect(x: 1, y: phase ? 1.014 : 1, anchor: .bottom)
+        .offset(y: hop)
         .modifier(PhoneShake(animatableData: shakes))
         .animation(reduceMotion ? nil : .spring(response: 0.42, dampingFraction: 0.7), value: poses.first)
         .accessibilityHidden(true)
         .onChange(of: mood) { new in
-            if new == .error, !reduceMotion { withAnimation(.linear(duration: 0.45)) { shakes += 1 } }
+            guard !reduceMotion else { return }
+            if new == .error { withAnimation(.linear(duration: 0.45)) { shakes += 1 } }
+            if new == .ready || new == .waiting {   // a reader or a card appeared: a little hop
+                Task { @MainActor in
+                    withAnimation(.easeOut(duration: 0.16)) { hop = -16 }
+                    try? await Task.sleep(nanoseconds: 160_000_000)
+                    withAnimation(.interpolatingSpring(stiffness: 260, damping: 12)) { hop = 0 }
+                }
+            }
         }
         .task(id: "\(mood)-\(reduceMotion)") {
             var t = Transaction(); t.disablesAnimations = true

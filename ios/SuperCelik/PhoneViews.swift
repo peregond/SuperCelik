@@ -3,9 +3,11 @@ import UIKit
 
 struct PhoneRootView: View {
     @EnvironmentObject var loc: Loc
+    @EnvironmentObject var model: PhoneModel
     var body: some View {
         tabs
             .minimizingTabBar()
+            .task { await model.watchReader() }
     }
 
     /// iPhone: tab bar (Liquid Glass). iPad: iOS 18+ turns the same tabs into a sidebar like the Mac app.
@@ -63,6 +65,60 @@ struct ProblemBanner: View {
     }
 }
 
+/// The character plus what the reader is doing right now: nothing plugged in, waiting for a card, ready to read.
+/// It changes the moment a reader is plugged in or a card goes in (see PhoneModel.watchReader).
+struct ReaderStatusBlock: View {
+    @EnvironmentObject var loc: Loc
+    @EnvironmentObject var model: PhoneModel
+    let character: PhoneMascot.Character
+    var size: CGFloat = 190
+    var done = false
+
+    private var mood: PhoneMascot.Mood {
+        if model.problem != nil && !done { return .error }
+        if model.busy { return .busy }
+        if done { return .done }
+        switch model.readerState {
+        case .none: return .noReader
+        case .noCard: return .waiting
+        case .cardReady: return .ready
+        }
+    }
+
+    private var texts: (title: Loc.L, hint: Loc.L, color: Color) {
+        switch model.readerState {
+        case .none: return (.emptyNoReaderT, .iosNoReaderH, .secondary)
+        case .noCard: return (.emptyNoCardT, .iosNoCardH, .orange)
+        case .cardReady: return (.emptyReadyT, .iosReadyH, .green)
+        }
+    }
+
+    var body: some View {
+        VStack(spacing: 10) {
+            PhoneMascot(character: character, mood: mood, size: size)
+            if model.problem == nil || done {
+                let t = texts
+                Label(loc.t(t.title), systemImage: "circle.fill")
+                    .labelStyle(StatusDotStyle(color: t.color))
+                    .font(.headline)
+                Text(loc.t(t.hint)).font(.subheadline).foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center).padding(.horizontal)
+            }
+        }
+        .animation(.easeInOut(duration: 0.25), value: model.readerState)
+    }
+}
+
+private struct StatusDotStyle: LabelStyle {
+    let color: Color
+    func makeBody(configuration: Configuration) -> some View {
+        HStack(spacing: 8) {
+            Circle().fill(color).frame(width: 10, height: 10)
+            configuration.title
+        }
+    }
+}
+
 /// The one main button: the app picks the wired reader if one is connected, otherwise NFC.
 struct ScanButton: View {
     @EnvironmentObject var loc: Loc
@@ -108,12 +164,7 @@ struct CardTab: View {
                         ProblemBanner(problem: problem).padding(16).frame(maxWidth: .infinity, alignment: .leading).glassCard()
                     }
                     if model.personal == nil {
-                        PhoneMascot(character: .reader, mood: model.problem != nil ? .error : (model.busy ? .busy : .waiting))
-                            .padding(.top, model.problem == nil ? 56 : 8)
-                        if model.problem == nil {
-                            Text(loc.t(.hintAuto)).font(.subheadline).foregroundStyle(.secondary)
-                                .multilineTextAlignment(.center).padding(.horizontal)
-                        }
+                        ReaderStatusBlock(character: .reader).padding(.top, model.problem == nil ? 40 : 8)
                     }
                     if let p = model.personal {
                         if sizeClass == .regular { regularLayout(p) } else { compactLayout(p) }
@@ -312,15 +363,9 @@ struct TokenTab: View {
         NavigationStack {
             List {
                 Section {
-                    HStack {
-                        Spacer()
-                        PhoneMascot(character: .key,
-                                    mood: model.problem != nil && model.token == nil ? .error
-                                        : (model.busy ? .busy : (model.token != nil ? .done : .waiting)),
-                                    size: model.token == nil ? 190 : 120)
-                        Spacer()
-                    }
-                    .listRowBackground(Color.clear)
+                    ReaderStatusBlock(character: .key, size: model.token == nil ? 190 : 120, done: model.token != nil)
+                        .frame(maxWidth: .infinity)
+                        .listRowBackground(Color.clear)
                     if let problem = model.problem, model.token == nil {
                         ProblemBanner(problem: problem)
                     }

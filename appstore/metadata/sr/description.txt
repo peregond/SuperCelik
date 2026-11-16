@@ -1,6 +1,6 @@
 Super Čelik čita srpsku elektronsku ličnu kartu, ličnu kartu za strance ili boravišnu dozvolu (RP2024) i prikazuje podatke na iPhone ili iPad uređaju.
 
-• Čitanje kartice preko povezanog čitača pametnih kartica ili preko NFC-a (ako kartica ima beskontaktni čip). Aplikacija sama bira način.
+• Čitanje kartice preko čitača pametnih kartica povezanog preko USB-C. Aplikacija odmah prikazuje da je čitač povezan i da je kartica umetnuta.
 • Lični podaci, fotografija, rok važenja dokumenta i provera ispravnosti potpisa kartice (prema lancu sertifikata MUP-a).
 • Štampa u stilu zvanične (PDF): pregled, štampa preko AirPrint-a i slanje.
 • Sertifikati tokena i rok njihovog važenja.

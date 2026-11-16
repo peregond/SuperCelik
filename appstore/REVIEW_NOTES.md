@@ -3,12 +3,12 @@
 **What the app does.** Super Čelik reads a Serbian electronic ID card / foreigner ID / residence permit and shows, prints
 and shares its data. Everything happens on the device; the app has no accounts, no server and no analytics.
 
-**You do not need a Serbian card to review.** Open **Settings (gear icon, top right) → "Show demo data"**: the app then shows
+**You do not need a Serbian card to review.** Open **Settings (third tab in the bottom bar) → "Show demo data"**: the app then shows
 a fictional person, the signature check result, the PDF printout (View PDF / Print / Share) and the Token tab. No sign-in is required.
 
-**Reading a real card** needs a Serbian eID card and either a smart card reader (USB-C / Lightning) or an NFC-capable card
-on an iPhone. iPad has no NFC reader, so on iPad the app explains that and works with demo data and USB readers only.
-NFC is used only when the user taps "Read card"; the usage description is in Info.plist.
+**Reading a real card** needs a Serbian eID card and a smart card reader connected over USB-C (or an MFi reader). The app
+shows at once whether a reader is connected and whether a card is inserted. NFC reading is switched off in this version
+(the code is kept for later); the NFC entitlement and usage description in the bundle are left in place for that.
 
 **Not affiliated.** The app is an independent implementation and says so in its description and About text. It does not use
 any MUP RS or NetSeT/Veridos code, logo or trademark. "Super Čelik" is a working name; we will rename it on request.
