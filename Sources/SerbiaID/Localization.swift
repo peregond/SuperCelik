@@ -98,7 +98,7 @@ final class Loc: ObservableObject {
         .nfcPrompt: [.ru: "Приложите карту к верхней части iPhone и не двигайте её", .en: "Hold the card against the top of your iPhone and keep it still", .sr: "Prislonite karticu uz gornji deo iPhone-a i ne pomerajte je"],
         .nfcReading: [.ru: "Чтение карты… Не убирайте карту", .en: "Reading the card… Keep holding it", .sr: "Čitanje kartice… Ne pomerajte je"],
         .nfcDone: [.ru: "Готово", .en: "Done", .sr: "Gotovo"],
-        .sharePdf: [.ru: "Поделиться PDF", .en: "Share PDF", .sr: "Podeli PDF"],
+        .sharePdf: [.ru: "Поделиться", .en: "Share PDF", .sr: "Podeli PDF"],
         .hintNfc: [.ru: "Нажмите «Прочитать карту по NFC» и приложите карту к верхней части iPhone.", .en: "Tap “Read card via NFC” and hold the card against the top of your iPhone.", .sr: "Dodirnite „Pročitaj karticu preko NFC-a“ i prislonite karticu uz gornji deo iPhone-a."],
         .aboutTextIOS: [.ru: "Чтение электронной ID-карты Сербии по NFC. Независимая реализация, не связана с МУП РС и NetSeT/Veridos.", .en: "Reads the Serbian electronic ID card over NFC. Independent implementation, not affiliated with MUP RS or NetSeT/Veridos.", .sr: "Čitanje elektronske lične karte Srbije preko NFC-a. Nezavisna implementacija, nije povezana sa MUP RS i NetSeT/Veridos."],
         .nfcUnavailableT: [.ru: "NFC недоступен", .en: "NFC is not available", .sr: "NFC nije dostupan"],

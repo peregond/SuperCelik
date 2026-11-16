@@ -212,11 +212,11 @@ struct CardTab: View {
             }.glassButton(prominent: false)
             HStack(spacing: 10) {
                 Button { model.printPDF(includeJmbg: prefs.printJmbg) } label: {
-                    Label(loc.t(.printCard), systemImage: "printer").frame(maxWidth: .infinity).padding(.vertical, 6)
+                    Label(loc.t(.printCard), systemImage: "printer").lineLimit(1).minimumScaleFactor(0.8).frame(maxWidth: .infinity).padding(.vertical, 6)
                 }.glassButton(prominent: false)
                 Button {
                     if let url = model.pdfFile(includeJmbg: prefs.printJmbg) { share = ShareItem(url: url) }
-                } label: { Label(loc.t(.sharePdf), systemImage: "square.and.arrow.up").frame(maxWidth: .infinity).padding(.vertical, 6) }
+                } label: { Label(loc.t(.sharePdf), systemImage: "square.and.arrow.up").lineLimit(1).minimumScaleFactor(0.8).frame(maxWidth: .infinity).padding(.vertical, 6) }
                     .glassButton(prominent: false)
             }
             Button { model.copyAll() } label: {
