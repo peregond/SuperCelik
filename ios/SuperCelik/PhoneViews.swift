@@ -386,23 +386,29 @@ struct TokenTab: View {
     var body: some View {
         NavigationStack {
             List {
+                // intro: no white card behind it, the text sits on the backdrop like on the Card tab
                 Section {
                     ReaderStatusBlock(character: .key, size: model.token == nil ? 190 : 120, done: model.token != nil)
                         .frame(maxWidth: .infinity)
-                        .listRowBackground(Color.clear)
+                        .listRowBackground(Color.clear).listRowSeparator(.hidden)
                     if let problem = model.problem, model.token == nil {
                         ProblemBanner(problem: problem)
+                            .listRowBackground(Rectangle().fill(.regularMaterial))
                     }
                     Text(loc.t(.pinNote)).font(.footnote).foregroundStyle(.secondary)
+                        .multilineTextAlignment(.center)
+                        .listRowBackground(Color.clear).listRowSeparator(.hidden)
                 }
                 if let t = model.token {
                     Section {
                         if !t.tokenLabel.isEmpty { LabeledContent("Token", value: t.tokenLabel) }
                         if !t.tokenSerial.isEmpty { LabeledContent("Serial", value: t.tokenSerial) }
                     }
+                    .listRowBackground(Rectangle().fill(.regularMaterial))
                     Section(loc.t(.certificates)) {
                         ForEach(model.tokenRows) { row in certificate(row) }
                     }
+                    .listRowBackground(Rectangle().fill(.regularMaterial))
                 }
             }
             .modifier(ScrollCollapse(collapsed: $scanCollapsed))
