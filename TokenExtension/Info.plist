@@ -5,7 +5,7 @@
     <key>CFBundleDevelopmentRegion</key><string>en</string>
     <key>CFBundleDisplayName</key><string>Super Čelik eID</string>
     <key>CFBundleName</key><string>SuperCelikToken</string>
-    <key>CFBundleIdentifier</key><string>com.peregond.supercelik.token</string>
+    <key>CFBundleIdentifier</key><string>app.supercelik.token</string>
     <key>CFBundleExecutable</key><string>SuperCelikToken</string>
     <key>CFBundlePackageType</key><string>XPC!</string>
     <key>CFBundleInfoDictionaryVersion</key><string>6.0</string>
@@ -17,7 +17,7 @@
         <key>NSExtensionPointIdentifier</key><string>com.apple.ctk-tokens</string>
         <key>NSExtensionAttributes</key>
         <dict>
-            <key>com.apple.ctk.class-id</key><string>com.peregond.supercelik.token</string>
+            <key>com.apple.ctk.class-id</key><string>app.supercelik.token</string>
             <key>com.apple.ctk.driver-class</key><string>SuperCelikTokenDriver</string>
             <key>com.apple.ctk.token-type</key><string>smartcard</string>
         </dict>

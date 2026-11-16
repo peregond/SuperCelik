@@ -5,7 +5,7 @@
 	<!-- CryptoTokenKit extension (keychain access for Safari / Chrome client certificates): sandbox + smart card. -->
 	<key>com.apple.security.app-sandbox</key><true/>
 	<key>com.apple.security.smartcard</key><true/>
-	<key>com.apple.application-identifier</key><string>TEAMID.com.peregond.supercelik.token</string>
+	<key>com.apple.application-identifier</key><string>TEAMID.app.supercelik.token</string>
 	<key>com.apple.developer.team-identifier</key><string>TEAMID</string>
 </dict>
 </plist>

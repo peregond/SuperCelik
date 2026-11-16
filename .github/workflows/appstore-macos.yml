@@ -6,8 +6,8 @@ name: App Store (macOS)
 #   MAC_APP_CERT_P12_BASE64       "3rd Party Mac Developer Application" (or Apple Distribution) certificate + key, .p12, base64
 #   MAC_INSTALLER_CERT_P12_BASE64 "3rd Party Mac Developer Installer" certificate + key, .p12, base64
 #   MAC_CERT_PASSWORD             password of both .p12 files
-#   MAC_APP_PROFILE_BASE64        Mac App Store provisioning profile for com.peregond.supercelik, base64
-#   MAC_EXT_PROFILE_BASE64        Mac App Store provisioning profile for com.peregond.supercelik.token, base64
+#   MAC_APP_PROFILE_BASE64        Mac App Store provisioning profile for app.supercelik, base64
+#   MAC_EXT_PROFILE_BASE64        Mac App Store provisioning profile for app.supercelik.token, base64
 #   ASC_KEY_ID, ASC_ISSUER_ID, ASC_KEY_P8_BASE64   App Store Connect API key (as for the iOS workflow)
 on:
   workflow_dispatch:

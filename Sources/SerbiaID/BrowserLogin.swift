@@ -5,7 +5,7 @@ import Security
 /// Mac App Store build (sandboxed): macOS finds and starts the bundled CryptoTokenKit extension by itself, and the app
 /// may not run helper tools, so there is nothing to prepare or repair here.
 enum BrowserLogin {
-    static let extensionID = "com.peregond.supercelik.token"
+    static let extensionID = "app.supercelik.token"
     static func prepare() {}
     static func stopRunningDriver() {}
     static func driverAttached() -> Bool { true }
@@ -21,7 +21,7 @@ enum BrowserLogin {
 /// MUP intermediate CA certificates into the login keychain (certificates only, no trust settings)
 /// so the browser can match the card certificate to the CA list the site asks for.
 enum BrowserLogin {
-    static let extensionID = "com.peregond.supercelik.token"
+    static let extensionID = "app.supercelik.token"
 
     static func prepare() {
         DispatchQueue.global(qos: .utility).async {

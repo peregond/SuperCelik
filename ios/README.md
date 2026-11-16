@@ -37,7 +37,7 @@ CI на каждый PR и на каждый релиз собирает два 
 проект берёт общий код из `Sources/SerbiaID`).
 
 В Xcode: цель SuperCelik → Signing & Capabilities → выберите свою команду (Team). Если bundle id
-`com.peregond.supercelik.ios` занят, поменяйте его на свой. Проверьте, что в списке возможностей
+`app.supercelik` занят, поменяйте его на свой. Проверьте, что в списке возможностей
 есть «Near Field Communication Tag Reading» (её добавляет файл `Config/SuperCelik.entitlements`).
 Подключите iPhone и нажмите Run.
 
