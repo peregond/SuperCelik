@@ -3,28 +3,30 @@ import UIKit
 
 struct PhoneRootView: View {
     @EnvironmentObject var loc: Loc
-    @State private var showSettings = false
-
+    @EnvironmentObject var model: PhoneModel
     var body: some View {
         tabs
             .minimizingTabBar()
-            .sheet(isPresented: $showSettings) { SettingsTab() }
+            .task { await model.watchReader() }
     }
 
     /// iPhone: tab bar (Liquid Glass). iPad: iOS 18+ turns the same tabs into a sidebar like the Mac app.
     @ViewBuilder private var tabs: some View {
         if #available(iOS 18.0, *) {
             TabView {
-                Tab(loc.t(.tabCardShort), systemImage: "person.text.rectangle") { CardTab(showSettings: $showSettings) }
-                Tab(loc.t(.tabTokenShort), systemImage: "checkmark.seal") { TokenTab(showSettings: $showSettings) }
+                Tab(loc.t(.tabCardShort), systemImage: "person.text.rectangle") { CardTab() }
+                Tab(loc.t(.tabTokenShort), systemImage: "checkmark.seal") { TokenTab() }
+                Tab(loc.t(.tabSettings), systemImage: "gearshape") { SettingsTab() }
             }
             .tabViewStyle(.sidebarAdaptable)
         } else {
             TabView {
-                CardTab(showSettings: $showSettings)
+                CardTab()
                     .tabItem { Label(loc.t(.tabCardShort), systemImage: "person.text.rectangle") }
-                TokenTab(showSettings: $showSettings)
+                TokenTab()
                     .tabItem { Label(loc.t(.tabTokenShort), systemImage: "checkmark.seal") }
+                SettingsTab()
+                    .tabItem { Label(loc.t(.tabSettings), systemImage: "gearshape") }
             }
         }
     }
@@ -63,6 +65,60 @@ struct ProblemBanner: View {
     }
 }
 
+/// The character plus what the reader is doing right now: nothing plugged in, waiting for a card, ready to read.
+/// It changes the moment a reader is plugged in or a card goes in (see PhoneModel.watchReader).
+struct ReaderStatusBlock: View {
+    @EnvironmentObject var loc: Loc
+    @EnvironmentObject var model: PhoneModel
+    let character: PhoneMascot.Character
+    var size: CGFloat = 190
+    var done = false
+
+    private var mood: PhoneMascot.Mood {
+        if model.problem != nil && !done { return .error }
+        if model.busy { return .busy }
+        if done { return .done }
+        switch model.readerState {
+        case .none: return .noReader
+        case .noCard: return .waiting
+        case .cardReady: return .ready
+        }
+    }
+
+    private var texts: (title: Loc.L, hint: Loc.L, color: Color) {
+        switch model.readerState {
+        case .none: return (.emptyNoReaderT, .iosNoReaderH, .secondary)
+        case .noCard: return (.emptyNoCardT, .iosNoCardH, .orange)
+        case .cardReady: return (.emptyReadyT, .iosReadyH, .green)
+        }
+    }
+
+    var body: some View {
+        VStack(spacing: 10) {
+            PhoneMascot(character: character, mood: mood, size: size)
+            if model.problem == nil || done {
+                let t = texts
+                Label(loc.t(t.title), systemImage: "circle.fill")
+                    .labelStyle(StatusDotStyle(color: t.color))
+                    .font(.headline)
+                Text(loc.t(t.hint)).font(.subheadline).foregroundStyle(.secondary)
+                    .multilineTextAlignment(.center).padding(.horizontal)
+            }
+        }
+        .animation(.easeInOut(duration: 0.25), value: model.readerState)
+    }
+}
+
+private struct StatusDotStyle: LabelStyle {
+    let color: Color
+    func makeBody(configuration: Configuration) -> some View {
+        HStack(spacing: 8) {
+            Circle().fill(color).frame(width: 10, height: 10)
+            configuration.title
+        }
+    }
+}
+
 /// The one main button: the app picks the wired reader if one is connected, otherwise NFC.
 struct ScanButton: View {
     @EnvironmentObject var loc: Loc
@@ -89,15 +145,6 @@ struct ScanButton: View {
 }
 
 /// Settings gear in the top-right corner of every screen.
-struct SettingsButton: View {
-    @EnvironmentObject var loc: Loc
-    @Binding var show: Bool
-    var body: some View {
-        Button { show = true } label: { Image(systemName: "gearshape") }
-            .accessibilityLabel(loc.t(.tabSettings))
-    }
-}
-
 // MARK: - Card
 
 struct CardTab: View {
@@ -105,7 +152,6 @@ struct CardTab: View {
     @EnvironmentObject var prefs: Prefs
     @EnvironmentObject var model: PhoneModel
     @Environment(\.horizontalSizeClass) private var sizeClass
-    @Binding var showSettings: Bool
     @State private var share: ShareItem?
     @State private var pdf: ShareItem?
     @State private var photoOpen = false
@@ -116,9 +162,9 @@ struct CardTab: View {
                 VStack(spacing: 16) {
                     if let problem = model.problem {
                         ProblemBanner(problem: problem).padding(16).frame(maxWidth: .infinity, alignment: .leading).glassCard()
-                    } else if model.personal == nil {
-                        Text(loc.t(.hintAuto)).font(.subheadline).foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center).padding(.horizontal).padding(.top, 40)
+                    }
+                    if model.personal == nil {
+                        ReaderStatusBlock(character: .reader).padding(.top, model.problem == nil ? 40 : 8)
                     }
                     if let p = model.personal {
                         if sizeClass == .regular { regularLayout(p) } else { compactLayout(p) }
@@ -143,7 +189,6 @@ struct CardTab: View {
                         }
                         .accessibilityLabel(loc.t(model.revealAll ? .hideValue : .reveal))
                     }
-                    SettingsButton(show: $showSettings)
                 }
                 ToolbarItemGroup(placement: .navigationBarLeading) {
                     if model.personal != nil {
@@ -153,7 +198,7 @@ struct CardTab: View {
                 }
             }
             .sheet(item: $share) { ShareSheet(url: $0.url) }
-            .sheet(item: $pdf) { PDFPreview(url: $0.url).ignoresSafeArea() }
+            .sheet(item: $pdf) { PDFPreview(url: $0.url) }
             .sheet(isPresented: $photoOpen) {
                 if let d = model.personal?.portrait, let img = UIImage(data: d) {
                     Image(uiImage: img).resizable().scaledToFit().padding().presentationDetents([.medium, .large])
@@ -212,11 +257,11 @@ struct CardTab: View {
             }.glassButton(prominent: false)
             HStack(spacing: 10) {
                 Button { model.printPDF(includeJmbg: prefs.printJmbg) } label: {
-                    Label(loc.t(.printCard), systemImage: "printer").frame(maxWidth: .infinity).padding(.vertical, 6)
+                    Label(loc.t(.printCard), systemImage: "printer").lineLimit(1).minimumScaleFactor(0.8).frame(maxWidth: .infinity).padding(.vertical, 6)
                 }.glassButton(prominent: false)
                 Button {
                     if let url = model.pdfFile(includeJmbg: prefs.printJmbg) { share = ShareItem(url: url) }
-                } label: { Label(loc.t(.sharePdf), systemImage: "square.and.arrow.up").frame(maxWidth: .infinity).padding(.vertical, 6) }
+                } label: { Label(loc.t(.sharePdf), systemImage: "square.and.arrow.up").lineLimit(1).minimumScaleFactor(0.8).frame(maxWidth: .infinity).padding(.vertical, 6) }
                     .glassButton(prominent: false)
             }
             Button { model.copyAll() } label: {
@@ -312,13 +357,15 @@ struct FieldRow: View {
 struct TokenTab: View {
     @EnvironmentObject var loc: Loc
     @EnvironmentObject var model: PhoneModel
-    @Binding var showSettings: Bool
     @State private var share: ShareItem?
 
     var body: some View {
         NavigationStack {
             List {
                 Section {
+                    ReaderStatusBlock(character: .key, size: model.token == nil ? 190 : 120, done: model.token != nil)
+                        .frame(maxWidth: .infinity)
+                        .listRowBackground(Color.clear)
                     if let problem = model.problem, model.token == nil {
                         ProblemBanner(problem: problem)
                     }
@@ -334,13 +381,14 @@ struct TokenTab: View {
                     }
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(GlassBackdrop())
             .navigationTitle(loc.t(.tabToken))
             .navigationBarTitleDisplayMode(.inline)
             .safeAreaInset(edge: .bottom) {
                 ScanButton(title: .readToken) { await model.scanTokenAuto() }
                     .padding(.horizontal, 20).padding(.bottom, 8)
             }
-            .toolbar { ToolbarItem(placement: .navigationBarTrailing) { SettingsButton(show: $showSettings) } }
             .sheet(item: $share) { ShareSheet(url: $0.url) }
         }
     }
@@ -373,7 +421,6 @@ struct TokenTab: View {
 // MARK: - Settings / about
 
 struct SettingsTab: View {
-    @Environment(\.dismiss) private var dismiss
     @EnvironmentObject var model: PhoneModel
     @EnvironmentObject var loc: Loc
     @EnvironmentObject var prefs: Prefs
@@ -407,11 +454,11 @@ struct SettingsTab: View {
                 Section(loc.t(.tabAbout)) {
                     Text(loc.t(.aboutTextIOS)).font(.subheadline)
                     LabeledContent(loc.t(.version), value: version)
-                    Link("github.com/peregond/SuperCelik", destination: URL(string: "https://github.com/peregond/SuperCelik")!)
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(GlassBackdrop())
             .navigationTitle(loc.t(.tabSettings))
-            .toolbar { ToolbarItem(placement: .confirmationAction) { Button(loc.t(.ok)) { dismiss() } } }
         }
     }
 }

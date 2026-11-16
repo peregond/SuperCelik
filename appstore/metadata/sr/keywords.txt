@@ -1,1 +1,1 @@
-eid,srbija,licna karta,citac,pametna kartica,nfc,boravisna dozvola,potpis,pdf,stampa,pin,celik
+eid,srbija,licna karta,citac,pametna kartica,boravisna dozvola,potpis,pdf,stampa,pin,celik

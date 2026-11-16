@@ -27,8 +27,13 @@ final class PhoneModel: ObservableObject {
     @Published var busy = false
     @Published private(set) var demoActive = false     // fictional data on screen (Settings toggle)
     @Published var problem: PhoneProblem?
+    /// Live state of the wired reader (see `watchReader`).
+    @Published private(set) var readerState: ReaderState = .none
 
     enum ReadSource { case usb, nfc }
+
+    /// NFC reading is parked for now: the code (NFCCardReader) stays, but the app only offers wired readers.
+    static let nfcEnabled = false
 
     /// `--demo` launch argument: fictional data for screenshots (never touches a card).
     init() {
@@ -63,11 +68,26 @@ final class PhoneModel: ObservableObject {
     private let usbReader = USBCardReader()
     private let loc = Loc.shared
 
-    var nfcAvailable: Bool { NFCCardReader.isAvailable }
+    var nfcAvailable: Bool { Self.nfcEnabled && NFCCardReader.isAvailable }
 
-    /// The app decides how to read: a connected wired reader first, otherwise NFC.
-    var autoSource: ReadSource { USBCardReader.hasReader ? .usb : (nfcAvailable ? .nfc : .usb) }
+    /// Wired reader unless NFC is switched on again (`nfcEnabled`).
+    var autoSource: ReadSource { USBCardReader.hasReader || !nfcAvailable ? .usb : .nfc }
     var autoIcon: String { autoSource == .usb ? "cable.connector" : "wave.3.right" }
+
+    /// Follows the reader while the app is open: plugging it in or inserting a card updates the screens at once.
+    func watchReader() async {
+        while !Task.isCancelled {
+            let now = await USBCardReader.currentState()
+            if now != readerState {
+                let before = readerState
+                readerState = now
+                if now == .cardReady || (before == .none && now == .noCard) {
+                    UINotificationFeedbackGenerator().notificationOccurred(.success)
+                }
+            }
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
+        }
+    }
     func scanCardAuto() async { await scanCard(autoSource) }
     func scanTokenAuto() async { await scanToken(autoSource) }
 
@@ -134,9 +154,9 @@ final class PhoneModel: ObservableObject {
         case NFCProblem.unavailable:
             problem = PhoneProblem(title: .nfcUnavailableT, hint: .nfcUnavailableH)
         case NFCProblem.noReader:
-            problem = PhoneProblem(title: .usbNoReaderT, hint: .usbNoReaderH)
+            problem = PhoneProblem(title: .emptyNoReaderT, hint: .iosNoReaderH)
         case NFCProblem.noCard:
-            problem = PhoneProblem(title: .nfcNoCardT, hint: .nfcNoCardH)
+            problem = PhoneProblem(title: .emptyNoCardT, hint: .emptyNoCardH)
         case NFCProblem.connectionLost:
             problem = PhoneProblem(title: .nfcLostT, hint: .nfcLostH)
         case CardError.unsupportedForCard:

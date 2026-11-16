@@ -7,7 +7,17 @@ import CryptoTokenKit
 /// UNVERIFIED on hardware: iOS only hands a reader to the app if the system supports that reader
 /// (USB-C iPhone 15+ / iPad with a CCID reader, or an MFi reader). If the system exposes no reader,
 /// `run` throws NFCProblem.noReader and the UI points the user to NFC.
+/// What the system currently sees: no reader, a reader without a card, or a reader with a card that answers.
+enum ReaderState: Equatable { case none, noCard, cardReady }
+
 final class USBCardReader {
+    /// Looks at the first reader slot right now (cheap; the app polls it once a second while it is open).
+    static func currentState() async -> ReaderState {
+        guard let manager = TKSmartCardSlotManager.default, let name = manager.slotNames.first,
+              let slot = await manager.getSlot(withName: name) else { return .none }
+        return slot.state == .validCard ? .cardReady : .noCard
+    }
+
     /// A reader is currently visible to the system.
     static var hasReader: Bool { !(TKSmartCardSlotManager.default?.slotNames.isEmpty ?? true) }
 
