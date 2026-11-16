@@ -25,6 +25,11 @@ BIN_DIR="$(swift build -c release --arch arm64 --arch x86_64 -Xswiftc -DAPPSTORE
 rm -rf dist && mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 cp "$BIN_DIR/SerbiaID" "$APP/Contents/MacOS/SerbiaID"
 cp -R "$BIN_DIR"/SerbiaID_SerbiaID.bundle "$APP/Contents/Resources/"
+# SwiftPM's resource bundle is data only (no executable). Some toolchains still write CFBundleExecutable into its
+# Info.plist, and App Store Connect then rejects the package (error 90261), so drop the key.
+for ip in "$APP"/Contents/Resources/SerbiaID_SerbiaID.bundle/Contents/Info.plist "$APP"/Contents/Resources/SerbiaID_SerbiaID.bundle/Info.plist; do
+  [ -f "$ip" ] && $PB -c "Delete :CFBundleExecutable" "$ip" 2>/dev/null || true
+done
 cp assets/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
 cp macos/PrivacyInfo.xcprivacy "$APP/Contents/Resources/PrivacyInfo.xcprivacy"
 
