@@ -409,7 +409,6 @@ struct SettingsTab: View {
                 Section(loc.t(.tabAbout)) {
                     Text(loc.t(.aboutTextIOS)).font(.subheadline)
                     LabeledContent(loc.t(.version), value: version)
-                    Link("github.com/peregond/SuperCelik", destination: URL(string: "https://github.com/peregond/SuperCelik")!)
                 }
             }
             .scrollContentBackground(.hidden)
