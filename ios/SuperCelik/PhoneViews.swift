@@ -197,14 +197,18 @@ struct ScanButton: View {
 struct ScrollCollapse: ViewModifier {
     @Binding var collapsed: Bool
     func body(content: Content) -> some View {
+        // content that fits the screen stays put: no rubber-band bounce (the mascot and text used to jitter)
+        let fixed = Group {
+            if #available(iOS 16.4, *) { content.scrollBounceBehavior(.basedOnSize) } else { content }
+        }
         if #available(iOS 18.0, *) {
-            content.onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.y + $0.contentInsets.top } action: { old, new in
+            fixed.onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.y + $0.contentInsets.top } action: { old, new in
                 if new < 24 { collapsed = false }
                 else if new > old + 3 { collapsed = true }
                 else if new < old - 3 { collapsed = false }
             }
         } else {
-            content
+            fixed
         }
     }
 }
