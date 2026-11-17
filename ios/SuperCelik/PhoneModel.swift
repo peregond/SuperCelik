@@ -27,6 +27,10 @@ final class PhoneModel: ObservableObject {
     @Published var busy = false
     @Published private(set) var demoActive = false     // fictional data on screen (Settings toggle)
     @Published var problem: PhoneProblem?
+    /// Result of a PIN / PUK operation, shown in an alert.
+    @Published var pinAlert: String?
+    /// Tab on screen (0 card, 1 token): automatic reading reads what that tab shows.
+    var activeTab = 0
     /// Live state of the wired reader (see `watchReader`).
     @Published private(set) var readerState: ReaderState = .none
 
@@ -98,7 +102,7 @@ final class PhoneModel: ObservableObject {
                 }
                 // A card went into the reader (or the app opened with one inserted): read it by itself if the setting is on.
                 if now == .cardReady, before != .cardReady, Prefs.shared.autoRead, !busy {
-                    await scanCardAuto()
+                    if activeTab == 1 { await scanTokenAuto() } else { await scanCardAuto() }
                 }
             }
             try? await Task.sleep(nanoseconds: 1_000_000_000)
@@ -157,6 +161,42 @@ final class PhoneModel: ObservableObject {
             }
             problem = nil
         } catch { show(error) }
+    }
+
+    // MARK: - Token PIN / PUK (a wrong PIN or PUK burns a card try: one attempt, never retried)
+
+    static func validPin(_ p: String) -> Bool {
+        (4...8).contains(p.count) && p.utf8.allSatisfy { $0 >= 0x30 && $0 <= 0x39 }
+    }
+
+    /// Changes the token PIN (`puk == nil`) or unblocks it with the PUK. Returns true on success.
+    @discardableResult
+    func pinOperation(secret: String, new: String, confirm: String, unblock: Bool) async -> Bool {
+        guard Self.validPin(secret), Self.validPin(new) else { pinAlert = loc.t(.pinInvalid); return false }
+        guard new == confirm else { pinAlert = loc.t(.pinMismatch); return false }
+        guard !busy else { return false }
+        busy = true
+        defer { busy = false }
+        do {
+            _ = try await run(autoSource) { card -> Bool in
+                if unblock { try card.unblockTokenPin(puk: secret, new: new) }
+                else { try card.changeTokenPin(old: secret, new: new) }
+                return true
+            }
+            pinAlert = loc.t(unblock ? .pinUnblocked : .pinChanged)
+            return true
+        } catch CardError.pinWrong(let n) {
+            pinAlert = loc.t(.pinWrongMsg) + "\(n)"
+        } catch CardError.pinBlocked {
+            pinAlert = loc.t(.pinBlockedMsg)
+        } catch NFCProblem.noReader {
+            pinAlert = loc.t(.emptyNoReaderT)
+        } catch NFCProblem.noCard {
+            pinAlert = loc.t(.emptyNoCardT)
+        } catch {
+            pinAlert = error.localizedDescription
+        }
+        return false
     }
 
     func clear() {

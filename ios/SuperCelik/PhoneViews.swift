@@ -11,6 +11,7 @@ struct PhoneRootView: View {
         tabs
             .minimizingTabBar()
             .task { await model.watchReader() }
+            .onChange(of: tab) { model.activeTab = $0 }
     }
 
     /// iPhone: tab bar (Liquid Glass). iPad: iOS 18+ turns the same tabs into a sidebar like the Mac app.
@@ -435,6 +436,7 @@ struct TokenTab: View {
     @EnvironmentObject var model: PhoneModel
     @State private var share: ShareItem?
     @State private var scanCollapsed = false
+    @State private var pinMode: PinMode?
 
     var body: some View {
         NavigationStack {
@@ -454,6 +456,12 @@ struct TokenTab: View {
                         .multilineTextAlignment(.center)
                         .listRowBackground(Color.clear).listRowSeparator(.hidden)
                 }
+                Section {
+                    Button { pinMode = .change } label: { Label(loc.t(.changePin), systemImage: "lock.rotation") }
+                    Button { pinMode = .unblock } label: { Label(loc.t(.unblockPin), systemImage: "lock.open") }
+                }
+                .disabled(model.busy || model.readerState != .cardReady)
+                .listRowBackground(Rectangle().fill(.regularMaterial))
                 if let t = model.token {
                     Section {
                         if !t.tokenLabel.isEmpty { LabeledContent("Token", value: t.tokenLabel) }
@@ -476,6 +484,11 @@ struct TokenTab: View {
                     .padding(.horizontal, 20).padding(.bottom, 8)
             }
             .sheet(item: $share) { ShareSheet(url: $0.url) }
+            .sheet(item: $pinMode) { PinSheet(mode: $0) }
+            .alert(model.pinAlert ?? "", isPresented: Binding(get: { model.pinAlert != nil && pinMode == nil },
+                                                               set: { if !$0 { model.pinAlert = nil } })) {
+                Button(loc.t(.ok)) { model.pinAlert = nil }
+            }
         }
     }
 
@@ -501,6 +514,58 @@ struct TokenTab: View {
                 .buttonStyle(.borderless)
         }
         .padding(.vertical, 4)
+    }
+}
+
+// MARK: - Token PIN / PUK
+
+enum PinMode: Identifiable {
+    case change, unblock
+    var id: Int { self == .change ? 0 : 1 }
+}
+
+/// One form: current PIN (or PUK), new PIN twice. The warning about used-up tries is always visible.
+struct PinSheet: View {
+    @EnvironmentObject var loc: Loc
+    @EnvironmentObject var model: PhoneModel
+    @Environment(\.dismiss) private var dismiss
+    let mode: PinMode
+    @State private var secret = ""
+    @State private var new = ""
+    @State private var confirm = ""
+
+    private var unblock: Bool { mode == .unblock }
+    private var ready: Bool { PhoneModel.validPin(secret) && PhoneModel.validPin(new) && new == confirm }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    SecureField(loc.t(unblock ? .pukLabel : .currentPin), text: $secret)
+                    SecureField(loc.t(.newPin), text: $new)
+                    SecureField(loc.t(.confirmPin), text: $confirm)
+                } footer: { Text(loc.t(.pinWarn)) }
+                if let msg = model.pinAlert {
+                    Section { Text(msg).foregroundStyle(.orange) }
+                }
+            }
+            .keyboardType(.numberPad)
+            .navigationTitle(loc.t(unblock ? .unblockPin : .changePin))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button(loc.t(.cancel)) { model.pinAlert = nil; dismiss() } }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(loc.t(.ok)) {
+                        Task {
+                            if await model.pinOperation(secret: secret, new: new, confirm: confirm, unblock: unblock) { dismiss() }
+                        }
+                    }
+                    .disabled(!ready || model.busy)
+                }
+            }
+        }
+        .onAppear { model.pinAlert = nil }
+        .presentationDetents([.medium, .large])
     }
 }
 
