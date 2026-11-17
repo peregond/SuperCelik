@@ -1,6 +1,8 @@
-• Mirniji i urednije: poruka „Povežite čitač” izgleda isto na karticama „Kartica” i „Token”, a ekran više ne podrhtava dok čitač nije povezan.
-• Kartica „Kartica” sada ima naslov, kao i „Token”.
-• Dugme za čitanje se pri skrolovanju nadole smanjuje u okruglo dugme (na kartici „Token” nestaje) i vraća se pri skrolovanju nagore.
+• Dok skrolujete nadole, dugme za čitanje se smanjuje u okruglo dugme (na kartici „Token” nestaje) i vraća se kad skrolujete nagore.
+• Podešavanja > Ponašanje: birate da li se kartica čita automatski čim je ubacite.
+• Kartica se zatvara crvenim krstićem umesto korpe za smeće.
+• Status potpisa je premešten u gornju karticu, rezultat provere se vidi odmah.
+• Čistija kartica „Token”: uvodni tekst je na pozadini, podaci u staklenim redovima.
+• Kartica „Kartica” ima naslov, a kratki ekrani više ne poskakuju kada ih povučete.
 • Demo podaci u podešavanjima sada prikazuju i primer tokena sa sertifikatima.
-• Poboljšan raspored na iPhone Duo.
-• Lakše pronalaženje u App Store-u: pretraga „celik” radi, sa slovom Č i bez njega.
+• Lakše pronalaženje: pretraga „celik” radi sa slovom Č i bez njega, a aplikacija podržava engleski, ruski i srpski.
