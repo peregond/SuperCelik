@@ -126,6 +126,7 @@ private struct StatusDotStyle: LabelStyle {
 struct ScanButton: View {
     @EnvironmentObject var loc: Loc
     @EnvironmentObject var model: PhoneModel
+    @Environment(\.horizontalSizeClass) private var sizeClass
     let title: Loc.L
     var collapsed = false
     let action: () async -> Void
@@ -174,14 +175,16 @@ struct ScanButton: View {
             .accessibilityLabel(loc.t(title))
         #if compiler(>=6.2)
         if #available(iOS 26.0, *) {
+            // only the iPhone tab bar minimizes into the corner; the iPad sidebar / top tabs leave the inset as is
+            let minimized = sizeClass == .compact
             button
                 .glassEffect(.regular.tint(.blue).interactive(), in: .circle)
-                .offset(x: 8, y: ScanButton.roundDrop)
+                .offset(x: minimized ? 8 : 0, y: minimized ? ScanButton.roundDrop : 0)
         } else {
-            button.background(Circle().fill(Color.blue)).offset(x: 8, y: ScanButton.roundDrop)
+            button.background(Circle().fill(Color.blue))
         }
         #else
-        button.background(Circle().fill(Color.blue)).offset(x: 8, y: ScanButton.roundDrop)
+        button.background(Circle().fill(Color.blue))
         #endif
     }
 
