@@ -4,9 +4,6 @@ import android.app.Application
 import android.content.Context
 import android.hardware.usb.UsbManager
 import android.net.Uri
-import android.nfc.NfcAdapter
-import android.nfc.Tag
-import android.nfc.tech.IsoDep
 import androidx.annotation.StringRes
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.viewModelScope
@@ -19,8 +16,8 @@ import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 
-/** Where the app is in a card operation. Idle = listening for an NFC card with the default operation (read the card). */
-enum class Phase { Idle, WaitingNfc, WaitingUsb, Reading }
+/** Where the app is in a card operation. Idle = nothing running; a connected USB reader starts the default read. */
+enum class Phase { Idle, WaitingUsb, Reading }
 
 /** A one-line result shown as a snackbar. */
 data class Msg(@StringRes val id: Int, val arg: String? = null, val error: Boolean = true)
@@ -60,13 +57,10 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
 
     // ---- card operations ----
 
-    /** The operation that runs when a card shows up. Null = read the card (the default, started by a plain NFC tap). */
+    /** The operation that runs when a card shows up. Null = read the card (the default, started by plugging in a reader). */
     private var pending: ((EidCard) -> Unit)? = null
     private var job: Job? = null
     private var clearJob: Job? = null
-
-    /** NFC reader mode stays on whenever the app waits for a card. */
-    fun listensNfc(p: Phase = _phase.value) = p == Phase.Idle || p == Phase.WaitingNfc
 
     private val readOp: (EidCard) -> Unit = { card ->
         val p = card.readPersonalData()
@@ -75,54 +69,34 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
         scheduleClear()
     }
 
-    private fun begin(op: (EidCard) -> Unit, nfc: NfcAdapter?, context: Context?) {
+    private fun begin(op: (EidCard) -> Unit, context: Context) {
         _message.value = null
         pending = op
-        val usb = context?.let { UsbCcidTransport.findReader(it.getSystemService(Context.USB_SERVICE) as UsbManager) }
-        if (usb != null && context != null) { startUsb(context); return }
-        if (nfc == null || !nfc.isEnabled) { pending = null; _message.value = Msg(R.string.err_no_nfc_or_usb); return }
-        _phase.value = Phase.WaitingNfc
+        startUsb(context)
     }
 
-    fun readCard(nfc: NfcAdapter?, context: Context) = begin(readOp, nfc, context)
+    fun readCard(context: Context) = begin(readOp, context)
 
-    fun readToken(nfc: NfcAdapter?, context: Context) = begin({ card ->
+    fun readToken(context: Context) = begin({ card ->
         _token.value = card.readToken()
-    }, nfc, context)
+    }, context)
 
-    fun changePin(old: String, new: String, nfc: NfcAdapter?, context: Context) = begin({ card ->
+    fun changePin(old: String, new: String, context: Context) = begin({ card ->
         card.changePin(old, new); _message.value = Msg(R.string.pin_changed, error = false)
-    }, nfc, context)
+    }, context)
 
-    fun unblockPin(puk: String, new: String, nfc: NfcAdapter?, context: Context) = begin({ card ->
+    fun unblockPin(puk: String, new: String, context: Context) = begin({ card ->
         card.unblockPin(puk, new); _message.value = Msg(R.string.pin_unblocked, error = false)
-    }, nfc, context)
+    }, context)
 
     /** Signs `data` with the token key and writes a detached CMS (.p7s) to `out`. Needs the token certificate. */
-    fun signFile(data: ByteArray, pin: String, out: Uri, nfc: NfcAdapter?, context: Context) = begin({ card ->
+    fun signFile(data: ByteArray, pin: String, out: Uri, context: Context) = begin({ card ->
         val cert = (_token.value ?: card.readToken()).certs.firstOrNull()
             ?: throw CardException(CardException.Kind.Other, "no certificate")
         val p7s = CardCrypto.signDetached(data, cert.der) { di -> card.sign(pin, di) }
         getApplication<Application>().contentResolver.openOutputStream(out)?.use { it.write(p7s) }
         _message.value = Msg(R.string.signed_saved, error = false)
-    }, nfc, context)
-
-    /** Called by NFC reader mode (on a binder thread). */
-    fun onTag(tag: Tag) {
-        val iso = IsoDep.get(tag) ?: return     // some other tag: keep waiting
-        if (!listensNfc()) return
-        _phase.value = Phase.Reading
-        job = viewModelScope.launch(Dispatchers.IO) {
-            try {
-                iso.connect()
-                run(NfcTransport(iso))
-            } catch (e: Exception) {
-                fail(e)
-            } finally {
-                try { iso.close() } catch (_: Exception) { }
-            }
-        }
-    }
+    }, context)
 
     /** App opened or came back to the start screen: use a connected USB reader right away. */
     fun autoStart(context: Context) {

@@ -4,7 +4,6 @@ import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
 import android.net.Uri
-import android.nfc.NfcAdapter
 import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
@@ -59,29 +58,25 @@ fun Pill(text: String, color: Color, container: Color) {
 }
 
 @Composable
-private fun PulsingNfc() {
+private fun PulsingReader() {
     val t = rememberInfiniteTransition(label = "pulse")
     val scale by t.animateFloat(1f, 1.25f, infiniteRepeatable(tween(1400, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "scale")
     val alpha by t.animateFloat(0.25f, 0.05f, infiniteRepeatable(tween(1400, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "alpha")
     Box(Modifier.size(144.dp), contentAlignment = Alignment.Center) {
         Box(Modifier.size(112.dp).scale(scale).background(MaterialTheme.colorScheme.primary.copy(alpha = alpha), CircleShape))
         Box(Modifier.size(96.dp).background(MaterialTheme.colorScheme.primaryContainer, CircleShape), contentAlignment = Alignment.Center) {
-            Icon(Icons.Filled.Nfc, null, Modifier.size(48.dp), tint = MaterialTheme.colorScheme.onPrimaryContainer)
+            Icon(Icons.Filled.Usb, null, Modifier.size(48.dp), tint = MaterialTheme.colorScheme.onPrimaryContainer)
         }
     }
 }
 
-/** Full-screen "hold the card / reading" overlay for an explicit card operation. */
+/** Full-screen "looking for the reader / reading" overlay for a card operation. */
 @Composable
 fun WaitingOverlay(phase: Phase, onCancel: () -> Unit) {
-    val text = when (phase) {
-        Phase.WaitingUsb -> R.string.hint_usb_wait
-        Phase.Reading -> R.string.reading
-        else -> R.string.hint_nfc_wait
-    }
+    val text = if (phase == Phase.Reading) R.string.reading else R.string.hint_usb_wait
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface.copy(alpha = 0.97f)) {
         Column(Modifier.fillMaxSize().padding(24.dp), Arrangement.Center, Alignment.CenterHorizontally) {
-            if (phase == Phase.Reading || phase == Phase.WaitingUsb) CircularProgressIndicator() else PulsingNfc()
+            CircularProgressIndicator()
             Spacer(Modifier.height(24.dp))
             Text(stringResource(text), textAlign = TextAlign.Center, style = MaterialTheme.typography.titleMedium)
             if (phase != Phase.Reading) {
@@ -98,7 +93,7 @@ fun msgText(m: Msg): String = if (m.arg != null) stringResource(m.id, m.arg) els
 // ---------------------------------------------------------------- card tab
 
 @Composable
-fun CardScreen(vm: CardViewModel, nfc: NfcAdapter?, reveal: Boolean) {
+fun CardScreen(vm: CardViewModel, reveal: Boolean) {
     val personal by vm.personal.collectAsStateWithLifecycle()
     val ctx = LocalContext.current
     val p = personal
@@ -108,11 +103,11 @@ fun CardScreen(vm: CardViewModel, nfc: NfcAdapter?, reveal: Boolean) {
             verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            PulsingNfc()
+            PulsingReader()
             Text(stringResource(R.string.hint_ready), textAlign = TextAlign.Center, style = MaterialTheme.typography.titleMedium)
             Text(stringResource(R.string.hint_idle), textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
-            FilledTonalButton(onClick = { vm.startUsb(ctx) }, Modifier.fillMaxWidth().height(56.dp)) {
+            FilledTonalButton(onClick = { vm.readCard(ctx) }, Modifier.fillMaxWidth().height(56.dp)) {
                 Icon(Icons.Filled.Usb, null); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.read_usb))
             }
             Text(stringResource(R.string.about_note), textAlign = TextAlign.Center,
@@ -275,7 +270,7 @@ private fun Section(title: Int, rows: List<Triple<Int, String, Boolean>>, show: 
 // ---------------------------------------------------------------- token tab
 
 @Composable
-fun TokenScreen(vm: CardViewModel, nfc: NfcAdapter?) {
+fun TokenScreen(vm: CardViewModel) {
     val token by vm.token.collectAsStateWithLifecycle()
     val ctx = LocalContext.current
     var dialog by remember { mutableStateOf<String?>(null) }          // "change" | "unblock" | "sign"
@@ -291,7 +286,7 @@ fun TokenScreen(vm: CardViewModel, nfc: NfcAdapter?) {
         signSrc = null; signPin = null
         if (out != null && src != null && pin != null) {
             val data = ctx.contentResolver.openInputStream(src)?.use { it.readBytes() }
-            if (data != null) vm.signFile(data, pin, out, nfc, ctx)
+            if (data != null) vm.signFile(data, pin, out, ctx)
         }
     }
     val saveCert = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/x-x509-ca-cert")) { out ->
@@ -301,7 +296,7 @@ fun TokenScreen(vm: CardViewModel, nfc: NfcAdapter?) {
 
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item {
-            Button(onClick = { vm.readToken(nfc, ctx) }, Modifier.fillMaxWidth().height(56.dp)) {
+            Button(onClick = { vm.readToken(ctx) }, Modifier.fillMaxWidth().height(56.dp)) {
                 Icon(Icons.Filled.Key, null); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.read_token))
             }
         }
@@ -332,9 +327,9 @@ fun TokenScreen(vm: CardViewModel, nfc: NfcAdapter?) {
 
     when (dialog) {
         "change" -> PinSteps(stringResource(R.string.change_pin), R.string.step1_pin, R.string.pin_current, true,
-            onDismiss = { dialog = null }) { v -> dialog = null; vm.changePin(v[0], v[1], nfc, ctx) }
+            onDismiss = { dialog = null }) { v -> dialog = null; vm.changePin(v[0], v[1], ctx) }
         "unblock" -> PinSteps(stringResource(R.string.unblock_pin), R.string.step1_puk, R.string.puk, true,
-            onDismiss = { dialog = null }) { v -> dialog = null; vm.unblockPin(v[0], v[1], nfc, ctx) }
+            onDismiss = { dialog = null }) { v -> dialog = null; vm.unblockPin(v[0], v[1], ctx) }
         "sign" -> PinSteps(stringResource(R.string.sign_file), R.string.step_sign_pin, R.string.pin_current, false,
             onDismiss = { dialog = null; signSrc = null }) { v ->
             dialog = null; signPin = v[0]

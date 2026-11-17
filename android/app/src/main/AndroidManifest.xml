@@ -1,10 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <uses-permission android:name="android.permission.NFC" />
-    <!-- NFC and USB host are both optional: the app works with whichever the phone has -->
-    <uses-feature android:name="android.hardware.nfc" android:required="false" />
-    <uses-feature android:name="android.hardware.usb.host" android:required="false" />
+    <!-- The card is read only through a USB CCID smart card reader -->
+    <uses-feature android:name="android.hardware.usb.host" android:required="true" />
 
     <application
         android:name=".App"
