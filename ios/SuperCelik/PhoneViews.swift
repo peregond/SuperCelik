@@ -431,7 +431,9 @@ struct TokenTab: View {
                         .listRowBackground(Color.clear).listRowSeparator(.hidden)
                     if let problem = model.problem, model.token == nil {
                         ProblemBanner(problem: problem)
-                            .listRowBackground(Rectangle().fill(.regularMaterial))
+                            .padding(16).frame(maxWidth: .infinity, alignment: .leading).glassCard()
+                            .listRowBackground(Color.clear).listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
                     }
                     Text(loc.t(.pinNote)).font(.footnote).foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
