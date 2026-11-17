@@ -99,7 +99,8 @@ struct ReaderStatusBlock: View {
     var body: some View {
         VStack(spacing: 10) {
             PhoneMascot(character: character, mood: mood, size: size)
-            if model.problem == nil || done {
+            // demo data has no reader behind it: don't show "connect a reader" under a happy mascot
+            if (model.problem == nil || done) && !(done && model.demoActive) {
                 let t = texts
                 Label(loc.t(t.title), systemImage: "circle.fill")
                     .labelStyle(StatusDotStyle(color: t.color))
