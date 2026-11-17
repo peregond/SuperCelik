@@ -129,6 +129,8 @@ struct ScanButton: View {
     @Environment(\.horizontalSizeClass) private var sizeClass
     let title: Loc.L
     var collapsed = false
+    /// Token tab: scrolling down hides the button completely instead of shrinking it to a circle.
+    var hideWhenCollapsed = false
     let action: () async -> Void
 
     /// Full width with a caption at the top of the screen; a round button in the bottom-right corner while scrolling down
@@ -136,7 +138,8 @@ struct ScanButton: View {
     var body: some View {
         HStack(spacing: 0) {
             if collapsed { Spacer(minLength: 0) }
-            if collapsed { roundButton } else { wideButton }
+            if collapsed && hideWhenCollapsed { EmptyView() }
+            else if collapsed { roundButton } else { wideButton }
         }
         .animation(.spring(response: 0.38, dampingFraction: 0.8), value: collapsed)
     }
@@ -430,15 +433,15 @@ struct TokenTab: View {
             List {
                 // intro: no white card behind it, the text sits on the backdrop like on the Card tab
                 Section {
-                    ReaderStatusBlock(character: .key, size: model.token == nil ? 190 : 120, done: model.token != nil)
-                        .frame(maxWidth: .infinity)
-                        .listRowBackground(Color.clear).listRowSeparator(.hidden)
                     if let problem = model.problem, model.token == nil {
                         ProblemBanner(problem: problem)
                             .padding(16).frame(maxWidth: .infinity, alignment: .leading).glassCard()
                             .listRowBackground(Color.clear).listRowSeparator(.hidden)
-                            .listRowInsets(EdgeInsets(top: 0, leading: 0, bottom: 0, trailing: 0))
+                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 0, trailing: 16))
                     }
+                    ReaderStatusBlock(character: .key, size: model.token == nil ? 190 : 120, done: model.token != nil)
+                        .frame(maxWidth: .infinity)
+                        .listRowBackground(Color.clear).listRowSeparator(.hidden)
                     Text(loc.t(.pinNote)).font(.footnote).foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
                         .listRowBackground(Color.clear).listRowSeparator(.hidden)
@@ -461,7 +464,7 @@ struct TokenTab: View {
             .navigationTitle(loc.t(.tabToken))
             .navigationBarTitleDisplayMode(.inline)
             .safeAreaInset(edge: .bottom) {
-                ScanButton(title: .readToken, collapsed: scanCollapsed) { await model.scanTokenAuto() }
+                ScanButton(title: .readToken, collapsed: scanCollapsed, hideWhenCollapsed: true) { await model.scanTokenAuto() }
                     .padding(.horizontal, 20).padding(.bottom, 8)
             }
             .sheet(item: $share) { ShareSheet(url: $0.url) }
