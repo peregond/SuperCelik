@@ -241,7 +241,7 @@ struct CardTab: View {
             }
             .modifier(ScrollCollapse(collapsed: $scanCollapsed))
             .background(GlassBackdrop())
-            .navigationTitle("")
+            .navigationTitle(loc.t(.tabPersonal))
             .navigationBarTitleDisplayMode(.inline)
             .safeAreaInset(edge: .bottom) {
                 ScanButton(title: .readCardAuto, collapsed: scanCollapsed) { await model.scanCardAuto() }
