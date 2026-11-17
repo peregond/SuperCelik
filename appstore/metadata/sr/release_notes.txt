@@ -1,1 +1,6 @@
-Liquid Glass dizajn, prikaz stanja čitača uživo, jedno dugme za čitanje, PDF pregled sa štampom i deljenjem, srpski latinicom i ćirilicom.
+• Mirniji i urednije: poruka „Povežite čitač” izgleda isto na karticama „Kartica” i „Token”, a ekran više ne podrhtava dok čitač nije povezan.
+• Kartica „Kartica” sada ima naslov, kao i „Token”.
+• Dugme za čitanje se pri skrolovanju nadole smanjuje u okruglo dugme (na kartici „Token” nestaje) i vraća se pri skrolovanju nagore.
+• Demo podaci u podešavanjima sada prikazuju i primer tokena sa sertifikatima.
+• Poboljšan raspored na iPhone Duo.
+• Lakše pronalaženje u App Store-u: pretraga „celik” radi, sa slovom Č i bez njega.

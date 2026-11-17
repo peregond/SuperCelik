@@ -1,1 +1,6 @@
-Liquid Glass design, reader status shown live, one Read button, PDF preview with print and share, Serbian in Latin and Cyrillic.
+• Calmer, cleaner screens: the "Connect a card reader" message looks the same on the Card and Token tabs, and the screen no longer jitters while no reader is connected.
+• The Card tab now has a title, like the Token tab.
+• The Read button shrinks into a round button when you scroll down (on the Token tab it hides) and comes back when you scroll up.
+• Demo data in Settings now also shows an example token with certificates.
+• Better layout on iPhone Duo.
+• Easier to find in the App Store: search for "celik" works too, with or without the Č.
