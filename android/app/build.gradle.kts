@@ -6,12 +6,12 @@ plugins {
 
 android {
     namespace = "com.peregond.supercelik"
-    compileSdk = 35
+    compileSdk = 36
 
     defaultConfig {
         applicationId = "com.peregond.supercelik"
         minSdk = 26
-        targetSdk = 35
+        targetSdk = 36
         // CI passes the tag version (vX.Y.Z); local builds get a dev version
         versionCode = (project.findProperty("appVersionCode") as String?)?.toInt() ?: 1
         versionName = (project.findProperty("appVersion") as String?) ?: "0.0.0-dev"
