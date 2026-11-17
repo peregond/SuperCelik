@@ -1,1 +1,4 @@
-Liquid Glass design, reader status shown live, one Read button, PDF preview with print and share, Serbian in Latin and Cyrillic.
+• Updated the interface: a clear cross now closes the card instead of the trash can.
+• Adapted the app for iPhone Duo.
+• Added automatic card reading when a card is connected. You can turn it on in Settings.
+• Fixed bugs and made the app more stable and easier to use.

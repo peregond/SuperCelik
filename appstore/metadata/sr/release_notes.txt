@@ -1,1 +1,4 @@
-Liquid Glass dizajn, prikaz stanja čitača uživo, jedno dugme za čitanje, PDF pregled sa štampom i deljenjem, srpski latinicom i ćirilicom.
+• Ažurirali smo interfejs: karticu sada zatvara jasan krstić umesto korpe za smeće.
+• Prilagodili smo aplikaciju za iPhone Duo.
+• Dodali smo mogućnost automatskog čitanja kartice pri povezivanju. Možete je uključiti u podešavanjima.
+• Ispravili smo greške i učinili rad aplikacije stabilnijim i praktičnijim.

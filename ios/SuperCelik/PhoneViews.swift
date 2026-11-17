@@ -99,7 +99,8 @@ struct ReaderStatusBlock: View {
     var body: some View {
         VStack(spacing: 10) {
             PhoneMascot(character: character, mood: mood, size: size)
-            if model.problem == nil || done {
+            // demo data has no reader behind it: don't show "connect a reader" under a happy mascot
+            if (model.problem == nil || done) && !(done && model.demoActive) {
                 let t = texts
                 Label(loc.t(t.title), systemImage: "circle.fill")
                     .labelStyle(StatusDotStyle(color: t.color))
@@ -126,8 +127,11 @@ private struct StatusDotStyle: LabelStyle {
 struct ScanButton: View {
     @EnvironmentObject var loc: Loc
     @EnvironmentObject var model: PhoneModel
+    @Environment(\.horizontalSizeClass) private var sizeClass
     let title: Loc.L
     var collapsed = false
+    /// Token tab: scrolling down hides the button completely instead of shrinking it to a circle.
+    var hideWhenCollapsed = false
     let action: () async -> Void
 
     /// Full width with a caption at the top of the screen; a round button in the bottom-right corner while scrolling down
@@ -135,26 +139,68 @@ struct ScanButton: View {
     var body: some View {
         HStack(spacing: 0) {
             if collapsed { Spacer(minLength: 0) }
-            Button {
-                Task { await action() }
-            } label: {
-                HStack {
-                    if model.busy { ProgressView() } else { Image(systemName: model.autoIcon) }
-                    if !collapsed { Text(loc.t(title)).fontWeight(.semibold) }
-                }
-                .frame(maxWidth: collapsed ? 28 : .infinity)
-                .padding(.vertical, collapsed ? 14 : 8)
-                .padding(.horizontal, collapsed ? 14 : 0)
-            }
-            .glassButton(prominent: true)
-            .buttonBorderShape(.capsule)
-            .tint(.blue)
-            .controlSize(.large)
-            .disabled(model.busy)
-            .accessibilityLabel(loc.t(title))
+            if collapsed && hideWhenCollapsed { EmptyView() }
+            else if collapsed { roundButton } else { wideButton }
         }
         .animation(.spring(response: 0.38, dampingFraction: 0.8), value: collapsed)
     }
+
+    private var wideButton: some View {
+        Button {
+            Task { await action() }
+        } label: {
+            HStack {
+                if model.busy { ProgressView() } else { Image(systemName: model.autoIcon) }
+                Text(loc.t(title)).fontWeight(.semibold)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 8)
+        }
+        .glassButton(prominent: true)
+        .buttonBorderShape(.capsule)
+        .tint(.blue)
+        .controlSize(.large)
+        .disabled(model.busy)
+        .accessibilityLabel(loc.t(title))
+    }
+
+    /// Same size (48 pt) and the same baseline as the minimized tab bar button in the bottom-left corner:
+    /// the bottom inset still reserves the full tab bar height, so the round button drops by that much.
+    @ViewBuilder private var roundButton: some View {
+        let icon = Group {
+            if model.busy { ProgressView().tint(.white) } else { Image(systemName: model.autoIcon).font(.title3.weight(.semibold)) }
+        }
+        .foregroundStyle(.white)
+        .frame(width: ScanButton.roundSize, height: ScanButton.roundSize)
+        .contentShape(Circle())
+        let button = Button { Task { await action() } } label: { icon }
+            .buttonStyle(.plain)
+            .disabled(model.busy)
+            .accessibilityLabel(loc.t(title))
+        #if compiler(>=6.2)
+        if #available(iOS 26.0, *) {
+            // only the iPhone tab bar minimizes into the corner; the iPad sidebar / top tabs leave the inset as is
+            // (a tall, narrow window: on iPhone Duo's squarer screen the tab bar is a side bar, nothing to line up with)
+            let minimized = sizeClass == .compact && ScanButton.windowIsTall
+            button
+                .glassEffect(.regular.tint(.blue).interactive(), in: .circle)
+                .offset(x: minimized ? 8 : 0, y: minimized ? ScanButton.roundDrop : 0)
+        } else {
+            button.background(Circle().fill(Color.blue))
+        }
+        #else
+        button.background(Circle().fill(Color.blue))
+        #endif
+    }
+
+    static var windowIsTall: Bool {
+        let b = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first?.coordinateSpace.bounds
+            ?? UIScreen.main.bounds
+        return b.width > 0 && max(b.width, b.height) / min(b.width, b.height) > 1.7
+    }
+
+    static let roundSize: CGFloat = 48
+    static let roundDrop: CGFloat = 56
 }
 
 /// Reports "scrolled down" for the scan button: collapses when scrolling down, comes back when scrolling up or at the top.
@@ -162,14 +208,18 @@ struct ScanButton: View {
 struct ScrollCollapse: ViewModifier {
     @Binding var collapsed: Bool
     func body(content: Content) -> some View {
+        // content that fits the screen stays put: no rubber-band bounce (the mascot and text used to jitter)
+        let fixed = Group {
+            if #available(iOS 16.4, *) { content.scrollBounceBehavior(.basedOnSize) } else { content }
+        }
         if #available(iOS 18.0, *) {
-            content.onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.y + $0.contentInsets.top } action: { old, new in
+            fixed.onScrollGeometryChange(for: CGFloat.self) { $0.contentOffset.y + $0.contentInsets.top } action: { old, new in
                 if new < 24 { collapsed = false }
                 else if new > old + 3 { collapsed = true }
                 else if new < old - 3 { collapsed = false }
             }
         } else {
-            content
+            fixed
         }
     }
 }
@@ -206,7 +256,7 @@ struct CardTab: View {
             }
             .modifier(ScrollCollapse(collapsed: $scanCollapsed))
             .background(GlassBackdrop())
-            .navigationTitle("")
+            .navigationTitle(loc.t(.tabPersonal))
             .navigationBarTitleDisplayMode(.inline)
             .safeAreaInset(edge: .bottom) {
                 ScanButton(title: .readCardAuto, collapsed: scanCollapsed) { await model.scanCardAuto() }
@@ -391,13 +441,15 @@ struct TokenTab: View {
             List {
                 // intro: no white card behind it, the text sits on the backdrop like on the Card tab
                 Section {
+                    if let problem = model.problem, model.token == nil {
+                        ProblemBanner(problem: problem)
+                            .padding(16).frame(maxWidth: .infinity, alignment: .leading).glassCard()
+                            .listRowBackground(Color.clear).listRowSeparator(.hidden)
+                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 0, trailing: 16))
+                    }
                     ReaderStatusBlock(character: .key, size: model.token == nil ? 190 : 120, done: model.token != nil)
                         .frame(maxWidth: .infinity)
                         .listRowBackground(Color.clear).listRowSeparator(.hidden)
-                    if let problem = model.problem, model.token == nil {
-                        ProblemBanner(problem: problem)
-                            .listRowBackground(Rectangle().fill(.regularMaterial))
-                    }
                     Text(loc.t(.pinNote)).font(.footnote).foregroundStyle(.secondary)
                         .multilineTextAlignment(.center)
                         .listRowBackground(Color.clear).listRowSeparator(.hidden)
@@ -420,7 +472,7 @@ struct TokenTab: View {
             .navigationTitle(loc.t(.tabToken))
             .navigationBarTitleDisplayMode(.inline)
             .safeAreaInset(edge: .bottom) {
-                ScanButton(title: .readToken, collapsed: scanCollapsed) { await model.scanTokenAuto() }
+                ScanButton(title: .readToken, collapsed: scanCollapsed, hideWhenCollapsed: true) { await model.scanTokenAuto() }
                     .padding(.horizontal, 20).padding(.bottom, 8)
             }
             .sheet(item: $share) { ShareSheet(url: $0.url) }

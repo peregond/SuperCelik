@@ -58,6 +58,18 @@ final class PhoneModel: ObservableObject {
         }
         personal = p
         signatureStatus = .ok
+        // the Token tab gets fictional certificates too
+        token = TokenInfo(tokenLabel: "NetSeT's CardEdge Token", tokenSerial: "RP000000000", certificates: [])
+        func cert(_ label: String, from: Double, to: Double) -> PhoneCertRow {
+            PhoneCertRow(label: label,
+                         summary: TokenCodec.CertSummary(subject: "MARKO PETROVIC", issuer: "MUP Stranci CA 4",
+                                                         notBefore: Date().addingTimeInterval(-from * 86400),
+                                                         notAfter: Date().addingTimeInterval(to * 86400),
+                                                         chainTrusted: true, chainError: nil),
+                         der: Data())
+        }
+        tokenRows = [cert("MARKO PETROVIC 000000000 Auth", from: 420, to: 1040),
+                     cert("MARKO PETROVIC 000000000 Sign", from: 420, to: 1040)]
         demoActive = true
     }
 
