@@ -179,7 +179,8 @@ struct ScanButton: View {
         #if compiler(>=6.2)
         if #available(iOS 26.0, *) {
             // only the iPhone tab bar minimizes into the corner; the iPad sidebar / top tabs leave the inset as is
-            let minimized = sizeClass == .compact
+            // (a tall, narrow window: on iPhone Duo's squarer screen the tab bar is a side bar, nothing to line up with)
+            let minimized = sizeClass == .compact && ScanButton.windowIsTall
             button
                 .glassEffect(.regular.tint(.blue).interactive(), in: .circle)
                 .offset(x: minimized ? 8 : 0, y: minimized ? ScanButton.roundDrop : 0)
@@ -189,6 +190,12 @@ struct ScanButton: View {
         #else
         button.background(Circle().fill(Color.blue))
         #endif
+    }
+
+    static var windowIsTall: Bool {
+        let b = UIApplication.shared.connectedScenes.compactMap { $0 as? UIWindowScene }.first?.coordinateSpace.bounds
+            ?? UIScreen.main.bounds
+        return b.width > 0 && max(b.width, b.height) / min(b.width, b.height) > 1.7
     }
 
     static let roundSize: CGFloat = 48
