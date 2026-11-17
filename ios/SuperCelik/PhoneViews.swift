@@ -135,26 +135,58 @@ struct ScanButton: View {
     var body: some View {
         HStack(spacing: 0) {
             if collapsed { Spacer(minLength: 0) }
-            Button {
-                Task { await action() }
-            } label: {
-                HStack {
-                    if model.busy { ProgressView() } else { Image(systemName: model.autoIcon) }
-                    if !collapsed { Text(loc.t(title)).fontWeight(.semibold) }
-                }
-                .frame(maxWidth: collapsed ? 28 : .infinity)
-                .padding(.vertical, collapsed ? 14 : 8)
-                .padding(.horizontal, collapsed ? 14 : 0)
-            }
-            .glassButton(prominent: true)
-            .buttonBorderShape(.capsule)
-            .tint(.blue)
-            .controlSize(.large)
-            .disabled(model.busy)
-            .accessibilityLabel(loc.t(title))
+            if collapsed { roundButton } else { wideButton }
         }
         .animation(.spring(response: 0.38, dampingFraction: 0.8), value: collapsed)
     }
+
+    private var wideButton: some View {
+        Button {
+            Task { await action() }
+        } label: {
+            HStack {
+                if model.busy { ProgressView() } else { Image(systemName: model.autoIcon) }
+                Text(loc.t(title)).fontWeight(.semibold)
+            }
+            .frame(maxWidth: .infinity)
+            .padding(.vertical, 8)
+        }
+        .glassButton(prominent: true)
+        .buttonBorderShape(.capsule)
+        .tint(.blue)
+        .controlSize(.large)
+        .disabled(model.busy)
+        .accessibilityLabel(loc.t(title))
+    }
+
+    /// Same size (48 pt) and the same baseline as the minimized tab bar button in the bottom-left corner:
+    /// the bottom inset still reserves the full tab bar height, so the round button drops by that much.
+    @ViewBuilder private var roundButton: some View {
+        let icon = Group {
+            if model.busy { ProgressView().tint(.white) } else { Image(systemName: model.autoIcon).font(.title3.weight(.semibold)) }
+        }
+        .foregroundStyle(.white)
+        .frame(width: ScanButton.roundSize, height: ScanButton.roundSize)
+        .contentShape(Circle())
+        let button = Button { Task { await action() } } label: { icon }
+            .buttonStyle(.plain)
+            .disabled(model.busy)
+            .accessibilityLabel(loc.t(title))
+        #if compiler(>=6.2)
+        if #available(iOS 26.0, *) {
+            button
+                .glassEffect(.regular.tint(.blue).interactive(), in: .circle)
+                .offset(x: 8, y: ScanButton.roundDrop)
+        } else {
+            button.background(Circle().fill(Color.blue)).offset(x: 8, y: ScanButton.roundDrop)
+        }
+        #else
+        button.background(Circle().fill(Color.blue)).offset(x: 8, y: ScanButton.roundDrop)
+        #endif
+    }
+
+    static let roundSize: CGFloat = 48
+    static let roundDrop: CGFloat = 56
 }
 
 /// Reports "scrolled down" for the scan button: collapses when scrolling down, comes back when scrolling up or at the top.
