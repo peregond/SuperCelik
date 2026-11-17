@@ -1,1 +1,1 @@
-eid,serbia,id card,reader,smart card,residence permit,signature,pdf,print,pin,licna karta,srbija
+eid,serbia,id card,reader,smart card,residence permit,signature,pdf,print,licna karta,srbija,celik
