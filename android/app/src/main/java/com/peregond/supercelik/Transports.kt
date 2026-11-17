@@ -11,7 +11,6 @@ import android.hardware.usb.UsbDeviceConnection
 import android.hardware.usb.UsbEndpoint
 import android.hardware.usb.UsbInterface
 import android.hardware.usb.UsbManager
-import android.nfc.tech.IsoDep
 import android.os.Build
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
@@ -39,16 +38,6 @@ private fun split(raw: ByteArray): Resp {
     if (raw.size < 2) throw CardException(CardException.Kind.Lost)
     return Resp(raw.copyOfRange(0, raw.size - 2),
         (raw[raw.size - 2].toInt() and 0xFF shl 8) or (raw[raw.size - 1].toInt() and 0xFF))
-}
-
-/** ISO-DEP over NFC. */
-class NfcTransport(private val tag: IsoDep) : CardTransport {
-    init { tag.timeout = 5000 }
-    override fun transmit(apdu: ByteArray): Resp = try {
-        split(tag.transceive(apdu))
-    } catch (e: java.io.IOException) {
-        throw CardException(CardException.Kind.Lost, e.message ?: "NFC")
-    }
 }
 
 /**

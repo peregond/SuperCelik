@@ -2,21 +2,18 @@
 <resources>
     <string name="app_name">Super Čelik</string>
     <string name="title_personal">Лични подаци</string>
-    <string name="read_nfc">Читај преко NFC-а</string>
     <string name="read_usb">Читај преко USB читача</string>
-    <string name="hint_idle">Изаберите како да читате картицу. NFC ради само ако картица има бесконтактни чип; иначе повежите USB читач картица (OTG).</string>
-    <string name="hint_nfc_wait">Прислоните картицу на задњу страну телефона…</string>
+    <string name="hint_idle">Убаците картицу у USB читач паметних картица и повежите га са телефоном (USB-C или преко OTG адаптера). Читање почиње аутоматски.</string>
     <string name="hint_usb_wait">Тражим USB читач…</string>
     <string name="reading">Читам картицу…</string>
     <string name="cancel">Откажи</string>
     <string name="clear">Обриши</string>
-    <string name="err_no_nfc">Овај телефон нема NFC или је искључен.</string>
     <string name="err_no_usb">USB читач није пронађен. Повежите га преко OTG адаптера.</string>
     <string name="err_usb_denied">Приступ USB-у није одобрен.</string>
     <string name="err_no_card">Нема картице у читачу.</string>
     <string name="err_unsupported">Картица није подржана (нема познатог аплета; старе Apollo картице нису подржане).</string>
     <string name="err_generic">Није могуће прочитати картицу</string>
-    <string name="err_lost">Картица се померила током читања. Покушајте поново.</string>
+    <string name="err_lost">Веза са картицом је прекинута током читања. Покушајте поново.</string>
     <string name="doc_section">Документ</string>
     <string name="person_section">Лице</string>
     <string name="address_section">Адреса</string>
@@ -33,7 +30,7 @@
     <string name="expiry_date">Важи до</string>
     <string name="address">Адреса</string>
     <string name="about_note">Независна имплементација, није повезана са МУП РС и NetSeT/Veridos. Подаци се приказују само на екрану и бришу се затварањем апликације.</string>
-    <string name="hint_ready">Спремно: прислоните картицу на задњу страну телефона</string>
+    <string name="hint_ready">Спремно: повежите USB читач са картицом</string>
     <string name="tab_card">Картица</string>
     <string name="tab_token">Токен</string>
     <string name="tab_settings">Подешавања</string>
@@ -81,7 +78,6 @@
     <string name="pin_note">Читање токена не користи ПИН. Потпис прави одвојени CMS .p7s фајл који може да провери сваки алат са CMS подршком.</string>
     <string name="ok">У реду</string>
     <string name="auto_cleared">Подаци су аутоматски обрисани</string>
-    <string name="err_no_nfc_or_usb">Телефон нема NFC (или је искључен) и нема повезаног USB читача.</string>
     <string name="settings_theme">Тема</string>
     <string name="theme_system">Системска</string>
     <string name="theme_light">Светла</string>

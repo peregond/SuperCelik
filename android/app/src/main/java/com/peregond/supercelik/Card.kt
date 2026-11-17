@@ -7,7 +7,7 @@ import java.util.zip.Inflater
 /** Response of one APDU: data without the status word, and the status word. */
 class Resp(val data: ByteArray, val sw: Int)
 
-/** How APDUs reach the card (NFC, USB reader...). Blocking; call off the main thread. */
+/** How APDUs reach the card (USB CCID reader). Blocking; call off the main thread. */
 interface CardTransport {
     fun transmit(apdu: ByteArray): Resp
 }
