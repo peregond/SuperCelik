@@ -1,0 +1,13 @@
+What to test in 1.1.1
+
+Card and Token tabs (iPhone and iPad, with a USB-C smart card reader or without one):
+• The "Connect a reader" notice is now the same card at the top of both the Card and Token tabs.
+• The Card tab now has a title ("Personal data"), like the Token tab.
+• With no reader connected, the screen no longer wobbles or jitters when you drag it: short content stays still.
+• Scroll down a long screen (card data, certificates): on the Card tab the Read button shrinks to a round button level with the tab bar button; on the Token tab it hides completely and returns when you scroll up.
+• Settings > Show demo data now also fills the Token tab (a token with two certificates).
+• iPhone Duo: the round Read button no longer slides off the bottom edge when you scroll.
+
+Search in the App Store: the app is now found by "celik" as well as "Čelik", and the app declares its languages (English, Russian, Serbian).
+
+Please check: both tabs with and without a reader, scrolling up and down, rotating the iPad, reading a real card and a token, and the Russian and Serbian interface.
