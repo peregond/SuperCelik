@@ -15,7 +15,7 @@ on your own device, and shows, prints or exports it for you.
   version; the App Store builds do not contact any server.)
 - **Files you create** (a PDF printout, a signature `.p7s`, an exported certificate) are saved only where you choose or
   shared with the app you pick.
-- **Permissions**: NFC (iPhone, Android) and smart card reader access are used only to read your card when you ask.
+- **Permissions**: NFC (Android) and smart card reader access are used only to read your card when you ask.
   Android uses USB access only for the reader you connect.
 - **PIN/PUK** typed in the app are sent only to your card and are never stored or logged.
 - The app is an independent implementation and is not affiliated with the Ministry of Interior of the Republic of Serbia (MUP RS) or NetSeT/Veridos.
@@ -33,7 +33,7 @@ Contact: open an issue at https://github.com/peregond/SuperCelik/issues
   сборки из App Store не обращаются ни к какому серверу.)
 - **Файлы, которые вы создаёте** (PDF, подпись `.p7s`, экспорт сертификата), сохраняются только туда, куда вы укажете, или
   передаются выбранному вами приложению.
-- **Разрешения**: NFC (iPhone, Android) и доступ к считывателю смарт-карт нужны только чтобы прочитать карту по вашей команде.
+- **Разрешения**: NFC (Android) и доступ к считывателю смарт-карт нужны только чтобы прочитать карту по вашей команде.
   USB на Android используется только для подключённого вами ридера.
 - **PIN/PUK**, введённые в приложении, передаются только карте и нигде не сохраняются и не записываются в журнал.
 - Приложение независимое и не связано с МУП РС и NetSeT/Veridos.
@@ -49,7 +49,7 @@ na vašem uređaju, i prikazuje ih, štampa ili čuva po vašem zahtevu.
 - **Mreža se ne koristi** za čitanje kartice. (Windows i Mac verzije sa sajta mogu da proveravaju GitHub za novu verziju;
   App Store verzije ne kontaktiraju nijedan server.)
 - **Fajlovi koje napravite** (PDF, potpis `.p7s`, izvezen sertifikat) čuvaju se samo tamo gde odaberete ili se dele aplikaciji koju izaberete.
-- **Dozvole**: NFC (iPhone, Android) i pristup čitaču pametnih kartica koriste se samo da pročitaju karticu kada to zatražite.
+- **Dozvole**: NFC (Android) i pristup čitaču pametnih kartica koriste se samo da pročitaju karticu kada to zatražite.
 - **PIN/PUK** uneti u aplikaciju šalju se samo kartici i nikada se ne čuvaju niti beleže.
 - Aplikacija je nezavisna i nije povezana sa MUP RS niti NetSeT/Veridos.
 
