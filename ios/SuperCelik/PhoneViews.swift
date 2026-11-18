@@ -493,7 +493,7 @@ struct TokenTab: View {
             .sheet(item: $share) { ShareSheet(url: $0.url) }
             .sheet(item: $pinMode) { PinSheet(mode: $0) }
             .fullScreenCover(isPresented: $showLogin) {
-                SafariView(url: URL(string: "https://euprava.gov.rs")!).ignoresSafeArea()
+                SafariView(url: URL(string: "https://euprava.gov.rs/prijava")!).ignoresSafeArea()
             }
             .alert(model.pinAlert ?? "", isPresented: Binding(get: { model.pinAlert != nil && pinMode == nil },
                                                                set: { if !$0 { model.pinAlert = nil } })) {
