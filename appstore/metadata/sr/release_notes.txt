@@ -1,5 +1,8 @@
-• Prijava na eUpravu karticom ili tokenom: dugme na kartici „Token“, PIN se unosi u sistemskom prozoru.
-• Brze radnje na ikoni aplikacije: pročitaj karticu, štampa, prijava na eUpravu.
-• Token: promena PIN-a i odblokiranje PUK-om.
-• Automatsko čitanje pri umetanju kartice sada radi i na kartici „Token“.
-• Ispravili smo greške i učinili aplikaciju stabilnijom.
+Sada se na eUpravu možete prijaviti direktno iz aplikacije! Otvorite odeljak „Token“, dodirnite „Prijava na eUpravu“ i unesite PIN svoje kartice. Sve ostalo aplikacija radi sama.
+
+Šta je još novo:
+
+• Sada možete da promenite PIN kartice i da je odblokirate pomoću PUK koda.
+• Dugim pritiskom na ikonu aplikacije dostupne su brze radnje: čitanje kartice, štampa i prijava na eUpravu.
+• Automatsko čitanje kartice sada radi i u odeljku „Token“.
+• Ispravili smo greške, poboljšali interfejs i učinili aplikaciju stabilnijom.
