@@ -50,6 +50,8 @@ class EuLoginActivity : ComponentActivity() {
 
     /** Several certificates fit the request: the user picks one (or cancels). */
     private val choice = mutableStateOf<Pair<ClientCertRequest, List<TokenKeyPair>>?>(null)
+    /** Further certificate requests that arrive while the choice dialog is open: they get the same answer. */
+    private val extraRequests = mutableListOf<ClientCertRequest>()
     private val loading = mutableStateOf(true)
     private val host = mutableStateOf("")
 
@@ -76,7 +78,19 @@ class EuLoginActivity : ComponentActivity() {
         }
     }
 
+    override fun onPause() {
+        // leaving for good: the start screen must not start reading the card by itself when it comes back
+        if (isFinishing) EuLogin.skipAutoStart = true
+        super.onPause()
+    }
+
     override fun onDestroy() {
+        // answer pending certificate requests first (while the WebView still exists), then tear everything down
+        choice.value?.first?.let { runCatching { it.cancel() } }
+        extraRequests.forEach { runCatching { it.cancel() } }
+        extraRequests.clear()
+        choice.value = null
+        EuLogin.reset()
         web?.let { w ->
             w.stopLoading()
             wipeWebData(this, w)
@@ -84,8 +98,6 @@ class EuLoginActivity : ComponentActivity() {
             EuLogin.markDirty(this, false)
         }
         web = null
-        choice.value?.first?.cancel()
-        EuLogin.reset()
         EuLogin.removeProvider()
         super.onDestroy()
     }
@@ -108,7 +120,10 @@ class EuLoginActivity : ComponentActivity() {
         override fun shouldOverrideUrlLoading(view: WebView, request: WebResourceRequest): Boolean {
             val url = request.url
             if (url.scheme == "https" && isGov(url.host)) return false
-            try { startActivity(Intent(Intent.ACTION_VIEW, url).addCategory(Intent.CATEGORY_BROWSABLE)) } catch (_: ActivityNotFoundException) { }
+            // anything else leaves the app: ordinary web links open in the browser, other schemes (intent:, file:, ...) are dropped
+            if (url.scheme == "https" || url.scheme == "http") {
+                try { startActivity(Intent(Intent.ACTION_VIEW, url).addCategory(Intent.CATEGORY_BROWSABLE)) } catch (_: ActivityNotFoundException) { }
+            }
             return true
         }
 
@@ -129,7 +144,18 @@ class EuLoginActivity : ComponentActivity() {
             val fit = all.filter { p ->
                 issuers == null || runCatching { CardCrypto.parseCert(p.certDer).issuerX500Principal.name in issuers }.getOrDefault(false)
             }.ifEmpty { all }
-            if (fit.size == 1) proceed(request, fit[0]) else choice.value = request to fit
+            when {
+                choice.value != null -> extraRequests.add(request)          // the choice dialog is already open
+                fit.size == 1 -> useCert(request, fit[0])
+                else -> choice.value = request to fit
+            }
+        }
+    }
+
+    /** Asks for the PIN and verifies it on the card now (not during the TLS handshake), then hands the key to Chromium. */
+    private fun useCert(request: ClientCertRequest, pair: TokenKeyPair) {
+        EuLogin.unlock(pair) { ok ->
+            if (!ok) { runCatching { request.cancel() } } else proceed(request, pair)
         }
     }
 
@@ -177,7 +203,7 @@ class EuLoginActivity : ComponentActivity() {
             )
         }) { padding ->
             Box(Modifier.padding(padding).fillMaxSize()) {
-                AndroidView({ view }, Modifier.fillMaxSize())
+                AndroidView({ (view.parent as? android.view.ViewGroup)?.removeView(view); view }, Modifier.fillMaxSize())
                 if (isLoading) LinearProgressIndicator(Modifier.fillMaxWidth().align(Alignment.TopCenter))
 
                 if (status == EuLogin.Status.Signing) {
@@ -208,15 +234,22 @@ class EuLoginActivity : ComponentActivity() {
 
         pinAsk?.let { PinDialog(it) }
         choice.value?.let { (request, pairs) ->
-            CertChoice(pairs, onPick = { choice.value = null; proceed(request, it) },
-                onCancel = { choice.value = null; request.cancel() })
+            CertChoice(pairs, onPick = { p ->
+                choice.value = null
+                useCert(request, p)
+                extraRequests.toList().also { extraRequests.clear() }.forEach { useCert(it, p) }
+            }, onCancel = {
+                choice.value = null
+                request.cancel()
+                extraRequests.toList().also { extraRequests.clear() }.forEach { it.cancel() }
+            })
         }
     }
 
     @Composable
-    private fun PinDialog(ask: EuLogin.PinAsk) {
+    private fun PinDialog(ask: PinAsk) {
         var text by remember(ask) { mutableStateOf("") }
-        val done = { pin: CharArray? -> text = ""; ask.answer.complete(pin) }
+        val done = { pin: CharArray? -> text = ""; ask.finish(pin) }
         AlertDialog(
             onDismissRequest = { done(null) },
             title = { Text(stringResource(R.string.eu_pin_title)) },

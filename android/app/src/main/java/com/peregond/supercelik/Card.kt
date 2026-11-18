@@ -314,10 +314,11 @@ class EidCard(private val transport: CardTransport) {
     }
 
     /**
-     * Same as [sign], but the PIN comes as a char array and every copy made here (the padded PIN block and the
-     * VERIFY APDU) is overwritten with zeros before returning. One VERIFY only: a wrong PIN is never retried.
+     * VERIFY with a PIN given as a char array; every copy made here (the padded PIN block and the APDU) is overwritten
+     * with zeros before returning. One attempt only: a wrong PIN is never retried. The PIN stays verified on the card
+     * until it is powered off or another applet is selected, so [signVerified] may follow.
      */
-    fun signWithPin(pin: CharArray, digestInfo: ByteArray, keyFile: Int): ByteArray {
+    fun verifyTokenPin(pin: CharArray) {
         require(pin.size in 4..8 && pin.all { it in '0'..'9' }) { "PIN must be 4-8 digits" }
         selectTokenApplet()
         val block = ByteArray(8) { if (it < pin.size) pin[it].code.toByte() else 0 }
@@ -328,10 +329,18 @@ class EidCard(private val transport: CardTransport) {
         } finally {
             block.fill(0); verify.fill(0)
         }
+    }
+
+    /**
+     * RSA PKCS#1 v1.5 signature over a DigestInfo after [verifyTokenPin]. No SELECT here: selecting the applet again
+     * can drop the PIN that was just verified (same as the Mac driver).
+     */
+    fun signVerified(digestInfo: ByteArray, keyFile: Int): ByteArray {
         val mse = byteArrayOf(0x80.toByte(), 0x01, 0x02, 0x84.toByte(), 0x02, (keyFile shr 8).toByte(), keyFile.toByte())
         var r = apdu(0x22, 0x41, 0xB6, mse)
         if (r.sw != 0x9000) throw CardException(CardException.Kind.Other, "MSE SET: %04X".format(r.sw))
         r = transport.transmit(byteArrayOf(0x00, 0x2A, 0x9E.toByte(), 0x00, digestInfo.size.toByte()) + digestInfo + byteArrayOf(0x00))
+        if (r.sw == 0x6982) throw CardException(CardException.Kind.Other, "PIN not verified")
         if (r.sw != 0x9000 || r.data.isEmpty()) throw CardException(CardException.Kind.Other, "Sign: %04X".format(r.sw))
         return r.data
     }

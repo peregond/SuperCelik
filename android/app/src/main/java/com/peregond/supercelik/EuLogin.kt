@@ -2,10 +2,15 @@ package com.peregond.supercelik
 
 import android.content.Context
 import android.hardware.usb.UsbManager
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.withContext
 import java.security.InvalidKeyException
 import java.security.InvalidParameterException
 import java.security.MessageDigest
@@ -15,8 +20,13 @@ import java.security.PublicKey
 import java.security.Security
 import java.security.SignatureException
 import java.security.SignatureSpi
+import java.util.Timer
+import java.util.TimerTask
 import java.util.concurrent.CompletableFuture
 import java.util.concurrent.TimeUnit
+import java.util.concurrent.atomic.AtomicBoolean
+import java.util.concurrent.locks.ReentrantLock
+import kotlin.concurrent.withLock
 
 /*
  * Signing in to eUprava (prijava.eid.gov.rs) with the card certificate inside the app's own WebView.
@@ -33,9 +43,15 @@ import java.util.concurrent.TimeUnit
  * SHA-1/256/384/512 (checked with openssl s_client). The card pads PKCS#1 v1.5 itself (MSE alg 2), so only those are
  * offered; RSA-PSS (TLS 1.3) is not needed there.
  *
- * PIN: asked in the app each time the card has to sign, kept only in a char array that is zeroed right after the one
- * VERIFY. After any failed attempt (wrong PIN, cancel, reader gone) no further card signature is made until the user
- * starts over, so Chromium's automatic handshake retries can never spend another PIN try.
+ * Timing: Chromium waits for the signature inside the TLS handshake, which gives up after about 30 seconds, so a PIN
+ * typed during the handshake can easily be too late. The PIN is therefore asked when the certificate is chosen
+ * (onReceivedClientCertRequest, between two connection attempts, no timer running) and verified on the card right
+ * away; the card is kept powered with the PIN verified (CardSession) for the few seconds until the handshake asks for
+ * the signature, and for a short grace period after it for parallel connections. Then it is powered off.
+ *
+ * PIN: kept only in a char array that is zeroed right after the single VERIFY, never stored. After any failed attempt
+ * (wrong PIN, cancel, reader gone) no further PIN prompt or card signature happens until the user starts over, so
+ * Chromium's automatic retries can never spend another PIN try.
  */
 
 /** Handle for a private key that stays on the card. Not extractable. */
@@ -89,11 +105,24 @@ private class CardKeyProvider : Provider(EuLogin.PROVIDER, 1.0, "Super Čelik: T
     }
 }
 
+/** The card, powered and with the PIN verified, waiting for the TLS handshake to ask for a signature. */
+private class CardSession(val keyFile: Int, val sign: (digestInfo: ByteArray) -> ByteArray, val close: () -> Unit)
+
+/** One PIN question. `finish` answers it once (null = cancelled); a PIN that arrives too late is zeroed. */
+class PinAsk(val label: String, private val callback: (CharArray?) -> Unit) {
+    private val done = AtomicBoolean(false)
+    fun finish(pin: CharArray?) {
+        if (done.compareAndSet(false, true)) callback(pin) else pin?.fill('\u0000')
+    }
+}
+
 /** State shared by the token tab (which reads the certificates) and the sign-in screen. Memory only. */
 object EuLogin {
     const val START_URL = "https://euprava.gov.rs/prijava"
     const val PROVIDER = "SuperCelikCard"
     private const val DIRTY = "euWebDataDirty"
+    private const val SESSION_WAIT_MS = 90_000L      // verified, signature not asked for yet
+    private const val SESSION_GRACE_MS = 15_000L     // after a signature: parallel connections may need one too
 
     /** Certificates of the token, read just before the sign-in screen opens. Never written to disk. */
     @Volatile var pairs: List<TokenKeyPair> = emptyList()
@@ -104,9 +133,6 @@ object EuLogin {
         data class Failed(val msg: Msg) : Status
     }
 
-    /** A PIN request from Chromium's signing thread, answered by the dialog (null = cancelled). */
-    class PinAsk(val label: String, val answer: CompletableFuture<CharArray?>)
-
     private val _status = MutableStateFlow<Status>(Status.Idle)
     val status: StateFlow<Status> = _status.asStateFlow()
     private val _pinAsk = MutableStateFlow<PinAsk?>(null)
@@ -116,14 +142,25 @@ object EuLogin {
     @Volatile var stopped = false
         private set
 
+    /** Set when the sign-in screen is left, so the start screen does not read the card by itself on return. */
+    @Volatile var skipAutoStart = false
+
+    private val scope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
+    private val signLock = ReentrantLock()                  // one card operation at a time
+    private val timer by lazy { Timer("eu-card-session", true) }
+    private var expiry: TimerTask? = null
+    @Volatile private var session: CardSession? = null      // guarded by signLock
+    private var unlocking: MutableList<(Boolean) -> Unit>? = null   // main thread only
+
     fun startOver() { stopped = false; _status.value = Status.Idle }
 
     fun stop(msg: Msg) { stopped = true; _status.value = Status.Failed(msg) }
 
-    /** Sign-in screen closed: forget the certificates and any pending PIN request. */
+    /** Sign-in screen closed: answer any pending PIN question, power the card off, forget the certificates. */
     fun reset() {
-        _pinAsk.value?.answer?.complete(null)
+        _pinAsk.value?.finish(null)
         _pinAsk.value = null
+        scope.launch { signLock.withLock { closeSession() } }
         pairs = emptyList()
         startOver()
     }
@@ -140,37 +177,102 @@ object EuLogin {
 
     fun isDirty(context: Context) = context.getSharedPreferences("settings", Context.MODE_PRIVATE).getBoolean(DIRTY, false)
 
-    /** Called on Chromium's signing thread (blocking is expected there): asks for the PIN, then signs with the card. */
-    internal fun signWithCard(pair: TokenKeyPair, digestInfo: ByteArray): ByteArray {
-        if (stopped) throw SignatureException("stopped after a failed attempt")
-        val ask = PinAsk(pair.label, CompletableFuture())
-        _pinAsk.value = ask
-        val pin = try { ask.answer.get(5, TimeUnit.MINUTES) } catch (_: Exception) { null } finally { _pinAsk.compareAndSet(ask, null) }
-        if (pin == null) {
-            stop(Msg(R.string.eu_cancelled))
-            throw SignatureException("PIN entry cancelled")
+    // ---- certificate chosen: ask for the PIN and verify it on the card now (main thread; `done` runs on the main thread) ----
+
+    fun unlock(pair: TokenKeyPair, done: (Boolean) -> Unit) {
+        if (stopped) { done(false); return }
+        if (session?.keyFile == pair.keyFile) { done(true); return }
+        unlocking?.let { it.add(done); return }                 // a second request while the PIN is being asked
+        val waiters = mutableListOf(done)
+        unlocking = waiters
+        val finish = { ok: Boolean -> unlocking = null; waiters.forEach { it(ok) } }
+        val ask = PinAsk(pair.label) { pin ->
+            _pinAsk.value = null
+            if (pin == null) {
+                stop(Msg(R.string.eu_cancelled)); finish(false)
+            } else scope.launch {
+                _status.value = Status.Signing
+                val ok = try {
+                    // runBlocking: the lock is taken and released on this one thread (the USB permission dialog suspends)
+                    signLock.withLock { runBlocking { openSession(pair, pin) } }
+                    _status.value = Status.Idle
+                    true
+                } catch (e: Exception) { stop(cardErrorMsg(e)); false } finally { pin.fill('\u0000') }
+                withContext(Dispatchers.Main) { finish(ok) }
+            }
         }
+        _pinAsk.value = ask
+    }
+
+    // ---- the TLS handshake asks for a signature (Chromium's signing thread; blocking is expected there) ----
+
+    internal fun signWithCard(pair: TokenKeyPair, digestInfo: ByteArray): ByteArray = signLock.withLock {
+        if (stopped) throw SignatureException("stopped after a failed attempt")
+        if (session?.keyFile != pair.keyFile) {
+            // no verified session (a later connection after the grace period): ask now, as late as that is
+            val pin = askBlocking(pair)
+            if (pin == null) { stop(Msg(R.string.eu_cancelled)); throw SignatureException("PIN entry cancelled") }
+            _status.value = Status.Signing
+            try { runBlocking { openSession(pair, pin) } }
+            catch (e: Exception) { stop(cardErrorMsg(e)); throw SignatureException(e.message, e) }
+            finally { pin.fill('\u0000') }
+        }
+        val s = session ?: throw SignatureException("no card session")
         _status.value = Status.Signing
         try {
-            val sig = withCard { it.signWithPin(pin, digestInfo, pair.keyFile) }
+            val sig = s.sign(digestInfo)
             _status.value = Status.Idle
-            return sig
+            scheduleClose(SESSION_GRACE_MS)
+            sig
         } catch (e: Exception) {
+            closeSession()
             stop(cardErrorMsg(e))
             throw SignatureException(e.message, e)
-        } finally {
-            pin.fill('\u0000')
         }
     }
 
+    private fun askBlocking(pair: TokenKeyPair): CharArray? {
+        val future = CompletableFuture<CharArray?>()
+        val ask = PinAsk(pair.label) { future.complete(it) }
+        _pinAsk.value = ask
+        return try { future.get(2, TimeUnit.MINUTES) } catch (_: Exception) { ask.finish(null); null }
+        finally { _pinAsk.compareAndSet(ask, null) }
+    }
+
+    // ---- card session (callers hold signLock) ----
+
     private class UsbProblem(val msg: Msg) : Exception(msg.toString())
 
-    private fun <T> withCard(op: (EidCard) -> T): T {
+    /** Powers the card on and verifies the PIN (one attempt). On success the card stays open as `session`. */
+    private suspend fun openSession(pair: TokenKeyPair, pin: CharArray) {
+        closeSession()
         val ctx = App.instance
         val usb = ctx.getSystemService(Context.USB_SERVICE) as UsbManager
         val device = UsbCcidTransport.findReader(usb) ?: throw UsbProblem(Msg(R.string.err_no_usb))
-        val transport = runBlocking { UsbCcidTransport.open(ctx, device) } ?: throw UsbProblem(Msg(R.string.err_usb_denied))
-        return transport.use { it.powerOn(); op(EidCard(FollowingTransport(it))) }
+        val transport = UsbCcidTransport.open(ctx, device) ?: throw UsbProblem(Msg(R.string.err_usb_denied))
+        try {
+            transport.powerOn()
+            val card = EidCard(FollowingTransport(transport))
+            card.verifyTokenPin(pin)
+            session = CardSession(pair.keyFile, { di -> card.signVerified(di, pair.keyFile) }, { transport.close() })
+            scheduleClose(SESSION_WAIT_MS)
+        } catch (e: Exception) {
+            runCatching { transport.close() }
+            throw e
+        }
+    }
+
+    private fun closeSession() {
+        expiry?.cancel(); expiry = null
+        session?.let { runCatching { it.close() } }   // IccPowerOff: the PIN is forgotten by the card
+        session = null
+    }
+
+    private fun scheduleClose(delayMs: Long) {
+        expiry?.cancel()
+        val task = object : TimerTask() { override fun run() { signLock.withLock { closeSession() } } }
+        expiry = task
+        timer.schedule(task, delayMs)
     }
 
     private fun cardErrorMsg(e: Exception): Msg = if (e is UsbProblem) e.msg else cardError(e)

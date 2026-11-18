@@ -124,6 +124,8 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
 
     /** App opened or came back to the start screen: use a connected USB reader right away. */
     fun autoStart(context: Context) {
+        // coming back from the eUprava sign-in screen: the user is on the Token tab, do not read the card by itself
+        if (EuLogin.skipAutoStart) { EuLogin.skipAutoStart = false; return }
         if (_phase.value != Phase.Idle || _personal.value != null) return
         val usb = context.getSystemService(Context.USB_SERVICE) as UsbManager
         if (UsbCcidTransport.findReader(usb) != null) startUsb(context)
@@ -172,6 +174,7 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
 
     /** Cancel a pending card operation / go back to listening. */
     fun cancel() {
+        _euReady.value = false
         job?.cancel()
         pending = null
         _phase.value = Phase.Idle
