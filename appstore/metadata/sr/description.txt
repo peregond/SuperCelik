@@ -4,7 +4,7 @@ Super Čelik čita srpsku elektronsku ličnu kartu, ličnu kartu za strance ili 
 • Lični podaci, fotografija, rok važenja dokumenta i provera ispravnosti potpisa kartice (prema lancu sertifikata MUP-a).
 • Štampa u stilu zvanične (PDF): pregled, štampa preko AirPrint-a i slanje.
 • Sertifikati tokena i rok njihovog važenja.
-• Prijava na portal eUprava karticom ili tokenom: stranica za prijavu otvara se u aplikaciji, PIN se unosi u sistemskom prozoru.
+• Prijava na portal eUprava pomoću vaše kartice i PIN-a: stranica za prijavu otvara se u aplikaciji, PIN se unosi u sistemskom prozoru.
 • Osetljiva polja (JMBG, adresa, broj dokumenta) skrivena su dok ih ne prikažete; podaci se automatski brišu.
 • Jezici: Русский, English, Srpski (latinica), Српски (ћирилица).
 • Privatnost: nema naloga, analitike ni servera. Podaci sa kartice ne napuštaju uređaj.
