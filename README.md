@@ -3,7 +3,7 @@
 # Super Čelik
 
 Единое приложение вместо Čelik + TrustEdge ID для сербской электронной ID-карты, карты иностранца и вида на жительство.
-Языки: RU / EN / SR (латиница) / SR (кириллица): сербская кириллица получается из сербской латиницы автоматической транслитерацией (`scripts/translit_sr.py`, те же правила в Swift и C#). Версии: **macOS** (SwiftUI), **Windows** (WPF, .NET 8), **Android** (Kotlin + Jetpack Compose, Material You, см. [android/README.md](android/README.md)) и **iOS и iPadOS** (SwiftUI, чтение через USB-C ридер, см. [ios/README.md](ios/README.md)). iOS и iPadOS доступны в [App Store](https://apps.apple.com/app/id6835244146).
+Языки: RU / EN / SR (латиница) / SR (кириллица): сербская кириллица получается из сербской латиницы автоматической транслитерацией (`scripts/translit_sr.py`, те же правила в Swift и C#). Версии: **macOS** (SwiftUI), **Windows** (WPF, .NET 8), **Linux** (бета, Avalonia, .NET 8, см. [linux/README.md](linux/README.md)), **Android** (Kotlin + Jetpack Compose, Material You, см. [android/README.md](android/README.md)) и **iOS и iPadOS** (SwiftUI, чтение через USB-C ридер, см. [ios/README.md](ios/README.md)). iOS и iPadOS доступны в [App Store](https://apps.apple.com/app/id6835244146).
 Независимая реализация, не связана с МУП РС и NetSeT/Veridos.
 
 ## Установка (готовые сборки — раздел Releases)
@@ -13,6 +13,8 @@
 - **Android 8+**: `SuperCelik-<версия>-android.apk` (для установки вручную: разрешите установку из неизвестных источников). Читает карту через USB-ридер смарт-карт (USB-C или OTG), в том числе проверка подписи МУП, токен, смена PIN, подпись файла.
 - **Windows 10/11 x64**: `SuperCelik-<версия>-windows-x64-setup.exe`. Установщик не подписан сертификатом издателя: SmartScreen может показать предупреждение («Подробнее» → «Выполнить в любом случае»).
 
+- **Linux (x64 и arm64), бета**: `SuperCelik-<версия>-linux-amd64.deb` / `-arm64.deb` (Debian, Ubuntu и производные: `sudo apt install ./SuperCelik-*.deb`, подтянет `pcscd`) или `SuperCelik-<версия>-linux-<x64|arm64>.tar.gz` (распаковать и запустить `./SuperCelik`; нужны `pcscd` и `libpcsclite1`). Читает карту через USB-ридер по PC/SC: данные, проверка подписи МУП, токен, смена PIN, подпись файла, PDF.
+
 Сборка делается автоматически в GitHub Actions: каждый push в `main` → артефакты; тег `vX.Y.Z` → релиз.
 
 ## Сборка вручную
@@ -21,6 +23,12 @@ macOS (Xcode 15+ / Swift 5.9):
     swift run                         # с реальным ридером
     SERBIAID_DEMO=1 swift run         # демо-данные без карты
     bash scripts/make-app.sh 0.9.9 arm64   # или x86_64 / universal → dist/*.dmg
+
+Linux (.NET 8 SDK, `dpkg-deb` для .deb):
+
+    dotnet run --project linux/SerbiaID.Linux                      # с реальным ридером (нужен pcscd)
+    dotnet run --project linux/SerbiaID.Linux -- --demo            # демо-данные без карты
+    bash scripts/make-linux.sh 0.9.9 x64                           # или arm64 → dist/*.deb и dist/*.tar.gz
 
 Windows (.NET 8 SDK):
 
