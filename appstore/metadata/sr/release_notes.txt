@@ -1,4 +1,5 @@
-• Ažurirali smo interfejs: karticu sada zatvara jasan krstić umesto korpe za smeće.
-• Prilagodili smo aplikaciju za iPhone Duo.
-• Dodali smo mogućnost automatskog čitanja kartice pri povezivanju. Možete je uključiti u podešavanjima.
-• Ispravili smo greške i učinili rad aplikacije stabilnijim i praktičnijim.
+• Prijava na eUpravu karticom ili tokenom: dugme na kartici „Token“, PIN se unosi u sistemskom prozoru.
+• Brze radnje na ikoni aplikacije: pročitaj karticu, štampa, prijava na eUpravu.
+• Token: promena PIN-a i odblokiranje PUK-om.
+• Automatsko čitanje pri umetanju kartice sada radi i na kartici „Token“.
+• Ispravili smo greške i učinili aplikaciju stabilnijom.

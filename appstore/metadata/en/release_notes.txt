@@ -1,4 +1,5 @@
-• Updated the interface: a clear cross now closes the card instead of the trash can.
-• Adapted the app for iPhone Duo.
-• Added automatic card reading when a card is connected. You can turn it on in Settings.
-• Fixed bugs and made the app more stable and easier to use.
+• Sign in to eUprava with your card or token: a button on the Token tab, the PIN is entered in the system dialog.
+• Quick actions on the app icon: read the card, print, sign in to eUprava.
+• Token: change PIN and unblock with PUK.
+• Automatic reading when a card is inserted now also works on the Token tab.
+• Fixed bugs and made the app more stable.
