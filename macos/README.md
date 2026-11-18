@@ -1,3 +1,5 @@
+<p align="center"><b>English</b> · <a href="README.ru.md">Русский</a> · <a href="README.sr.md">Srpski</a></p>
+
 # Mac App Store build
 
 The store build is the same source as the direct-download app, compiled with `-Xswiftc -DAPPSTORE`:

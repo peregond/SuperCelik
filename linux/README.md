@@ -1,27 +1,29 @@
-# Super Čelik для Linux (бета)
+<p align="center"><b>English</b> · <a href="README.ru.md">Русский</a> · <a href="README.sr.md">Srpski</a></p>
 
-Версия для Linux в **бета-статусе**: в окне приложения это помечено, во вкладке «О программе» есть ссылка на [GitHub Issues](https://github.com/peregond/SuperCelik/issues/new) для сообщений об ошибках и отзывов.
+# Super Čelik for Linux (beta)
 
-Avalonia (.NET 8). Протокол карты, проверка подписи (CMS + цепочка до сертификатов МУП), подпись файла и тексты общие с Windows-версией:
-файлы `windows/SerbiaID.Windows/{Card,CardErrors,Crypto,Models,Loc,SerbianScript,SelfTest}.cs` подключены ссылками. Своё здесь только:
-доступ к PC/SC через `libpcsclite` (`Native.cs`), интерфейс и макет печатного листа (`PrintSheet.cs`, PDF через SkiaSharp).
+The Linux version is a **beta**: the window says so, and the “About” tab has a link to [GitHub Issues](https://github.com/peregond/SuperCelik/issues/new) for bug reports and feedback.
 
-## Что нужно в системе
-- `pcscd` и `libpcsclite1` (в .deb прописаны как зависимости); для не-Debian: `pcsc-lite` / `pcsclite`.
-- USB-ридер смарт-карт. Если приложение пишет «Служба смарт-карт не запущена»: `sudo systemctl enable --now pcscd.socket`.
-- Для открытия PDF / страницы релиза: `xdg-utils` (необязательно).
+Avalonia (.NET 8). The card protocol, signature check (CMS + chain up to the MUP certificates), file signing and texts are shared with the Windows version:
+the files `windows/SerbiaID.Windows/{Card,CardErrors,Crypto,Models,Loc,SerbianScript,SelfTest}.cs` are linked in. What is specific to Linux:
+PC/SC access through `libpcsclite` (`Native.cs`), the interface and the print sheet layout (`PrintSheet.cs`, PDF through SkiaSharp).
 
-## Чего нет по сравнению с Windows
-- Вход в браузере по сертификату с карты: на Linux это делается PKCS#11-модулем (OpenSC или [srb-id-pkcs11](https://github.com/ubavic/srb-id-pkcs11)) в настройках браузера, приложение этого не настраивает.
-- Автообновление: приложение только сообщает о новой версии и открывает страницу релиза.
-- Печать: «Печать» сохраняет PDF во временный файл и открывает его в просмотрщике (там окно печати), «Сохранить PDF» кладёт файл куда выберете.
+## What the system needs
+- `pcscd` and `libpcsclite1` (the .deb declares them as dependencies); on non-Debian systems: `pcsc-lite` / `pcsclite`.
+- A USB smart-card reader. If the app says “The smart card service is not running”: `sudo systemctl enable --now pcscd.socket`.
+- `xdg-utils` to open the PDF / the release page (optional).
 
-## Запуск и проверка
-    dotnet run --project linux/SerbiaID.Linux -- --demo [вкладка 0-3] [--dark] [--state noreader|nocard|busy|error]
-    dotnet run --project linux/SerbiaID.Linux -- --demo --shot out.png      # окно как PNG (вымышленные данные)
-    dotnet run --project linux/SerbiaID.Linux -- --demo --pdf out.pdf       # печатный лист как PDF
-    SuperCelik --selftest                                                  # отчёт по реальной карте без личных данных (selftest.txt рядом с программой)
+## What is missing compared with Windows
+- Browser sign-in with the card certificate: on Linux this is done with a PKCS#11 module (OpenSC or [srb-id-pkcs11](https://github.com/ubavic/srb-id-pkcs11)) in the browser settings; the app does not configure it.
+- Auto-update: the app only tells you about a new version and opens the release page.
+- Printing: “Print” saves a PDF to a temporary file and opens it in the viewer (which has the print dialog); “Save PDF” puts the file where you choose.
 
-Настройки: `~/.config/SuperCelik/settings.json`. Язык интерфейса берётся из `LANG` (ru / sr / en), меняется на вкладке «Настройки».
+## Run and check
+    dotnet run --project linux/SerbiaID.Linux -- --demo [tab 0-3] [--dark] [--state noreader|nocard|busy|error]
+    dotnet run --project linux/SerbiaID.Linux -- --demo --shot out.png      # the window as a PNG (fictional data)
+    dotnet run --project linux/SerbiaID.Linux -- --demo --pdf out.pdf       # the print sheet as a PDF
+    SuperCelik --selftest                                                  # a report on a real card without personal data (selftest.txt next to the program)
 
-**Статус:** на реальной карте под Linux не проверялось (разработка велась на Mac: интерфейс, PDF и сборка проверены, чтение карты через `libpcsclite` и CMS-подпись на Linux — нет). Первым делом запустите `--selftest`.
+Settings: `~/.config/SuperCelik/settings.json`. The interface language comes from `LANG` (ru / sr / en) and can be changed on the “Settings” tab.
+
+**Status:** not tried on a real card under Linux (development was done on a Mac: the interface, PDF and build were checked; card reading through `libpcsclite` and the CMS signature were not checked on Linux). Run `--selftest` first.
