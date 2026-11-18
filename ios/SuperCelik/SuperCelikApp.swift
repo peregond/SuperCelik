@@ -6,6 +6,7 @@ struct SuperCelikApp: App {
     @StateObject private var prefs = Prefs.shared
     @StateObject private var model = PhoneModel()
     @Environment(\.scenePhase) private var scenePhase
+    @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
     var body: some Scene {
         WindowGroup {
@@ -18,6 +19,7 @@ struct SuperCelikApp: App {
         .onChange(of: scenePhase) { phase in
             // Privacy: exported PDFs / certificates do not stay in the temporary folder.
             if phase == .background { model.removeTemporaryFiles() }
+            if phase == .active { QuickActions.shared.publish() }
         }
     }
 }
