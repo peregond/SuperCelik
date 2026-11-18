@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import CryptoTokenKit
 
 /// A message shown above the data: title + hint (both localized) + technical details.
 struct PhoneProblem {
@@ -90,6 +91,16 @@ final class PhoneModel: ObservableObject {
     var autoSource: ReadSource { USBCardReader.hasReader || !nfcAvailable ? .usb : .nfc }
     var autoIcon: String { autoSource == .usb ? "cable.connector" : "wave.3.right" }
 
+    private let tokenWatcher = TKTokenWatcher()
+
+    /// The system has attached our token driver to the inserted card (this is what Safari needs for the certificate).
+    var driverAttached: Bool { tokenWatcher.tokenIDs.contains { $0.hasPrefix("app.supercelik.token") } }
+
+    /// Gives the system a moment to attach the driver before the app takes the card for its own reading.
+    private func waitForDriver() async {
+        for _ in 0..<8 where !driverAttached { try? await Task.sleep(nanoseconds: 500_000_000) }
+    }
+
     /// Follows the reader while the app is open: plugging it in or inserting a card updates the screens at once.
     func watchReader() async {
         while !Task.isCancelled {
@@ -102,6 +113,7 @@ final class PhoneModel: ObservableObject {
                 }
                 // A card went into the reader (or the app opened with one inserted): read it by itself if the setting is on.
                 if now == .cardReady, before != .cardReady, Prefs.shared.autoRead, !busy {
+                    await waitForDriver()
                     if activeTab == 1 { await scanTokenAuto() } else { await scanCardAuto() }
                 }
             }

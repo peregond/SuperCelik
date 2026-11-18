@@ -439,6 +439,7 @@ struct TokenTab: View {
     @State private var scanCollapsed = false
     @State private var pinMode: PinMode?
     @State private var showLogin = false
+    @State private var askLogin = false
 
     var body: some View {
         NavigationStack {
@@ -466,7 +467,7 @@ struct TokenTab: View {
                 .listRowBackground(Rectangle().fill(.regularMaterial))
                 // Sign in to eUprava: Safari takes the card certificate from the token extension inside this app.
                 Section {
-                    Button { showLogin = true } label: { Label(loc.t(.loginEuprava), systemImage: "person.badge.key") }
+                    Button { if model.driverAttached { showLogin = true } else { askLogin = true } } label: { Label(loc.t(.loginEuprava), systemImage: "person.badge.key") }
                 } footer: { Text(loc.t(.loginEupravaNote)) }
                 .listRowBackground(Rectangle().fill(.regularMaterial))
                 if let t = model.token {
@@ -492,6 +493,10 @@ struct TokenTab: View {
             }
             .sheet(item: $share) { ShareSheet(url: $0.url) }
             .sheet(item: $pinMode) { PinSheet(mode: $0) }
+            .alert(loc.t(.loginEuprava), isPresented: $askLogin) {
+                Button(loc.t(.loginEuprava)) { showLogin = true }
+                Button(loc.t(.cancel), role: .cancel) {}
+            } message: { Text(loc.t(.loginNoDriver)) }
             .fullScreenCover(isPresented: $showLogin) {
                 SafariView(url: URL(string: "https://euprava.gov.rs/prijava")!).ignoresSafeArea()
             }
