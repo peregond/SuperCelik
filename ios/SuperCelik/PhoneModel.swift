@@ -30,6 +30,8 @@ final class PhoneModel: ObservableObject {
     @Published var problem: PhoneProblem?
     /// Result of a PIN / PUK operation, shown in an alert.
     @Published var pinAlert: String?
+    /// A quick action asked for the eUprava sign-in: the Token tab opens it.
+    @Published var loginRequested = false
     /// Tab on screen (0 card, 1 token): automatic reading reads what that tab shows.
     var activeTab = 0
     /// Live state of the wired reader (see `watchReader`).

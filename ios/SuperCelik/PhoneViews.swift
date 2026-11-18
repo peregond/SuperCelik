@@ -5,6 +5,7 @@ import SafariServices
 struct PhoneRootView: View {
     @EnvironmentObject var loc: Loc
     @EnvironmentObject var model: PhoneModel
+    @ObservedObject private var quick = QuickActions.shared
     // screenshots only: `--token` / `--settings` open that tab at launch
     @State private var tab = CommandLine.arguments.contains("--token") ? 1 : (CommandLine.arguments.contains("--settings") ? 2 : 0)
 
@@ -13,6 +14,26 @@ struct PhoneRootView: View {
             .minimizingTabBar()
             .task { await model.watchReader() }
             .onChange(of: tab) { model.activeTab = $0 }
+            .onChange(of: quick.pending) { _ in Task { await runQuickAction() } }
+            .task { await runQuickAction() }       // app was started by the action
+    }
+
+    /// Home Screen quick action: switch to the right tab and do it.
+    private func runQuickAction() async {
+        guard let action = quick.pending else { return }
+        quick.pending = nil
+        switch action {
+        case .readCard:
+            tab = 0; model.activeTab = 0
+            await model.scanCardAuto()
+        case .printCard:
+            tab = 0; model.activeTab = 0
+            await model.scanCardAuto()          // always read: never print the data of a previous card
+            if model.problem == nil, model.personal != nil { model.printPDF(includeJmbg: Prefs.shared.printJmbg) }
+        case .loginEuprava:
+            tab = 1; model.activeTab = 1
+            model.loginRequested = true
+        }
     }
 
     /// iPhone: tab bar (Liquid Glass). iPad: iOS 18+ turns the same tabs into a sidebar like the Mac app.
@@ -492,6 +513,14 @@ struct TokenTab: View {
                     .padding(.horizontal, 20).padding(.bottom, 8)
             }
             .sheet(item: $share) { ShareSheet(url: $0.url) }
+            .onChange(of: model.loginRequested) { requested in
+                guard requested else { return }
+                model.loginRequested = false
+                if model.driverAttached { showLogin = true } else { askLogin = true }
+            }
+            .onAppear {
+                if model.loginRequested { model.loginRequested = false; if model.driverAttached { showLogin = true } else { askLogin = true } }
+            }
             .sheet(item: $pinMode) { PinSheet(mode: $0) }
             .alert(loc.t(.loginEuprava), isPresented: $askLogin) {
                 Button(loc.t(.loginEuprava)) { showLogin = true }
