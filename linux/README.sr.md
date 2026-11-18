@@ -22,7 +22,7 @@ pristup PC/SC-u preko `libpcsclite` (`Native.cs`), interfejs i raspored štampan
     dotnet run --project linux/SerbiaID.Linux -- --demo [kartica 0-3] [--dark] [--state noreader|nocard|busy|error]
     dotnet run --project linux/SerbiaID.Linux -- --demo --shot out.png      # prozor kao PNG (izmišljeni podaci)
     dotnet run --project linux/SerbiaID.Linux -- --demo --pdf out.pdf       # štampani list kao PDF
-    SuperCelik --selftest                                                  # izveštaj o pravoj kartici bez ličnih podataka (selftest.txt pored programa)
+    SuperCelik --selftest                                                  # izveštaj o pravoj kartici bez ličnih podataka (selftest.txt pored programa, a ako je instalacioni folder samo za čitanje, u trenutnom folderu; putanja se može zadati: `--selftest report.txt`)
 
 Podešavanja: `~/.config/SuperCelik/settings.json`. Jezik interfejsa se uzima iz `LANG` (ru / sr / en), menja se na kartici „Podešavanja“.
 

@@ -533,7 +533,7 @@ chip.onclick=e=>{e.stopPropagation();setAppMenu(!amenu.classList.contains("open"
 document.addEventListener("click",e=>{if(!amenu.contains(e.target)&&e.target!==chip)setAppMenu(false)});
 document.addEventListener("keydown",e=>{if(e.key==="Escape")setAppMenu(false)});
 document.querySelectorAll("#appmenu button").forEach(b=>b.onclick=()=>selectDev(b.dataset.d));
-selectDev(OS||"mac");
+selectDev(OS&&document.getElementById("d-"+OS)?OS:"mac");
 // full-screen view of a screenshot (zooms out of the card it came from; arrows / swipe / Esc)
 const lb=document.getElementById("lb"),lbImg=document.getElementById("lbImg"),lbT=document.getElementById("lbT"),lbD=document.getElementById("lbD");
 const calm=matchMedia("(prefers-reduced-motion: reduce)").matches;

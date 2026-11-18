@@ -505,7 +505,7 @@ public sealed class MainWindow : Window
                 _personal = null; _token = null; _sig = null; _revealAll = false; RenderAll();   // privacy: drop data when the card is removed
             }
         }
-        catch (CardException ce) when (IsServiceDown(ce)) { if (!_serviceDown) { _serviceDown = true; _readers = new(); _cardPresent = false; FillReaders(_readers); ShowProblem(ce); } }
+        catch (CardException ce) when (IsServiceDown(ce)) { if (!_serviceDown) { _serviceDown = true; _readers = new(); _cardPresent = false; _personal = null; _token = null; _sig = null; _revealAll = false; RenderAll(); FillReaders(_readers); ShowProblem(ce); } }
         catch { /* reader unplugged mid-poll: the next tick or a manual refresh reports it */ }
     }
 

@@ -23,7 +23,17 @@ internal static class Program
     {
         if (args.Contains("--selftest"))
         {
-            SelfTest.Run(Path.Combine(AppContext.BaseDirectory, "selftest.txt"));
+            // the install folder (/opt/supercelik) is not writable for a normal user: write to the current folder then, or to the path given after --selftest
+            var si = Array.IndexOf(args, "--selftest");
+            var report = si + 1 < args.Length && !args[si + 1].StartsWith("--") ? args[si + 1] : null;
+            if (report == null)
+            {
+                report = Path.Combine(AppContext.BaseDirectory, "selftest.txt");
+                try { using var f = File.Open(report, FileMode.Append, FileAccess.Write); }
+                catch { report = Path.Combine(Directory.GetCurrentDirectory(), "selftest.txt"); }
+            }
+            SelfTest.Run(report);
+            Console.WriteLine("Report: " + report);
             return 0;
         }
         string Arg(string name) { var i = Array.IndexOf(args, name); return i >= 0 && i + 1 < args.Length ? args[i + 1] : null; }

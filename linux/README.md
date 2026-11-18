@@ -22,7 +22,7 @@ PC/SC access through `libpcsclite` (`Native.cs`), the interface and the print sh
     dotnet run --project linux/SerbiaID.Linux -- --demo [tab 0-3] [--dark] [--state noreader|nocard|busy|error]
     dotnet run --project linux/SerbiaID.Linux -- --demo --shot out.png      # the window as a PNG (fictional data)
     dotnet run --project linux/SerbiaID.Linux -- --demo --pdf out.pdf       # the print sheet as a PDF
-    SuperCelik --selftest                                                  # a report on a real card without personal data (selftest.txt next to the program)
+    SuperCelik --selftest                                                  # a report on a real card without personal data (selftest.txt next to the program, or in the current folder if the install folder is read-only; a path can be given: `--selftest report.txt`)
 
 Settings: `~/.config/SuperCelik/settings.json`. The interface language comes from `LANG` (ru / sr / en) and can be changed on the “Settings” tab.
 
