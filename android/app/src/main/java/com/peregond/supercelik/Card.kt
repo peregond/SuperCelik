@@ -41,6 +41,9 @@ data class PersonalData(
 class TokenCert(val label: String, val der: ByteArray)
 class TokenData(val label: String, val serial: String, val certs: List<TokenCert>)
 
+/** A certificate on the token and the card file of its private key (for TLS client sign-in). */
+class TokenKeyPair(val label: String, val certDer: ByteArray, val keyFile: Int)
+
 /**
  * Card protocol, a port of Sources/SerbiaID/EidCard.swift (macOS/iOS) and windows Card.cs.
  * Derived by observing CelikApi.dll and a real RP2024 card; tags marked UNVERIFIED are inferred.
@@ -196,25 +199,76 @@ class EidCard(private val transport: CardTransport) {
         }
         val certs = ArrayList<TokenCert>()
         runCatching {
-            val blob = readTokenFile(0x7102)           // [len LE16][01 00][usize LE16][zlib]
-            if (blob.size > 8) {
-                val inf = Inflater()
-                inf.setInput(blob, 6, blob.size - 6)
-                val out = ByteArrayOutputStream(); val buf = ByteArray(4096)
-                while (!inf.finished()) {
-                    val n = inf.inflate(buf)
-                    if (n == 0 && (inf.needsInput() || inf.needsDictionary())) break
-                    out.write(buf, 0, n)
-                }
+            val der = inflateCert(readTokenFile(0x7102))
+            if (der != null) {
                 var certLabel = ""
                 runCatching {
                     val l = readTokenFile(0x8007)       // [01 71 02 len] + label
                     if (l.size > 4) certLabel = String(l, 4, minOf(l[3].toInt() and 0xFF, l.size - 4), Charsets.UTF_8)
                 }
-                certs.add(TokenCert(certLabel, out.toByteArray()))
+                certs.add(TokenCert(certLabel, der))
             }
         }
         return TokenData(label, serial, certs)
+    }
+
+    /** Certificate file = [len LE16][01 00][uncompressed size LE16][zlib stream]. */
+    private fun inflateCert(blob: ByteArray): ByteArray? {
+        if (blob.size <= 8) return null
+        val inf = Inflater()
+        inf.setInput(blob, 6, blob.size - 6)
+        val out = ByteArrayOutputStream(); val buf = ByteArray(4096)
+        while (!inf.finished()) {
+            val n = inf.inflate(buf)
+            if (n == 0 && (inf.needsInput() || inf.needsDictionary())) break
+            out.write(buf, 0, n)
+        }
+        inf.end()
+        return out.toByteArray().takeIf { it.isNotEmpty() }
+    }
+
+    /**
+     * All certificate / private key pairs on the token, from the PKCS#15 index (port of TokenExtension/TokenDriver.swift):
+     *   8FFF = [count LE16] + count * [meta file id LE16]
+     *   meta = [class][file id BE16][label len][label][id len][id]; class 1 = certificate, 2 = public key, 3 = private key
+     *   public key file = 00 05 xx <private key file BE16> ...
+     * Falls back to the fixed layout (certificate 7102, key 6005) if the index cannot be parsed.
+     */
+    fun tokenKeyPairs(): List<TokenKeyPair> {
+        selectTokenApplet()
+        runCatching { pairsFromIndex() }.getOrNull()?.takeIf { it.isNotEmpty() }?.let { return it }
+        val der = runCatching { inflateCert(readTokenFile(0x7102)) }.getOrNull() ?: return emptyList()
+        return listOf(TokenKeyPair("", der, 0x6005))
+    }
+
+    private class Meta(val cls: Int, val fid: Int, val label: String, val id: ByteArray)
+
+    private fun pairsFromIndex(): List<TokenKeyPair> {
+        val index = readTokenFile(0x8FFF)
+        if (index.size < 2) return emptyList()
+        val count = (index[0].toInt() and 0xFF) or ((index[1].toInt() and 0xFF) shl 8)
+        if (2 + 2 * count > index.size) return emptyList()
+        val metas = ArrayList<Meta>()
+        for (i in 0 until count) {
+            val fid = (index[2 + 2 * i].toInt() and 0xFF) or ((index[3 + 2 * i].toInt() and 0xFF) shl 8)
+            val m = runCatching { readTokenFile(fid) }.getOrNull() ?: continue
+            if (m.size < 5 || m[0].toInt() !in 1..3) continue
+            var p = 4 + (m[3].toInt() and 0xFF)
+            if (p >= m.size) continue
+            val label = String(m, 4, p - 4, Charsets.UTF_8)
+            val idLen = m[p].toInt() and 0xFF; p += 1
+            if (p + idLen > m.size) continue
+            metas.add(Meta(m[0].toInt(), (m[1].toInt() and 0xFF shl 8) or (m[2].toInt() and 0xFF), label, m.copyOfRange(p, p + idLen)))
+        }
+        val pairs = ArrayList<TokenKeyPair>()
+        for (c in metas.filter { it.cls == 1 }) {
+            val pub = metas.firstOrNull { it.cls == 2 && it.id.contentEquals(c.id) } ?: continue
+            val der = runCatching { inflateCert(readTokenFile(c.fid)) }.getOrNull() ?: continue
+            val pk = runCatching { readTokenFile(pub.fid) }.getOrNull() ?: continue
+            if (pk.size < 7 || pk[0].toInt() != 0x00 || pk[1].toInt() != 0x05) continue
+            pairs.add(TokenKeyPair(c.label, der, (pk[3].toInt() and 0xFF shl 8) or (pk[4].toInt() and 0xFF)))
+        }
+        return pairs
     }
 
     // ---- token PIN / PUK / signing (a wrong PIN or PUK uses up a card try: one attempt, never retried) ----
@@ -251,6 +305,29 @@ class EidCard(private val transport: CardTransport) {
         selectTokenApplet()
         val v = apdu(0x20, 0x00, 0x80, paddedPin(pin))
         if (v.sw != 0x9000) throwPin(v.sw)
+        val mse = byteArrayOf(0x80.toByte(), 0x01, 0x02, 0x84.toByte(), 0x02, (keyFile shr 8).toByte(), keyFile.toByte())
+        var r = apdu(0x22, 0x41, 0xB6, mse)
+        if (r.sw != 0x9000) throw CardException(CardException.Kind.Other, "MSE SET: %04X".format(r.sw))
+        r = transport.transmit(byteArrayOf(0x00, 0x2A, 0x9E.toByte(), 0x00, digestInfo.size.toByte()) + digestInfo + byteArrayOf(0x00))
+        if (r.sw != 0x9000 || r.data.isEmpty()) throw CardException(CardException.Kind.Other, "Sign: %04X".format(r.sw))
+        return r.data
+    }
+
+    /**
+     * Same as [sign], but the PIN comes as a char array and every copy made here (the padded PIN block and the
+     * VERIFY APDU) is overwritten with zeros before returning. One VERIFY only: a wrong PIN is never retried.
+     */
+    fun signWithPin(pin: CharArray, digestInfo: ByteArray, keyFile: Int): ByteArray {
+        require(pin.size in 4..8 && pin.all { it in '0'..'9' }) { "PIN must be 4-8 digits" }
+        selectTokenApplet()
+        val block = ByteArray(8) { if (it < pin.size) pin[it].code.toByte() else 0 }
+        val verify = byteArrayOf(0x00, 0x20, 0x00, 0x80.toByte(), 0x08) + block
+        try {
+            val v = transport.transmit(verify)
+            if (v.sw != 0x9000) throwPin(v.sw)
+        } finally {
+            block.fill(0); verify.fill(0)
+        }
         val mse = byteArrayOf(0x80.toByte(), 0x01, 0x02, 0x84.toByte(), 0x02, (keyFile shr 8).toByte(), keyFile.toByte())
         var r = apdu(0x22, 0x41, 0xB6, mse)
         if (r.sw != 0x9000) throw CardException(CardException.Kind.Other, "MSE SET: %04X".format(r.sw))

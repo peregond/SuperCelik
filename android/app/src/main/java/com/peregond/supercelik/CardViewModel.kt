@@ -22,6 +22,17 @@ enum class Phase { Idle, WaitingUsb, Reading }
 /** A one-line result shown as a snackbar. */
 data class Msg(@StringRes val id: Int, val arg: String? = null, val error: Boolean = true)
 
+/** User-facing message for a failed card operation. */
+fun cardError(e: Exception): Msg = when {
+    e is PinException && e.blocked -> Msg(R.string.pin_blocked)
+    e is PinException -> Msg(R.string.pin_wrong, e.triesLeft.toString())
+    e is IllegalArgumentException -> Msg(R.string.pin_invalid)
+    e is CardException && e.kind == CardException.Kind.NoCard -> Msg(R.string.err_no_card)
+    e is CardException && e.kind == CardException.Kind.Unsupported -> Msg(R.string.err_unsupported)
+    e is CardException && e.kind == CardException.Kind.Lost -> Msg(R.string.err_lost)
+    else -> Msg(R.string.err_generic, e.message)
+}
+
 class CardViewModel(app: Application) : AndroidViewModel(app) {
     private val prefs = app.getSharedPreferences("settings", Context.MODE_PRIVATE)
 
@@ -98,6 +109,19 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
         _message.value = Msg(R.string.signed_saved, error = false)
     }, context)
 
+    /** Certificates for the eUprava sign-in, read from the token; the screen opens when this turns true. */
+    private val _euReady = MutableStateFlow(false)
+    val euReady: StateFlow<Boolean> = _euReady.asStateFlow()
+    fun consumeEuReady() { _euReady.value = false }
+
+    /** Reads the token's certificate / key pairs (no PIN needed), then the sign-in screen opens. */
+    fun prepareEuprava(context: Context) = begin({ card ->
+        val pairs = card.tokenKeyPairs()
+        if (pairs.isEmpty()) throw CardException(CardException.Kind.Other, "no certificate")
+        EuLogin.pairs = pairs
+        _euReady.value = true
+    }, context)
+
     /** App opened or came back to the start screen: use a connected USB reader right away. */
     fun autoStart(context: Context) {
         if (_phase.value != Phase.Idle || _personal.value != null) return
@@ -139,15 +163,7 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
     private fun fail(e: Exception) {
         pending = null
         _phase.value = Phase.Idle
-        _message.value = when {
-            e is PinException && e.blocked -> Msg(R.string.pin_blocked)
-            e is PinException -> Msg(R.string.pin_wrong, e.triesLeft.toString())
-            e is IllegalArgumentException -> Msg(R.string.pin_invalid)
-            e is CardException && e.kind == CardException.Kind.NoCard -> Msg(R.string.err_no_card)
-            e is CardException && e.kind == CardException.Kind.Unsupported -> Msg(R.string.err_unsupported)
-            e is CardException && e.kind == CardException.Kind.Lost -> Msg(R.string.err_lost)
-            else -> Msg(R.string.err_generic, e.message)
-        }
+        _message.value = cardError(e)
     }
 
     fun notify(m: Msg) { _message.value = m }

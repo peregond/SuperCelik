@@ -101,4 +101,16 @@
     <string name="palette_wallpaper">Pozadina (Material You)</string>
     <string name="settings_print_jmbg">Štampaj JMBG</string>
     <string name="settings_print_jmbg_hint">Uključi JMBG u PDF štampu</string>
+    <!-- eUprava sign-in -->
+    <string name="eu_login">Prijava na eUpravu</string>
+    <string name="eu_login_note">Otvoriće se stranica za prijavu na eUpravu unutar aplikacije. Izaberite prijavu kvalifikovanim elektronskim sertifikatom: aplikacija koristi sertifikat sa kartice i sama traži PIN. Čitač sa karticom mora da ostane povezan. Kolačići se brišu kada zatvorite stranicu.</string>
+    <string name="eu_close">Zatvori</string>
+    <string name="eu_start_over">Počni ponovo</string>
+    <string name="eu_signing">Potpisivanje karticom…</string>
+    <string name="eu_failed_note">Prijava je zaustavljena. PIN se ne pokušava ponovo automatski.</string>
+    <string name="eu_pin_title">PIN kartice</string>
+    <string name="eu_pin_msg">eUprava traži prijavu sertifikatom „%s“. Unesite PIN tokena (4–8 cifara).</string>
+    <string name="eu_pin_warn">Pogrešan PIN troši jedan pokušaj; kada pokušaja više nema, token se blokira.</string>
+    <string name="eu_choose_cert">Izaberite sertifikat</string>
+    <string name="eu_cancelled">Unos PIN-a je otkazan.</string>
 </resources>

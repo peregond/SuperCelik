@@ -4,6 +4,9 @@
     <!-- The card is read only through a USB CCID smart card reader -->
     <uses-feature android:name="android.hardware.usb.host" android:required="true" />
 
+    <!-- Only for the eUprava sign-in screen (in-app WebView). Reading the card never uses the network. -->
+    <uses-permission android:name="android.permission.INTERNET" />
+
     <application
         android:name=".App"
         android:allowBackup="false"
@@ -37,5 +40,11 @@
                 android:name="android.hardware.usb.action.USB_DEVICE_ATTACHED"
                 android:resource="@xml/device_filter" />
         </activity>
+        <!-- eUprava sign-in with the card certificate. Kept alive across rotation: recreating it would lose the session. -->
+        <activity
+            android:name=".EuLoginActivity"
+            android:exported="false"
+            android:configChanges="orientation|screenSize|screenLayout|smallestScreenSize|keyboard|keyboardHidden|navigation|uiMode|density|fontScale"
+            android:windowSoftInputMode="adjustResize" />
     </application>
 </manifest>
