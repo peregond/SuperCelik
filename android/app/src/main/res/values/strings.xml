@@ -101,4 +101,16 @@
     <string name="palette_wallpaper">Wallpaper (Material You)</string>
     <string name="settings_print_jmbg">Print JMBG</string>
     <string name="settings_print_jmbg_hint">Include the personal number in the PDF printout</string>
+    <!-- eUprava sign-in -->
+    <string name="eu_login">Sign in to eUprava</string>
+    <string name="eu_login_note">Opens the eUprava sign-in page inside the app. Choose sign-in with a qualified electronic certificate: the app uses the card certificate and asks for the PIN itself. Keep the reader with the card connected. Cookies are deleted when you close the page.</string>
+    <string name="eu_close">Close</string>
+    <string name="eu_start_over">Start over</string>
+    <string name="eu_signing">Signing with the card…</string>
+    <string name="eu_failed_note">Sign-in stopped. The PIN is not tried again automatically.</string>
+    <string name="eu_pin_title">Card PIN</string>
+    <string name="eu_pin_msg">eUprava asks for sign-in with the certificate “%s”. Enter the token PIN (4–8 digits).</string>
+    <string name="eu_pin_warn">A wrong PIN uses up one try; the token locks when none are left.</string>
+    <string name="eu_choose_cert">Choose a certificate</string>
+    <string name="eu_cancelled">PIN entry cancelled.</string>
 </resources>

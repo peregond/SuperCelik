@@ -101,4 +101,16 @@
     <string name="palette_wallpaper">Обои (Material You)</string>
     <string name="settings_print_jmbg">Печатать ЕМБГ</string>
     <string name="settings_print_jmbg_hint">Включать ЕМБГ в PDF-печатную форму</string>
+    <!-- eUprava sign-in -->
+    <string name="eu_login">Войти на eUprava</string>
+    <string name="eu_login_note">Откроется страница входа eUprava внутри приложения. Выберите вход с квалифицированным электронным сертификатом: приложение подставит сертификат карты и само спросит PIN. Ридер с картой должен оставаться подключённым. После закрытия страницы cookie удаляются.</string>
+    <string name="eu_close">Закрыть</string>
+    <string name="eu_start_over">Начать заново</string>
+    <string name="eu_signing">Подпись картой…</string>
+    <string name="eu_failed_note">Вход остановлен. PIN повторно автоматически не вводится.</string>
+    <string name="eu_pin_title">PIN карты</string>
+    <string name="eu_pin_msg">eUprava просит войти с сертификатом «%s». Введите PIN токена (4–8 цифр).</string>
+    <string name="eu_pin_warn">Неверный PIN тратит попытку; после исчерпания попыток токен блокируется.</string>
+    <string name="eu_choose_cert">Выберите сертификат</string>
+    <string name="eu_cancelled">Ввод PIN отменён.</string>
 </resources>

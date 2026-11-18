@@ -101,4 +101,16 @@
     <string name="palette_wallpaper">Позадина (Material You)</string>
     <string name="settings_print_jmbg">Штампај ЈМБГ</string>
     <string name="settings_print_jmbg_hint">Укључи ЈМБГ у PDF штампу</string>
+    <!-- eUprava sign-in -->
+    <string name="eu_login">Пријава на еУправу</string>
+    <string name="eu_login_note">Отвориће се страница за пријаву на еУправу унутар апликације. Изаберите пријаву квалификованим електронским сертификатом: апликација користи сертификат са картице и сама тражи ПИН. Читач са картицом мора да остане повезан. Колачићи се бришу када затворите страницу.</string>
+    <string name="eu_close">Затвори</string>
+    <string name="eu_start_over">Почни поново</string>
+    <string name="eu_signing">Потписивање картицом…</string>
+    <string name="eu_failed_note">Пријава је заустављена. ПИН се не покушава поново аутоматски.</string>
+    <string name="eu_pin_title">ПИН картице</string>
+    <string name="eu_pin_msg">еУправа тражи пријаву сертификатом „%s“. Унесите ПИН токена (4–8 цифара).</string>
+    <string name="eu_pin_warn">Погрешан ПИН троши један покушај; када покушаја више нема, токен се блокира.</string>
+    <string name="eu_choose_cert">Изаберите сертификат</string>
+    <string name="eu_cancelled">Унос ПИН-а је отказан.</string>
 </resources>

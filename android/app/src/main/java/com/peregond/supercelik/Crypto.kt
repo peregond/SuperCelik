@@ -43,6 +43,10 @@ object CardCrypto {
 
     private fun isRoot(c: X509Certificate) = c.subjectX500Principal == c.issuerX500Principal
 
+    /** Bundled intermediate CA that issued `cert` (sent along with it in a TLS client sign-in), if any. */
+    fun issuerOf(cert: X509Certificate): X509Certificate? =
+        anchors.firstOrNull { !isRoot(it) && it.subjectX500Principal == cert.issuerX500Principal }
+
     /** True if `cert` chains to a bundled MUP root. Revocation is not checked (offline). */
     fun chains(cert: X509Certificate, extra: List<X509Certificate> = emptyList(), at: Date = Date()): String? = try {
         val roots = anchors.filter(::isRoot).map { TrustAnchor(it, null) }.toSet()

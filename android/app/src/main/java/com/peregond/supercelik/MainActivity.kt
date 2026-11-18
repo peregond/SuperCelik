@@ -74,6 +74,8 @@ class MainActivity : ComponentActivity() {
         val demo = demoAllowed && intent?.getBooleanExtra("demo", false) == true
         // a printout saved for sharing in an earlier session must not stay in the cache
         java.io.File(cacheDir, "exports").listFiles()?.forEach { it.delete() }
+        // cookies / cache of an eUprava sign-in that ended with the app being killed
+        EuLoginActivity.wipeIfDirty(this)
         if (!demo) window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
 
         // A USB reader being plugged in launches the app (see device_filter) and reads straight away.

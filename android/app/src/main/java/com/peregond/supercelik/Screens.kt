@@ -289,6 +289,10 @@ fun TokenScreen(vm: CardViewModel) {
             if (data != null) vm.signFile(data, pin, out, ctx)
         }
     }
+    val euReady by vm.euReady.collectAsStateWithLifecycle()
+    LaunchedEffect(euReady) {
+        if (euReady) { vm.consumeEuReady(); ctx.startActivity(Intent(ctx, EuLoginActivity::class.java)) }
+    }
     val saveCert = rememberLauncherForActivityResult(ActivityResultContracts.CreateDocument("application/x-x509-ca-cert")) { out ->
         val c = exportCert; exportCert = null
         if (out != null && c != null) ctx.contentResolver.openOutputStream(out)?.use { it.write(c.der) }
@@ -320,6 +324,15 @@ fun TokenScreen(vm: CardViewModel) {
                     OutlinedButton({ dialog = "unblock" }, Modifier.fillMaxWidth()) { Icon(Icons.Filled.LockOpen, null); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.unblock_pin)) }
                     FilledTonalButton({ pickFile.launch(arrayOf("*/*")) }, Modifier.fillMaxWidth()) { Icon(Icons.Filled.Draw, null); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.sign_file)) }
                 }
+            }
+        }
+        // eUprava sign-in: reads the certificates (no PIN), then opens the in-app sign-in screen
+        item {
+            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
+                Button({ vm.prepareEuprava(ctx) }, Modifier.fillMaxWidth().height(56.dp)) {
+                    Icon(Icons.Filled.Login, null); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.eu_login))
+                }
+                Text(stringResource(R.string.eu_login_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
         item { Text(stringResource(R.string.pin_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
