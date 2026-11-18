@@ -122,7 +122,7 @@ final class PhoneModel: ObservableObject {
             try? await Task.sleep(nanoseconds: 1_000_000_000)
         }
     }
-    func scanCardAuto() async { await scanCard(autoSource) }
+    @discardableResult func scanCardAuto() async -> Bool { await scanCard(autoSource) }
     func scanTokenAuto() async { await scanToken(autoSource) }
 
     /// Runs the shared card code through the chosen transport (wired reader or NFC).
@@ -141,8 +141,10 @@ final class PhoneModel: ObservableObject {
 
     /// One tap: personal data + photo, then both card signatures, in the same NFC session
     /// (EidCard caches the files, so verifying does not read them again).
-    func scanCard(_ source: ReadSource = .usb) async {
-        guard !busy else { return }
+    /// Returns true only when this call itself read the card (not when another operation was already running).
+    @discardableResult
+    func scanCard(_ source: ReadSource = .usb) async -> Bool {
+        guard !busy else { return false }
         busy = true
         defer { busy = false }
         do {
@@ -160,7 +162,8 @@ final class PhoneModel: ObservableObject {
                 return (p, status)
             }
             personal = p; signatureStatus = status; revealAll = false; problem = nil; demoActive = false
-        } catch { show(error) }
+            return true
+        } catch { show(error); return false }
     }
 
     func scanToken(_ source: ReadSource = .usb) async {

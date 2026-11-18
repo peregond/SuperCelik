@@ -28,8 +28,8 @@ struct PhoneRootView: View {
             await model.scanCardAuto()
         case .printCard:
             tab = 0; model.activeTab = 0
-            await model.scanCardAuto()          // always read: never print the data of a previous card
-            if model.problem == nil, model.personal != nil { model.printPDF(includeJmbg: Prefs.shared.printJmbg) }
+            // print only what THIS call just read: never the data of a previous card
+            if await model.scanCardAuto(), model.personal != nil { model.printPDF(includeJmbg: Prefs.shared.printJmbg) }
         case .loginEuprava:
             tab = 1; model.activeTab = 1
             model.loginRequested = true
