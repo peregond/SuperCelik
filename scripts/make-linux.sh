@@ -32,7 +32,7 @@ if command -v dpkg-deb >/dev/null; then
   cp linux/packaging/supercelik.desktop "$ROOT/usr/share/applications/supercelik.desktop"
   cp linux/SerbiaID.Linux/Assets/icon.png "$ROOT/usr/share/icons/hicolor/256x256/apps/supercelik.png"
   SIZE=$(du -sk "$ROOT" | cut -f1)
-  DEBV="${VERSION//-/~}"
+  DEBV="$(printf %s "$VERSION" | tr - "~")"
   cat > "$ROOT/DEBIAN/control" <<CTL
 Package: supercelik
 Version: $DEBV
