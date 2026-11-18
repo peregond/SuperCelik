@@ -10,6 +10,12 @@ a fictional person, the signature check result, the PDF printout (View PDF / Pri
 shows at once whether a reader is connected and whether a card is inserted. The app does not use NFC
 (NFC reading is switched off and the bundle has no NFC entitlement). Reader support was tested on iPhone and iPad.
 
+**Sign in to eUprava (Token tab).** The app contains a CryptoTokenKit smart card extension (`app.supercelik.token`) that shows the
+card certificate to Safari. The "Sign in to eUprava" button opens https://euprava.gov.rs/prijava (the Government of Serbia sign-in portal) in an
+in-app Safari view; signing in needs a real Serbian card, so it cannot be completed without one. Without a card the page simply
+opens and offers the sign-in methods. The extension uses the `com.apple.token` keychain group, which CryptoTokenKit extensions require.
+The home screen quick actions (long press on the icon) are: Read card, Print, Sign in to eUprava.
+
 **Not affiliated.** The app is an independent implementation and says so in its description and About text. It does not use
 any MUP RS or NetSeT/Veridos code, logo or trademark. "Super Čelik" is a working name; we will rename it on request.
 

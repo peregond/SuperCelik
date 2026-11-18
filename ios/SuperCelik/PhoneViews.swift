@@ -1,9 +1,11 @@
 import SwiftUI
 import UIKit
+import SafariServices
 
 struct PhoneRootView: View {
     @EnvironmentObject var loc: Loc
     @EnvironmentObject var model: PhoneModel
+    @ObservedObject private var quick = QuickActions.shared
     // screenshots only: `--token` / `--settings` open that tab at launch
     @State private var tab = CommandLine.arguments.contains("--token") ? 1 : (CommandLine.arguments.contains("--settings") ? 2 : 0)
 
@@ -11,6 +13,27 @@ struct PhoneRootView: View {
         tabs
             .minimizingTabBar()
             .task { await model.watchReader() }
+            .onChange(of: tab) { model.activeTab = $0 }
+            .onChange(of: quick.pending) { _ in Task { await runQuickAction() } }
+            .task { await runQuickAction() }       // app was started by the action
+    }
+
+    /// Home Screen quick action: switch to the right tab and do it.
+    private func runQuickAction() async {
+        guard let action = quick.pending else { return }
+        quick.pending = nil
+        switch action {
+        case .readCard:
+            tab = 0; model.activeTab = 0
+            await model.scanCardAuto()
+        case .printCard:
+            tab = 0; model.activeTab = 0
+            // print only what THIS call just read: never the data of a previous card
+            if await model.scanCardAuto(), model.personal != nil { model.printPDF(includeJmbg: Prefs.shared.printJmbg) }
+        case .loginEuprava:
+            tab = 1; model.activeTab = 1
+            model.loginRequested = true
+        }
     }
 
     /// iPhone: tab bar (Liquid Glass). iPad: iOS 18+ turns the same tabs into a sidebar like the Mac app.
@@ -435,6 +458,9 @@ struct TokenTab: View {
     @EnvironmentObject var model: PhoneModel
     @State private var share: ShareItem?
     @State private var scanCollapsed = false
+    @State private var pinMode: PinMode?
+    @State private var showLogin = false
+    @State private var askLogin = false
 
     var body: some View {
         NavigationStack {
@@ -454,6 +480,17 @@ struct TokenTab: View {
                         .multilineTextAlignment(.center)
                         .listRowBackground(Color.clear).listRowSeparator(.hidden)
                 }
+                Section {
+                    Button { pinMode = .change } label: { Label(loc.t(.changePin), systemImage: "lock.rotation") }
+                    Button { pinMode = .unblock } label: { Label(loc.t(.unblockPin), systemImage: "lock.open") }
+                }
+                .disabled(model.busy || model.readerState != .cardReady)
+                .listRowBackground(Rectangle().fill(.regularMaterial))
+                // Sign in to eUprava: Safari takes the card certificate from the token extension inside this app.
+                Section {
+                    Button { if model.driverAttached { showLogin = true } else { askLogin = true } } label: { Label(loc.t(.loginEuprava), systemImage: "person.badge.key") }
+                } footer: { Text(loc.t(.loginEupravaNote)) }
+                .listRowBackground(Rectangle().fill(.regularMaterial))
                 if let t = model.token {
                     Section {
                         if !t.tokenLabel.isEmpty { LabeledContent("Token", value: t.tokenLabel) }
@@ -476,6 +513,26 @@ struct TokenTab: View {
                     .padding(.horizontal, 20).padding(.bottom, 8)
             }
             .sheet(item: $share) { ShareSheet(url: $0.url) }
+            .onChange(of: model.loginRequested) { requested in
+                guard requested else { return }
+                model.loginRequested = false
+                if model.driverAttached { showLogin = true } else { askLogin = true }
+            }
+            .onAppear {
+                if model.loginRequested { model.loginRequested = false; if model.driverAttached { showLogin = true } else { askLogin = true } }
+            }
+            .sheet(item: $pinMode) { PinSheet(mode: $0) }
+            .alert(loc.t(.loginEuprava), isPresented: $askLogin) {
+                Button(loc.t(.loginEuprava)) { showLogin = true }
+                Button(loc.t(.cancel), role: .cancel) {}
+            } message: { Text(loc.t(.loginNoDriver)) }
+            .fullScreenCover(isPresented: $showLogin) {
+                SafariView(url: URL(string: "https://euprava.gov.rs/prijava")!).ignoresSafeArea()
+            }
+            .alert(model.pinAlert ?? "", isPresented: Binding(get: { model.pinAlert != nil && pinMode == nil },
+                                                               set: { if !$0 { model.pinAlert = nil } })) {
+                Button(loc.t(.ok)) { model.pinAlert = nil }
+            }
         }
     }
 
@@ -501,6 +558,66 @@ struct TokenTab: View {
                 .buttonStyle(.borderless)
         }
         .padding(.vertical, 4)
+    }
+}
+
+/// In-app Safari (SFSafariViewController): the same TLS client certificate flow as Safari, so the card certificate
+/// offered by the token extension is used.
+struct SafariView: UIViewControllerRepresentable {
+    let url: URL
+    func makeUIViewController(context: Context) -> SFSafariViewController { SFSafariViewController(url: url) }
+    func updateUIViewController(_ vc: SFSafariViewController, context: Context) {}
+}
+
+// MARK: - Token PIN / PUK
+
+enum PinMode: Identifiable {
+    case change, unblock
+    var id: Int { self == .change ? 0 : 1 }
+}
+
+/// One form: current PIN (or PUK), new PIN twice. The warning about used-up tries is always visible.
+struct PinSheet: View {
+    @EnvironmentObject var loc: Loc
+    @EnvironmentObject var model: PhoneModel
+    @Environment(\.dismiss) private var dismiss
+    let mode: PinMode
+    @State private var secret = ""
+    @State private var new = ""
+    @State private var confirm = ""
+
+    private var unblock: Bool { mode == .unblock }
+    private var ready: Bool { PhoneModel.validPin(secret) && PhoneModel.validPin(new) && new == confirm }
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    SecureField(loc.t(unblock ? .pukLabel : .currentPin), text: $secret)
+                    SecureField(loc.t(.newPin), text: $new)
+                    SecureField(loc.t(.confirmPin), text: $confirm)
+                } footer: { Text(loc.t(.pinWarn)) }
+                if let msg = model.pinAlert {
+                    Section { Text(msg).foregroundStyle(.orange) }
+                }
+            }
+            .keyboardType(.numberPad)
+            .navigationTitle(loc.t(unblock ? .unblockPin : .changePin))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button(loc.t(.cancel)) { model.pinAlert = nil; dismiss() } }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(loc.t(.ok)) {
+                        Task {
+                            if await model.pinOperation(secret: secret, new: new, confirm: confirm, unblock: unblock) { dismiss() }
+                        }
+                    }
+                    .disabled(!ready || model.busy)
+                }
+            }
+        }
+        .onAppear { model.pinAlert = nil }
+        .presentationDetents([.medium, .large])
     }
 }
 

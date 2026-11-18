@@ -28,7 +28,35 @@
 		8D3B6F1A4C9E2057B1D7A9C2 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 4C7A2E9B1D5F3086A8B1C3E5 /* PrivacyInfo.xcprivacy */; };
 		A1C2E3F4B5D60718293A4B5C /* PhoneMascot.swift in Sources */ = {isa = PBXBuildFile; fileRef = B2D3F4A5C6E7819A2B3C4D5E /* PhoneMascot.swift */; };
 		C3E4A5B6D7F8920A3B4C5D6E /* Mascots in Resources */ = {isa = PBXBuildFile; fileRef = D4F5B6C7E8A9031B4C5D6E7F /* Mascots */; };
+		A10000000000000000000007 /* TokenDriver.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000006 /* TokenDriver.swift */; };
+		A1000000000000000000000F /* SuperCelikToken.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = A10000000000000000000002 /* SuperCelikToken.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
+		A10000000000000000000020 /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000021 /* Assets.xcassets */; };
+		A10000000000000000000030 /* QuickActions.swift in Sources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000031 /* QuickActions.swift */; };
 /* End PBXBuildFile section */
+
+/* Begin PBXContainerItemProxy section */
+		A10000000000000000000011 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 46F86FAA6BBF9AC94A7E4595 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = A10000000000000000000001;
+			remoteInfo = SuperCelikToken;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		A1000000000000000000000E /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				A1000000000000000000000F /* SuperCelikToken.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
 		B6A9443BC53EB311ED927118 /* SuperCelikApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuperCelikApp.swift; sourceTree = "<group>"; };
@@ -55,10 +83,23 @@
 		4C7A2E9B1D5F3086A8B1C3E5 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
 		B2D3F4A5C6E7819A2B3C4D5E /* PhoneMascot.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneMascot.swift; sourceTree = "<group>"; };
 		D4F5B6C7E8A9031B4C5D6E7F /* Mascots */ = {isa = PBXFileReference; lastKnownFileType = folder; name = Mascots; path = Resources/Mascots; sourceTree = "<group>"; };
+		A10000000000000000000006 /* TokenDriver.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = ../../TokenExtension/TokenDriver.swift; sourceTree = "<group>"; };
+		A10000000000000000000008 /* Info.plist */ = {isa = PBXFileReference; lastKnownFileType = text.plist.xml; path = Info.plist; sourceTree = "<group>"; };
+		A10000000000000000000009 /* Token.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = Token.entitlements; sourceTree = "<group>"; };
+		A10000000000000000000002 /* SuperCelikToken.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = SuperCelikToken.appex; sourceTree = BUILT_PRODUCTS_DIR; };
+		A10000000000000000000021 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		A10000000000000000000031 /* QuickActions.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = QuickActions.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
 		E7A61CFEA03B2D2A3A0D27C7 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		A10000000000000000000004 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -74,6 +115,7 @@
 				30BAE363BF904CFF4BA52B3A,
 				A01B5CB932856B6168E43F89,
 				C3809410BC68B6AD7407904A,
+				A1000000000000000000000A,
 				3EEF9D4B52FAB14020558098,
 			);
 			sourceTree = "<group>";
@@ -82,6 +124,7 @@
 			isa = PBXGroup;
 			children = (
 				B6A9443BC53EB311ED927118,
+				A10000000000000000000031,
 				C85CB36E74AF9D06F4C2C244,
 				E5956581239ED5DE9BFB2439,
 				B2D3F4A5C6E7819A2B3C4D5E,
@@ -119,6 +162,7 @@
 				99D288D75AE11A0DB2B6E1FB,
 				A2DE76C438FE5E928C381133,
 				4C7A2E9B1D5F3086A8B1C3E5,
+				A10000000000000000000009,
 			);
 			path = Config;
 			sourceTree = "<group>";
@@ -127,8 +171,19 @@
 			isa = PBXGroup;
 			children = (
 				7956FE5BC62358262873304A,
+				A10000000000000000000002,
 			);
 			name = Products;
+			sourceTree = "<group>";
+		};
+		A1000000000000000000000A /* TokenExtension */ = {
+			isa = PBXGroup;
+			children = (
+				A10000000000000000000008,
+				A10000000000000000000006,
+				A10000000000000000000021,
+			);
+			path = TokenExtension;
 			sourceTree = "<group>";
 		};
 /* End PBXGroup section */
@@ -141,15 +196,34 @@
 				4BE3BF6C9528F7C4F292F67A /* Sources */,
 				E7A61CFEA03B2D2A3A0D27C7 /* Frameworks */,
 				CCD626E08A8A3DCF380CCDC9 /* Resources */,
+				A1000000000000000000000E /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				A10000000000000000000010 /* PBXTargetDependency */,
 			);
 			name = SuperCelik;
 			productName = SuperCelik;
 			productReference = 7956FE5BC62358262873304A /* SuperCelik.app */;
 			productType = "com.apple.product-type.application";
+		};
+		A10000000000000000000001 /* SuperCelikToken */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = A1000000000000000000000B /* Build configuration list for PBXNativeTarget "SuperCelikToken" */;
+			buildPhases = (
+				A10000000000000000000003 /* Sources */,
+				A10000000000000000000004 /* Frameworks */,
+				A10000000000000000000005 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			name = SuperCelikToken;
+			productName = SuperCelikToken;
+			productReference = A10000000000000000000002 /* SuperCelikToken.appex */;
+			productType = "com.apple.product-type.app-extension";
 		};
 /* End PBXNativeTarget section */
 
@@ -162,6 +236,9 @@
 				LastUpgradeCheck = 1500;
 				TargetAttributes = {
 					42AEFBAE01D2DFD981F7DA7D = {
+						CreatedOnToolsVersion = 15.0;
+					};
+					A10000000000000000000001 = {
 						CreatedOnToolsVersion = 15.0;
 					};
 				};
@@ -180,6 +257,7 @@
 			projectRoot = "";
 			targets = (
 				42AEFBAE01D2DFD981F7DA7D /* SuperCelik */,
+				A10000000000000000000001 /* SuperCelikToken */,
 			);
 		};
 /* End PBXProject section */
@@ -196,6 +274,14 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A10000000000000000000005 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000000000000000000020 /* Assets.xcassets in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
@@ -204,6 +290,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				076F477AFBB34016C0DCD226 /* SuperCelikApp.swift in Sources */,
+				A10000000000000000000030 /* QuickActions.swift in Sources */,
 				A0CD34D9E0004D0C44D04EF4 /* PhoneModel.swift in Sources */,
 				0FDAD66B44FCA1C5261B7DF4 /* PhoneViews.swift in Sources */,
 				A1C2E3F4B5D60718293A4B5C /* PhoneMascot.swift in Sources */,
@@ -223,7 +310,23 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		A10000000000000000000003 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				A10000000000000000000007 /* TokenDriver.swift in Sources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		A10000000000000000000010 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = A10000000000000000000001 /* SuperCelikToken */;
+			targetProxy = A10000000000000000000011 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		1BFEF058FC915816555210CC /* Debug */ = {
@@ -313,6 +416,48 @@
 			};
 			name = Release;
 		};
+		A1000000000000000000000C /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Config/Token.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TokenExtension/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = app.supercelik.token;
+				PRODUCT_NAME = SuperCelikToken;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		A1000000000000000000000D /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_ENTITLEMENTS = Config/Token.entitlements;
+				CODE_SIGN_STYLE = Automatic;
+				DEVELOPMENT_TEAM = "";
+				GENERATE_INFOPLIST_FILE = NO;
+				INFOPLIST_FILE = TokenExtension/Info.plist;
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = app.supercelik.token;
+				PRODUCT_NAME = SuperCelikToken;
+				SKIP_INSTALL = YES;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -330,6 +475,15 @@
 			buildConfigurations = (
 				1A4784061330F2D212DD116C /* Debug */,
 				E8360BD69633DC4B3024D425 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		A1000000000000000000000B /* Build configuration list for PBXNativeTarget "SuperCelikToken" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				A1000000000000000000000C /* Debug */,
+				A1000000000000000000000D /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

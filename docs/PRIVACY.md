@@ -2,7 +2,7 @@
 
 # Privacy Policy / Политика конфиденциальности / Politika privatnosti
 
-_Last updated / Обновлено / Ažurirano: 2026-11-11_
+_Last updated / Обновлено / Ažurirano: 2026-11-18_
 
 ## English
 **Super Čelik** reads the data of a Serbian electronic ID card, foreigner ID card or residence permit from your own card,
@@ -11,8 +11,10 @@ on your own device, and shows, prints or exports it for you.
 - **No data leaves your device.** The app has no accounts, no analytics, no advertising, no tracking and no server of ours.
   Card data (name, personal number, address, photo, certificates) is read into memory, shown on screen and cleared when you
   close the app or after the time you set.
-- **No network access** is used to read the card. (The Windows/direct-download Mac builds can check GitHub for a new
-  version; the App Store builds do not contact any server.)
+- **Network.** Reading the card uses no network. The only time the App Store app connects to the internet is when you tap
+  "Sign in to eUprava": the eUprava / eID sign-in page of the Government of Serbia opens in a browser view inside the app.
+  The app sends nothing of its own; your card certificate and PIN are handled by the system (the PIN goes to the card).
+  (The Windows/direct-download Mac builds can also check GitHub for a new version.)
 - **Files you create** (a PDF printout, a signature `.p7s`, an exported certificate) are saved only where you choose or
   shared with the app you pick.
 - **Permissions**: smart card reader (USB) access is used only to read your card when you ask.
@@ -29,8 +31,10 @@ Contact: open an issue at https://github.com/peregond/SuperCelik/issues
 - **Данные не покидают устройство.** Нет аккаунтов, аналитики, рекламы, отслеживания и нашего сервера. Данные карты
   (имя, личный номер, адрес, фото, сертификаты) читаются в память, показываются на экране и стираются при закрытии
   приложения или через заданное вами время.
-- **Сеть для чтения карты не используется.** (Сборки для Windows и Mac с сайта могут проверять GitHub на новую версию;
-  сборки из App Store не обращаются ни к какому серверу.)
+- **Сеть.** Для чтения карты сеть не используется. Единственный случай, когда приложение из App Store выходит в интернет:
+  вы нажимаете «Войти на eUprava», и страница входа eUprava / eID Правительства Сербии открывается в браузере внутри
+  приложения. Приложение само ничего не отправляет; сертификатом карты и PIN занимается система (PIN уходит на карту).
+  (Сборки для Windows и Mac с сайта могут также проверять GitHub на новую версию.)
 - **Файлы, которые вы создаёте** (PDF, подпись `.p7s`, экспорт сертификата), сохраняются только туда, куда вы укажете, или
   передаются выбранному вами приложению.
 - **Разрешения**: доступ к USB-считывателю смарт-карт нужен только чтобы прочитать карту по вашей команде.
@@ -46,8 +50,10 @@ na vašem uređaju, i prikazuje ih, štampa ili čuva po vašem zahtevu.
 
 - **Podaci ne napuštaju uređaj.** Nema naloga, analitike, reklama, praćenja ni našeg servera. Podaci sa kartice se čitaju u
   memoriju, prikazuju na ekranu i brišu pri zatvaranju aplikacije ili posle vremena koje podesite.
-- **Mreža se ne koristi** za čitanje kartice. (Windows i Mac verzije sa sajta mogu da proveravaju GitHub za novu verziju;
-  App Store verzije ne kontaktiraju nijedan server.)
+- **Mreža.** Čitanje kartice ne koristi mrežu. Jedini slučaj kada App Store aplikacija pristupa internetu je kada dodirnete
+  „Prijava na eUpravu“: stranica za prijavu eUprave / eID Vlade Srbije otvara se u pregledaču unutar aplikacije.
+  Aplikacija sama ništa ne šalje; sertifikat kartice i PIN obrađuje sistem (PIN ide na karticu).
+  (Windows i Mac verzije sa sajta mogu da proveravaju i GitHub za novu verziju.)
 - **Fajlovi koje napravite** (PDF, potpis `.p7s`, izvezen sertifikat) čuvaju se samo tamo gde odaberete ili se dele aplikaciji koju izaberete.
 - **Dozvole**: pristup USB čitaču pametnih kartica koristi se samo da pročita karticu kada to zatražite.
 - **PIN/PUK** uneti u aplikaciju šalju se samo kartici i nikada se ne čuvaju niti beleže.
