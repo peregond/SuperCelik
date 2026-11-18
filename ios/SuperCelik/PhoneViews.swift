@@ -1,5 +1,6 @@
 import SwiftUI
 import UIKit
+import SafariServices
 
 struct PhoneRootView: View {
     @EnvironmentObject var loc: Loc
@@ -437,6 +438,7 @@ struct TokenTab: View {
     @State private var share: ShareItem?
     @State private var scanCollapsed = false
     @State private var pinMode: PinMode?
+    @State private var showLogin = false
 
     var body: some View {
         NavigationStack {
@@ -462,6 +464,11 @@ struct TokenTab: View {
                 }
                 .disabled(model.busy || model.readerState != .cardReady)
                 .listRowBackground(Rectangle().fill(.regularMaterial))
+                // Sign in to eUprava: Safari takes the card certificate from the token extension inside this app.
+                Section {
+                    Button { showLogin = true } label: { Label(loc.t(.loginEuprava), systemImage: "person.badge.key") }
+                } footer: { Text(loc.t(.loginEupravaNote)) }
+                .listRowBackground(Rectangle().fill(.regularMaterial))
                 if let t = model.token {
                     Section {
                         if !t.tokenLabel.isEmpty { LabeledContent("Token", value: t.tokenLabel) }
@@ -485,6 +492,9 @@ struct TokenTab: View {
             }
             .sheet(item: $share) { ShareSheet(url: $0.url) }
             .sheet(item: $pinMode) { PinSheet(mode: $0) }
+            .fullScreenCover(isPresented: $showLogin) {
+                SafariView(url: URL(string: "https://euprava.gov.rs")!).ignoresSafeArea()
+            }
             .alert(model.pinAlert ?? "", isPresented: Binding(get: { model.pinAlert != nil && pinMode == nil },
                                                                set: { if !$0 { model.pinAlert = nil } })) {
                 Button(loc.t(.ok)) { model.pinAlert = nil }
@@ -515,6 +525,14 @@ struct TokenTab: View {
         }
         .padding(.vertical, 4)
     }
+}
+
+/// In-app Safari (SFSafariViewController): the same TLS client certificate flow as Safari, so the card certificate
+/// offered by the token extension is used.
+struct SafariView: UIViewControllerRepresentable {
+    let url: URL
+    func makeUIViewController(context: Context) -> SFSafariViewController { SFSafariViewController(url: url) }
+    func updateUIViewController(_ vc: SFSafariViewController, context: Context) {}
 }
 
 // MARK: - Token PIN / PUK

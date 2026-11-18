@@ -67,7 +67,7 @@ final class Loc: ObservableObject {
         case errNoReaderT, errNoReaderH, errNoCardT, errNoCardH, errUnsupportedT, errUnsupportedH, errGenericT, errGenericH, techDetails
         case certMoiCA, certAuth, certSign, certSigFixed, certSigVariable
         case menuCard
-        case driverStuck, pinStepOld, pinStepPuk, pinStepNew, pinStepConfirm, unblockPin, pukLabel, signFile, signedSaved, pinWarn, pinWrongMsg, pinBlockedMsg, pinInvalid, pinUnblocked, signNeedCert
+        case driverStuck, pinStepOld, pinStepPuk, pinStepNew, pinStepConfirm, unblockPin, pukLabel, signFile, signedSaved, pinWarn, pinWrongMsg, pinBlockedMsg, pinInvalid, pinUnblocked, signNeedCert, loginEuprava, loginEupravaNote
         // iOS (NFC)
         case statusReading, emptyNoReaderT, emptyNoReaderH, emptyNoCardT, emptyNoCardH, emptyReadyT, emptyReadyH, demoData, demoHint, tabCardShort, tabTokenShort, readCardAuto, hintAuto, viewPdf, photo, scanUsb, usbNoReaderT, usbNoReaderH, hintUsb, scanCard, nfcPrompt, nfcReading, nfcDone, sharePdf, hintNfc, aboutTextIOS
         case nfcUnavailableT, nfcUnavailableH, nfcNoCardT, nfcNoCardH, nfcLostT, nfcLostH
@@ -205,6 +205,8 @@ final class Loc: ObservableObject {
         .address: [.ru: "Адрес", .en: "Address", .sr: "Adresa"],
         .portrait: [.ru: "Фото", .en: "Portrait", .sr: "Fotografija"],
         .certificates: [.ru: "Сертификаты", .en: "Certificates", .sr: "Sertifikati"],
+        .loginEuprava: [.ru: "Войти на eUprava", .en: "Sign in to eUprava", .sr: "Prijava na eUpravu"],
+        .loginEupravaNote: [.ru: "Откроется страница eUprava. Выберите вход с квалифицированным сертификатом: сертификат карты подставит система, PIN она спросит сама. Нужен считыватель с вставленной картой.", .en: "The eUprava page opens. Choose sign-in with a qualified certificate: the system supplies the card certificate and asks for the PIN itself. A reader with the card inserted is required.", .sr: "Otvoriće se stranica eUprave. Izaberite prijavu kvalifikovanim sertifikatom: sistem nudi sertifikat sa kartice i sam traži PIN. Potreban je čitač sa umetnutom karticom."],
         .changePin: [.ru: "Сменить PIN", .en: "Change PIN", .sr: "Promena PIN-a"],
         .currentPin: [.ru: "Текущий PIN", .en: "Current PIN", .sr: "Trenutni PIN"],
         .newPin: [.ru: "Новый PIN", .en: "New PIN", .sr: "Novi PIN"],
