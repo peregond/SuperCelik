@@ -16,6 +16,10 @@
           <SolidColorBrush x:Key="OkBrush" Color="#1E8E4E"/><SolidColorBrush x:Key="OkBgBrush" Color="#E6F4EC"/>
           <SolidColorBrush x:Key="WarnBrush" Color="#B26B00"/><SolidColorBrush x:Key="WarnBgBrush" Color="#FFF1DB"/>
           <SolidColorBrush x:Key="BadBrush" Color="#C6363C"/><SolidColorBrush x:Key="BadBgBrush" Color="#FBE7E8"/>
+          <!-- the default flyout / drop-down surfaces, in the app's colours -->
+          <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="#FFFFFF"/><SolidColorBrush x:Key="ComboBoxDropDownBorderBrush" Color="#D5DAE3"/>
+          <SolidColorBrush x:Key="MenuFlyoutPresenterBackground" Color="#FFFFFF"/><SolidColorBrush x:Key="MenuFlyoutPresenterBorderBrush" Color="#D5DAE3"/>
+          <SolidColorBrush x:Key="FlyoutPresenterBackground" Color="#FFFFFF"/><SolidColorBrush x:Key="FlyoutBorderThemeBrush" Color="#D5DAE3"/>
         </ResourceDictionary>
         <ResourceDictionary x:Key="Dark">
           <SolidColorBrush x:Key="BgBrush" Color="#0F131A"/><SolidColorBrush x:Key="SurfaceBrush" Color="#1A212C"/>
@@ -28,6 +32,10 @@
           <SolidColorBrush x:Key="OkBrush" Color="#5FD08B"/><SolidColorBrush x:Key="OkBgBrush" Color="#1B3A2A"/>
           <SolidColorBrush x:Key="WarnBrush" Color="#F2B45A"/><SolidColorBrush x:Key="WarnBgBrush" Color="#43331A"/>
           <SolidColorBrush x:Key="BadBrush" Color="#FF7A80"/><SolidColorBrush x:Key="BadBgBrush" Color="#472226"/>
+          <!-- the default flyout / drop-down surfaces, in the app's colours -->
+          <SolidColorBrush x:Key="ComboBoxDropDownBackground" Color="#1A212C"/><SolidColorBrush x:Key="ComboBoxDropDownBorderBrush" Color="#364154"/>
+          <SolidColorBrush x:Key="MenuFlyoutPresenterBackground" Color="#1A212C"/><SolidColorBrush x:Key="MenuFlyoutPresenterBorderBrush" Color="#364154"/>
+          <SolidColorBrush x:Key="FlyoutPresenterBackground" Color="#1A212C"/><SolidColorBrush x:Key="FlyoutBorderThemeBrush" Color="#364154"/>
         </ResourceDictionary>
       </ResourceDictionary.ThemeDictionaries>
     </ResourceDictionary>
