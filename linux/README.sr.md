@@ -14,7 +14,7 @@ pristup PC/SC-u preko `libpcsclite` (`Native.cs`), interfejs i raspored štampan
 - `xdg-utils` za otvaranje PDF-a / stranice izdanja (nije obavezno).
 
 ## Čega nema u poređenju sa Windows-om
-- Prijava u pregledaču sertifikatom sa kartice: na Linux-u se to radi PKCS#11 modulom (OpenSC ili [srb-id-pkcs11](https://github.com/ubavic/srb-id-pkcs11)) u podešavanjima pregledača; aplikacija to ne podešava.
+- Prijava u pregledaču sertifikatom sa kartice: na Linux-u se to radi PKCS#11 modulom (OpenSC ili [srb-id-pkcs11](https://github.com/ubavic/srb-id-pkcs11)) u podešavanjima pregledača; aplikacija to ne podešava. Dugme „Prijava na eUpravu“ na kartici „Token“ samo otvara stranicu za prijavu u podrazumevanom pregledaču.
 - Štampa: „Štampaj“ čuva PDF u privremeni fajl i otvara ga u pregledaču (tamo je prozor za štampu), „Sačuvaj PDF“ stavlja fajl gde izaberete.
 
 ## Ažuriranja

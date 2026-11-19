@@ -42,7 +42,8 @@ public sealed class MainWindow : Window
     private TextBox _txtAutoHide;
     private ProgressBar _busyBar;
     private Button _btnRefresh, _btnRead, _btnReadBig, _btnPrint, _btnPdf, _btnVerify, _btnEye, _btnMore, _btnProblemClose;
-    private TextBlock _lblBeta; private Button _btnFeedback;
+    private TextBlock _lblBeta; private Button _btnFeedback, _btnLoginEu;
+    private const string EuLoginUrl = "https://euprava.gov.rs/prijava";
     private const string FeedbackUrl = "https://github.com/peregond/SuperCelik/issues/new";
     private Button _btnReadToken, _btnChangePin, _btnUnblockPin, _btnSignFile, _btnCheckUpdates, _btnUpdate;
     private StackPanel _emptyState, _certList;
@@ -254,9 +255,10 @@ public sealed class MainWindow : Window
         _btnChangePin = Ui.Btn(""); _btnChangePin.Click += async (_, _) => await ChangePin();
         _btnUnblockPin = Ui.Btn(""); _btnUnblockPin.Click += async (_, _) => await UnblockPin();
         _btnSignFile = Ui.Btn(""); _btnSignFile.Click += async (_, _) => await SignFile();
+        _btnLoginEu = Ui.Btn(""); _btnLoginEu.Click += (_, _) => OpenUrl(EuLoginUrl);      // just opens the sign-in page in the default browser
         _lblTokenInfo = Ui.Label("", 13, false, "MutedBrush"); _lblTokenInfo.VerticalAlignment = VerticalAlignment.Center;
         var bar = new WrapPanel { Margin = new Thickness(0, 0, 0, 16) };
-        foreach (var b in new[] { _btnReadToken, _btnChangePin, _btnUnblockPin, _btnSignFile }) { b.Margin = new Thickness(0, 0, 10, 0); bar.Children.Add(b); }
+        foreach (var b in new[] { _btnReadToken, _btnChangePin, _btnUnblockPin, _btnSignFile, _btnLoginEu }) { b.Margin = new Thickness(0, 0, 10, 0); bar.Children.Add(b); }
         _lblTokenInfo.Margin = new Thickness(4, 0, 0, 0); bar.Children.Add(_lblTokenInfo);
         _lblPinNote = Ui.Label("", 13, false, "MutedBrush", true); _lblPinNote.Margin = new Thickness(2, 14, 0, 0);
         _lblCerts = Ui.Label("", 15, true); _lblCerts.FontWeight = FontWeight.Bold; _lblCerts.Margin = new Thickness(0, 0, 0, 10);
@@ -352,7 +354,8 @@ public sealed class MainWindow : Window
         Ui.SetBtn(_btnReadToken, "key-round", Loc.T("readToken")); Ui.SetBtn(_btnChangePin, "lock", Loc.T("changePin")); Ui.SetBtn(_btnUnblockPin, "lock-open", Loc.T("unblockPin")); Ui.SetBtn(_btnSignFile, "pen-line", Loc.T("signFile"));
         Ui.SetBtn(_btnCheckUpdates, "refresh-cw", Loc.T("checkUpdates")); Ui.SetBtn(_btnUpdate, "download", Loc.T("updateNow"));
         _tabButtons[0].Content = Loc.T("tabPersonal"); _tabButtons[1].Content = Loc.T("tabToken"); _tabButtons[2].Content = Loc.T("tabSettings"); _tabButtons[3].Content = Loc.T("tabAbout");
-        _lblCerts.Text = Loc.T("certificates"); _lblPinNote.Text = Loc.T("pinNote");
+        _lblCerts.Text = Loc.T("certificates"); _lblPinNote.Text = Loc.T("pinNote") + "\n" + Loc.T("loginEupravaNote");
+        Ui.SetBtn(_btnLoginEu, "log-in", Loc.T("loginEuprava"));
         _lblAboutTitle.Text = Loc.T("appTitle"); _lblAboutText.Text = Loc.T("aboutText"); _lblBeta.Text = "BETA · " + Loc.T("betaNote"); Ui.SetBtn(_btnFeedback, "bug", Loc.T("betaReport")); _lblVersion.Text = $"{Loc.T("version")} {Updater.CurrentText}";
         _lblSetLang.Text = Loc.T("language"); _lblSetAppearance.Text = Loc.T("setAppearance"); _lblSetTheme.Text = Loc.T("setTheme");
         _lblSetPrivacy.Text = Loc.T("setPrivacy"); _lblSetBehavior.Text = Loc.T("setBehavior");

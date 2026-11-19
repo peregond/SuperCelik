@@ -155,6 +155,8 @@ public static class Loc
         ["updDownloading"] = new[] { "Скачиваю обновление…", "Downloading the update…", "Preuzimam ažuriranje…" },
         ["updInstalling"] = new[] { "Устанавливаю (может потребоваться пароль администратора)…", "Installing (the administrator password may be needed)…", "Instaliram (može biti potrebna administratorska lozinka)…" },
         ["openReleasePage"] = new[] { "Открыть страницу релиза", "Open the release page", "Otvori stranicu izdanja" },
+        ["loginEuprava"] = new[] { "Войти на eUprava", "Sign in to eUprava", "Prijava na eUpravu" },
+        ["loginEupravaNote"] = new[] { "«Войти на eUprava» открывает страницу входа в браузере по умолчанию. Чтобы браузер предложил сертификат карты, в нём должен быть подключён модуль PKCS#11 (OpenSC или srb-id-pkcs11).", "“Sign in to eUprava” opens the sign-in page in your default browser. For the browser to offer the card certificate, a PKCS#11 module (OpenSC or srb-id-pkcs11) must be set up in it.", "„Prijava na eUpravu“ otvara stranicu za prijavu u podrazumevanom pregledaču. Da bi pregledač ponudio sertifikat sa kartice, u njemu mora biti podešen PKCS#11 modul (OpenSC ili srb-id-pkcs11)." },
         ["updateFailed"] = new[] { "Не удалось обновить", "Update failed", "Ažuriranje nije uspelo" },
         ["sigOk"] = new[] { "Подпись верна, данные не изменены", "Signature valid, data unmodified", "Potpis je ispravan, podaci nisu menjani" },
         ["sigChain"] = new[] { "Не удалось построить цепочку доверия (это не значит, что данные неверны)", "Trust chain could not be established (does not mean the data is invalid)", "Nije uspostavljen lanac poverenja (ne znači da podaci nisu ispravni)" },
