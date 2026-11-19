@@ -831,10 +831,10 @@ public sealed class MainWindow : Window
     /// "Update": installs the new version by itself when it can (see Updater.Pick), otherwise opens the release page.
     private async Task StartUpdate()
     {
-        var asset = _demo || _updateFailed ? null : Updater.Pick();      // after a failed attempt the button opens the release page
-        if (asset == null) { OpenUrl(_newPage); return; }
+        if (_demo || _updateFailed || !Updater.CanSelfUpdate) {      // after a failed attempt the button opens the release page
+            OpenUrl(_newPage); return; }
         _btnUpdate.IsEnabled = false; _btnCheckUpdates.IsEnabled = false;
-        try { await Updater.InstallAsync(asset, t => Avalonia.Threading.Dispatcher.UIThread.Post(() => _lblUpdate.Text = t), Loc.T("updDownloading"), Loc.T("updInstalling")); }
+        try { await Updater.InstallAsync(t => Avalonia.Threading.Dispatcher.UIThread.Post(() => _lblUpdate.Text = t), Loc.T("updDownloading"), Loc.T("updInstalling")); }
         catch (Exception ex)
         {
             _lblUpdate.Text = Loc.T("updateFailed") + ": " + ex.Message;

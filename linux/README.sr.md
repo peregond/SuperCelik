@@ -18,7 +18,7 @@ pristup PC/SC-u preko `libpcsclite` (`Native.cs`), interfejs i raspored štampan
 - Štampa: „Štampaj“ čuva PDF u privremeni fajl i otvara ga u pregledaču (tamo je prozor za štampu), „Sačuvaj PDF“ stavlja fajl gde izaberete.
 
 ## Ažuriranja
-Aplikacija proverava novu verziju i sama se ažurira. Sa `.deb` preuzima novi `.deb` i instalira ga preko `pkexec apt-get install` (sistem traži administratorsku lozinku); sa `.tar.gz` u folderu u koji može da piše zamenjuje fajlove na mestu. Paket se instalira samo ako se njegov SHA-256 poklapa sa kontrolnim zbirom koji GitHub prikazuje za fajl izdanja; u suprotnom aplikacija samo otvara stranicu izdanja. Posle ažuriranja aplikacija se ponovo pokreće.
+Aplikacija proverava novu verziju i sama se ažurira. Sa `.deb` preuzima novi `.deb` i instalira ga preko `pkexec apt-get install` (sistem traži administratorsku lozinku); sa `.tar.gz` u folderu u koji može da piše preuzima **samo fajlove koji su se promenili** (izdanje ima `.manifest.json` sa SHA-256 svakog fajla i `.zip` iz kog aplikacija čita pojedinačne stavke HTTP zahtevima opsega; svaki fajl se proverava prema manifestu, a manifest prema kontrolnom zbiru GitHub-a) i zamenjuje ih na mestu, a pri neuspehu preuzima ceo `.tar.gz`. `.deb` se uvek instalira u celini, jer dpkg mora da zna fajlove. Paket se instalira samo ako se njegov SHA-256 poklapa sa kontrolnim zbirom koji GitHub prikazuje za fajl izdanja; u suprotnom aplikacija samo otvara stranicu izdanja. Posle ažuriranja aplikacija se ponovo pokreće.
 
 ## Pokretanje i provera
     dotnet run --project linux/SerbiaID.Linux -- --demo [kartica 0-3] [--dark] [--state noreader|nocard|busy|error]
