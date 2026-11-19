@@ -152,7 +152,7 @@ public sealed class MainWindow : Window
         _lblReader.VerticalAlignment = VerticalAlignment.Center; _lblReader.Margin = new Thickness(0, 0, 8, 0);
         _cmbReader = new ComboBox { Width = 260, Margin = new Thickness(0, 0, 8, 0), VerticalAlignment = VerticalAlignment.Center, IsVisible = false };
         _cmbReader.SelectionChanged += (_, _) => { if (!_loading) Refresh(); };
-        _btnRefresh = Ui.Btn("⟳", "icon"); _btnRefresh.FontSize = 18; _btnRefresh.Click += (_, _) => Refresh();
+        _btnRefresh = Ui.Btn("", "icon"); Ui.SetBtn(_btnRefresh, "rotate-cw", null); _btnRefresh.Click += (_, _) => Refresh();
         var right = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Center, Children = { _lblReader, _cmbReader, _btnRefresh } };
         var hdr = new DockPanel { Children = { right } };
         DockPanel.SetDock(left, Dock.Left); hdr.Children.Insert(0, left);
@@ -167,7 +167,7 @@ public sealed class MainWindow : Window
         _lblProblemTitle = Ui.Label("", 13, true); _lblProblemTitle.FontWeight = FontWeight.Bold;
         _lblProblemHint = Ui.Label("", 13, false, "TextBrush", true); _lblProblemHint.Margin = new Thickness(0, 2, 0, 0);
         _lblProblemTech = Ui.Label("", 11, false, "MutedBrush", true); _lblProblemTech.Margin = new Thickness(0, 4, 0, 0);
-        _btnProblemClose = Ui.Btn("✕", "icon"); _btnProblemClose.VerticalAlignment = VerticalAlignment.Top; _btnProblemClose.Click += (_, _) => HideProblem();
+        _btnProblemClose = Ui.Btn("", "icon"); Ui.SetBtn(_btnProblemClose, "x", null); _btnProblemClose.VerticalAlignment = VerticalAlignment.Top; _btnProblemClose.Click += (_, _) => HideProblem();
         var pb = new DockPanel();
         DockPanel.SetDock(_btnProblemClose, Dock.Right); pb.Children.Add(_btnProblemClose);
         pb.Children.Add(new StackPanel { Children = { _lblProblemTitle, _lblProblemHint, _lblProblemTech } });
@@ -346,14 +346,14 @@ public sealed class MainWindow : Window
         Title = Loc.T("appTitle") + " (beta)";
         _lblBrand.Text = Loc.T("appTitle"); _lblBrandSub.Text = Loc.T("brandSub") + " · beta";
         ToolTip.SetTip(_btnRefresh, Loc.T("refresh"));
-        _btnRead.Content = _btnReadBig.Content = Loc.T("readCard");
-        _btnPrint.Content = Loc.T("printCard"); _btnPdf.Content = Loc.T("savePdf"); _btnVerify.Content = Loc.T("verifySignature");
-        _btnMore.Content = Loc.T("more") + " ▾";
-        _btnReadToken.Content = Loc.T("readToken"); _btnChangePin.Content = Loc.T("changePin"); _btnUnblockPin.Content = Loc.T("unblockPin"); _btnSignFile.Content = Loc.T("signFile");
-        _btnCheckUpdates.Content = Loc.T("checkUpdates"); _btnUpdate.Content = Loc.T("updateNow");
+        Ui.SetBtn(_btnRead, "user-round", Loc.T("readCard")); Ui.SetBtn(_btnReadBig, "user-round", Loc.T("readCard"));
+        Ui.SetBtn(_btnPrint, "printer", Loc.T("printCard")); Ui.SetBtn(_btnPdf, "save", Loc.T("savePdf")); Ui.SetBtn(_btnVerify, "check", Loc.T("verifySignature"));
+        Ui.SetBtn(_btnMore, "ellipsis", Loc.T("more"));
+        Ui.SetBtn(_btnReadToken, "key-round", Loc.T("readToken")); Ui.SetBtn(_btnChangePin, "lock", Loc.T("changePin")); Ui.SetBtn(_btnUnblockPin, "lock-open", Loc.T("unblockPin")); Ui.SetBtn(_btnSignFile, "pen-line", Loc.T("signFile"));
+        Ui.SetBtn(_btnCheckUpdates, "refresh-cw", Loc.T("checkUpdates")); Ui.SetBtn(_btnUpdate, "download", Loc.T("updateNow"));
         _tabButtons[0].Content = Loc.T("tabPersonal"); _tabButtons[1].Content = Loc.T("tabToken"); _tabButtons[2].Content = Loc.T("tabSettings"); _tabButtons[3].Content = Loc.T("tabAbout");
         _lblCerts.Text = Loc.T("certificates"); _lblPinNote.Text = Loc.T("pinNote");
-        _lblAboutTitle.Text = Loc.T("appTitle"); _lblAboutText.Text = Loc.T("aboutText"); _lblBeta.Text = "BETA · " + Loc.T("betaNote"); _btnFeedback.Content = Loc.T("betaReport"); _lblVersion.Text = $"{Loc.T("version")} {Updater.CurrentText}";
+        _lblAboutTitle.Text = Loc.T("appTitle"); _lblAboutText.Text = Loc.T("aboutText"); _lblBeta.Text = "BETA · " + Loc.T("betaNote"); Ui.SetBtn(_btnFeedback, "bug", Loc.T("betaReport")); _lblVersion.Text = $"{Loc.T("version")} {Updater.CurrentText}";
         _lblSetLang.Text = Loc.T("language"); _lblSetAppearance.Text = Loc.T("setAppearance"); _lblSetTheme.Text = Loc.T("setTheme");
         _lblSetPrivacy.Text = Loc.T("setPrivacy"); _lblSetBehavior.Text = Loc.T("setBehavior");
         _chkMask.Content = Loc.T("setMask"); _chkPrintJmbg.Content = Loc.T("setPrintJmbg");
@@ -564,7 +564,7 @@ public sealed class MainWindow : Window
     private void RenderPersonal()
     {
         _btnEye.IsVisible = _personal != null && _cfg.MaskSensitive;
-        _btnEye.Content = _revealAll ? Loc.T("hideValue") : Loc.T("reveal");
+        Ui.SetBtn(_btnEye, _revealAll ? "eye-off" : "eye", _revealAll ? Loc.T("hideValue") : Loc.T("reveal"));
         _fields.Children.Clear();
         _imgPortrait.Source = null;
         bool has = _personal != null;
@@ -580,10 +580,10 @@ public sealed class MainWindow : Window
         foreach (var (key, value) in Rows(_personal))
         {
             bool hidden = Sensitive.Contains(key) && _cfg.MaskSensitive && !_revealAll;
-            var copy = Ui.Btn("⧉", "icon"); copy.Opacity = 0.55; copy.VerticalAlignment = VerticalAlignment.Bottom;
+            var copy = Ui.Btn("", "icon"); Ui.SetBtn(copy, "copy", null); copy.Opacity = 0.55; copy.VerticalAlignment = VerticalAlignment.Bottom;
             ToolTip.SetTip(copy, Loc.T("copy"));
             var v = value;
-            copy.Click += async (_, _) => { try { await CopyText(v); copy.Content = "✔"; await Task.Delay(1000); copy.Content = "⧉"; } catch { } };
+            copy.Click += async (_, _) => { try { await CopyText(v); Ui.SetBtn(copy, "check", null); await Task.Delay(1000); Ui.SetBtn(copy, "copy", null); } catch { } };
             var text = new StackPanel();
             text.Children.Add(Ui.Label(Loc.T(key), 11, false, "MutedBrush"));
             // plain text, not an input box: nothing to click or edit, the field has only its copy button
@@ -783,7 +783,7 @@ public sealed class MainWindow : Window
                 var ep = Ui.Pill(new TextBlock(), 3); ep.CornerRadius = new CornerRadius(12); SetExpiry(ep, c.NotAfter); row.Children.Add(ep);
                 box.Children.Add(row);
             }
-            var export = Ui.Btn(Loc.T("exportCert")); export.Margin = new Thickness(0, 10, 0, 0); export.HorizontalAlignment = HorizontalAlignment.Left;
+            var export = Ui.Btn(""); Ui.SetBtn(export, "save", Loc.T("exportCert")); export.Margin = new Thickness(0, 10, 0, 0); export.HorizontalAlignment = HorizontalAlignment.Left;
             var cert = c;
             export.Click += async (_, _) => { var p = await PickSave("certificate.cer", "cer", "Certificate"); if (p != null) File.WriteAllBytes(p, cert.Der); };
             box.Children.Add(export);
@@ -836,7 +836,7 @@ public sealed class MainWindow : Window
         {
             _lblUpdate.Text = Loc.T("updateFailed") + ": " + ex.Message;
             _btnUpdate.IsEnabled = true; _btnCheckUpdates.IsEnabled = true;
-            _btnUpdate.Content = Loc.T("openReleasePage");
+            Ui.SetBtn(_btnUpdate, "download", Loc.T("openReleasePage"));
             _updateFailed = true;
         }
     }
