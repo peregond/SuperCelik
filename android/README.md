@@ -1,45 +1,47 @@
-# Super Čelik для Android
+<p align="center"><b>English</b> · <a href="README.ru.md">Русский</a> · <a href="README.sr.md">Srpski</a></p>
 
-Kotlin + Jetpack Compose, дизайн Material You (динамические цвета с Android 12, на Android 8–11 палитра из цветов флага).
-Читает личные данные и фото сербской ID-карты, карты иностранца и вида на жительство **через USB-ридер CCID**
-(например Gemalto CT40), подключённый по USB-C или OTG-кабелю: приложение само говорит с ридером через USB host API.
+# Super Čelik for Android
 
-Чтения по NFC нет: у сербских ID-карт чип только контактный (так же, как в версии для iOS). Код NFC удалён;
-если понадобится вернуть, он есть в истории git до коммита «Android: read only through a USB reader, drop NFC».
+Kotlin + Jetpack Compose, Material You design (dynamic colors from Android 12; on Android 8–11 a palette from the flag colors).
+Reads the personal data and photo of a Serbian ID card, foreigner ID card and residence permit **through a CCID USB reader**
+(for example Gemalto CT40) connected with a USB-C or OTG cable: the app talks to the reader itself through the USB host API.
 
-Протокол карты портирован из `Sources/SerbiaID/EidCard.swift`. Языки: RU / EN / SR (по языку системы).
+There is no NFC reading: Serbian ID cards have a contact-only chip (just as in the iOS version). The NFC code was removed;
+if you need it back, it is in git history before the commit “Android: read only through a USB reader, drop NFC”.
 
-## Что есть
-- Чтение личных данных и фото (USB-ридер CCID, автозапуск при подключении ридера), проверка подписи МУП по встроенным сертификатам, срок действия, PDF (поделиться).
-- Вкладка «Токен»: сертификаты с проверкой цепочки, экспорт `.cer`, смена PIN, разблокировка по PUK, подпись файла (отсоединённая CMS `.p7s`).
-- Вход на eUprava сертификатом карты (вкладка «Токен», `EuLogin.kt`, `EuLoginActivity.kt`). Chrome на Android берёт
-  клиентские сертификаты только из KeyChain, куда USB-токен не попадает. Поэтому страница входа открывается во встроенном WebView, и на
-  запрос сертификата (`onReceivedClientCertRequest`) приложение отвечает само. Ключ — это ссылка на карту (`CardPrivateKey`),
-  а подписи TLS делает свой JCA-провайдер: он ставится первым, пока открыт экран входа, и отправляет подпись на карту по USB.
-  `prijavas.eid.gov.rs` работает только по TLS 1.2 и просит RSA PKCS#1 v1.5, поэтому паддинг делает карта (MSE alg 2), а PSS не нужен.
-  PIN спрашивается в приложении сразу при выборе сертификата и проверяется картой тут же, а не во время TLS-рукопожатия:
-  рукопожатие ждёт подпись около 30 секунд, и медленно набранный PIN иначе приводил к `ERR_TIMED_OUT`. Карта остаётся
-  включённой с проверенным PIN до запроса подписи (до 90 с), после подписи ещё 15 с (на случай параллельных соединений),
-  затем выключается. PIN хранится только в массиве символов, который затирается после единственного VERIFY. После любой
-  неудачи новых попыток нет, пока пользователь не нажмёт «Начать заново». Cookie, хранилище и кэш WebView стираются при закрытии экрана,
-  а если приложение было убито во время входа, то при следующем запуске. Разрешение `INTERNET` нужно только этому экрану,
-  чтение карты сеть не использует. На эмуляторе проверено до вызова подписи (в том числе PIN через 100 с после запроса). С настоящей картой ещё не проверено.
-- Приватность: чувствительные поля скрыты точками (глаз показывает), автоочистка данных, экран не попадает в скриншоты и список недавних.
-- Настройки: тема, динамические цвета, маскирование, автоочистка, язык (на Android 13+ в системных настройках приложения).
+The card protocol is ported from `Sources/SerbiaID/EidCard.swift`. Languages: RU / EN / SR (by the system language).
 
-## Статус
-Собирается в CI и запускается в эмуляторе (демо-данные), но **с настоящей картой на телефоне и с USB-ридером не проверялось**. Как и в версии для Mac, разблокировка по PUK не проверена на карте. Пока нет: печатной формы МУП (как в версии для Mac), только простой PDF.
+## Features
+- Reading personal data and photo (CCID USB reader, starts automatically when a reader is connected), MUP signature check against built-in certificates, expiry date, PDF (share).
+- “Token” tab: certificates with chain validation, `.cer` export, PIN change, unblock with PUK, file signing (detached CMS `.p7s`).
+- Sign-in to eUprava with the card certificate (“Token” tab, `EuLogin.kt`, `EuLoginActivity.kt`). Chrome on Android takes
+  client certificates only from KeyChain, where a USB token does not get. So the sign-in page opens in an in-app WebView, and the app answers
+  the certificate request (`onReceivedClientCertRequest`) itself. The key is a reference to the card (`CardPrivateKey`),
+  and TLS signatures are made by our own JCA provider: it is installed first while the sign-in screen is open and sends the signature to the card over USB.
+  `prijavas.eid.gov.rs` works only over TLS 1.2 and asks for RSA PKCS#1 v1.5, so the card does the padding (MSE alg 2) and PSS is not needed.
+  The PIN is asked in the app right when the certificate is chosen and the card checks it at once, not during the TLS handshake:
+  the handshake waits for the signature for about 30 seconds, and a slowly typed PIN used to end in `ERR_TIMED_OUT`. The card stays
+  switched on with the verified PIN until the signature request (up to 90 s), 15 s more after the signature (for parallel connections),
+  then it is switched off. The PIN is kept only in a character array that is wiped after the single VERIFY. After any
+  failure there are no new attempts until the user taps “Start over”. The cookies, storage and cache of the WebView are erased when the screen closes,
+  or, if the app was killed during sign-in, at the next start. The `INTERNET` permission is needed only by this screen;
+  card reading does not use the network. Checked in an emulator up to the signature call (including a PIN entered 100 s after the request). Not yet checked with a real card.
+- Privacy: sensitive fields are hidden with dots (the eye shows them), automatic data clearing, the screen is excluded from screenshots and the recent apps list.
+- Settings: theme, dynamic colors, masking, auto-clear, language (on Android 13+ in the system settings of the app).
 
-## Сборка
-Android Studio (Narwhal или новее) → открыть папку `android` → Run. Или в командной строке (нужны JDK 17, Android SDK 36 и Gradle 8.13+):
+## Status
+Builds in CI and runs in an emulator (demo data), but **has not been tried with a real card on a phone and with a USB reader**. As in the Mac version, unblocking with PUK is not verified on a card. Not there yet: the MUP print sheet (as in the Mac version), only a simple PDF.
+
+## Build
+Android Studio (Narwhal or newer) → open the `android` folder → Run. Or on the command line (needs JDK 17, Android SDK 36 and Gradle 8.13+):
 
     gradle -p android assembleDebug
 
-APK: `android/app/build/outputs/apk/debug/`. Сборка также делается в GitHub Actions (артефакт `SuperCelik-android-debug`).
+The APK: `android/app/build/outputs/apk/debug/`. It is also built in GitHub Actions (artifact `SuperCelik-android-debug`).
 
-## Подпись релизных APK
-CI подписывает релизный APK ключом из секретов репозитория: `ANDROID_KEYSTORE_BASE64` (файл .jks/.p12 в base64),
-`ANDROID_KEYSTORE_PASSWORD` и по желанию `ANDROID_KEY_ALIAS` (по умолчанию `release`). Если секретов нет, CI создаёт одноразовый ключ:
-APK ставится, но **обновление поверх прошлой сборки не установится** (другая подпись). Создайте ключ один раз
+## Signing release APKs
+CI signs the release APK with a key from the repository secrets: `ANDROID_KEYSTORE_BASE64` (a .jks/.p12 file in base64),
+`ANDROID_KEYSTORE_PASSWORD` and optionally `ANDROID_KEY_ALIAS` (default `release`). Without secrets CI creates a one-time key:
+the APK installs, but **an update over a previous build will not install** (a different signature). Create a key once
 (`keytool -genkeypair -keystore release.p12 -storetype PKCS12 -alias release -keyalg RSA -keysize 2048 -validity 10000`),
-закодируйте `base64 -w0 release.p12` и добавьте в секреты. Сам ключ в репозиторий не кладите.
+encode it with `base64 -w0 release.p12` and add it to the secrets. Do not put the key itself into the repository.

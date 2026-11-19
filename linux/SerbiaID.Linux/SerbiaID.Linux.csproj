@@ -1,0 +1,46 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <AssemblyName>SuperCelik</AssemblyName>
+    <Product>Super Čelik</Product>
+    <RootNamespace>SerbiaID</RootNamespace>
+    <Version>0.9.9</Version>
+    <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
+    <!-- no libicu dependency: the UI language comes from LANG, see MainWindow -->
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Avalonia" Version="11.3.*" />
+    <PackageReference Include="Avalonia.Desktop" Version="11.3.*" />
+    <PackageReference Include="Avalonia.Themes.Fluent" Version="11.3.*" />
+    <PackageReference Include="Avalonia.Fonts.Inter" Version="11.3.*" />
+    <PackageReference Include="System.Security.Cryptography.Pkcs" Version="8.0.*" />
+  </ItemGroup>
+
+  <!-- the card protocol, crypto, texts and models are shared with the Windows app (only PC/SC and the UI differ) -->
+  <ItemGroup>
+    <Compile Include="..\..\windows\SerbiaID.Windows\Card.cs" Link="Shared\Card.cs" />
+    <Compile Include="..\..\windows\SerbiaID.Windows\CardErrors.cs" Link="Shared\CardErrors.cs" />
+    <Compile Include="..\..\windows\SerbiaID.Windows\Crypto.cs" Link="Shared\Crypto.cs" />
+    <Compile Include="..\..\windows\SerbiaID.Windows\Models.cs" Link="Shared\Models.cs" />
+    <Compile Include="..\..\windows\SerbiaID.Windows\Loc.cs" Link="Shared\Loc.cs" />
+    <Compile Include="..\..\windows\SerbiaID.Windows\SerbianScript.cs" Link="Shared\SerbianScript.cs" />
+    <Compile Include="..\..\windows\SerbiaID.Windows\SelfTest.cs" Link="Shared\SelfTest.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <AvaloniaResource Include="Assets\*.png" />
+    <AvaloniaResource Include="..\..\Sources\SerbiaID\Resources\Mascots\*.png" Link="Assets\Mascots\%(Filename)%(Extension)" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- MUP root + intermediate CA certificates shared with the macOS and Windows apps -->
+    <Content Include="..\..\Sources\SerbiaID\Resources\CA\*.crt" Link="CA\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>
