@@ -540,15 +540,16 @@ struct TokenTab: View {
                 guard case .success(let url) = result else { return }
                 // read off the main thread (a slow file provider must not freeze the UI), and not more than 100 MB
                 Task {
-                    let picked = await Task.detached { () -> PendingSign? in
+                    // nil = unreadable, -1 size = too large
+                    let picked = await Task.detached { () -> (PendingSign?, Bool) in
                         let scoped = url.startAccessingSecurityScopedResource()
                         defer { if scoped { url.stopAccessingSecurityScopedResource() } }
                         let size = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
-                        if size > 100_000_000 { return nil }
-                        guard let data = try? Data(contentsOf: url) else { return nil }
-                        return PendingSign(name: url.lastPathComponent, data: data)
+                        if size > 100_000_000 { return (nil, true) }
+                        guard let data = try? Data(contentsOf: url) else { return (nil, false) }
+                        return (PendingSign(name: url.lastPathComponent, data: data), false)
                     }.value
-                    if let picked { signing = picked } else { model.pinAlert = loc.t(.fileTooLarge) }
+                    if let file = picked.0 { signing = file } else { model.pinAlert = loc.t(picked.1 ? .fileTooLarge : .fileUnreadable) }
                 }
             }
             .sheet(item: $signing) { pending in

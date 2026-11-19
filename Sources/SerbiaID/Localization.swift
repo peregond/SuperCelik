@@ -67,7 +67,7 @@ final class Loc: ObservableObject {
         case errNoReaderT, errNoReaderH, errNoCardT, errNoCardH, errUnsupportedT, errUnsupportedH, errGenericT, errGenericH, techDetails
         case certMoiCA, certAuth, certSign, certSigFixed, certSigVariable
         case menuCard
-        case driverStuck, pinStepOld, pinStepPuk, pinStepNew, pinStepConfirm, unblockPin, pukLabel, signFile, signedSaved, fileTooLarge, pinWarn, pinWrongMsg, pinBlockedMsg, pinInvalid, pinUnblocked, signNeedCert, loginEuprava, loginEupravaNote, loginNoDriver
+        case driverStuck, pinStepOld, pinStepPuk, pinStepNew, pinStepConfirm, unblockPin, pukLabel, signFile, signedSaved, fileTooLarge, fileUnreadable, pinWarn, pinWrongMsg, pinBlockedMsg, pinInvalid, pinUnblocked, signNeedCert, loginEuprava, loginEupravaNote, loginNoDriver
         // iOS (NFC)
         case statusReading, emptyNoReaderT, emptyNoReaderH, emptyNoCardT, emptyNoCardH, emptyReadyT, emptyReadyH, demoData, demoHint, tabCardShort, tabTokenShort, readCardAuto, hintAuto, viewPdf, photo, scanUsb, usbNoReaderT, usbNoReaderH, hintUsb, scanCard, nfcPrompt, nfcReading, nfcDone, sharePdf, hintNfc, aboutTextIOS
         case nfcUnavailableT, nfcUnavailableH, nfcNoCardT, nfcNoCardH, nfcLostT, nfcLostH
@@ -223,6 +223,7 @@ final class Loc: ObservableObject {
         .signFile: [.ru: "Подписать файл", .en: "Sign file", .sr: "Potpiši fajl"],
         .signedSaved: [.ru: "Подпись сохранена", .en: "Signature saved", .sr: "Potpis je sačuvan"],
         .fileTooLarge: [.ru: "Файл слишком большой для подписи на телефоне (до 100 МБ)", .en: "The file is too large to sign on the phone (up to 100 MB)", .sr: "Fajl je prevelik za potpisivanje na telefonu (do 100 MB)"],
+        .fileUnreadable: [.ru: "Не удалось прочитать файл", .en: "The file could not be read", .sr: "Fajl nije moguće pročitati"],
         .pinWarn: [.ru: "Неверный PIN/PUK тратит попытку; после исчерпания токен блокируется. Разблокировка по PUK не проверена на реальной карте.", .en: "A wrong PIN/PUK uses up a try; the token locks when none are left. PUK unblock is not verified on a real card.", .sr: "Pogrešan PIN/PUK troši pokušaj; token se zaključava kad ih nestane. Odblokiranje PUK-om nije provereno na pravoj kartici."],
         .pinWrongMsg: [.ru: "Неверный PIN/PUK. Осталось попыток: ", .en: "Wrong PIN/PUK. Tries left: ", .sr: "Pogrešan PIN/PUK. Preostalo pokušaja: "],
         .pinBlockedMsg: [.ru: "PIN заблокирован. Используйте «Разблокировать по PUK».", .en: "PIN is blocked. Use “Unblock with PUK”.", .sr: "PIN je blokiran. Koristite „Odblokiraj PUK-om“."],
