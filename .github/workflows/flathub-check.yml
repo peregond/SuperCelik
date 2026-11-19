@@ -22,7 +22,7 @@ jobs:
       - name: Generate nuget-sources.json
         run: |
           curl -fsSL -o gen.py https://raw.githubusercontent.com/flatpak/flatpak-builder-tools/master/dotnet/flatpak-dotnet-generator.py
-          python3 gen.py --dotnet 8 --freedesktop 24.08 -r linux-x64 linux-arm64 nuget-sources.json linux/SerbiaID.Linux/SerbiaID.Linux.csproj
+          python3 gen.py nuget-sources.json linux/SerbiaID.Linux/SerbiaID.Linux.csproj --dotnet 8 --freedesktop 24.08 -r linux-x64 linux-arm64
           cp nuget-sources.json linux/packaging/flathub/
           ls -l nuget-sources.json; rm -rf nuget-sources
       - name: Build from source
