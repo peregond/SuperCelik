@@ -50,21 +50,14 @@ Name: "{commondesktop}\Super Čelik"; Filename: "{app}\SuperCelik.exe"; Tasks: d
 [Registry]
 Root: HKCU; Subkey: "Software\SuperCelik"; ValueType: string; ValueName: "Lang"; ValueData: "{language}"; Flags: uninsdeletekey
 
-Root: HKLM; Subkey: "SOFTWARE\Microsoft\Cryptography\Calais\SmartCards\SuperCelik-Gemalto-eID"; ValueType: binary; ValueName: "ATR"; ValueData: "3B FF 94 00 00 81 31 80 43 80 31 80 65 B0 85 02 01 F3 12 0F FF 82 90 00 79"; MinVersion: 0,6.0; Flags: uninsdeletekey
-Root: HKLM; Subkey: "SOFTWARE\Microsoft\Cryptography\Calais\SmartCards\SuperCelik-Gemalto-eID"; ValueType: binary; ValueName: "ATRMask"; ValueData: "FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF"; MinVersion: 0,6.0
-Root: HKLM; Subkey: "SOFTWARE\Microsoft\Cryptography\Calais\SmartCards\SuperCelik-Gemalto-eID"; ValueType: string; ValueName: "Crypto Provider"; ValueData: "Microsoft Base Smart Card Crypto Provider"; MinVersion: 0,6.0
-Root: HKLM; Subkey: "SOFTWARE\Microsoft\Cryptography\Calais\SmartCards\SuperCelik-Gemalto-eID"; ValueType: string; ValueName: "Smart Card Key Storage Provider"; ValueData: "Microsoft Smart Card Key Storage Provider"; MinVersion: 0,6.0
-Root: HKLM; Subkey: "SOFTWARE\Microsoft\Cryptography\Calais\SmartCards\SuperCelik-Gemalto-eID"; ValueType: string; ValueName: "80000001"; ValueData: "SuperCelikMD.dll"; MinVersion: 0,6.0
-Root: HKLM; Subkey: "SOFTWARE\Microsoft\Cryptography\Calais\SmartCards\SuperCelik-Gemalto-eID"; ValueType: binary; ValueName: "ATR"; ValueData: "3B FF 94 00 00 81 31 80 43 80 31 80 65 B0 85 02 01 F3 12 0F FF 82 90 00 79"; MinVersion: 0,6.0; Flags: uninsdeletekey 32bit; Check: Is64BitInstallMode
-Root: HKLM; Subkey: "SOFTWARE\Microsoft\Cryptography\Calais\SmartCards\SuperCelik-Gemalto-eID"; ValueType: binary; ValueName: "ATRMask"; ValueData: "FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF FF"; MinVersion: 0,6.0; Flags: 32bit; Check: Is64BitInstallMode
-Root: HKLM; Subkey: "SOFTWARE\Microsoft\Cryptography\Calais\SmartCards\SuperCelik-Gemalto-eID"; ValueType: string; ValueName: "Crypto Provider"; ValueData: "Microsoft Base Smart Card Crypto Provider"; MinVersion: 0,6.0; Flags: 32bit; Check: Is64BitInstallMode
-Root: HKLM; Subkey: "SOFTWARE\Microsoft\Cryptography\Calais\SmartCards\SuperCelik-Gemalto-eID"; ValueType: string; ValueName: "Smart Card Key Storage Provider"; ValueData: "Microsoft Smart Card Key Storage Provider"; MinVersion: 0,6.0; Flags: 32bit; Check: Is64BitInstallMode
-Root: HKLM; Subkey: "SOFTWARE\Microsoft\Cryptography\Calais\SmartCards\SuperCelik-Gemalto-eID"; ValueType: string; ValueName: "80000001"; ValueData: "SuperCelikMD.dll"; MinVersion: 0,6.0; Flags: 32bit; Check: Is64BitInstallMode
 
 [Tasks]
 Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"
 
 [Run]
+; register the card driver for the exact ATR of the Gemalto-based Serbian eID (the app writes both registry views of
+; a 64-bit Windows; Windows Vista or newer only)
+Filename: "{app}\SuperCelik.exe"; Parameters: "--register-driver 3BFF9400008131804380318065B0850201F3120FFF82900079"; MinVersion: 0,6.0; Flags: runhidden waituntilterminated
 ; register the driver for the cards that are in a reader right now (the installer is elevated); never fails the install
 Filename: "{app}\SuperCelik.exe"; Parameters: "--register-driver auto"; Flags: runhidden waituntilterminated
 ; interactive install: "Launch Super Čelik" checkbox on the last page
