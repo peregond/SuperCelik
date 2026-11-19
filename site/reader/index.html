@@ -39,24 +39,24 @@ a{color:inherit}
 .langbox.open .langmenu,.langbox:focus-within .langmenu{opacity:1;visibility:visible;transform:none}
 @media(hover:hover){.langbox:hover .langmenu{opacity:1;visibility:visible;transform:none}}
 @media(max-width:480px){.langbox{top:10px;right:10px}}
-.hero{padding:84px 0 0;text-align:center}
-h1{font-size:clamp(56px,14vw,128px);line-height:1;letter-spacing:-.05em;margin:0 0 20px;font-weight:800}
-.lead{margin:0 auto;max-width:640px;color:var(--muted);font-size:clamp(18px,2.3vw,24px);line-height:1.45;text-wrap:pretty}
+.hero{padding:96px 0 0;text-align:center}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+.lead{margin:0 auto;max-width:680px;color:var(--ink);font-size:clamp(20px,2.7vw,30px);font-weight:600;line-height:1.3;letter-spacing:-.02em;text-wrap:balance}
 /* the reader: a card slides into the slot, the light turns green */
-.stage{display:flex;justify-content:center;margin-top:18px}
-.rd{width:min(400px,86vw);height:auto;display:block;overflow:visible}
+.stage{display:flex;justify-content:center;margin-top:30px}
+.rd{width:min(560px,94vw);height:auto;display:block;overflow:visible}
 .rd .card{animation:ins 7s infinite}
 .rd .led{animation:led 7s infinite}
 .rd .ring{transform-box:fill-box;transform-origin:center;animation:ring 7s infinite;opacity:0}
 @keyframes ins{
- 0%,6%{transform:translateY(-34px);animation-timing-function:cubic-bezier(.5,0,.2,1)}
- 30%,72%{transform:translateY(58px);animation-timing-function:cubic-bezier(.5,0,.2,1)}
- 90%,100%{transform:translateY(-34px)}}
+ 0%,6%{transform:translateX(112px);animation-timing-function:cubic-bezier(.5,0,.2,1)}
+ 30%,72%{transform:translateX(0);animation-timing-function:cubic-bezier(.5,0,.2,1)}
+ 90%,100%{transform:translateX(112px)}}
 @keyframes led{0%,29%{fill:#ffb347}31%,73%{fill:#3ddc84}75%,100%{fill:#ffb347}}
 @keyframes ring{0%,29%{opacity:0;transform:scale(.6)}31%{opacity:.9;transform:scale(.9)}44%{opacity:0;transform:scale(2.6)}100%{opacity:0;transform:scale(2.6)}}
-@media(prefers-reduced-motion:reduce){.rd .card{animation:none;transform:translateY(58px)}.rd .led{animation:none;fill:#3ddc84}.rd .ring{animation:none}}
+@media(prefers-reduced-motion:reduce){.rd .card{animation:none;transform:none}.rd .led{animation:none;fill:#3ddc84}.rd .ring{animation:none}}
 .buy{padding:40px 0 8px;text-align:center}
-h2{font-size:clamp(30px,5vw,48px);line-height:1.08;letter-spacing:-.035em;margin:0 0 26px;font-weight:800}
+h2{font-size:clamp(26px,4vw,38px);line-height:1.1;letter-spacing:-.03em;margin:0 0 22px;font-weight:800}
 /* one button per shop; replace the href of a button with a direct link to the product */
 .shops{list-style:none;margin:0;padding:0;display:flex;flex-wrap:wrap;justify-content:center;gap:12px}
 .shops a{display:inline-flex;align-items:center;gap:10px;min-height:52px;padding:0 24px;border:1.5px solid var(--ink);border-radius:999px;font-weight:700;font-size:18px;text-decoration:none;transition:background .2s,color .2s}
@@ -84,31 +84,44 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 28px;justify-content:space-bet
 </div>
 
 <header class="hero"><div class="wrap">
-  <h1>Reader</h1>
+  <h1 class="sr">Reader</h1>
   <p class="lead" id="lead">Reader — небольшой USB-считыватель смарт-карт. Вы вставляете в него ID-карту, и Super Čelik читает чип. Берите модель с USB-C и пометкой CCID.</p>
-  <div class="stage"><svg class="rd" viewBox="0 -58 360 378" aria-hidden="true" focusable="false">
+  <div class="stage"><svg class="rd" viewBox="0 0 576 289" aria-hidden="true" focusable="false">
  <defs>
-  <linearGradient id="bd" x1="0" y1="0" x2="1" y2="1"><stop offset="0" style="stop-color:var(--d1)"/><stop offset="1" style="stop-color:var(--d2)"/></linearGradient>
-  <linearGradient id="fc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e4eaf3"/></linearGradient>
-  <linearGradient id="gd" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0cf6e"/><stop offset="1" stop-color="#c79a2c"/></linearGradient>
+  <linearGradient id="cv" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#dcd9d2"/><stop offset="1" stop-color="#bdb9b1"/></linearGradient>
+  <linearGradient id="fc" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e3eaf4"/></linearGradient>
+  <linearGradient id="gd" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f3d77a"/><stop offset="1" stop-color="#c79a2c"/></linearGradient>
+  <clipPath id="cc"><rect x="142" y="20" width="160" height="100" rx="9"/></clipPath>
+  <path id="slab" d="M26 0H204a26 26 0 0 1 26 26V114a26 26 0 0 1-26 26H26A26 26 0 0 1 0 114V26A26 26 0 0 1 26 0Z"/>
  </defs>
- <ellipse cx="180" cy="306" rx="96" ry="9" fill="#000" style="fill-opacity:var(--sh)"/>
- <rect x="171" y="250" width="18" height="46" rx="6" style="fill:var(--cab)"/>
- <rect x="162" y="288" width="36" height="22" rx="8" style="fill:var(--plug)"/><rect x="170" y="296" width="20" height="6" rx="3" style="fill:var(--bg);fill-opacity:.85"/>
- <g class="card">
-  <rect x="100" y="-12" width="160" height="100" rx="11" fill="url(#fc)" style="stroke:var(--cl)"/>
-  <path d="M100 5a11 11 0 0 1 11-11h138a11 11 0 0 1 11 11v9H100z" fill="#C6363C"/>
-  <rect x="100" y="8" width="160" height="6" fill="#0C4076"/>
-  <rect x="116" y="26" width="34" height="42" rx="5" fill="#cfdcee"/><circle cx="133" cy="40" r="7" fill="#8aa3c6"/><path d="M121 64c2-9 20-9 24 0z" fill="#8aa3c6"/>
-  <rect x="162" y="30" width="78" height="6" rx="3" fill="#b9c6da"/><rect x="162" y="44" width="58" height="6" rx="3" fill="#cfd8e6"/><rect x="162" y="58" width="68" height="6" rx="3" fill="#cfd8e6"/>
-  <rect x="116" y="72" width="30" height="22" rx="5" fill="url(#gd)"/><path d="M116 83h30M131 72v22" stroke="#9a7416" stroke-width="1" fill="none" opacity=".55"/>
+ <ellipse cx="219" cy="198" rx="140" ry="9" fill="#000" style="fill-opacity:var(--sh)"/>
+ <!-- thickness of the slab -->
+ <g transform="translate(0 11)"><g transform="matrix(0.9 0.28 -0.42 0.6 176.0 56.8)"><use href="#slab" fill="#8f8b83"/></g></g>
+ <g transform="matrix(0.9 0.28 -0.42 0.6 176.0 56.8)">
+  <!-- flat ribbon cable going up and away at the back -->
+  <path d="M2 66C-34 66 -52 48 -84 30" fill="none" stroke="#a9a59d" stroke-width="15" stroke-linecap="round"/>
+  <path d="M2 66C-34 66 -52 48 -84 30" fill="none" stroke="#d7d4cd" stroke-width="11" stroke-linecap="round"/>
+  <g transform="translate(-84 30) rotate(-33)"><rect x="-26" y="-9" width="30" height="18" rx="5" fill="#cfd3dc" stroke="#9aa1ae"/><rect x="-22" y="-3" width="20" height="6" rx="3" fill="#3a404c"/></g>
+  <use href="#slab" fill="#c5c1b9" stroke="#a39f97"/>
+  <!-- the slot -->
+  <rect x="208" y="16" width="26" height="108" rx="8" fill="#47443e"/>
+  <!-- the card: chip end first, chip up; it slides under the cover -->
+  <g class="card">
+   <g clip-path="url(#cc)">
+    <rect x="142" y="20" width="160" height="100" rx="9" fill="url(#fc)"/>
+    <rect x="142" y="20" width="160" height="4" fill="#C6363C"/><rect x="142" y="24" width="160" height="4" fill="#0C4076"/>
+    <rect x="156" y="56" width="34" height="28" rx="5" fill="url(#gd)"/><path d="M156 70h34M173 56v28M156 63h34M156 77h34" stroke="#9a7416" stroke-width=".8" fill="none" opacity=".5"/>
+    <rect x="232" y="44" width="32" height="46" rx="4" fill="#cfdcee"/><circle cx="248" cy="58" r="7" fill="#8aa3c6"/><path d="M236 86c3-12 21-12 25 0z" fill="#8aa3c6"/>
+    <rect x="272" y="46" width="22" height="5" rx="2.5" fill="#b9c6da"/><rect x="272" y="58" width="16" height="5" rx="2.5" fill="#cfd8e6"/><rect x="272" y="70" width="20" height="5" rx="2.5" fill="#cfd8e6"/>
+   </g>
+   <rect x="142" y="20" width="160" height="100" rx="9" fill="none" style="stroke:var(--cl)"/>
+  </g>
+  <!-- cover plate with the scoop at the slot -->
+  <path d="M30 6H196a20 20 0 0 1 20 20V16Q190 70 216 124V114a20 20 0 0 1-20 20H30A24 24 0 0 1 6 110V30A24 24 0 0 1 30 6Z" fill="url(#cv)" stroke="#a39f97" stroke-width="1"/>
+  <path d="M30 6H196a20 20 0 0 1 20 20V16Q190 70 216 124V114" fill="none" stroke="#fff" stroke-opacity=".45" stroke-width="1.5"/>
+  <circle class="ring" cx="40" cy="34" r="6" fill="#3ddc84"/>
+  <circle class="led" cx="40" cy="34" r="4.5" fill="#ffb347" stroke="#fff" stroke-opacity=".7" stroke-width="1.5"/>
  </g>
- <rect x="70" y="102" width="220" height="160" rx="30" fill="url(#bd)"/>
- <rect x="70" y="102" width="220" height="14" rx="7" fill="#fff" opacity=".16"/>
- <rect x="96" y="108" width="168" height="9" rx="4.5" fill="#0d1018"/>
- <circle class="ring" cx="180" cy="166" r="9" fill="#3ddc84"/>
- <circle class="led" cx="180" cy="166" r="7" fill="#ffb347" stroke="#fff" stroke-opacity=".6" stroke-width="2"/>
- <rect x="130" y="206" width="100" height="6" rx="3" style="fill:var(--dr)" opacity=".5"/><rect x="146" y="222" width="68" height="6" rx="3" style="fill:var(--dr)" opacity=".35"/>
 </svg></div>
 </div></header>
 
