@@ -8,7 +8,7 @@
     <AssemblyName>SuperCelik</AssemblyName>
     <Product>Super Čelik</Product>
     <RootNamespace>SerbiaID</RootNamespace>
-    <Version>0.9.9</Version>
+    <Version>0.9.10</Version>
     <AvaloniaUseCompiledBindingsByDefault>true</AvaloniaUseCompiledBindingsByDefault>
     <!-- no libicu dependency: the UI language comes from LANG, see MainWindow -->
     <InvariantGlobalization>true</InvariantGlobalization>
