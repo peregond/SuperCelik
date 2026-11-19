@@ -162,7 +162,6 @@ final class PhoneModel: ObservableObject {
                 return (p, status)
             }
             personal = p; signatureStatus = status; revealAll = false; problem = nil; demoActive = false
-            touch()
             return true
         } catch { show(error); return false }
     }
@@ -327,19 +326,6 @@ final class PhoneModel: ObservableObject {
 
     /// Names of signature files made in this run (their names depend on the signed file).
     private var exportedNames = Set<String>()
-
-    // MARK: - Auto-hide after inactivity (Settings: minutes, 0 = never)
-
-    private(set) var lastActivity = Date()
-    func touch() { lastActivity = Date() }
-
-    func hideIfIdle(minutes: Int) {
-        guard minutes > 0, !demoActive, !busy, personal != nil || token != nil else { return }
-        if Date().timeIntervalSince(lastActivity) >= Double(minutes) * 60 {
-            clear()
-            problem = nil
-        }
-    }
 
     /// Removes exported files (PDF / certificates / photo / JSON / signatures) from the temporary folder.
     func removeTemporaryFiles() {

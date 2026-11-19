@@ -14,13 +14,6 @@ struct PhoneRootView: View {
         tabs
             .minimizingTabBar()
             .task { await model.watchReader() }
-            .task {      // privacy: hide the data after the idle time from Settings (like on the Mac)
-                while !Task.isCancelled {
-                    model.hideIfIdle(minutes: Prefs.shared.autoHideMinutes)
-                    try? await Task.sleep(nanoseconds: 15_000_000_000)
-                }
-            }
-            .simultaneousGesture(DragGesture(minimumDistance: 0).onChanged { _ in model.touch() })
             .onChange(of: tab) { model.activeTab = $0 }
             .onChange(of: quick.pending) { _ in Task { await runQuickAction() } }
             .task { await runQuickAction() }       // app was started by the action
@@ -734,12 +727,6 @@ struct SettingsTab: View {
                 Section(loc.t(.setPrivacy)) {
                     Toggle(loc.t(.setMask), isOn: $prefs.maskSensitive)
                     Toggle(loc.t(.setPrintJmbg), isOn: $prefs.printJmbg)
-                    Stepper(value: $prefs.autoHideMinutes, in: 0...240) {
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(loc.t(.setAutoHide)).font(.subheadline)
-                            Text("\(prefs.autoHideMinutes)").monospacedDigit().foregroundStyle(.secondary)
-                        }
-                    }
                 }
                 .listRowBackground(Rectangle().fill(.regularMaterial))
                 Section {
