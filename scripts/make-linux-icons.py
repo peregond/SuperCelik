@@ -8,9 +8,17 @@ import os, re, sys, xml.etree.ElementTree as ET
 
 def f(x): return ("%g" % float(x))
 
+def abs_start(d):
+    """Each element starts at the origin, so a leading relative moveto equals an absolute one; coordinate pairs that follow it
+    in the same command are relative linetos."""
+    m = re.match(r'^\s*m\s*(-?[\d.]+)[\s,]*(-?[\d.]+)(.*)$', d, re.S)
+    if not m: return d
+    rest = m.group(3)
+    return f"M{m.group(1)} {m.group(2)}" + (("l" + rest) if re.match(r'^[\s,]*[-\d.]', rest) else rest)
+
 def conv(el):
     t = el.tag.split('}')[-1]; a = el.attrib
-    if t == 'path': return a['d']
+    if t == 'path': return abs_start(a['d'])
     if t == 'circle':
         cx, cy, r = float(a['cx']), float(a['cy']), float(a['r'])
         return f"M{f(cx - r)} {f(cy)}a{f(r)} {f(r)} 0 1 0 {f(2 * r)} 0a{f(r)} {f(r)} 0 1 0 {f(-2 * r)} 0"
