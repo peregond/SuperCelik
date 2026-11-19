@@ -59,6 +59,7 @@ final class AppModel: ObservableObject {
         if args.contains("--shot") || args.contains("--page") {
             Prefs.shared.theme = (args.contains("--dark") || args.contains("--night")) ? "dark" : "light"
             loadDemo(problem: args.contains("--problem"))
+            if args.contains("--preview") { showPreview = true }   // print preview sheet, for the PDF screenshot
             if let i = args.firstIndex(of: "--state"), i + 1 < args.count { applyShotState(args[i + 1]) }
         } else {
             initialRefresh = Task { await refreshAsync() }
