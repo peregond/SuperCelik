@@ -162,6 +162,7 @@ final class PhoneModel: ObservableObject {
                 return (p, status)
             }
             personal = p; signatureStatus = status; revealAll = false; problem = nil; demoActive = false
+            touch()
             return true
         } catch { show(error); return false }
     }
@@ -202,18 +203,47 @@ final class PhoneModel: ObservableObject {
             }
             pinAlert = loc.t(unblock ? .pinUnblocked : .pinChanged)
             return true
-        } catch CardError.pinWrong(let n) {
-            pinAlert = loc.t(.pinWrongMsg) + "\(n)"
-        } catch CardError.pinBlocked {
-            pinAlert = loc.t(.pinBlockedMsg)
-        } catch NFCProblem.noReader {
-            pinAlert = loc.t(.emptyNoReaderT)
-        } catch NFCProblem.noCard {
-            pinAlert = loc.t(.emptyNoCardT)
         } catch {
-            pinAlert = error.localizedDescription
+            pinAlert = pinMessage(for: error)
         }
         return false
+    }
+
+    /// The text shown for a failed PIN / PUK / signing operation.
+    private func pinMessage(for error: Error) -> String {
+        switch error {
+        case CardError.pinWrong(let n): return loc.t(.pinWrongMsg) + "\(n)"
+        case CardError.pinBlocked: return loc.t(.pinBlockedMsg)
+        case NFCProblem.noReader: return loc.t(.emptyNoReaderT)
+        case NFCProblem.noCard: return loc.t(.emptyNoCardT)
+        default: return error.localizedDescription
+        }
+    }
+
+    /// Detached CMS signature (.p7s, SHA-256, token key) over the given file contents. Returns the file to share, or nil
+    /// (the reason is in `pinAlert`). A wrong PIN burns a card try: one attempt, never retried.
+    func signFile(data: Data, name: String, pin: String) async -> URL? {
+        guard Self.validPin(pin) else { pinAlert = loc.t(.pinInvalid); return nil }
+        guard !busy else { return nil }
+        busy = true
+        defer { busy = false }
+        let noCert = loc.t(.signNeedCert)
+        do {
+            let p7s = try await run(autoSource) { card -> Data in
+                let tok = try card.readToken()
+                guard let cert = tok.certificates.first else { throw CardError.signature(noCert) }
+                return try CMSBuilder.signDetached(data: data, certDer: cert.der) { di in
+                    try card.tokenSign(pin: pin, keyFile: EidCard.defaultSignKeyFile, digestInfo: di)
+                }
+            }
+            let url = temporaryFile(p7s, name: name + ".p7s")
+            exportedNames.insert(name + ".p7s")
+            pinAlert = nil
+            return url
+        } catch {
+            pinAlert = pinMessage(for: error)
+            return nil
+        }
     }
 
     func clear() {
@@ -280,10 +310,41 @@ final class PhoneModel: ObservableObject {
         UIPasteboard.general.string = p.rows().map { "\(loc.t($0.label)): \($0.value)" }.joined(separator: "\n")
     }
 
-    /// Removes exported files (PDF / certificates) from the temporary folder.
+    /// The photo as a JPEG file for the share sheet.
+    func photoFile() -> URL? {
+        guard let d = personal?.portrait else { return nil }
+        return temporaryFile(d, name: "photo.jpg")
+    }
+
+    /// The card data as a JSON file (same content as the Mac export).
+    func jsonFile() -> URL? {
+        guard let p = personal else { return nil }
+        var obj: [String: String] = ["cardType": String(describing: p.cardType)]
+        for r in p.rows() { obj[r.id] = r.value }
+        guard let data = try? JSONSerialization.data(withJSONObject: obj, options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]) else { return nil }
+        return temporaryFile(data, name: "SuperCelik.json")
+    }
+
+    /// Names of signature files made in this run (their names depend on the signed file).
+    private var exportedNames = Set<String>()
+
+    // MARK: - Auto-hide after inactivity (Settings: minutes, 0 = never)
+
+    private(set) var lastActivity = Date()
+    func touch() { lastActivity = Date() }
+
+    func hideIfIdle(minutes: Int) {
+        guard minutes > 0, !demoActive, !busy, personal != nil || token != nil else { return }
+        if Date().timeIntervalSince(lastActivity) >= Double(minutes) * 60 {
+            clear()
+            problem = nil
+        }
+    }
+
+    /// Removes exported files (PDF / certificates / photo / JSON / signatures) from the temporary folder.
     func removeTemporaryFiles() {
         let dir = FileManager.default.temporaryDirectory
-        for name in ["SuperCelik.pdf", "certificate.cer"] {
+        for name in ["SuperCelik.pdf", "certificate.cer", "photo.jpg", "SuperCelik.json"] + Array(exportedNames) {
             try? FileManager.default.removeItem(at: dir.appendingPathComponent(name))
         }
     }

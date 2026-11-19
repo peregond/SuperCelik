@@ -1,6 +1,7 @@
 import SwiftUI
 import UIKit
 import SafariServices
+import UniformTypeIdentifiers
 
 struct PhoneRootView: View {
     @EnvironmentObject var loc: Loc
@@ -13,6 +14,13 @@ struct PhoneRootView: View {
         tabs
             .minimizingTabBar()
             .task { await model.watchReader() }
+            .task {      // privacy: hide the data after the idle time from Settings (like on the Mac)
+                while !Task.isCancelled {
+                    model.hideIfIdle(minutes: Prefs.shared.autoHideMinutes)
+                    try? await Task.sleep(nanoseconds: 15_000_000_000)
+                }
+            }
+            .simultaneousGesture(DragGesture(minimumDistance: 0).onChanged { _ in model.touch() })
             .onChange(of: tab) { model.activeTab = $0 }
             .onChange(of: quick.pending) { _ in Task { await runQuickAction() } }
             .task { await runQuickAction() }       // app was started by the action
@@ -365,6 +373,16 @@ struct CardTab: View {
             Button { model.copyAll() } label: {
                 Label(loc.t(.copyAll), systemImage: "doc.on.doc").frame(maxWidth: .infinity).padding(.vertical, 6)
             }.glassButton(prominent: false)
+            HStack(spacing: 10) {
+                if model.personal?.portrait != nil {
+                    Button { if let url = model.photoFile() { share = ShareItem(url: url) } } label: {
+                        Label(loc.t(.savePhoto), systemImage: "photo").lineLimit(1).minimumScaleFactor(0.8).frame(maxWidth: .infinity).padding(.vertical, 6)
+                    }.glassButton(prominent: false)
+                }
+                Button { if let url = model.jsonFile() { share = ShareItem(url: url) } } label: {
+                    Label(loc.t(.exportJson), systemImage: "curlybraces").lineLimit(1).minimumScaleFactor(0.8).frame(maxWidth: .infinity).padding(.vertical, 6)
+                }.glassButton(prominent: false)
+            }
         }
     }
 
@@ -461,6 +479,8 @@ struct TokenTab: View {
     @State private var pinMode: PinMode?
     @State private var showLogin = false
     @State private var askLogin = false
+    @State private var importing = false
+    @State private var signing: PendingSign?
 
     var body: some View {
         NavigationStack {
@@ -483,6 +503,7 @@ struct TokenTab: View {
                 Section {
                     Button { pinMode = .change } label: { Label(loc.t(.changePin), systemImage: "lock.rotation") }
                     Button { pinMode = .unblock } label: { Label(loc.t(.unblockPin), systemImage: "lock.open") }
+                    Button { importing = true } label: { Label(loc.t(.signFile), systemImage: "signature") }
                 }
                 .disabled(model.busy || model.readerState != .cardReady)
                 .listRowBackground(Rectangle().fill(.regularMaterial))
@@ -522,6 +543,18 @@ struct TokenTab: View {
                 if model.loginRequested { model.loginRequested = false; if model.driverAttached { showLogin = true } else { askLogin = true } }
             }
             .sheet(item: $pinMode) { PinSheet(mode: $0) }
+            .fileImporter(isPresented: $importing, allowedContentTypes: [.item]) { result in
+                guard case .success(let url) = result else { return }
+                let scoped = url.startAccessingSecurityScopedResource()
+                defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+                if let data = try? Data(contentsOf: url) { signing = PendingSign(name: url.lastPathComponent, data: data) }
+            }
+            .sheet(item: $signing) { pending in
+                SignSheet(file: pending) { url in
+                    // the signing sheet closes first, then the share sheet offers to save the .p7s
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { share = ShareItem(url: url) }
+                }
+            }
             .alert(loc.t(.loginEuprava), isPresented: $askLogin) {
                 Button(loc.t(.loginEuprava)) { showLogin = true }
                 Button(loc.t(.cancel), role: .cancel) {}
@@ -621,6 +654,54 @@ struct PinSheet: View {
     }
 }
 
+// MARK: - Sign a file
+
+struct PendingSign: Identifiable {
+    let id = UUID()
+    let name: String
+    let data: Data
+}
+
+/// Asks for the token PIN and makes a detached CMS signature (.p7s) over the chosen file.
+struct SignSheet: View {
+    @EnvironmentObject var loc: Loc
+    @EnvironmentObject var model: PhoneModel
+    @Environment(\.dismiss) private var dismiss
+    let file: PendingSign
+    let onSigned: (URL) -> Void
+    @State private var pin = ""
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    LabeledContent("File", value: file.name)
+                    SecureField(loc.t(.currentPin), text: $pin)
+                } footer: { Text(loc.t(.pinWarn)) }
+                if let msg = model.pinAlert {
+                    Section { Text(msg).foregroundStyle(.orange) }
+                }
+            }
+            .keyboardType(.numberPad)
+            .navigationTitle(loc.t(.signFile))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button(loc.t(.cancel)) { model.pinAlert = nil; dismiss() } }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(loc.t(.ok)) {
+                        Task {
+                            if let url = await model.signFile(data: file.data, name: file.name, pin: pin) { dismiss(); onSigned(url) }
+                        }
+                    }
+                    .disabled(!PhoneModel.validPin(pin) || model.busy || model.readerState != .cardReady)
+                }
+            }
+        }
+        .onAppear { model.pinAlert = nil }
+        .presentationDetents([.medium])
+    }
+}
+
 // MARK: - Settings / about
 
 struct SettingsTab: View {
@@ -653,6 +734,12 @@ struct SettingsTab: View {
                 Section(loc.t(.setPrivacy)) {
                     Toggle(loc.t(.setMask), isOn: $prefs.maskSensitive)
                     Toggle(loc.t(.setPrintJmbg), isOn: $prefs.printJmbg)
+                    Stepper(value: $prefs.autoHideMinutes, in: 0...240) {
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(loc.t(.setAutoHide)).font(.subheadline)
+                            Text("\(prefs.autoHideMinutes)").monospacedDigit().foregroundStyle(.secondary)
+                        }
+                    }
                 }
                 .listRowBackground(Rectangle().fill(.regularMaterial))
                 Section {

@@ -12,6 +12,8 @@ Aplikacija prati čitač: kada je čitač povezan i kartica ubačena, sama poči
 ## Token: PIN, PUK, potpis
 Na kartici „Token“ postoje „Promeni PIN“ i „Otključaj preko PUK-a“. Obe funkcije **nisu proverene na pravom tokenu** (aplikacija to kaže u svom upozorenju); pogrešan PUK troši pokušaj.
 
+Na kartici „Token“ postoji i „Potpiši fajl“: izaberite fajl, unesite PIN, a aplikacija pravi odvojeni CMS potpis (`.p7s`, SHA-256) koji čuvate preko menija „Podeli“. Na kartici „Kartica“ možete još da sačuvate fotografiju i izvezete podatke kao JSON (preko „Podeli“), a u podešavanjima postoji „Sakrij podatke kada je neaktivno“ (minuti, 0 = nikad), kao na Mac-u. Potpis na pravom tokenu takođe **nije proveren**; pogrešan PIN troši pokušaj.
+
 ## Prijava na eUprava karticom
 Na kartici „Token“ postoji „Prijavi se na eUprava“. U iOS-u aplikacija ne može da prosledi ključ kartice Safari-ju, zato unutra postoji **proširenje-token CryptoTokenKit** (`ios/TokenExtension`, drajver `SuperCelikTokenDriver`, class id `app.supercelik.token`): dok su čitač i kartica povezani, sam iOS nudi Safari-ju sertifikat kartice i traži PIN u sistemskom prozoru. Aplikacija otvara `https://euprava.gov.rs/prijava` u Safari prozoru preko celog ekrana. Proširenju je potrebna grupa lanca ključeva `$(AppIdentifierPrefix)com.apple.token`. Prozor za PIN crta iOS: ikonu i tastaturu u njemu aplikacija ne kontroliše. Provereno na pravom iPhone-u sa pravom karticom. Ako drajver nije povezan (na primer odmah posle ponovne instalacije), aplikacija upozorava pre otvaranja stranice.
 

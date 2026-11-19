@@ -12,6 +12,8 @@ The app watches the reader: when a reader is connected and a card is inserted, i
 ## Token: PIN, PUK, signing
 The “Token” tab has “Change PIN” and “Unblock with PUK”. Both are **not verified on a real token** (the app says so in its own warning); a wrong PUK costs an attempt.
 
+The “Token” tab also has “Sign file”: pick a file, enter the PIN, and the app makes a detached CMS signature (`.p7s`, SHA-256) that you save through the share sheet. On the “Card” tab you can also save the photo and export the data as JSON (share sheet), and Settings has “Hide data when idle” (minutes, 0 = never), as on the Mac. Signing is **not verified on a real token** either; a wrong PIN costs an attempt.
+
 ## Sign-in to eUprava with the card
 The “Token” tab has “Sign in to eUprava”. iOS has no way for an app to hand a card key to Safari, so the app contains a **CryptoTokenKit token extension** (`ios/TokenExtension`, driver `SuperCelikTokenDriver`, class id `app.supercelik.token`): while the reader and the card are connected, iOS itself offers the card certificate to Safari and asks for the PIN in a system window. The app opens `https://euprava.gov.rs/prijava` in a full-screen Safari view. The extension needs the keychain group `$(AppIdentifierPrefix)com.apple.token`. The PIN window is drawn by iOS: its icon and keyboard are not controlled by the app. Verified on a real iPhone with a real card. If the driver is not attached (for example right after a reinstall), the app warns before opening the page.
 
