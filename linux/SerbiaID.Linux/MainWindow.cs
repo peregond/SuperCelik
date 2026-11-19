@@ -259,9 +259,11 @@ public sealed class MainWindow : Window
         _btnSignFile = Ui.Btn(""); _btnSignFile.Click += async (_, _) => await SignFile();
         _btnLoginEu = Ui.Btn(""); _btnLoginEu.Click += (_, _) => OpenUrl(EuLoginUrl);      // just opens the sign-in page in the default browser
         _lblTokenInfo = Ui.Label("", 13, false, "MutedBrush"); _lblTokenInfo.VerticalAlignment = VerticalAlignment.Center;
-        var bar = new WrapPanel { Margin = new Thickness(0, 0, 0, 16) };
-        foreach (var b in new[] { _btnReadToken, _btnChangePin, _btnUnblockPin, _btnSignFile, _btnLoginEu }) { b.Margin = new Thickness(0, 0, 10, 0); bar.Children.Add(b); }
-        _lblTokenInfo.Margin = new Thickness(4, 0, 0, 0); bar.Children.Add(_lblTokenInfo);
+        // the buttons wrap with a gap in a narrow window; the token name sits on its own line under them
+        var buttons = new WrapPanel();
+        foreach (var b in new[] { _btnReadToken, _btnChangePin, _btnUnblockPin, _btnSignFile, _btnLoginEu }) { b.Margin = new Thickness(0, 0, 10, 10); buttons.Children.Add(b); }
+        _lblTokenInfo.VerticalAlignment = VerticalAlignment.Center; _lblTokenInfo.Margin = new Thickness(2, 0, 0, 12);
+        var bar = new StackPanel { Margin = new Thickness(0, 0, 0, 4), Children = { buttons, _lblTokenInfo } };
         _lblPinNote = Ui.Label("", 13, false, "MutedBrush", true); _lblPinNote.Margin = new Thickness(2, 14, 0, 0);
         _lblCerts = Ui.Label("", 15, true); _lblCerts.FontWeight = FontWeight.Bold; _lblCerts.Margin = new Thickness(0, 0, 0, 10);
         _certList = new StackPanel();
