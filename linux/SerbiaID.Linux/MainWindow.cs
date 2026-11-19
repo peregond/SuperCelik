@@ -235,7 +235,9 @@ public sealed class MainWindow : Window
         _lblDocType = Ui.Label("", 13, false, "MutedBrush"); _lblDocType.TextAlignment = TextAlignment.Center;
         _pillExpiry = Ui.Pill(new TextBlock()); _pillExpiry.Margin = new Thickness(0, 12, 0, 0);
         _pillSig = Ui.Pill(new TextBlock()); _pillSig.Margin = new Thickness(0, 8, 0, 0);
-        var side = Ui.Card(new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, Children = { _portraitFrame, _lblName, _lblDocType, _pillExpiry, _pillSig } });
+        // the pills fill the column (a fixed width), so a long text wraps inside the pill instead of being cut off
+        _pillExpiry.HorizontalAlignment = _pillSig.HorizontalAlignment = HorizontalAlignment.Stretch;
+        var side = Ui.Card(new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, Width = 236, Children = { _portraitFrame, _lblName, _lblDocType, _pillExpiry, _pillSig } });
         side.VerticalAlignment = VerticalAlignment.Top;
         _fields = new WrapPanel();
         var data = Ui.Card(new ScrollViewer { Content = _fields, VerticalScrollBarVisibility = ScrollBarVisibility.Auto });
