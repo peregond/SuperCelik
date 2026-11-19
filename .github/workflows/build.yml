@@ -168,6 +168,8 @@ jobs:
         run: |
           dpkg-deb -I dist/SuperCelik-*-linux-amd64.deb
           dpkg-deb -c dist/SuperCelik-*-linux-amd64.deb | grep -E "opt/supercelik/SuperCelik$|opt/supercelik/CA/MUPRootCA4.crt|supercelik.desktop"
+          dpkg-deb -c dist/SuperCelik-*-linux-amd64.deb | grep -E "opt/supercelik/pkcs11/libsrb-id-pkcs11.so$"
+          dpkg-deb -I dist/SuperCelik-*-linux-amd64.deb | grep -E "Depends:.*pcscd.*libccid.*libnss3-tools"
       - uses: actions/upload-artifact@v4
         with:
           name: SuperCelik-linux

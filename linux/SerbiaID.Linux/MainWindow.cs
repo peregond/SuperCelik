@@ -42,7 +42,8 @@ public sealed class MainWindow : Window
     private TextBox _txtAutoHide;
     private ProgressBar _busyBar;
     private Button _btnRefresh, _btnRead, _btnReadBig, _btnPrint, _btnPdf, _btnVerify, _btnEye, _btnMore, _btnProblemClose;
-    private TextBlock _lblBeta; private Button _btnFeedback;
+    private TextBlock _lblBeta; private Button _btnFeedback, _btnLoginEu, _btnSetupBrowser;
+    private const string EuLoginUrl = "https://euprava.gov.rs/prijava";
     private const string FeedbackUrl = "https://github.com/peregond/SuperCelik/issues/new";
     private Button _btnReadToken, _btnChangePin, _btnUnblockPin, _btnSignFile, _btnCheckUpdates, _btnUpdate;
     private StackPanel _emptyState, _certList;
@@ -86,7 +87,11 @@ public sealed class MainWindow : Window
         AddHandler(PointerMovedEvent, (_, _) => _lastActivity = DateTime.Now, Avalonia.Interactivity.RoutingStrategies.Tunnel);
         AddHandler(KeyDownEvent, (_, _) => _lastActivity = DateTime.Now, Avalonia.Interactivity.RoutingStrategies.Tunnel);
         AddHandler(PointerPressedEvent, (_, _) => _lastActivity = DateTime.Now, Avalonia.Interactivity.RoutingStrategies.Tunnel);
-        Opened += async (_, _) => { if (_cfg.AutoUpdate) await AutoCheckUpdateAsync(); };
+        Opened += async (_, _) =>
+        {
+            if (!_demo && BrowserSetup.HasModule && !_cfg.BrowserSetupAsked) await OfferBrowserSetup();
+            if (_cfg.AutoUpdate) await AutoCheckUpdateAsync();
+        };
     }
 
     protected override void OnClosing(WindowClosingEventArgs e)
@@ -152,7 +157,7 @@ public sealed class MainWindow : Window
         _lblReader.VerticalAlignment = VerticalAlignment.Center; _lblReader.Margin = new Thickness(0, 0, 8, 0);
         _cmbReader = new ComboBox { Width = 260, Margin = new Thickness(0, 0, 8, 0), VerticalAlignment = VerticalAlignment.Center, IsVisible = false };
         _cmbReader.SelectionChanged += (_, _) => { if (!_loading) Refresh(); };
-        _btnRefresh = Ui.Btn("⟳", "icon"); _btnRefresh.FontSize = 18; _btnRefresh.Click += (_, _) => Refresh();
+        _btnRefresh = Ui.Btn("", "icon"); Ui.SetBtn(_btnRefresh, "rotate-cw", null); _btnRefresh.Click += (_, _) => Refresh();
         var right = new StackPanel { Orientation = Orientation.Horizontal, HorizontalAlignment = HorizontalAlignment.Right, VerticalAlignment = VerticalAlignment.Center, Children = { _lblReader, _cmbReader, _btnRefresh } };
         var hdr = new DockPanel { Children = { right } };
         DockPanel.SetDock(left, Dock.Left); hdr.Children.Insert(0, left);
@@ -167,7 +172,7 @@ public sealed class MainWindow : Window
         _lblProblemTitle = Ui.Label("", 13, true); _lblProblemTitle.FontWeight = FontWeight.Bold;
         _lblProblemHint = Ui.Label("", 13, false, "TextBrush", true); _lblProblemHint.Margin = new Thickness(0, 2, 0, 0);
         _lblProblemTech = Ui.Label("", 11, false, "MutedBrush", true); _lblProblemTech.Margin = new Thickness(0, 4, 0, 0);
-        _btnProblemClose = Ui.Btn("✕", "icon"); _btnProblemClose.VerticalAlignment = VerticalAlignment.Top; _btnProblemClose.Click += (_, _) => HideProblem();
+        _btnProblemClose = Ui.Btn("", "icon"); Ui.SetBtn(_btnProblemClose, "x", null); _btnProblemClose.VerticalAlignment = VerticalAlignment.Top; _btnProblemClose.Click += (_, _) => HideProblem();
         var pb = new DockPanel();
         DockPanel.SetDock(_btnProblemClose, Dock.Right); pb.Children.Add(_btnProblemClose);
         pb.Children.Add(new StackPanel { Children = { _lblProblemTitle, _lblProblemHint, _lblProblemTech } });
@@ -234,7 +239,9 @@ public sealed class MainWindow : Window
         _lblDocType = Ui.Label("", 13, false, "MutedBrush"); _lblDocType.TextAlignment = TextAlignment.Center;
         _pillExpiry = Ui.Pill(new TextBlock()); _pillExpiry.Margin = new Thickness(0, 12, 0, 0);
         _pillSig = Ui.Pill(new TextBlock()); _pillSig.Margin = new Thickness(0, 8, 0, 0);
-        var side = Ui.Card(new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, Children = { _portraitFrame, _lblName, _lblDocType, _pillExpiry, _pillSig } });
+        // the pills fill the column (a fixed width), so a long text wraps inside the pill instead of being cut off
+        _pillExpiry.HorizontalAlignment = _pillSig.HorizontalAlignment = HorizontalAlignment.Stretch;
+        var side = Ui.Card(new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, Width = 236, Children = { _portraitFrame, _lblName, _lblDocType, _pillExpiry, _pillSig } });
         side.VerticalAlignment = VerticalAlignment.Top;
         _fields = new WrapPanel();
         var data = Ui.Card(new ScrollViewer { Content = _fields, VerticalScrollBarVisibility = ScrollBarVisibility.Auto });
@@ -254,10 +261,14 @@ public sealed class MainWindow : Window
         _btnChangePin = Ui.Btn(""); _btnChangePin.Click += async (_, _) => await ChangePin();
         _btnUnblockPin = Ui.Btn(""); _btnUnblockPin.Click += async (_, _) => await UnblockPin();
         _btnSignFile = Ui.Btn(""); _btnSignFile.Click += async (_, _) => await SignFile();
+        _btnLoginEu = Ui.Btn(""); _btnLoginEu.Click += async (_, _) => await LoginEu();
+        _btnSetupBrowser = Ui.Btn(""); _btnSetupBrowser.IsVisible = BrowserSetup.HasModule; _btnSetupBrowser.Click += async (_, _) => await SetupBrowser(true);
         _lblTokenInfo = Ui.Label("", 13, false, "MutedBrush"); _lblTokenInfo.VerticalAlignment = VerticalAlignment.Center;
-        var bar = new WrapPanel { Margin = new Thickness(0, 0, 0, 16) };
-        foreach (var b in new[] { _btnReadToken, _btnChangePin, _btnUnblockPin, _btnSignFile }) { b.Margin = new Thickness(0, 0, 10, 0); bar.Children.Add(b); }
-        _lblTokenInfo.Margin = new Thickness(4, 0, 0, 0); bar.Children.Add(_lblTokenInfo);
+        // the buttons wrap with a gap in a narrow window; the token name sits on its own line under them
+        var buttons = new WrapPanel();
+        foreach (var b in new[] { _btnReadToken, _btnChangePin, _btnUnblockPin, _btnSignFile, _btnLoginEu, _btnSetupBrowser }) { b.Margin = new Thickness(0, 0, 10, 10); buttons.Children.Add(b); }
+        _lblTokenInfo.VerticalAlignment = VerticalAlignment.Center; _lblTokenInfo.Margin = new Thickness(2, 0, 0, 12);
+        var bar = new StackPanel { Margin = new Thickness(0, 0, 0, 4), Children = { buttons, _lblTokenInfo } };
         _lblPinNote = Ui.Label("", 13, false, "MutedBrush", true); _lblPinNote.Margin = new Thickness(2, 14, 0, 0);
         _lblCerts = Ui.Label("", 15, true); _lblCerts.FontWeight = FontWeight.Bold; _lblCerts.Margin = new Thickness(0, 0, 0, 10);
         _certList = new StackPanel();
@@ -346,14 +357,15 @@ public sealed class MainWindow : Window
         Title = Loc.T("appTitle") + " (beta)";
         _lblBrand.Text = Loc.T("appTitle"); _lblBrandSub.Text = Loc.T("brandSub") + " · beta";
         ToolTip.SetTip(_btnRefresh, Loc.T("refresh"));
-        _btnRead.Content = _btnReadBig.Content = Loc.T("readCard");
-        _btnPrint.Content = Loc.T("printCard"); _btnPdf.Content = Loc.T("savePdf"); _btnVerify.Content = Loc.T("verifySignature");
-        _btnMore.Content = Loc.T("more") + " ▾";
-        _btnReadToken.Content = Loc.T("readToken"); _btnChangePin.Content = Loc.T("changePin"); _btnUnblockPin.Content = Loc.T("unblockPin"); _btnSignFile.Content = Loc.T("signFile");
-        _btnCheckUpdates.Content = Loc.T("checkUpdates"); _btnUpdate.Content = Loc.T("updateNow");
+        Ui.SetBtn(_btnRead, "user-round", Loc.T("readCard")); Ui.SetBtn(_btnReadBig, "user-round", Loc.T("readCard"));
+        Ui.SetBtn(_btnPrint, "printer", Loc.T("printCard")); Ui.SetBtn(_btnPdf, "save", Loc.T("savePdf")); Ui.SetBtn(_btnVerify, "check", Loc.T("verifySignature"));
+        Ui.SetBtn(_btnMore, "ellipsis", Loc.T("more"));
+        Ui.SetBtn(_btnReadToken, "key-round", Loc.T("readToken")); Ui.SetBtn(_btnChangePin, "lock", Loc.T("changePin")); Ui.SetBtn(_btnUnblockPin, "lock-open", Loc.T("unblockPin")); Ui.SetBtn(_btnSignFile, "pen-line", Loc.T("signFile"));
+        Ui.SetBtn(_btnCheckUpdates, "refresh-cw", Loc.T("checkUpdates")); Ui.SetBtn(_btnUpdate, "download", Loc.T("updateNow"));
         _tabButtons[0].Content = Loc.T("tabPersonal"); _tabButtons[1].Content = Loc.T("tabToken"); _tabButtons[2].Content = Loc.T("tabSettings"); _tabButtons[3].Content = Loc.T("tabAbout");
-        _lblCerts.Text = Loc.T("certificates"); _lblPinNote.Text = Loc.T("pinNote");
-        _lblAboutTitle.Text = Loc.T("appTitle"); _lblAboutText.Text = Loc.T("aboutText"); _lblBeta.Text = "BETA · " + Loc.T("betaNote"); _btnFeedback.Content = Loc.T("betaReport"); _lblVersion.Text = $"{Loc.T("version")} {Updater.CurrentText}";
+        _lblCerts.Text = Loc.T("certificates"); _lblPinNote.Text = Loc.T("pinNote") + "\n" + Loc.T(BrowserSetup.HasModule ? "loginEupravaNote" : "loginEupravaNoteManual");
+        Ui.SetBtn(_btnLoginEu, "log-in", Loc.T("loginEuprava")); Ui.SetBtn(_btnSetupBrowser, "plug", Loc.T("setupBrowser"));
+        _lblAboutTitle.Text = Loc.T("appTitle"); _lblAboutText.Text = Loc.T("aboutText"); _lblBeta.Text = "BETA · " + Loc.T("betaNote"); Ui.SetBtn(_btnFeedback, "bug", Loc.T("betaReport")); _lblVersion.Text = $"{Loc.T("version")} {Updater.CurrentText}";
         _lblSetLang.Text = Loc.T("language"); _lblSetAppearance.Text = Loc.T("setAppearance"); _lblSetTheme.Text = Loc.T("setTheme");
         _lblSetPrivacy.Text = Loc.T("setPrivacy"); _lblSetBehavior.Text = Loc.T("setBehavior");
         _chkMask.Content = Loc.T("setMask"); _chkPrintJmbg.Content = Loc.T("setPrintJmbg");
@@ -414,6 +426,46 @@ public sealed class MainWindow : Window
     }
 
     private void ShowBanner(bool error) { _problemBanner.IsVisible = true; _hasError = error; UpdateCardLabel(); }
+
+    // ---- browser sign-in: connect the card module (PKCS#11) to Firefox and Chrome / Chromium ----
+
+    /// One-time offer on the first start (only if there is something to connect).
+    private async Task OfferBrowserSetup()
+    {
+        _cfg.BrowserSetupAsked = true; _cfg.Save();
+        if (await BrowserSetup.IsSetUp()) return;
+        if (await Dialogs.Confirm(this, Loc.T("setupBrowser"), Loc.T("setupAsk"), Loc.T("setupConnect"), Loc.T("setupLater"))) await SetupBrowser(false);
+    }
+
+    /// "Sign in to eUprava": offers to connect the module first if the browsers do not have it yet, then opens the page.
+    private async Task LoginEu()
+    {
+        try
+        {
+            if (!_demo && BrowserSetup.HasModule && !await BrowserSetup.IsSetUp()
+                && await Dialogs.Confirm(this, Loc.T("setupBrowser"), Loc.T("setupAsk"), Loc.T("setupConnect"), Loc.T("setupLater")))
+                await SetupBrowser(false);
+        }
+        catch { }
+        OpenUrl(EuLoginUrl);
+    }
+
+    private async Task SetupBrowser(bool report)
+    {
+        try
+        {
+            var r = await BrowserSetup.Setup();
+            switch (r.Kind)
+            {
+                case "done": ShowInfo(string.Format(Loc.T("setupDone"), string.Join(", ", r.Names))); break;
+                case "notool": ShowInfo(Loc.T("setupNoTool")); break;
+                case "none": ShowInfo(string.Format(Loc.T("setupNone"), r.Detail)); break;
+                case "nomodule": ShowInfo(Loc.T("loginEupravaNoteManual")); break;
+                default: ShowInfo(string.Format(Loc.T("setupFailed"), r.Detail)); break;
+            }
+        }
+        catch (Exception ex) { ShowInfo(string.Format(Loc.T("setupFailed"), ex.Message)); }
+    }
 
     private void ShowInfo(string text)
     {
@@ -564,7 +616,7 @@ public sealed class MainWindow : Window
     private void RenderPersonal()
     {
         _btnEye.IsVisible = _personal != null && _cfg.MaskSensitive;
-        _btnEye.Content = _revealAll ? Loc.T("hideValue") : Loc.T("reveal");
+        Ui.SetBtn(_btnEye, _revealAll ? "eye-off" : "eye", _revealAll ? Loc.T("hideValue") : Loc.T("reveal"));
         _fields.Children.Clear();
         _imgPortrait.Source = null;
         bool has = _personal != null;
@@ -580,23 +632,20 @@ public sealed class MainWindow : Window
         foreach (var (key, value) in Rows(_personal))
         {
             bool hidden = Sensitive.Contains(key) && _cfg.MaskSensitive && !_revealAll;
-            var copy = Ui.Btn("⧉", "icon"); copy.Opacity = 0; copy.VerticalAlignment = VerticalAlignment.Bottom;
+            var copy = Ui.Btn("", "icon"); Ui.SetBtn(copy, "copy", null); copy.Opacity = 0.55; copy.VerticalAlignment = VerticalAlignment.Bottom;
             ToolTip.SetTip(copy, Loc.T("copy"));
             var v = value;
-            copy.Click += async (_, _) => { try { await CopyText(v); copy.Content = "✔"; await Task.Delay(1000); copy.Content = "⧉"; } catch { } };
+            copy.Click += async (_, _) => { try { await CopyText(v); Ui.SetBtn(copy, "check", null); await Task.Delay(1000); Ui.SetBtn(copy, "copy", null); } catch { } };
             var text = new StackPanel();
             text.Children.Add(Ui.Label(Loc.T(key), 11, false, "MutedBrush"));
-            var tb = new TextBox
-            {
-                Text = hidden ? "••••••••••" : value, IsReadOnly = true, BorderThickness = new Thickness(0), Background = Brushes.Transparent,
-                FontSize = 14, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap, Padding = new Thickness(0, 2), MinHeight = 0,
-            };
-            tb.Res(TextBox.ForegroundProperty, "TextBrush");
+            // plain text, not an input box: nothing to click or edit, the field has only its copy button
+            var tb = Ui.Label(hidden ? "••••••••••" : value, 14, true, "TextBrush", true);
+            tb.FontWeight = FontWeight.SemiBold; tb.Margin = new Thickness(0, 4);
             text.Children.Add(tb);
             var cell = new DockPanel { Width = 290, Margin = new Thickness(0, 0, 14, 14), Background = Brushes.Transparent };
             DockPanel.SetDock(copy, Dock.Right); cell.Children.Add(copy); cell.Children.Add(text);
             cell.PointerEntered += (_, _) => copy.Opacity = 1;
-            cell.PointerExited += (_, _) => copy.Opacity = 0;
+            cell.PointerExited += (_, _) => copy.Opacity = 0.55;
             _fields.Children.Add(cell);
         }
     }
@@ -786,7 +835,7 @@ public sealed class MainWindow : Window
                 var ep = Ui.Pill(new TextBlock(), 3); ep.CornerRadius = new CornerRadius(12); SetExpiry(ep, c.NotAfter); row.Children.Add(ep);
                 box.Children.Add(row);
             }
-            var export = Ui.Btn(Loc.T("exportCert")); export.Margin = new Thickness(0, 10, 0, 0); export.HorizontalAlignment = HorizontalAlignment.Left;
+            var export = Ui.Btn(""); Ui.SetBtn(export, "save", Loc.T("exportCert")); export.Margin = new Thickness(0, 10, 0, 0); export.HorizontalAlignment = HorizontalAlignment.Left;
             var cert = c;
             export.Click += async (_, _) => { var p = await PickSave("certificate.cer", "cer", "Certificate"); if (p != null) File.WriteAllBytes(p, cert.Der); };
             box.Children.Add(export);
@@ -839,7 +888,7 @@ public sealed class MainWindow : Window
         {
             _lblUpdate.Text = Loc.T("updateFailed") + ": " + ex.Message;
             _btnUpdate.IsEnabled = true; _btnCheckUpdates.IsEnabled = true;
-            _btnUpdate.Content = Loc.T("openReleasePage");
+            Ui.SetBtn(_btnUpdate, "download", Loc.T("openReleasePage"));
             _updateFailed = true;
         }
     }

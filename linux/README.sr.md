@@ -9,12 +9,15 @@ fajlovi `windows/SerbiaID.Windows/{Card,CardErrors,Crypto,Models,Loc,SerbianScri
 pristup PC/SC-u preko `libpcsclite` (`Native.cs`), interfejs i raspored štampanog lista (`PrintSheet.cs`, PDF preko SkiaSharp-a).
 
 ## Šta je potrebno u sistemu
-- `pcscd` i `libpcsclite1` (u .deb paketu su navedeni kao zavisnosti); na ne-Debian sistemima: `pcsc-lite` / `pcsclite`.
-- USB čitač pametnih kartica. Ako aplikacija piše „Servis za pametne kartice nije pokrenut“: `sudo systemctl enable --now pcscd.socket`.
+- **Sa `.deb` ništa ne treba ručno instalirati**: paket zavisi od `pcscd` (servis za pametne kartice), `libccid` (drajver USB čitača) i `libnss3-tools`, pa ih `apt` sam instalira, a posle instalacije pokreće servis (`pcscd.socket`). Ako aplikacija ipak piše „Servis za pametne kartice nije pokrenut“: `sudo systemctl enable --now pcscd.socket`.
+- Sa **.tar.gz** (ili van Debian-a) sami instalirajte `pcscd`, `libpcsclite1` i `libccid` (na drugim sistemima `pcsc-lite`, `ccid`), kao i `libnss3-tools` ako želite podešavanje pregledača iz odeljka ispod.
+- USB čitač pametnih kartica (CCID klase: gotovo svi).
 - `xdg-utils` za otvaranje PDF-a / stranice izdanja (nije obavezno).
 
+## Prijava u pregledaču (eUprava i drugi portali)
+U gradnjama za x64, u folderu `pkcs11`, nalazi se PKCS#11 modul [srb-id-pkcs11](https://github.com/ubavic/srb-id-pkcs11) (javno dobro). Pri prvom pokretanju aplikacija nudi da ga poveže sa Firefox-om i Chrome-om / Chromium-om, a isto radi i dugme „Podesi prijavu u pregledaču“ na kartici „Token“ (pokreće `modutil` iz `libnss3-tools`; bez vaše saglasnosti ništa se ne menja). Posle toga potpuno zatvorite pregledač i ponovo ga otvorite. Gradnje za **arm64** nemaju modul (autor ne objavljuje arm64 gradnju): povežite OpenSC ili sami izgradite srb-id-pkcs11 i dodajte ga u pregledač ručno. Pregledači iz Snap-a i Flatpak-a ne podešavaju se automatski.
+
 ## Čega nema u poređenju sa Windows-om
-- Prijava u pregledaču sertifikatom sa kartice: na Linux-u se to radi PKCS#11 modulom (OpenSC ili [srb-id-pkcs11](https://github.com/ubavic/srb-id-pkcs11)) u podešavanjima pregledača; aplikacija to ne podešava.
 - Štampa: „Štampaj“ čuva PDF u privremeni fajl i otvara ga u pregledaču (tamo je prozor za štampu), „Sačuvaj PDF“ stavlja fajl gde izaberete.
 
 ## Ažuriranja
