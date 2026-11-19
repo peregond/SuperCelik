@@ -538,9 +538,18 @@ struct TokenTab: View {
             .sheet(item: $pinMode) { PinSheet(mode: $0) }
             .fileImporter(isPresented: $importing, allowedContentTypes: [.item]) { result in
                 guard case .success(let url) = result else { return }
-                let scoped = url.startAccessingSecurityScopedResource()
-                defer { if scoped { url.stopAccessingSecurityScopedResource() } }
-                if let data = try? Data(contentsOf: url) { signing = PendingSign(name: url.lastPathComponent, data: data) }
+                // read off the main thread (a slow file provider must not freeze the UI), and not more than 100 MB
+                Task {
+                    let picked = await Task.detached { () -> PendingSign? in
+                        let scoped = url.startAccessingSecurityScopedResource()
+                        defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+                        let size = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+                        if size > 100_000_000 { return nil }
+                        guard let data = try? Data(contentsOf: url) else { return nil }
+                        return PendingSign(name: url.lastPathComponent, data: data)
+                    }.value
+                    if let picked { signing = picked } else { model.pinAlert = loc.t(.fileTooLarge) }
+                }
             }
             .sheet(item: $signing) { pending in
                 SignSheet(file: pending) { url in
