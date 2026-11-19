@@ -9,7 +9,7 @@ internal static class Crypto
     /// MUP root + intermediate CAs, copied next to the exe in the CA folder.
     /// The files are on disk, so each one is checked against the SHA-256 of the certificates this version shipped
     /// with: a .crt dropped into (or changed in) the folder is ignored and cannot become a trusted root.
-    private static readonly HashSet<string> PinnedCa = new(StringComparer.OrdinalIgnoreCase)
+    private static readonly HashSet<string> PinnedCa = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
     {
         "DF9F1F1F4844119D9EF60FEC211E19A44E8FD652013299BE0533A5B12EE606F0",   // MUPCAResursi3
         "68C197522983366A263A5E3BF45E672DF509ADF794B9EB1E9314D7487573DF1F",   // MUPCARoot3
@@ -19,21 +19,56 @@ internal static class Crypto
         "923234E9382D75390BF2B67595301E2CFE2BB1650F707F5436BDF652D9F339FC",   // MUPStranciCA4
     };
 
-    private static readonly Lazy<List<X509Certificate2>> Anchors = new(() =>
+    private static readonly Lazy<List<X509Certificate2>> Anchors = new Lazy<List<X509Certificate2>>(() =>
     {
-        var dir = Path.Combine(AppContext.BaseDirectory, "CA");
+        var dir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "CA");
         var list = new List<X509Certificate2>();
         if (Directory.Exists(dir))
             foreach (var f in Directory.GetFiles(dir, "*.crt"))
                 try
                 {
                     var c = new X509Certificate2(f);
-                    if (PinnedCa.Contains(Convert.ToHexString(SHA256.HashData(c.RawData)))) list.Add(c);
+                    if (PinnedCa.Contains(Compat.Hex(Compat.Sha256(c.RawData)))) list.Add(c);
                 }
                 catch { }
         return list;
     });
 
+#if LEGACY
+    // .NET 4.0 has no X509ChainTrustMode.CustomRootTrust. The system chain engine still checks every signature on the
+    // path (an invalid one is a chain error); what it must not decide is trust, so the unknown-root errors are
+    // allowed and the root the chain ends in is compared with the pinned MUP roots instead.
+    private static bool Chains(X509Certificate2 cert, out string error)
+    {
+        var chain = new X509Chain();
+        try
+        {
+            chain.ChainPolicy.RevocationMode = X509RevocationMode.NoCheck;   // no CRL/OCSP (offline)
+            chain.ChainPolicy.VerificationFlags = X509VerificationFlags.AllowUnknownCertificateAuthority;
+            foreach (var a in Anchors.Value) chain.ChainPolicy.ExtraStore.Add(a);
+            chain.Build(cert);
+            var problems = chain.ChainStatus
+                .Where(st => st.Status != X509ChainStatusFlags.UntrustedRoot && st.Status != X509ChainStatusFlags.PartialChain
+                          && st.Status != X509ChainStatusFlags.RevocationStatusUnknown && st.Status != X509ChainStatusFlags.OfflineRevocation)
+                .ToList();
+            bool pinnedRoot = false;
+            if (chain.ChainElements.Count > 0)
+            {
+                var root = chain.ChainElements[chain.ChainElements.Count - 1].Certificate;
+                // the last element must be a self-signed certificate that is one of the pinned roots
+                pinnedRoot = root.Subject == root.Issuer && Anchors.Value.Any(x => x.Subject == x.Issuer && x.Thumbprint == root.Thumbprint)
+                             && PinnedCa.Contains(Compat.Hex(Compat.Sha256(root.RawData)));
+            }
+            bool ok = problems.Count == 0 && pinnedRoot;
+            error = ok ? null : (problems.Count > 0
+                ? string.Join("; ", problems.Select(st => st.StatusInformation.Trim()))
+                : "The certificate does not chain to a pinned MUP root");
+            return ok;
+        }
+        finally { chain.Reset(); }
+    }
+
+#else
     private static bool Chains(X509Certificate2 cert, out string error)
     {
         using var chain = new X509Chain();
@@ -49,6 +84,7 @@ internal static class Crypto
         return ok;
     }
 
+#endif
     /// Verifies a BER CMS SignedData. Returns the signed content (null if the signature itself is bad).
     /// `chainOk` tells whether the signer chains to the bundled MUP CAs.
     public static byte[] VerifyCms(byte[] blob, out bool chainOk, out string error)
@@ -70,7 +106,7 @@ internal static class Crypto
     {
         try
         {
-            using var x = new X509Certificate2(c.Der);
+            var x = new X509Certificate2(c.Der);   // not IDisposable on .NET Framework 4.0
             c.Subject = x.GetNameInfo(X509NameType.SimpleName, false);
             c.Issuer = x.GetNameInfo(X509NameType.SimpleName, true);
             c.NotBefore = x.NotBefore; c.NotAfter = x.NotAfter;
@@ -79,11 +115,16 @@ internal static class Crypto
         catch (Exception e) { c.ChainError = e.Message; }
     }
 
+#if LEGACY
+    /// Detached CMS (.p7s) over `data`, signed by the token key. `signDigestInfo` performs the card operation.
+    public static byte[] SignDetachedCms(byte[] data, byte[] certDer, Func<byte[], byte[]> signDigestInfo) =>
+        CmsBuilder.SignDetached(data, certDer, signDigestInfo);
+#else
     private static byte[] DigestInfoPrefix(HashAlgorithmName n) =>
-        n == HashAlgorithmName.SHA1 ? Convert.FromHexString("3021300906052B0E03021A05000414")
-        : n == HashAlgorithmName.SHA256 ? Convert.FromHexString("3031300D060960864801650304020105000420")
-        : n == HashAlgorithmName.SHA384 ? Convert.FromHexString("3041300D060960864801650304020205000430")
-        : n == HashAlgorithmName.SHA512 ? Convert.FromHexString("3051300D060960864801650304020305000440")
+        n == HashAlgorithmName.SHA1 ? Compat.FromHex("3021300906052B0E03021A05000414")
+        : n == HashAlgorithmName.SHA256 ? Compat.FromHex("3031300D060960864801650304020105000420")
+        : n == HashAlgorithmName.SHA384 ? Compat.FromHex("3041300D060960864801650304020205000430")
+        : n == HashAlgorithmName.SHA512 ? Compat.FromHex("3051300D060960864801650304020305000440")
         : throw new CryptographicException("Unsupported hash");
 
     /// RSA key that lives on the card: SignHash goes to the token (PIN is verified on every call).
@@ -115,4 +156,5 @@ internal static class Crypto
         cms.ComputeSignature(signer, silent: true);
         return cms.Encode();
     }
+#endif
 }
