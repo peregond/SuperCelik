@@ -42,6 +42,9 @@ final class PhoneModel: ObservableObject {
     /// NFC reading is parked for now: the code (NFCCardReader) stays, but the app only offers wired readers.
     static let nfcEnabled = false
 
+    /// `--shots` launch argument (screenshot script only): PIN / PUK / signing buttons look enabled without a card.
+    static let screenshotMode = CommandLine.arguments.contains("--shots")
+
     /// `--demo` launch argument: fictional data for screenshots (never touches a card).
     init() {
         if CommandLine.arguments.contains("--demo") { loadDemo() }

@@ -252,7 +252,7 @@ struct ContentView: View {
         .sheet(isPresented: $model.showPreview) { PreviewSheet() }
         .task { await model.startMonitoring() }
         #if !APPSTORE
-        .task { if prefs.autoUpdate { await model.checkUpdates(manual: false) } }
+        .task { if prefs.autoUpdate && !model.isDemoUI { await model.checkUpdates(manual: false) } }
         #endif
     }
 
