@@ -16,6 +16,22 @@ rm -rf "$PUB"; mkdir -p "$OUT"
 dotnet publish linux/SerbiaID.Linux -c Release -r "$RID" --self-contained -p:Version="$VERSION" -p:DebugType=None -o "$PUB"
 chmod +x "$PUB/SuperCelik"
 
+# ---- PKCS#11 module for browser sign-in (srb-id-pkcs11 by ubavic, Unlicense = public domain). Upstream publishes a Linux build
+# for x86_64 only, so only x64 gets it. The app connects it to Firefox / Chrome when the user agrees (BrowserSetup.cs).
+P11_VER=0.6.0
+P11_SHA=8f2f55e69459df21035982948719213fe595e97bb9b9bca9dabc85047204453c
+if [ "$ARCH" = x64 ]; then
+  mkdir -p "$PUB/pkcs11"
+  curl -fsSL --retry 3 -o "$PUB/pkcs11/libsrb-id-pkcs11.so" "https://github.com/ubavic/srb-id-pkcs11/releases/download/v$P11_VER/libsrb-id-pkcs11.so.$P11_VER"
+  if command -v sha256sum >/dev/null; then GOT=$(sha256sum "$PUB/pkcs11/libsrb-id-pkcs11.so" | cut -d' ' -f1); else GOT=$(shasum -a 256 "$PUB/pkcs11/libsrb-id-pkcs11.so" | cut -d' ' -f1); fi
+  [ "$GOT" = "$P11_SHA" ] || { echo "srb-id-pkcs11 checksum mismatch: $GOT" >&2; exit 1; }
+  cat > "$PUB/pkcs11/README.txt" <<TXT
+libsrb-id-pkcs11.so is srb-id-pkcs11 $P11_VER, a PKCS#11 module for Serbian eID cards.
+Source and licence (Unlicense, public domain): https://github.com/ubavic/srb-id-pkcs11
+Super Čelik registers it in Firefox and Chrome / Chromium on request (button "Set up browser sign-in").
+TXT
+fi
+
 # ---- tar.gz: unpack anywhere, run ./SuperCelik
 NAME="SuperCelik-$VERSION-linux-$ARCH"
 rm -rf "$OUT/$NAME"; cp -R "$PUB" "$OUT/$NAME"
@@ -42,7 +58,7 @@ Section: utils
 Priority: optional
 Architecture: $DEB
 Installed-Size: $SIZE
-Depends: pcscd, libpcsclite1, libfontconfig1, libx11-6, libice6, libsm6
+Depends: pcscd, libccid, libpcsclite1, libnss3-tools, libfontconfig1, libx11-6, libice6, libsm6
 Recommends: xdg-utils
 Maintainer: Super Čelik <noreply@users.noreply.github.com>
 Homepage: https://github.com/peregond/SuperCelik
@@ -52,6 +68,17 @@ Description: Serbian electronic ID card reader
  change, file signing, PDF printout. Independent implementation, not affiliated
  with MUP RS or NetSeT/Veridos.
 CTL
+  # make sure the smart card service runs right after the installation (pcscd is socket-activated on Debian / Ubuntu)
+  cat > "$ROOT/DEBIAN/postinst" <<'POST'
+#!/bin/sh
+set -e
+if [ "$1" = configure ] && [ -d /run/systemd/system ]; then
+  systemctl enable pcscd.socket >/dev/null 2>&1 || true
+  systemctl start pcscd.socket >/dev/null 2>&1 || true
+fi
+exit 0
+POST
+  chmod 755 "$ROOT/DEBIAN/postinst"
   dpkg-deb --root-owner-group --build "$ROOT" "$OUT/SuperCelik-$VERSION-linux-$DEB.deb"
   rm -rf "$ROOT"
 fi
