@@ -95,8 +95,19 @@ struct ActionButton: View {
     }
 }
 
-/// Content surface: a softly rounded Liquid Glass panel (a flat one before macOS 26).
+/// Content surface: a flat, softly rounded panel (the toolbar and sidebar carry the system glass).
 struct Card<Content: View>: View {
+    @ViewBuilder var content: Content
+    var body: some View {
+        content
+            .padding(18)
+            .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Color.primary.opacity(0.045)))
+            .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(Color.primary.opacity(0.07)))
+    }
+}
+
+/// The Card and Token screens: a Liquid Glass panel (the flat one before macOS 26).
+struct GlassCard<Content: View>: View {
     @ViewBuilder var content: Content
     var body: some View {
         content
@@ -402,50 +413,56 @@ struct PersonalView: View {
         .animation(.easeInOut(duration: 0.25), value: model.cardPresent)
     }
 
-    // Actions live in the page now (same as on iPhone); the toolbar keeps the "x" (forget what was read) and the eye.
+    // The system toolbar never truncates or wraps: actions that do not fit move into its own overflow menu.
     @ToolbarContentBuilder private var actions: some ToolbarContent {
-        ToolbarItem(placement: .navigation) {
-            if model.personal != nil {
-                Button { model.clear() } label: { Label(loc.t(.close), systemImage: "xmark") }
-                    .help(loc.t(.close)).disabled(model.busy)
+        ToolbarItemGroup {
+            Button { model.showPreview = true } label: { Label(loc.t(.printCard), systemImage: "printer") }
+                .disabled(model.personal == nil).help(loc.t(.printCard))
+            Button { if let p = model.personal { Printer.savePDF(p, loc: loc, includeJmbg: prefs.printJmbg) } } label: {
+                Label(loc.t(.savePdf), systemImage: "square.and.arrow.down")
             }
-        }
-        ToolbarItem(placement: .primaryAction) {
-            if prefs.maskSensitive && model.personal != nil {
+            .disabled(model.personal == nil).help(loc.t(.savePdf))
+            Button { Task { await model.verifySignatures() } } label: {
+                Label(loc.t(.verifySignature), systemImage: "checkmark.seal")
+            }
+            .disabled(!model.cardPresent || model.busy).help(loc.t(.verifySignature))
+            if prefs.maskSensitive {
                 // one eye for all sensitive fields: eye = hidden (click to show), crossed eye = shown (click to hide)
                 Button { model.revealAll.toggle() } label: {
                     Label(model.revealAll ? loc.t(.hideValue) : loc.t(.reveal),
                           systemImage: model.revealAll ? "eye.slash" : "eye")
                         .symbolReplace()
                 }
+                .disabled(model.personal == nil)
                 .help(model.revealAll ? loc.t(.hideValue) : loc.t(.reveal))
             }
+            Menu {
+                Button { model.copyAll() } label: { Label(loc.t(.copyAll), systemImage: "doc.on.doc") }
+                Button { model.savePhoto() } label: { Label(loc.t(.savePhoto), systemImage: "photo") }
+                Button { model.exportJSON() } label: { Label(loc.t(.exportJson), systemImage: "curlybraces") }
+            } label: { Label(loc.t(.more), systemImage: "ellipsis.circle") }
+            .disabled(model.personal == nil).help(loc.t(.more))
         }
-    }
-
-    /// All actions in one grid under the card, the same capsules as on the Token page.
-    private var actionGrid: some View {
-        LazyVGrid(columns: [GridItem(.adaptive(minimum: 190), spacing: 10)], spacing: 10) {
-            ActionButton(title: loc.t(.verifySignature), icon: "checkmark.seal") { Task { await model.verifySignatures() } }
-                .disabled(!model.cardPresent || model.busy)
-            ActionButton(title: loc.t(.printCard), icon: "printer") { model.showPreview = true }
-            ActionButton(title: loc.t(.savePdf), icon: "square.and.arrow.down") {
-                if let p = model.personal { Printer.savePDF(p, loc: loc, includeJmbg: prefs.printJmbg) }
+        ToolbarItem(placement: .primaryAction) {
+            // while nothing is read, the empty state has the one Read button
+            if model.personal != nil {
+                Button { Task { await model.readCard() } } label: {
+                    Label(loc.t(.readCard), systemImage: "person.text.rectangle")
+                }
+                .labelStyle(.titleAndIcon).buttonStyle(.borderedProminent)
+                .disabled(!model.cardPresent || model.busy).help(loc.t(.readCard))
             }
-            ActionButton(title: loc.t(.savePhoto), icon: "photo") { model.savePhoto() }
-            ActionButton(title: loc.t(.exportJson), icon: "curlybraces") { model.exportJSON() }
-            ActionButton(title: loc.t(.copyAll), icon: "doc.on.doc") { model.copyAll() }
         }
     }
 
     /// Everything on one card, sized to fit the window without scrolling: photo on the left,
     /// name and all fields on the right.
     private func summary(_ p: PersonalData) -> some View {
-        VStack(spacing: 14) { summaryCard(p); actionGrid }
+        summaryCard(p)
     }
 
     private func summaryCard(_ p: PersonalData) -> some View {
-        Card {
+        GlassCard {
             HStack(alignment: .top, spacing: 20) {
                 portrait(p)
                 VStack(alignment: .leading, spacing: 12) {
@@ -599,9 +616,12 @@ struct TokenView: View {
             if !Task.isCancelled { await model.checkDriverNow() }
         }
         .toolbar {
-            ToolbarItem(placement: .navigation) {
+            ToolbarItem(placement: .primaryAction) {
+                // while nothing is read, the empty state has the one Read button
                 if !model.tokenRows.isEmpty {
-                    Button { model.clear() } label: { Label(loc.t(.close), systemImage: "xmark") }.help(loc.t(.close)).disabled(model.busy)
+                    Button { Task { await model.readToken() } } label: { Label(loc.t(.readToken), systemImage: "key") }
+                        .labelStyle(.titleAndIcon).buttonStyle(.borderedProminent)
+                        .disabled(!model.cardPresent || model.busy).help(loc.t(.readToken))
                 }
             }
         }
@@ -632,7 +652,7 @@ struct TokenView: View {
 
     private func certificate(_ row: TokenCertRow) -> some View {
         let p = purpose(row)
-        return Card {
+        return GlassCard {
             VStack(alignment: .leading, spacing: 10) {
                 HStack(alignment: .top, spacing: 12) {
                     Image(systemName: p?.icon ?? "checkmark.seal").font(.title2).foregroundStyle(brandTint)
