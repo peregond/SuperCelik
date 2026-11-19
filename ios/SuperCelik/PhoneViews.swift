@@ -1,6 +1,7 @@
 import SwiftUI
 import UIKit
 import SafariServices
+import UniformTypeIdentifiers
 
 struct PhoneRootView: View {
     @EnvironmentObject var loc: Loc
@@ -365,6 +366,16 @@ struct CardTab: View {
             Button { model.copyAll() } label: {
                 Label(loc.t(.copyAll), systemImage: "doc.on.doc").frame(maxWidth: .infinity).padding(.vertical, 6)
             }.glassButton(prominent: false)
+            HStack(spacing: 10) {
+                if model.personal?.portrait != nil {
+                    Button { if let url = model.photoFile() { share = ShareItem(url: url) } } label: {
+                        Label(loc.t(.savePhoto), systemImage: "photo").lineLimit(1).minimumScaleFactor(0.8).frame(maxWidth: .infinity).padding(.vertical, 6)
+                    }.glassButton(prominent: false)
+                }
+                Button { if let url = model.jsonFile() { share = ShareItem(url: url) } } label: {
+                    Label(loc.t(.exportJson), systemImage: "curlybraces").lineLimit(1).minimumScaleFactor(0.8).frame(maxWidth: .infinity).padding(.vertical, 6)
+                }.glassButton(prominent: false)
+            }
         }
     }
 
@@ -461,6 +472,8 @@ struct TokenTab: View {
     @State private var pinMode: PinMode?
     @State private var showLogin = false
     @State private var askLogin = false
+    @State private var importing = false
+    @State private var signing: PendingSign?
 
     var body: some View {
         NavigationStack {
@@ -483,6 +496,7 @@ struct TokenTab: View {
                 Section {
                     Button { pinMode = .change } label: { Label(loc.t(.changePin), systemImage: "lock.rotation") }
                     Button { pinMode = .unblock } label: { Label(loc.t(.unblockPin), systemImage: "lock.open") }
+                    Button { importing = true } label: { Label(loc.t(.signFile), systemImage: "signature") }
                 }
                 .disabled(model.busy || model.readerState != .cardReady)
                 .listRowBackground(Rectangle().fill(.regularMaterial))
@@ -522,6 +536,28 @@ struct TokenTab: View {
                 if model.loginRequested { model.loginRequested = false; if model.driverAttached { showLogin = true } else { askLogin = true } }
             }
             .sheet(item: $pinMode) { PinSheet(mode: $0) }
+            .fileImporter(isPresented: $importing, allowedContentTypes: [.item]) { result in
+                guard case .success(let url) = result else { return }
+                // read off the main thread (a slow file provider must not freeze the UI), and not more than 100 MB
+                Task {
+                    // nil = unreadable, -1 size = too large
+                    let picked = await Task.detached { () -> (PendingSign?, Bool) in
+                        let scoped = url.startAccessingSecurityScopedResource()
+                        defer { if scoped { url.stopAccessingSecurityScopedResource() } }
+                        let size = (try? url.resourceValues(forKeys: [.fileSizeKey]).fileSize) ?? 0
+                        if size > 100_000_000 { return (nil, true) }
+                        guard let data = try? Data(contentsOf: url) else { return (nil, false) }
+                        return (PendingSign(name: url.lastPathComponent, data: data), false)
+                    }.value
+                    if let file = picked.0 { signing = file } else { model.pinAlert = loc.t(picked.1 ? .fileTooLarge : .fileUnreadable) }
+                }
+            }
+            .sheet(item: $signing) { pending in
+                SignSheet(file: pending) { url in
+                    // the signing sheet closes first, then the share sheet offers to save the .p7s
+                    DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { share = ShareItem(url: url) }
+                }
+            }
             .alert(loc.t(.loginEuprava), isPresented: $askLogin) {
                 Button(loc.t(.loginEuprava)) { showLogin = true }
                 Button(loc.t(.cancel), role: .cancel) {}
@@ -618,6 +654,54 @@ struct PinSheet: View {
         }
         .onAppear { model.pinAlert = nil }
         .presentationDetents([.medium, .large])
+    }
+}
+
+// MARK: - Sign a file
+
+struct PendingSign: Identifiable {
+    let id = UUID()
+    let name: String
+    let data: Data
+}
+
+/// Asks for the token PIN and makes a detached CMS signature (.p7s) over the chosen file.
+struct SignSheet: View {
+    @EnvironmentObject var loc: Loc
+    @EnvironmentObject var model: PhoneModel
+    @Environment(\.dismiss) private var dismiss
+    let file: PendingSign
+    let onSigned: (URL) -> Void
+    @State private var pin = ""
+
+    var body: some View {
+        NavigationStack {
+            Form {
+                Section {
+                    LabeledContent("File", value: file.name)
+                    SecureField(loc.t(.currentPin), text: $pin)
+                } footer: { Text(loc.t(.pinWarn)) }
+                if let msg = model.pinAlert {
+                    Section { Text(msg).foregroundStyle(.orange) }
+                }
+            }
+            .keyboardType(.numberPad)
+            .navigationTitle(loc.t(.signFile))
+            .navigationBarTitleDisplayMode(.inline)
+            .toolbar {
+                ToolbarItem(placement: .cancellationAction) { Button(loc.t(.cancel)) { model.pinAlert = nil; dismiss() } }
+                ToolbarItem(placement: .confirmationAction) {
+                    Button(loc.t(.ok)) {
+                        Task {
+                            if let url = await model.signFile(data: file.data, name: file.name, pin: pin) { dismiss(); onSigned(url) }
+                        }
+                    }
+                    .disabled(!PhoneModel.validPin(pin) || model.busy || model.readerState != .cardReady)
+                }
+            }
+        }
+        .onAppear { model.pinAlert = nil }
+        .presentationDetents([.medium])
     }
 }
 
