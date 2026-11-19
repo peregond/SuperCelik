@@ -267,6 +267,7 @@ final class AppModel: ObservableObject {
 
     /// The "Check" button on the Token tab.
     func checkDriverNow() async {
+        if isDemoUI { driverState = .ok; return }      // demo / screenshots: no real driver to check
         guard cardPresent else { driverState = .unknown; return }
         let attached = await Task.detached { BrowserLogin.driverAttached() }.value
         driverState = cardPresent ? (attached ? .ok : .missing) : .unknown
