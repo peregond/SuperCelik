@@ -134,7 +134,7 @@ public sealed class MainWindow : Window
 
         // update banner
         _lblUpdate = Ui.Label("", 13, true);
-        _btnUpdate = Ui.Btn("", "primary"); _btnUpdate.Click += (_, _) => OpenUrl(_newPage);
+        _btnUpdate = Ui.Btn("", "primary"); _btnUpdate.Click += async (_, _) => await StartUpdate();
         var ub = new DockPanel { Margin = new Thickness(0) };
         DockPanel.SetDock(_btnUpdate, Dock.Right); ub.Children.Add(_btnUpdate);
         _lblUpdate.VerticalAlignment = VerticalAlignment.Center; ub.Children.Add(_lblUpdate);
@@ -827,6 +827,23 @@ public sealed class MainWindow : Window
         }
         catch { /* offline: stay silent */ }
     }
+
+    /// "Update": installs the new version by itself when it can (see Updater.Pick), otherwise opens the release page.
+    private async Task StartUpdate()
+    {
+        if (_demo || _updateFailed || !Updater.CanSelfUpdate) {      // after a failed attempt the button opens the release page
+            OpenUrl(_newPage); return; }
+        _btnUpdate.IsEnabled = false; _btnCheckUpdates.IsEnabled = false;
+        try { await Updater.InstallAsync(t => Avalonia.Threading.Dispatcher.UIThread.Post(() => _lblUpdate.Text = t), Loc.T("updDownloading"), Loc.T("updInstalling")); }
+        catch (Exception ex)
+        {
+            _lblUpdate.Text = Loc.T("updateFailed") + ": " + ex.Message;
+            _btnUpdate.IsEnabled = true; _btnCheckUpdates.IsEnabled = true;
+            _btnUpdate.Content = Loc.T("openReleasePage");
+            _updateFailed = true;
+        }
+    }
+    private bool _updateFailed;
 
     private async Task CheckUpdates()
     {

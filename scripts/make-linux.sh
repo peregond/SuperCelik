@@ -21,6 +21,8 @@ NAME="SuperCelik-$VERSION-linux-$ARCH"
 rm -rf "$OUT/$NAME"; cp -R "$PUB" "$OUT/$NAME"
 cp linux/packaging/supercelik.desktop linux/SerbiaID.Linux/Assets/icon.png "$OUT/$NAME/"
 tar -C "$OUT" -czf "$OUT/$NAME.tar.gz" "$NAME"
+# delta update files: a zip the app can read entry by entry + a manifest with the SHA-256 of every file (same content as the .tar.gz)
+python3 scripts/make-linux-delta.py "$OUT/$NAME" "$OUT/$NAME" "$VERSION"
 rm -rf "$OUT/$NAME"
 
 # ---- .deb
