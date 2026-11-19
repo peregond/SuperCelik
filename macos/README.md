@@ -3,7 +3,7 @@
 # Mac App Store build
 
 The store build is the same source as the direct-download app, compiled with `-Xswiftc -DAPPSTORE`:
-- no self-updater (Mac App Store apps must not update themselves) and no network code;
+- no self-updater (Mac App Store apps must not update themselves) and no network code except the reader page shown inside the app (`com.apple.security.network.client`, only for celik.peregon.cc/reader);
 - no helper processes (`pluginkit`, `pkill`, `security`): in the sandbox macOS finds and starts the bundled
   CryptoTokenKit extension itself;
 - sandbox + `com.apple.security.smartcard` (PC/SC), user-selected file access, printing (`AppStore.entitlements`);
