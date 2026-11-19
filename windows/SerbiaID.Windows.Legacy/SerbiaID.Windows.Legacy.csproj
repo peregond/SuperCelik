@@ -17,6 +17,8 @@
     <ApplicationIcon>..\SerbiaID.Windows\app.ico</ApplicationIcon>
     <DefineConstants>$(DefineConstants);LEGACY</DefineConstants>
     <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <!-- Microsoft.Bcl.Async carries its own facades; without this MSBuild on Windows drops its references (MSB3268) -->
+    <_FindDependencies>false</_FindDependencies>
     <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
   </PropertyGroup>
 

@@ -24,6 +24,7 @@
 
   <!-- the card protocol, crypto, texts and models are shared with the Windows app (only PC/SC and the UI differ) -->
   <ItemGroup>
+    <Compile Include="..\..\windows\SerbiaID.Windows\Compat.cs" Link="Shared\Compat.cs" />
     <Compile Include="..\..\windows\SerbiaID.Windows\Card.cs" Link="Shared\Card.cs" />
     <Compile Include="..\..\windows\SerbiaID.Windows\CardErrors.cs" Link="Shared\CardErrors.cs" />
     <Compile Include="..\..\windows\SerbiaID.Windows\Crypto.cs" Link="Shared\Crypto.cs" />
