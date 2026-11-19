@@ -119,7 +119,9 @@ public static class Updater
         foreach (var a in args) psi.ArgumentList.Add(a);
         using var p = Process.Start(psi)!;
         var err = p.StandardError.ReadToEndAsync();
+        var outp = p.StandardOutput.ReadToEndAsync();      // drained too: a full pipe would block apt forever
         await p.WaitForExitAsync();
+        await outp;
         if (p.ExitCode != 0) throw new InvalidOperationException($"{tool} exited with {p.ExitCode}: {(await err).Trim()}");
     }
 }
