@@ -1,0 +1,48 @@
+name: flathub-check
+# Builds the Flathub-style manifest (from source, offline NuGet sources) to check it, and publishes the generated
+# nuget-sources.json as an artifact: that file goes into the Flathub repository next to the manifest.
+on:
+  workflow_dispatch:
+  pull_request:
+    paths:
+      - 'linux/packaging/flathub/**'
+      - '.github/workflows/flathub-check.yml'
+      - 'linux/SerbiaID.Linux/*.csproj'
+
+jobs:
+  flathub:
+    runs-on: ubuntu-24.04
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install flatpak, flatpak-builder and the runtimes
+        run: |
+          sudo apt-get update && sudo apt-get install -y flatpak flatpak-builder
+          flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+          flatpak install --user -y flathub org.freedesktop.Platform//24.08 org.freedesktop.Sdk//24.08 org.freedesktop.Sdk.Extension.dotnet8//24.08
+      - name: Generate nuget-sources.json
+        run: |
+          curl -fsSL -o gen.py https://raw.githubusercontent.com/flatpak/flatpak-builder-tools/master/dotnet/flatpak-dotnet-generator.py
+          python3 gen.py nuget-sources.json linux/SerbiaID.Linux/SerbiaID.Linux.csproj --dotnet 8 --freedesktop 24.08 -r linux-x64 linux-arm64 --dotnet-args -p:SelfContained=true
+          cp nuget-sources.json linux/packaging/flathub/
+          ls -l nuget-sources.json; rm -rf nuget-sources
+      - name: Build from source
+        working-directory: linux/packaging/flathub
+        run: flatpak-builder --force-clean --user --disable-rofiles-fuse --repo=repo build io.github.peregond.SuperCelik.yml
+      - name: Check the result
+        run: |
+          flatpak build-bundle linux/packaging/flathub/repo /tmp/test.flatpak io.github.peregond.SuperCelik
+          ls -l /tmp/test.flatpak
+      - uses: actions/upload-artifact@v4
+        with:
+          name: flathub-nuget-sources
+          path: nuget-sources.json
+      - name: Keep the generated sources on a branch (manual runs only)
+        if: github.event_name == 'workflow_dispatch'
+        run: |
+          git config user.name "github-actions[bot]"; git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git checkout --orphan flathub-sources
+          git rm -rf -q --cached . ; git add -f nuget-sources.json
+          git commit -q -m "nuget-sources.json for Flathub"
+          git push -f origin flathub-sources
