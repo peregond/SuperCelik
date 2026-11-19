@@ -3,7 +3,7 @@
 # Gradnja za Mac App Store
 
 Prodavnička gradnja pravi se iz istog koda kao aplikacija za direktno preuzimanje i kompajlira se sa `-Xswiftc -DAPPSTORE`:
-- bez samoažuriranja (aplikacije Mac App Store-a ne smeju same da se ažuriraju) i bez mrežnog koda;
+- bez samoažuriranja (aplikacije Mac App Store-a ne smeju same da se ažuriraju) i bez mrežnog koda, osim stranice o čitačima unutar aplikacije (`com.apple.security.network.client`, samo za celik.peregon.cc/reader);
 - bez pomoćnih procesa (`pluginkit`, `pkill`, `security`): u peščaniku (sandbox) macOS sam pronalazi i pokreće
   ugrađeno CryptoTokenKit proširenje;
 - peščanik + `com.apple.security.smartcard` (PC/SC), pristup fajlovima koje korisnik izabere, štampa (`AppStore.entitlements`);

@@ -43,6 +43,58 @@ struct SidebarRow: View {
 
 // MARK: - Reusable pieces
 
+extension View {
+    /// Liquid Glass button (macOS 26); a capsule bordered button before. Compiles with older Xcode too.
+    @ViewBuilder func glassButton(prominent: Bool = false) -> some View {
+        #if compiler(>=6.2)
+        if #available(macOS 26.0, *) {
+            if prominent { self.buttonStyle(.glassProminent) } else { self.buttonStyle(.glass).tint(nil) }
+        } else {
+            self.bordered(prominent)
+        }
+        #else
+        self.bordered(prominent)
+        #endif
+    }
+
+    @ViewBuilder private func bordered(_ prominent: Bool) -> some View {
+        let base = Group { if prominent { self.buttonStyle(.borderedProminent) } else { self.buttonStyle(.bordered) } }
+        if #available(macOS 14.0, *) { base.buttonBorderShape(.capsule) } else { base }
+    }
+
+    /// Liquid Glass surface (macOS 26); the flat tinted panel before.
+    @ViewBuilder func glassSurface(cornerRadius: CGFloat = 20) -> some View {
+        #if compiler(>=6.2)
+        if #available(macOS 26.0, *) {
+            self.glassEffect(.regular, in: .rect(cornerRadius: cornerRadius))
+        } else {
+            self.flatSurface(cornerRadius)
+        }
+        #else
+        self.flatSurface(cornerRadius)
+        #endif
+    }
+
+    private func flatSurface(_ r: CGFloat) -> some View {
+        self.background(RoundedRectangle(cornerRadius: r, style: .continuous).fill(Color.primary.opacity(0.045)))
+            .overlay(RoundedRectangle(cornerRadius: r, style: .continuous).strokeBorder(Color.primary.opacity(0.07)))
+    }
+}
+
+/// One action of a page: a full-width glass capsule with an icon, the same everywhere.
+struct ActionButton: View {
+    let title: String
+    let icon: String
+    var prominent = false
+    let action: () -> Void
+    var body: some View {
+        Button(action: action) {
+            Label(title, systemImage: icon).frame(maxWidth: .infinity).padding(.vertical, 4)
+        }
+        .glassButton(prominent: prominent).controlSize(.large)
+    }
+}
+
 /// Content surface: a flat, softly rounded panel (the toolbar and sidebar carry the system glass).
 struct Card<Content: View>: View {
     @ViewBuilder var content: Content
@@ -51,6 +103,16 @@ struct Card<Content: View>: View {
             .padding(18)
             .background(RoundedRectangle(cornerRadius: 16, style: .continuous).fill(Color.primary.opacity(0.045)))
             .overlay(RoundedRectangle(cornerRadius: 16, style: .continuous).strokeBorder(Color.primary.opacity(0.07)))
+    }
+}
+
+/// The Card and Token screens: a Liquid Glass panel (the flat one before macOS 26).
+struct GlassCard<Content: View>: View {
+    @ViewBuilder var content: Content
+    var body: some View {
+        content
+            .padding(18)
+            .glassSurface()
     }
 }
 
@@ -288,6 +350,7 @@ struct PersonalView: View {
     @EnvironmentObject var loc: Loc
     @EnvironmentObject var model: AppModel
     @EnvironmentObject var prefs: Prefs
+    @State private var showReaderHelp = false
 
     var body: some View {
         ZStack {
@@ -305,6 +368,7 @@ struct PersonalView: View {
         }
         .animation(.easeInOut(duration: 0.25), value: model.personal != nil)
         .toolbar { actions }
+        .sheet(isPresented: $showReaderHelp) { ReaderHelpSheet() }
     }
 
     /// Nothing read yet: the reader's face says what is going on, the text says what to do next.
@@ -323,6 +387,13 @@ struct PersonalView: View {
             MascotArt(character: .reader, mood: mood, size: 170)
             Text(loc.t(title)).font(.title2.weight(.semibold)).multilineTextAlignment(.center)
                 .contentTransition(.opacity)
+            if mood == .noReader {
+                // a thin strip: which reader to get (opens the reader page inside the app)
+                Button { showReaderHelp = true } label: {
+                    Label(loc.t(.readerHelpTitle), systemImage: "questionmark.circle").font(.subheadline.weight(.medium))
+                }
+                .glassButton().controlSize(.small)
+            }
             if let hint {
                 Text(loc.t(hint)).foregroundStyle(.secondary).multilineTextAlignment(.center).frame(maxWidth: 420)
                     .contentTransition(.opacity)
@@ -387,19 +458,22 @@ struct PersonalView: View {
     /// Everything on one card, sized to fit the window without scrolling: photo on the left,
     /// name and all fields on the right.
     private func summary(_ p: PersonalData) -> some View {
-        Card {
+        summaryCard(p)
+    }
+
+    private func summaryCard(_ p: PersonalData) -> some View {
+        GlassCard {
             HStack(alignment: .top, spacing: 20) {
                 portrait(p)
                 VStack(alignment: .leading, spacing: 12) {
+                    // document type, then the name, then validity and the signature result, one per line on the left
                     VStack(alignment: .leading, spacing: 6) {
+                        Text(docTypeName(p.cardType)).foregroundStyle(.secondary)
                         Text("\(p.fixed.givenName) \(p.fixed.surname)")
                             .font(.system(size: 22, weight: .bold))
                             .textSelection(.enabled)
                             .fixedSize(horizontal: false, vertical: true)
-                        HStack(spacing: 10) {
-                            Text(docTypeName(p.cardType)).foregroundStyle(.secondary)
-                            if let d = p.expiryDate { ExpiryPill(date: d) }
-                        }
+                        if let d = p.expiryDate { ExpiryPill(date: d) }
                         sigPill
                     }
                     .animation(.spring(response: 0.35, dampingFraction: 0.7), value: sigKey)
@@ -508,133 +582,100 @@ struct TokenView: View {
     @EnvironmentObject var model: AppModel
 
     var body: some View {
-        Group {
-            if model.tokenRows.isEmpty {
-                EmptyState(title: loc.t(.certificates), message: loc.t(.hintToken)) {
+        ScrollView {
+            VStack(spacing: 14) {
+                if model.tokenRows.isEmpty {
                     MascotArt(character: .key, mood: model.readerMood, size: 170)
-                } action: {
-                    VStack(spacing: 12) {
-                        // one row when it fits, two rows in a narrow window
-                        ViewThatFits(in: .horizontal) {
-                            HStack(spacing: 8) { readButton; pinButtons }
-                            VStack(spacing: 10) { readButton; pinButtons }
-                        }
-                        Text(loc.t(.pinNote)).font(.caption).foregroundStyle(.secondary)
-                            .multilineTextAlignment(.center).frame(maxWidth: 420)
-                        browserLoginCheck.frame(maxWidth: 460)
-                    }
+                    Text(loc.t(.hintToken)).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                    ActionButton(title: loc.t(.readToken), icon: "key", prominent: true) { Task { await model.readToken() } }
+                        .disabled(!model.cardPresent || model.busy)
+                } else {
+                    ForEach(model.tokenRows) { certificate($0) }
                 }
-            } else {
-                ScrollView {
-                    VStack(alignment: .leading, spacing: 16) {
-                        if let t = model.token {
-                            HStack(spacing: 10) {
-                                Image(systemName: "key.fill").foregroundStyle(brandTint)
-                                Text(t.tokenLabel).font(.title3.weight(.semibold))
-                                Text(t.tokenSerial).foregroundStyle(.secondary).textSelection(.enabled)
-                            }
-                        }
-                        ForEach(model.tokenRows) { certificate($0) }
-                        pinButtons
-                        Text(loc.t(.pinNote)).font(.caption).foregroundStyle(.secondary)
-                        browserLoginCheck
-                    }
-                    .padding(20)
-                    .frame(maxWidth: 920, alignment: .leading)
-                    .frame(maxWidth: .infinity)
+                VStack(spacing: 10) {
+                    ActionButton(title: loc.t(.changePin), icon: "lock.rotation") { Task { await model.changePin() } }
+                    ActionButton(title: loc.t(.unblockPin), icon: "lock.open") { Task { await model.unblockPin() } }
+                    ActionButton(title: loc.t(.signFile), icon: "signature") { Task { await model.signFile() } }
                 }
+                .disabled(!model.cardPresent || model.busy)
+                // opens the sign-in page in the default browser; the system offers the card certificate there
+                ActionButton(title: loc.t(.loginEuprava), icon: "key.fill") {
+                    NSWorkspace.shared.open(URL(string: "https://euprava.gov.rs/prijava")!)
+                }
+                driverWarning
             }
+            .padding(20)
+            .frame(maxWidth: 560)
+            .frame(maxWidth: .infinity)
         }
         .animation(.easeInOut(duration: 0.25), value: model.tokenRows.isEmpty)
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                // while nothing is read, the empty state has the one Read button
-                if !model.tokenRows.isEmpty {
-                    readButton.labelStyle(.titleAndIcon).help(loc.t(.readToken))
-                }
-            }
-        }
-    }
-
-    /// The two checks a user used to run in Terminal (pluginkit / security list-smartcards), as a status line.
-    private var browserLoginCheck: some View {
-        let ok = model.driverState == .ok
-        let missing = model.driverState == .missing
-        return Card {
-            HStack(alignment: .top, spacing: 12) {
-                Image(systemName: ok ? "checkmark.circle.fill" : (missing ? "exclamationmark.triangle.fill" : "globe"))
-                    .foregroundStyle(ok ? Color.green : (missing ? Color.orange : Color.secondary))
-                    .font(.title3)
-                VStack(alignment: .leading, spacing: 4) {
-                    Text(loc.t(.loginCheckTitle)).font(.subheadline.weight(.semibold))
-                    Text(loc.t(ok ? .loginCheckOk : (missing ? .loginCheckMissing : .loginCheckNoCard)))
-                        .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
-                    // opens the sign-in page in the default browser; the system offers the card certificate there
-                    Button { NSWorkspace.shared.open(URL(string: "https://euprava.gov.rs/prijava")!) } label: {
-                        Label(loc.t(.loginEuprava), systemImage: "person.badge.key")
-                    }
-                    .padding(.top, 4)
-                    Text(loc.t(.loginEupravaNote)).font(.caption2).foregroundStyle(.secondary)
-                        .fixedSize(horizontal: false, vertical: true)
-                }
-                Spacer(minLength: 8)
-                Button(loc.t(.loginCheckBtn)) { Task { await model.checkDriverNow() } }
-                    .disabled(!model.cardPresent || model.busy)
-            }
-        }
         .task(id: model.cardPresent) {
             // the system needs a few seconds to attach the driver after the card is inserted
             guard model.cardPresent else { return }
             try? await Task.sleep(nanoseconds: 6_000_000_000)
             if !Task.isCancelled { await model.checkDriverNow() }
         }
+        .toolbar {
+            ToolbarItem(placement: .primaryAction) {
+                // while nothing is read, the empty state has the one Read button
+                if !model.tokenRows.isEmpty {
+                    Button { Task { await model.readToken() } } label: { Label(loc.t(.readToken), systemImage: "key") }
+                        .labelStyle(.titleAndIcon).buttonStyle(.borderedProminent)
+                        .disabled(!model.cardPresent || model.busy).help(loc.t(.readToken))
+                }
+            }
+        }
     }
 
-    private var pinButtons: some View {
-        HStack(spacing: 8) {
-            Button { Task { await model.changePin() } } label: { Label(loc.t(.changePin), systemImage: "lock.rotation") }
-            Button { Task { await model.unblockPin() } } label: { Label(loc.t(.unblockPin), systemImage: "lock.open") }
-            Button { Task { await model.signFile() } } label: { Label(loc.t(.signFile), systemImage: "signature") }
+    /// Only when something is wrong (the card driver is not attached); otherwise nothing is shown.
+    @ViewBuilder private var driverWarning: some View {
+        if model.driverState == .missing {
+            HStack(alignment: .top, spacing: 10) {
+                Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
+                Text(loc.t(.loginCheckMissing)).font(.caption).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 8)
+                Button(loc.t(.loginCheckBtn)) { Task { await model.checkDriverNow() } }
+                    .glassButton().controlSize(.small).disabled(!model.cardPresent || model.busy)
+            }
+            .padding(12).glassSurface(cornerRadius: 16)
         }
-        .disabled(!model.cardPresent || model.busy)
     }
 
-    private var readButton: some View {
-        Button { Task { await model.readToken() } } label: {
-            Label(loc.t(.readToken), systemImage: "key")
-        }
-        .buttonStyle(.borderedProminent).disabled(!model.cardPresent || model.busy)
+    /// The card holds two certificates: one to sign in, one to sign documents.
+    private func purpose(_ row: TokenCertRow) -> (title: String, icon: String)? {
+        let l = row.label.lowercased()
+        if l.hasSuffix("auth") { return (loc.t(.certAuth), "person.badge.key.fill") }
+        if l.hasSuffix("sign") { return (loc.t(.certSign), "signature") }
+        return nil
     }
 
     private func certificate(_ row: TokenCertRow) -> some View {
-        Card {
-            VStack(alignment: .leading, spacing: 8) {
-                HStack(alignment: .top) {
-                    Label(row.label.isEmpty ? (row.summary?.subject ?? "") : row.label, systemImage: "checkmark.seal")
-                        .font(.headline)
-                    Spacer()
-                    if let s = row.summary {
+        let p = purpose(row)
+        return GlassCard {
+            VStack(alignment: .leading, spacing: 10) {
+                HStack(alignment: .top, spacing: 12) {
+                    Image(systemName: p?.icon ?? "checkmark.seal").font(.title2).foregroundStyle(brandTint)
+                        .frame(width: 30).padding(.top, 2)
+                    VStack(alignment: .leading, spacing: 2) {
+                        Text(p?.title ?? row.summary?.subject ?? row.label).font(.headline)
+                        if let s = row.summary {
+                            Text([s.subject, s.issuer].filter { !$0.isEmpty }.joined(separator: " · "))
+                                .font(.caption).foregroundStyle(.secondary).textSelection(.enabled)
+                        }
+                    }
+                    Spacer(minLength: 0)
+                    Button { model.exportCertificate(row) } label: { Image(systemName: "square.and.arrow.down").padding(2) }
+                        .glassButton().help(loc.t(.exportCert))
+                }
+                if let s = row.summary {
+                    HStack(spacing: 8) {
                         Pill(text: s.chainTrusted ? loc.t(.chainOk) : loc.t(.sigChain),
                              color: s.chainTrusted ? .green : .orange,
                              icon: s.chainTrusted ? "checkmark.seal.fill" : "exclamationmark.triangle.fill")
+                        if let b = s.notAfter { ExpiryPill(date: b) }
                     }
                 }
-                if let s = row.summary {
-                    if !s.issuer.isEmpty {
-                        Text("\(loc.t(.certIssuer)): \(s.issuer)").foregroundStyle(.secondary).textSelection(.enabled)
-                    }
-                    if let a = s.notBefore, let b = s.notAfter {
-                        HStack(spacing: 10) {
-                            Text(String(format: loc.t(.certValid), a.formatted(date: .numeric, time: .omitted),
-                                        b.formatted(date: .numeric, time: .omitted))).foregroundStyle(.secondary)
-                            ExpiryPill(date: b)
-                        }
-                    }
-                }
-                Button { model.exportCertificate(row) } label: {
-                    Label(loc.t(.exportCert), systemImage: "square.and.arrow.down")
-                }
-                .padding(.top, 4)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }

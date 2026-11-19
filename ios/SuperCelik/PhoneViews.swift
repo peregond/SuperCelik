@@ -77,16 +77,26 @@ struct ShareSheet: UIViewControllerRepresentable {
 
 struct ProblemBanner: View {
     @EnvironmentObject var loc: Loc
+    @EnvironmentObject var model: PhoneModel
     let problem: PhoneProblem
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Label(loc.t(problem.title), systemImage: "exclamationmark.triangle.fill")
-                .font(.headline).foregroundStyle(.orange)
-            Text(loc.t(problem.hint)).font(.subheadline)
-            if !problem.tech.isEmpty {
-                Text(problem.tech).font(.caption.monospaced()).foregroundStyle(.secondary)
+        HStack(alignment: .top, spacing: 8) {
+            VStack(alignment: .leading, spacing: 6) {
+                Label(loc.t(problem.title), systemImage: "exclamationmark.triangle.fill")
+                    .font(.headline).foregroundStyle(.orange)
+                Text(loc.t(problem.hint)).font(.subheadline)
+                if !problem.tech.isEmpty {
+                    Text(problem.tech).font(.caption.monospaced()).foregroundStyle(.secondary)
+                }
             }
+            Spacer(minLength: 0)
+            // the message can be dismissed; it comes back only with the next failed read
+            Button { withAnimation(.easeOut(duration: 0.2)) { model.problem = nil } } label: {
+                Image(systemName: "xmark").font(.footnote.weight(.bold)).foregroundStyle(.secondary).padding(6)
+            }
+            .buttonStyle(.plain)
+            .accessibilityLabel(loc.t(.close))
         }
         .padding(.vertical, 4)
     }
@@ -100,6 +110,8 @@ struct ReaderStatusBlock: View {
     let character: PhoneMascot.Character
     var size: CGFloat = 190
     var done = false
+    /// Card tab, no reader: a thin "no reader?" strip between the title and the hint.
+    var onHelp: (() -> Void)? = nil
 
     private var mood: PhoneMascot.Mood {
         if model.problem != nil && !done { return .error }
@@ -114,7 +126,7 @@ struct ReaderStatusBlock: View {
 
     private var texts: (title: Loc.L, hint: Loc.L, color: Color) {
         switch model.readerState {
-        case .none: return (.emptyNoReaderT, .iosNoReaderH, .secondary)
+        case .none: return (.emptyNoReaderT, .iosNoReaderQ, .secondary)
         case .noCard: return (.emptyNoCardT, .iosNoCardH, .orange)
         case .cardReady: return (.emptyReadyT, .iosReadyH, .green)
         }
@@ -129,6 +141,7 @@ struct ReaderStatusBlock: View {
                 Label(loc.t(t.title), systemImage: "circle.fill")
                     .labelStyle(StatusDotStyle(color: t.color))
                     .font(.headline)
+                if let onHelp, model.readerState == .none { ReaderHelpCard(action: onHelp) }
                 Text(loc.t(t.hint)).font(.subheadline).foregroundStyle(.secondary)
                     .multilineTextAlignment(.center).padding(.horizontal)
             }
@@ -259,6 +272,7 @@ struct CardTab: View {
     @State private var pdf: ShareItem?
     @State private var photoOpen = false
     @State private var scanCollapsed = false
+    @State private var showHelp = false
 
     var body: some View {
         NavigationStack {
@@ -268,7 +282,7 @@ struct CardTab: View {
                         ProblemBanner(problem: problem).padding(16).frame(maxWidth: .infinity, alignment: .leading).glassCard()
                     }
                     if model.personal == nil {
-                        ReaderStatusBlock(character: .reader).padding(.top, model.problem == nil ? 40 : 8)
+                        ReaderStatusBlock(character: .reader, onHelp: { showHelp = true }).padding(.top, model.problem == nil ? 40 : 8)
                     }
                     if let p = model.personal {
                         if sizeClass == .regular { regularLayout(p) } else { compactLayout(p) }
@@ -282,9 +296,14 @@ struct CardTab: View {
             .background(GlassBackdrop())
             .navigationTitle(loc.t(.tabPersonal))
             .navigationBarTitleDisplayMode(.inline)
+            .animation(.easeInOut(duration: 0.25), value: model.personal == nil)
             .safeAreaInset(edge: .bottom) {
-                ScanButton(title: .readCardAuto, collapsed: scanCollapsed) { await model.scanCardAuto() }
-                    .padding(.horizontal, 20).padding(.bottom, 8)
+                // after a read the button goes away; the "x" at the top left brings it back
+                if model.personal == nil {
+                    ScanButton(title: .readCardAuto, collapsed: scanCollapsed) { await model.scanCardAuto() }
+                        .padding(.horizontal, 20).padding(.bottom, 8)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
             }
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
@@ -303,6 +322,9 @@ struct CardTab: View {
                 }
             }
             .sheet(item: $share) { ShareSheet(url: $0.url) }
+            .fullScreenCover(isPresented: $showHelp) {
+                SafariView(url: URL(string: "https://celik.peregon.cc/reader/")!).ignoresSafeArea()
+            }
             .sheet(item: $pdf) { PDFPreview(url: $0.url) }
             .sheet(isPresented: $photoOpen) {
                 if let d = model.personal?.portrait, let img = UIImage(data: d) {
@@ -354,15 +376,9 @@ struct CardTab: View {
             Button { if let url = model.pdfFile(includeJmbg: prefs.printJmbg) { pdf = ShareItem(url: url) } } label: {
                 Label(loc.t(.viewPdf), systemImage: "doc.richtext").frame(maxWidth: .infinity).padding(.vertical, 6)
             }.glassButton(prominent: false)
-            HStack(spacing: 10) {
-                Button { model.printPDF(includeJmbg: prefs.printJmbg) } label: {
-                    Label(loc.t(.printCard), systemImage: "printer").lineLimit(1).minimumScaleFactor(0.8).frame(maxWidth: .infinity).padding(.vertical, 6)
-                }.glassButton(prominent: false)
-                Button {
-                    if let url = model.pdfFile(includeJmbg: prefs.printJmbg) { share = ShareItem(url: url) }
-                } label: { Label(loc.t(.sharePdf), systemImage: "square.and.arrow.up").lineLimit(1).minimumScaleFactor(0.8).frame(maxWidth: .infinity).padding(.vertical, 6) }
-                    .glassButton(prominent: false)
-            }
+            Button { model.printPDF(includeJmbg: prefs.printJmbg) } label: {
+                Label(loc.t(.printCard), systemImage: "printer").frame(maxWidth: .infinity).padding(.vertical, 6)
+            }.glassButton(prominent: false)
             Button { model.copyAll() } label: {
                 Label(loc.t(.copyAll), systemImage: "doc.on.doc").frame(maxWidth: .infinity).padding(.vertical, 6)
             }.glassButton(prominent: false)
@@ -379,7 +395,9 @@ struct CardTab: View {
         }
     }
 
-    private func header(_ p: PersonalData) -> some View {
+    private func header(_ p: PersonalData) -> some View { headerContent(p) }
+
+    private func headerContent(_ p: PersonalData) -> some View {
         VStack(alignment: .leading, spacing: 12) {
             FlagStripe()
             HStack(alignment: .top, spacing: 14) {
@@ -395,6 +413,10 @@ struct CardTab: View {
                     Text("\(p.fixed.givenName) \(p.fixed.surname)").font(.title3.bold())
                     if let exp = p.expiryDate { expiry(exp) }
                     if let sig = model.signatureStatus { signatureRow(sig).font(.caption) }
+                    Button { if let url = model.pdfFile(includeJmbg: prefs.printJmbg) { share = ShareItem(url: url) } } label: {
+                        Label(loc.t(.sharePdf), systemImage: "square.and.arrow.up").font(.subheadline)
+                    }
+                    .glassButton(prominent: false).buttonBorderShape(.capsule).padding(.top, 4)
                 }
             }
         }
@@ -477,54 +499,49 @@ struct TokenTab: View {
 
     var body: some View {
         NavigationStack {
-            List {
-                // intro: no white card behind it, the text sits on the backdrop like on the Card tab
-                Section {
+            ScrollView {
+                VStack(spacing: 14) {
                     if let problem = model.problem, model.token == nil {
-                        ProblemBanner(problem: problem)
-                            .padding(16).frame(maxWidth: .infinity, alignment: .leading).glassCard()
-                            .listRowBackground(Color.clear).listRowSeparator(.hidden)
-                            .listRowInsets(EdgeInsets(top: 8, leading: 16, bottom: 0, trailing: 16))
+                        ProblemBanner(problem: problem).padding(16).frame(maxWidth: .infinity, alignment: .leading).glassCard()
                     }
-                    ReaderStatusBlock(character: .key, size: model.token == nil ? 190 : 120, done: model.token != nil)
-                        .frame(maxWidth: .infinity)
-                        .listRowBackground(Color.clear).listRowSeparator(.hidden)
-                    Text(loc.t(.pinNote)).font(.footnote).foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center)
-                        .listRowBackground(Color.clear).listRowSeparator(.hidden)
-                }
-                Section {
-                    Button { pinMode = .change } label: { Label(loc.t(.changePin), systemImage: "lock.rotation") }
-                    Button { pinMode = .unblock } label: { Label(loc.t(.unblockPin), systemImage: "lock.open") }
-                    Button { importing = true } label: { Label(loc.t(.signFile), systemImage: "signature") }
-                }
-                .disabled(model.busy || model.readerState != .cardReady)
-                .listRowBackground(Rectangle().fill(.regularMaterial))
-                // Sign in to eUprava: Safari takes the card certificate from the token extension inside this app.
-                Section {
-                    Button { if model.driverAttached { showLogin = true } else { askLogin = true } } label: { Label(loc.t(.loginEuprava), systemImage: "person.badge.key") }
-                } footer: { Text(loc.t(.loginEupravaNote)) }
-                .listRowBackground(Rectangle().fill(.regularMaterial))
-                if let t = model.token {
-                    Section {
-                        if !t.tokenLabel.isEmpty { LabeledContent("Token", value: t.tokenLabel) }
-                        if !t.tokenSerial.isEmpty { LabeledContent("Serial", value: t.tokenSerial) }
+                    ReaderStatusBlock(character: .key, size: model.token == nil ? 170 : 72, done: model.token != nil)
+                    if model.token != nil {
+                        ForEach(model.tokenRows) { certificate($0) }
                     }
-                    .listRowBackground(Rectangle().fill(.regularMaterial))
-                    Section(loc.t(.certificates)) {
-                        ForEach(model.tokenRows) { row in certificate(row) }
+                    GlassGroup(spacing: 10) {
+                        action("lock.rotation", .changePin) { pinMode = .change }
+                        action("lock.open", .unblockPin) { pinMode = .unblock }
+                        action("signature", .signFile) { importing = true }
                     }
-                    .listRowBackground(Rectangle().fill(.regularMaterial))
+                    .disabled(model.busy || model.readerState != .cardReady)
+                    // Sign in to eUprava: Safari takes the card certificate from the token extension inside this app.
+                    Button { if model.driverAttached { showLogin = true } else { askLogin = true } } label: {
+                        Label(loc.t(.loginEuprava), systemImage: "key.fill").frame(maxWidth: .infinity).padding(.vertical, 6)
+                    }.glassButton(prominent: false)
                 }
+                .padding(16)
+                .frame(maxWidth: 520)   // on iPad the buttons stay a sensible width
+                .frame(maxWidth: .infinity)
             }
             .modifier(ScrollCollapse(collapsed: $scanCollapsed))
-            .scrollContentBackground(.hidden)
             .background(GlassBackdrop())
             .navigationTitle(loc.t(.tabToken))
             .navigationBarTitleDisplayMode(.inline)
             .safeAreaInset(edge: .bottom) {
-                ScanButton(title: .readToken, collapsed: scanCollapsed, hideWhenCollapsed: true) { await model.scanTokenAuto() }
-                    .padding(.horizontal, 20).padding(.bottom, 8)
+                if model.token == nil {
+                    ScanButton(title: .readToken, collapsed: scanCollapsed, hideWhenCollapsed: true) { await model.scanTokenAuto() }
+                        .padding(.horizontal, 20).padding(.bottom, 8)
+                        .transition(.move(edge: .bottom).combined(with: .opacity))
+                }
+            }
+            .animation(.easeInOut(duration: 0.25), value: model.token == nil)
+            .toolbar {
+                ToolbarItem(placement: .navigationBarLeading) {
+                    if model.token != nil {
+                        Button(role: .destructive) { model.clear() } label: { Image(systemName: "xmark").foregroundStyle(.red) }
+                            .accessibilityLabel(loc.t(.close))
+                    }
+                }
             }
             .sheet(item: $share) { ShareSheet(url: $0.url) }
             .onChange(of: model.loginRequested) { requested in
@@ -572,28 +589,81 @@ struct TokenTab: View {
         }
     }
 
+    private func action(_ icon: String, _ title: Loc.L, _ run: @escaping () -> Void) -> some View {
+        Button(action: run) {
+            Label(loc.t(title), systemImage: icon).frame(maxWidth: .infinity).padding(.vertical, 6)
+        }.glassButton(prominent: false)
+    }
+
+    private func purpose(_ row: PhoneCertRow) -> String? {
+        let l = row.label.lowercased()
+        if l.hasSuffix("auth") { return loc.t(.certAuth) }
+        if l.hasSuffix("sign") { return loc.t(.certSign) }
+        return nil
+    }
+
+    private func purposeIcon(_ row: PhoneCertRow) -> String {
+        let l = row.label.lowercased()
+        if l.hasSuffix("auth") { return "person.badge.key.fill" }
+        if l.hasSuffix("sign") { return "signature" }
+        return "checkmark.seal"
+    }
+
     private func certificate(_ row: PhoneCertRow) -> some View {
-        VStack(alignment: .leading, spacing: 6) {
-            Text(row.summary?.subject ?? row.label).font(.headline)
-            if !row.label.isEmpty { Text(row.label).font(.caption).foregroundStyle(.secondary) }
-            if let s = row.summary {
-                if !s.issuer.isEmpty { Text("\(loc.t(.certIssuer)): \(s.issuer)").font(.subheadline) }
-                if let a = s.notBefore, let b = s.notAfter {
-                    Text(String(format: loc.t(.certValid), a.formatted(date: .numeric, time: .omitted),
-                                b.formatted(date: .numeric, time: .omitted))).font(.subheadline)
+        VStack(alignment: .leading, spacing: 10) {
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: purposeIcon(row)).font(.title2).foregroundStyle(.tint)
+                    .frame(width: 30).padding(.top, 2)
+                VStack(alignment: .leading, spacing: 2) {
+                    // the card holds two certificates: one to sign in, one to sign documents
+                    Text(purpose(row) ?? row.summary?.subject ?? row.label).font(.headline)
+                    if let s = row.summary {
+                        Text([s.subject, s.issuer].filter { !$0.isEmpty }.joined(separator: " · "))
+                            .font(.caption).foregroundStyle(.secondary)
+                    }
                 }
-                if s.chainTrusted {
-                    Label(loc.t(.chainOk), systemImage: "checkmark.seal.fill").foregroundStyle(.green).font(.subheadline)
-                } else {
-                    Label(loc.t(.sigChain), systemImage: "exclamationmark.triangle.fill").foregroundStyle(.orange).font(.subheadline)
-                }
+                Spacer(minLength: 0)
+                Button {
+                    if let url = model.temporaryFile(row.der, name: "certificate.cer") { share = ShareItem(url: url) }
+                } label: { Image(systemName: "square.and.arrow.up").padding(2) }
+                    .glassButton(prominent: false).buttonBorderShape(.capsule)
+                    .accessibilityLabel(loc.t(.exportCert))
             }
-            Button {
-                if let url = model.temporaryFile(row.der, name: "certificate.cer") { share = ShareItem(url: url) }
-            } label: { Label(loc.t(.exportCert), systemImage: "square.and.arrow.up") }
-                .buttonStyle(.borderless)
+            if let s = row.summary {
+                VStack(alignment: .leading, spacing: 4) {
+                    if s.chainTrusted {
+                        Label(loc.t(.chainOk), systemImage: "checkmark.seal.fill").foregroundStyle(.green)
+                    } else {
+                        Label(loc.t(.sigChain), systemImage: "exclamationmark.triangle.fill").foregroundStyle(.orange)
+                    }
+                    if let b = s.notAfter {
+                        let days = daysUntil(b)
+                        if days < 0 { Label(loc.t(.expiredOn), systemImage: "xmark.circle.fill").foregroundStyle(.red) }
+                        else { Label(String(format: loc.t(.expiresIn), days), systemImage: "clock.fill")
+                            .foregroundStyle(days <= 90 ? Color.orange : Color.green) }
+                    }
+                }
+                .font(.caption.weight(.semibold))
+            }
         }
-        .padding(.vertical, 4)
+        .padding(14).frame(maxWidth: .infinity, alignment: .leading).glassCard()
+    }
+}
+
+/// Quiet state of the Card tab: a thin strip under the "connect a reader" text that opens the page
+/// about readers inside the app.
+struct ReaderHelpCard: View {
+    @EnvironmentObject var loc: Loc
+    let action: () -> Void
+    var body: some View {
+        Button(action: action) {
+            Label(loc.t(.readerHelpTitle), systemImage: "questionmark.circle")
+                .font(.subheadline.weight(.medium))
+                .padding(.horizontal, 6)
+        }
+        .glassButton(prominent: false)
+        .buttonBorderShape(.capsule)
+        .controlSize(.small)
     }
 }
 
