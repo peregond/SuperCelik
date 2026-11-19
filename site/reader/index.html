@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Reader — Super Čelik</title>
+<meta name="description" content="Reader: what a smart card reader is, why Super Čelik needs one and where to buy it in Serbia. Plain links, no affiliate codes.">
+<meta property="og:title" content="Reader — Super Čelik">
+<meta property="og:image" content="/img/icon.png">
+<meta name="theme-color" content="#05162f">
+<link rel="preload" href="../fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="icon" href="/img/favicon.png">
+<style>
+/* Inter, embedded (SIL OFL, see fonts/Inter-OFL.txt): one look on every device */
+@font-face{font-family:"Inter";font-style:normal;font-display:swap;font-weight:100 900;src:url(../fonts/inter-cyrillic-ext-wght-normal.woff2) format("woff2");unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}
+@font-face{font-family:"Inter";font-style:normal;font-display:swap;font-weight:100 900;src:url(../fonts/inter-cyrillic-wght-normal.woff2) format("woff2");unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:"Inter";font-style:normal;font-display:swap;font-weight:100 900;src:url(../fonts/inter-latin-ext-wght-normal.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Inter";font-style:normal;font-display:swap;font-weight:100 900;src:url(../fonts/inter-latin-wght-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+:root{--navy:#061a36;--blue:#0C4076;--sky:#7db7ff;--red:#E23D47;--ink:#0b1b33;--muted:#5a6b85;--bg:#f4f7fc;--card:#fff;--line:#dde5f1;--code:#eaf0fa}
+@media(prefers-color-scheme:dark){:root{--ink:#eaf1fc;--muted:#9db0cb;--bg:#08142a;--card:#0f2040;--line:#1d3359;--code:#162b52}}
+*{box-sizing:border-box}
+body{margin:0;font:17px/1.6 "Inter",-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit}img{max-width:100%}
+.wrap{max-width:1100px;margin:0 auto;padding:0 24px}
+/* language: a globe that opens on hover */
+.langbox{position:fixed;top:14px;right:16px;z-index:60}
+.globe{width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.22);background:rgba(6,26,54,.55);backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);color:#fff;display:grid;place-items:center;cursor:pointer;transition:background .2s,transform .2s;box-shadow:0 8px 24px -10px rgba(0,0,0,.55)}
+.globe svg{width:22px;height:22px}
+.langbox.open .globe,.globe:focus-visible{background:rgba(255,255,255,.2)}
+.langmenu{position:absolute;right:0;top:100%;padding-top:8px;opacity:0;visibility:hidden;transform:translateY(-6px) scale(.96);transform-origin:top right;transition:opacity .18s,transform .18s,visibility .18s}
+.langmenu .in{display:flex;flex-direction:column;min-width:216px;padding:8px;border-radius:18px;background:rgba(9,30,60,.88);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border:1px solid rgba(255,255,255,.16);box-shadow:0 24px 50px -16px rgba(0,0,0,.6)}
+.langmenu button{display:flex;align-items:center;gap:14px;text-align:left;border:0;background:none;color:#c9dcf5;padding:12px 14px;border-radius:12px;font:600 17px inherit;font-family:inherit;cursor:pointer;transition:background .15s,color .15s}
+.langmenu .fl{width:28px;height:19px;border-radius:4px;flex:none;box-shadow:0 0 0 1px rgba(255,255,255,.28)}
+.langmenu button:hover{background:rgba(255,255,255,.12);color:#fff}
+.langmenu button[aria-pressed=true]{color:#fff}
+.langmenu button[aria-pressed=true]::after{content:"✓";color:#ff8e95;font-weight:800;margin-left:auto;padding-left:10px}
+.langbox.open .langmenu,.langbox:focus-within .langmenu{opacity:1;visibility:visible;transform:none}
+@media(hover:hover){.langbox:hover .langmenu{opacity:1;visibility:visible;transform:none}.globe:hover{background:rgba(255,255,255,.2)}}
+@media(max-width:480px){.langbox{top:10px;right:10px}}
+
+.top{position:relative;overflow:hidden;color:#fff;padding:28px 0 0;background:linear-gradient(180deg,#05162f 0%,#08234a 62%,#0a2b55 100%)}
+.top::before,.top::after{content:"";position:absolute;border-radius:50%;pointer-events:none}
+.top::before{width:70vmax;height:70vmax;right:-32vmax;top:-44vmax;background:radial-gradient(closest-side,rgba(190,28,62,.5),rgba(190,28,62,0) 70%)}
+.top::after{width:60vmax;height:60vmax;left:-28vmax;bottom:-40vmax;background:radial-gradient(closest-side,rgba(46,128,235,.4),rgba(46,128,235,0) 70%)}
+.top .wrap{position:relative;z-index:2}
+.brand{display:inline-flex;align-items:center;gap:12px;text-decoration:none;font-weight:800;font-size:20px;letter-spacing:-.02em}
+.brand img{width:40px;height:40px;border-radius:10px}
+h1{font-size:clamp(46px,9vw,92px);line-height:1;letter-spacing:-.045em;margin:30px 0 14px;font-weight:800;text-align:center}
+.lead{margin:0 auto;max-width:560px;text-align:center;color:#c3d6f1;font-size:clamp(16px,2vw,20px);line-height:1.45;text-wrap:balance}
+/* the reader: a card slides into the slot, the light turns green */
+.stage{position:relative;z-index:2;display:flex;justify-content:center;margin-top:22px}
+.rd{width:min(360px,84vw);height:auto;display:block;overflow:visible}
+.rd .card{animation:ins 7s infinite}
+.rd .led{animation:led 7s infinite}
+.rd .ring{transform-box:fill-box;transform-origin:center;animation:ring 7s infinite;opacity:0}
+@keyframes ins{
+ 0%,6%{transform:translateY(-34px);animation-timing-function:cubic-bezier(.5,0,.2,1)}
+ 30%,72%{transform:translateY(58px);animation-timing-function:cubic-bezier(.5,0,.2,1)}
+ 90%,100%{transform:translateY(-34px)}}
+@keyframes led{0%,29%{fill:#ffb347}31%,73%{fill:#3ddc84}75%,100%{fill:#ffb347}}
+@keyframes ring{0%,29%{opacity:0;transform:scale(.6)}31%{opacity:.9;transform:scale(.9)}44%{opacity:0;transform:scale(2.6)}100%{opacity:0;transform:scale(2.6)}}
+@media(prefers-reduced-motion:reduce){.rd .card{animation:none;transform:translateY(58px)}.rd .led{animation:none;fill:#3ddc84}.rd .ring{animation:none}}
+main{padding:34px 0 64px}
+.doc{max-width:780px;margin:0 auto}
+.doc>div>section{background:var(--card);border:1px solid var(--line);border-radius:24px;padding:30px 34px 32px;margin:0 0 18px}
+h2{font-size:clamp(22px,3vw,28px);line-height:1.15;letter-spacing:-.02em;margin:0 0 14px;font-weight:800}
+.doc p{margin:0 0 14px}.doc p:last-child{margin-bottom:0}
+.doc ul{margin:0;padding-left:22px}
+.doc li{margin:0 0 11px}.doc li:last-child{margin-bottom:0}
+.doc li::marker{color:var(--red)}
+.doc strong{font-weight:700}
+.pick{margin:0 0 16px;padding:14px 18px;border-radius:16px;background:linear-gradient(135deg,rgba(12,64,118,.1),rgba(226,61,71,.1));border:1px solid var(--line)}
+.doc .shops{list-style:none;margin:16px 0 0;padding:0;display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}
+.doc .shops li{position:relative;margin:0;padding:15px 18px 16px;border:1px solid var(--line);border-radius:16px;background:var(--bg);transition:border-color .2s,transform .2s}
+.doc .shops li:hover{border-color:var(--blue);transform:translateY(-2px)}
+.doc .shops li:last-child{grid-column:1/-1}
+.shops a{font-weight:800;font-size:18px;text-decoration:none;color:var(--ink)}
+.shops a::after{content:"";position:absolute;inset:0;border-radius:16px}
+.shops a::before{content:"↗";float:right;color:var(--red);font-weight:800}
+.shops a:focus-visible{outline:none}.shops li:focus-within{outline:3px solid rgba(226,61,71,.55);outline-offset:2px}
+.shops span{display:block;margin-top:3px;color:var(--muted);font-size:14.5px;line-height:1.4}
+.q{font:.9em ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;background:var(--code);padding:1px 7px;border-radius:6px;white-space:nowrap}
+.note{background:transparent!important;border:1px dashed var(--line)!important;color:var(--muted)}
+.note h2{color:var(--ink);font-size:18px}
+.doc [hidden]{display:none}
+@media(max-width:620px){body{font-size:16px}.wrap{padding:0 16px}.doc>div>section{padding:22px 20px 24px;border-radius:20px}.shops{grid-template-columns:1fr}.brand{font-size:18px}}
+
+footer{background:#041227;color:#8aa3c6;padding:36px 0 56px;font-size:14px}
+footer .wrap{display:flex;flex-wrap:wrap;gap:12px 28px;justify-content:space-between}
+footer a{color:#a9c3e6}
+.disc{max-width:640px}
+</style>
+<noscript><style>.doc [hidden]{display:block}</style></noscript>
+</head>
+<body>
+<div class="langbox" id="langbox">
+  <button class="globe" id="globe" type="button" aria-label="Language" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.2"/><path d="M2.8 12h18.4M12 2.8c3.1 3.4 3.1 14 0 18.4M12 2.8c-3.1 3.4-3.1 14 0 18.4"/></svg></button>
+  <div class="langmenu" role="menu"><div class="in">
+    <button type="button" role="menuitem" data-l="ru" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#fff"/><rect y="5.33" width="24" height="5.34" fill="#0039A6"/><rect y="10.67" width="24" height="5.33" fill="#D52B1E"/></svg><span>Русский</span></button>
+    <button type="button" role="menuitem" data-l="en" aria-pressed="false"><svg class="fl" viewBox="0 0 60 40" preserveAspectRatio="none" aria-hidden="true"><rect width="60" height="40" fill="#012169"/><path d="M0 0L60 40M60 0L0 40" stroke="#fff" stroke-width="8"/><path d="M0 0L60 40M60 0L0 40" stroke="#C8102E" stroke-width="3"/><path d="M30 0V40M0 20H60" stroke="#fff" stroke-width="13"/><path d="M30 0V40M0 20H60" stroke="#C8102E" stroke-width="8"/></svg><span>English</span></button>
+    <button type="button" role="menuitem" data-l="sr" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#fff"/><rect width="24" height="5.33" fill="#C6363C"/><rect y="5.33" width="24" height="5.34" fill="#0C4076"/></svg><span>Srpski</span></button>
+    <button type="button" role="menuitem" data-l="sc" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#fff"/><rect width="24" height="5.33" fill="#C6363C"/><rect y="5.33" width="24" height="5.34" fill="#0C4076"/></svg><span>Српски</span></button>
+  </div></div>
+</div>
+
+<header class="top"><div class="wrap">
+  <a class="brand" href="/"><img src="/img/icon.png" alt="" width="40" height="40"><span>Super Čelik</span></a>
+  <h1>Reader</h1>
+  <p class="lead" id="lead">Небольшой считыватель, в который вставляется ID-карта. Без него приложение не прочитает чип.</p>
+  <div class="stage"><svg class="rd" viewBox="0 -58 360 378" aria-hidden="true" focusable="false">
+ <defs>
+  <linearGradient id="bd" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#f6f8fb"/><stop offset="1" stop-color="#bcc6d6"/></linearGradient>
+  <linearGradient id="fc" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffffff"/><stop offset="1" stop-color="#e4eaf3"/></linearGradient>
+  <linearGradient id="gd" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f0cf6e"/><stop offset="1" stop-color="#c79a2c"/></linearGradient>
+  <radialGradient id="gl" cx=".5" cy=".5" r=".5"><stop offset="0" stop-color="#7db7ff" stop-opacity=".45"/><stop offset="1" stop-color="#7db7ff" stop-opacity="0"/></radialGradient>
+ </defs>
+ <ellipse cx="180" cy="190" rx="170" ry="120" fill="url(#gl)"/>
+ <ellipse cx="180" cy="306" rx="96" ry="9" fill="#000" opacity=".28"/>
+ <!-- cable and USB-C plug -->
+ <rect x="171" y="250" width="18" height="46" rx="6" fill="#2b3447"/>
+ <rect x="162" y="288" width="36" height="22" rx="8" fill="#cfd6e2"/><rect x="170" y="296" width="20" height="6" rx="3" fill="#2b3447"/>
+ <!-- the card (behind the reader body, so its lower part disappears into the slot) -->
+ <g class="card">
+  <rect x="100" y="-12" width="160" height="100" rx="11" fill="url(#fc)" stroke="#d6deea"/>
+  <path d="M100 5a11 11 0 0 1 11-11h138a11 11 0 0 1 11 11v9H100z" fill="#C6363C"/>
+  <rect x="100" y="8" width="160" height="6" fill="#0C4076"/>
+  <rect x="116" y="26" width="34" height="42" rx="5" fill="#cfdcee"/><circle cx="133" cy="40" r="7" fill="#8aa3c6"/><path d="M121 64c2-9 20-9 24 0z" fill="#8aa3c6"/>
+  <rect x="162" y="30" width="78" height="6" rx="3" fill="#b9c6da"/><rect x="162" y="44" width="58" height="6" rx="3" fill="#cfd8e6"/><rect x="162" y="58" width="68" height="6" rx="3" fill="#cfd8e6"/>
+  <rect x="116" y="72" width="30" height="22" rx="5" fill="url(#gd)"/><path d="M116 83h30M131 72v22" stroke="#9a7416" stroke-width="1" fill="none" opacity=".55"/>
+ </g>
+ <!-- reader body -->
+ <rect x="70" y="102" width="220" height="160" rx="30" fill="url(#bd)" stroke="#a9b4c6"/>
+ <rect x="70" y="102" width="220" height="14" rx="7" fill="#fff" opacity=".55"/>
+ <rect x="96" y="108" width="168" height="9" rx="4.5" fill="#1b2335"/>
+ <circle class="ring" cx="180" cy="166" r="9" fill="#3ddc84"/>
+ <circle class="led" cx="180" cy="166" r="7" fill="#ffb347" stroke="#fff" stroke-opacity=".6" stroke-width="2"/>
+ <rect x="130" y="206" width="100" height="6" rx="3" fill="#aeb9cc" opacity=".7"/><rect x="146" y="222" width="68" height="6" rx="3" fill="#aeb9cc" opacity=".5"/>
+</svg></div>
+</div></header>
+
+<main><div class="wrap"><div class="doc">
+<div lang="ru" data-l="ru" hidden>
+<section><h2>Что такое Reader</h2>
+<p>Reader — это считыватель смарт-карт: небольшое устройство с USB-разъёмом и щелью для карты. Вы вставляете в него ID-карту, и Super Čelik читает чип.</p>
+<p><strong>Зачем он нужен.</strong> У сербских ID-карт, карт иностранца и вида на жительство чип контактный, поэтому по NFC (приложив карту к телефону) их не прочитать. Нужен проводной считыватель.</p>
+<ul><li><strong>Mac, Windows, Linux:</strong> любой USB-порт (USB-A или USB-C).</li><li><strong>iPhone и iPad:</strong> нужен USB-C (iPhone 15 и новее, iPad с USB-C).</li><li><strong>Android:</strong> USB-C или обычный считыватель через переходник OTG.</li></ul></section>
+<section><h2>Что выбрать</h2>
+<p class="pick"><strong>Наша рекомендация:</strong> компактный считыватель с USB-C и поддержкой CCID от известного производителя. Он подойдёт и телефону, и компьютеру.</p>
+<ul><li>В описании должно быть <b>CCID</b> (или <b>PC/SC</b>) и <b>ISO 7816</b>: это обычный считыватель контактных смарт-карт. Такие считыватели обычно работают без отдельных драйверов.</li><li>Не подойдут: считыватели SD-карт, NFC-считыватели и «ключи» без щели для карты.</li><li>Разъём: USB-C удобнее всего (телефон, iPad, новые компьютеры). Если на компьютере только USB-A, возьмите считыватель с USB-A или переходник.</li><li>Примеры производителей: Thales (Gemalto), ACS, Identiv, Cherry. Например, Thales IDBridge CT40: на нём построен пример в документации Android-версии. Это примеры, а не гарантия совместимости: проверяйте описание.</li><li>Совет: покупайте там, где товар можно вернуть.</li></ul></section>
+<section><h2>Где купить</h2>
+<p>Ссылки ведут на поиск или на главную страницу магазина. Введите в поиске один из запросов ниже.</p>
+<ul class="shops"><li><a href="https://www.kupujemprodajem.com/" target="_blank" rel="noopener noreferrer nofollow" referrerpolicy="no-referrer">Kupujemprodajem</a><span>Сербская площадка объявлений: новое и б/у.</span></li><li><a href="https://gigatron.rs/" target="_blank" rel="noopener noreferrer nofollow" referrerpolicy="no-referrer">Gigatron</a><span>Сербская сеть магазинов электроники.</span></li><li><a href="https://www.amazon.de/s?k=smart+card+reader+usb-c+ccid" target="_blank" rel="noopener noreferrer nofollow" referrerpolicy="no-referrer">Amazon</a><span>Международный магазин; доставка в Сербию зависит от товара и продавца.</span></li><li><a href="https://www.aliexpress.com/wholesale?SearchText=smart+card+reader+usb-c" target="_blank" rel="noopener noreferrer nofollow" referrerpolicy="no-referrer">AliExpress</a><span>Дешевле, но доставка дольше; смотрите отзывы продавца.</span></li><li><a href="https://www.ebay.com/sch/i.html?_nkw=smart+card+reader+usb-c+ccid" target="_blank" rel="noopener noreferrer nofollow" referrerpolicy="no-referrer">eBay</a><span>Новое и б/у, много продавцов из Европы.</span></li></ul>
+<p style="margin-top:16px">Запросы для поиска: <code class="q">čitač pametnih kartica</code> <code class="q">čitač kartica USB-C CCID</code> <code class="q">smart card reader USB-C</code></p></section>
+<section class="note"><h2>О ссылках</h2><p>Это обычные ссылки без UTM-меток и партнёрских кодов, мы на них ничего не зарабатываем. Список нужен только тем, кому нужен считыватель и кому это интересно. Мы не связаны с магазинами и не отвечаем за цены, наличие и доставку, а подсказка не гарантирует совместимость.</p></section>
+</div>
+<div lang="en" data-l="en" hidden>
+<section><h2>What is a Reader</h2>
+<p>A Reader is a smart card reader: a small device with a USB plug and a slot for the card. You put your ID card in it, and Super Čelik reads the chip.</p>
+<p><strong>Why you need one.</strong> Serbian ID cards, foreigner ID cards and residence permits have a contact chip, so they cannot be read over NFC (by holding the card to a phone). You need a wired reader.</p>
+<ul><li><strong>Mac, Windows, Linux:</strong> any USB port (USB-A or USB-C).</li><li><strong>iPhone and iPad:</strong> USB-C is required (iPhone 15 or newer, iPad with USB-C).</li><li><strong>Android:</strong> USB-C, or a regular reader through an OTG adapter.</li></ul></section>
+<section><h2>What to choose</h2>
+<p class="pick"><strong>Our recommendation:</strong> a compact USB-C reader with CCID support from a well-known maker. It works with both a phone and a computer.</p>
+<ul><li>The description should say <b>CCID</b> (or <b>PC/SC</b>) and <b>ISO 7816</b>: that is a regular contact smart card reader. Such readers usually work without separate drivers.</li><li>Not suitable: SD card readers, NFC readers and “dongles” without a slot for the card.</li><li>Connector: USB-C is the most convenient (phone, iPad, newer computers). If your computer only has USB-A, take a reader with USB-A or an adapter.</li><li>Makers to look at: Thales (Gemalto), ACS, Identiv, Cherry. For example Thales IDBridge CT40, the one used as the example in the Android version’s documentation. These are examples, not a compatibility guarantee: check the description.</li><li>Tip: buy where you can return the item.</li></ul></section>
+<section><h2>Where to buy</h2>
+<p>The links lead to a search or to the shop’s home page. Type one of the queries below in the search.</p>
+<ul class="shops"><li><a href="https://www.kupujemprodajem.com/" target="_blank" rel="noopener noreferrer nofollow" referrerpolicy="no-referrer">Kupujemprodajem</a><span>Serbian classifieds site: new and used.</span></li><li><a href="https://gigatron.rs/" target="_blank" rel="noopener noreferrer nofollow" referrerpolicy="no-referrer">Gigatron</a><span>A Serbian electronics store chain.</span></li><li><a href="https://www.amazon.de/s?k=smart+card+reader+usb-c+ccid" target="_blank" rel="noopener noreferrer nofollow" referrerpolicy="no-referrer">Amazon</a><span>International shop; delivery to Serbia depends on the item and the seller.</span></li><li><a href="https://www.aliexpress.com/wholesale?SearchText=smart+card+reader+usb-c" target="_blank" rel="noopener noreferrer nofollow" referrerpolicy="no-referrer">AliExpress</a><span>Cheaper, but delivery takes longer; read the seller’s reviews.</span></li><li><a href="https://www.ebay.com/sch/i.html?_nkw=smart+card+reader+usb-c+ccid" target="_blank" rel="noopener noreferrer nofollow" referrerpolicy="no-referrer">eBay</a><span>New and used, many sellers from Europe.</span></li></ul>
+<p style="margin-top:16px">Search queries: <code class="q">čitač pametnih kartica</code> <code class="q">čitač kartica USB-C CCID</code> <code class="q">smart card reader USB-C</code></p></section>
+<section class="note"><h2>About the links</h2><p>These are plain links without UTM tags or affiliate codes, and we earn nothing from them. The list is only for those who need a reader and are interested. We are not affiliated with the shops and are not responsible for prices, availability or delivery, and the advice is not a compatibility guarantee.</p></section>
+</div>
+<div lang="sr-Latn" data-l="sr" id="sr" hidden>
+<section><h2>Šta je Reader</h2>
+<p>Reader je čitač pametnih kartica: mali uređaj sa USB priključkom i otvorom za karticu. Ubacite ID karticu u njega, a Super Čelik čita čip.</p>
+<p><strong>Zašto je potreban.</strong> Srpske lične karte, lične karte za strance i boravišne dozvole imaju kontaktni čip, pa se ne mogu pročitati preko NFC-a (prislanjanjem uz telefon). Potreban je čitač sa kablom.</p>
+<ul><li><strong>Mac, Windows, Linux:</strong> bilo koji USB priključak (USB-A ili USB-C).</li><li><strong>iPhone i iPad:</strong> potreban je USB-C (iPhone 15 i noviji, iPad sa USB-C).</li><li><strong>Android:</strong> USB-C ili običan čitač preko OTG adaptera.</li></ul></section>
+<section><h2>Šta izabrati</h2>
+<p class="pick"><strong>Naša preporuka:</strong> kompaktan čitač sa USB-C priključkom i podrškom za CCID poznatog proizvođača. Radi i sa telefonom i sa računarom.</p>
+<ul><li>U opisu treba da piše <b>CCID</b> (ili <b>PC/SC</b>) i <b>ISO 7816</b>: to je običan čitač kontaktnih pametnih kartica. Takvi čitači obično rade bez posebnih drajvera.</li><li>Ne odgovaraju: čitači SD kartica, NFC čitači i „ključevi“ bez otvora za karticu.</li><li>Priključak: USB-C je najpraktičniji (telefon, iPad, noviji računari). Ako računar ima samo USB-A, uzmite čitač sa USB-A ili adapter.</li><li>Primeri proizvođača: Thales (Gemalto), ACS, Identiv, Cherry. Na primer Thales IDBridge CT40, na njemu je zasnovan primer u dokumentaciji Android verzije. To su primeri, a ne garancija kompatibilnosti: proverite opis.</li><li>Savet: kupujte tamo gde je moguć povraćaj robe.</li></ul></section>
+<section><h2>Gde kupiti</h2>
+<p>Linkovi vode na pretragu ili na početnu stranicu prodavnice. Upišite jedan od upita ispod u pretragu.</p>
+<ul class="shops"><li><a href="https://www.kupujemprodajem.com/" target="_blank" rel="noopener noreferrer nofollow" referrerpolicy="no-referrer">Kupujemprodajem</a><span>Srpski sajt oglasa: novo i polovno.</span></li><li><a href="https://gigatron.rs/" target="_blank" rel="noopener noreferrer nofollow" referrerpolicy="no-referrer">Gigatron</a><span>Srpski lanac prodavnica elektronike.</span></li><li><a href="https://www.amazon.de/s?k=smart+card+reader+usb-c+ccid" target="_blank" rel="noopener noreferrer nofollow" referrerpolicy="no-referrer">Amazon</a><span>Međunarodna prodavnica; isporuka u Srbiju zavisi od proizvoda i prodavca.</span></li><li><a href="https://www.aliexpress.com/wholesale?SearchText=smart+card+reader+usb-c" target="_blank" rel="noopener noreferrer nofollow" referrerpolicy="no-referrer">AliExpress</a><span>Jeftinije, ali isporuka duže traje; pogledajte recenzije prodavca.</span></li><li><a href="https://www.ebay.com/sch/i.html?_nkw=smart+card+reader+usb-c+ccid" target="_blank" rel="noopener noreferrer nofollow" referrerpolicy="no-referrer">eBay</a><span>Novo i polovno, mnogo prodavaca iz Evrope.</span></li></ul>
+<p style="margin-top:16px">Upiti za pretragu: <code class="q">čitač pametnih kartica</code> <code class="q">čitač kartica USB-C CCID</code> <code class="q">smart card reader USB-C</code></p></section>
+<section class="note"><h2>O linkovima</h2><p>To su obični linkovi bez UTM oznaka i partnerskih kodova, na njima ništa ne zarađujemo. Spisak je samo za one kojima je čitač potreban i koje to zanima. Nismo povezani sa prodavnicama i ne odgovaramo za cene, dostupnost i isporuku, a savet ne garantuje kompatibilnost.</p></section>
+</div>
+<div lang="sr-Cyrl" data-l="sc" id="sc" hidden></div>
+</div></div></main>
+
+<footer><div class="wrap">
+  <div class="disc" id="disc">Super Čelik — независимое приложение, не связано с МУП РС и NetSeT/Veridos.</div>
+  <div><a href="/">Super Čelik</a> · <a href="/privacy">Privacy</a> · <a href="https://github.com/peregond/SuperCelik">GitHub</a></div>
+</div></footer>
+
+<script>
+const LANGS=["ru","en","sr","sc"];
+const LEAD={ru:"Небольшой считыватель, в который вставляется ID-карта. Без него приложение не прочитает чип.",en:"A small reader you put your ID card into. Without it the app cannot read the chip.",sr:"Mali čitač u koji se ubacuje ID kartica. Bez njega aplikacija ne može da pročita čip.",sc:"Мали читач у који се убацује ID картица. Без њега апликација не може да прочита чип."};
+const DISC={ru:"Super Čelik — независимое приложение, не связано с МУП РС и NetSeT/Veridos.",en:"Super Čelik — independent app, not affiliated with MUP RS or NetSeT/Veridos.",sr:"Super Čelik — nezavisna aplikacija, nije povezana sa MUP RS niti NetSeT/Veridos.",sc:"Super Čelik — независна апликација, није повезана са МУП РС нити NetSeT/Veridos."};
+function detectLang(){
+ const list=(navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language||""]).map(x=>String(x).toLowerCase());
+ for(const l of list){
+  if(l.startsWith("sr")) return /cyrl/.test(l)?"sc":"sr";
+  if(/^(bs|hr|me)\b/.test(l)) return "sr";
+  if(/^(ru|uk|be|kk)\b/.test(l)) return "ru";
+  if(l.startsWith("en")) return "en";
+ }
+ return "en";
+}
+// ?lang=ru|en|sr|sc lets the app open the page in its own language
+const asked=new URLSearchParams(location.search).get("lang");
+let lang=LANGS.includes(asked)?asked:localStorage.getItem("sc-lang");
+if(!LANGS.includes(lang))lang=detectLang();
+const CYR={a:"а",b:"б",v:"в",g:"г",d:"д",đ:"ђ",e:"е",ž:"ж",z:"з",i:"и",j:"ј",k:"к",l:"л",m:"м",n:"н",o:"о",p:"п",r:"р",s:"с",t:"т",ć:"ћ",u:"у",f:"ф",h:"х",c:"ц",č:"ч",š:"ш"};
+function cyr(s){let o="",i=0;
+ while(i<s.length){const c=s[i],d=(c+(s[i+1]||"")).toLowerCase(),up=c!==c.toLowerCase();
+  const di={lj:"љ",nj:"њ",dž:"џ"}[d];
+  if(di){o+=up?di.toUpperCase():di;i+=2;continue}
+  const m=CYR[c.toLowerCase()];
+  if(m){o+=up?m.toUpperCase():m}else o+=c;
+  i++}
+ return o}
+// brand and technical names stay Latin in the Cyrillic text (search queries and links are skipped altogether)
+const KEEP=/(^|[^\p{L}\p{N}])(Super Čelik|Kupujemprodajem|AliExpress|Gigatron|Amazon|eBay|IDBridge CT40|ISO 7816|PC\/SC|USB-A|USB-C|USB|CCID|OTG|NFC|UTM|SD|Thales|Gemalto|ACS|Identiv|Cherry|Reader|Android|iPhone|iPad|Linux|Windows|Mac|ID)(?![\p{L}\p{N}])/gu;
+function translitText(t){let o="",last=0;
+ for(const m of t.matchAll(KEEP)){o+=cyr(t.slice(last,m.index))+m[1]+m[2];last=m.index+m[0].length}
+ return o+cyr(t.slice(last))}
+function buildCyr(){const sc=document.getElementById("sc");if(sc.firstChild)return;
+ const c=document.getElementById("sr").cloneNode(true);c.removeAttribute("id");c.removeAttribute("hidden");
+ const w=document.createTreeWalker(c,NodeFilter.SHOW_TEXT);const nodes=[];while(w.nextNode())nodes.push(w.currentNode);
+ nodes.forEach(n=>{if(!n.parentNode.closest("a,.q"))n.nodeValue=translitText(n.nodeValue)});
+ while(c.firstChild)sc.appendChild(c.firstChild)}
+function setLang(l){lang=l;try{localStorage.setItem("sc-lang",l)}catch(e){}
+ document.documentElement.lang={ru:"ru",en:"en",sr:"sr-Latn",sc:"sr-Cyrl"}[l];
+ if(l==="sc")buildCyr();
+ document.querySelectorAll(".doc>div").forEach(d=>d.hidden=d.dataset.l!==l);
+ document.getElementById("lead").textContent=LEAD[l];document.getElementById("disc").textContent=DISC[l];
+ document.title="Reader — Super Čelik";
+ document.querySelectorAll(".langmenu button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l===l))}
+const lbox=document.getElementById("langbox"),globe=document.getElementById("globe");
+const setOpen=o=>{lbox.classList.toggle("open",o);globe.setAttribute("aria-expanded",o)};
+globe.onclick=e=>{e.stopPropagation();setOpen(!lbox.classList.contains("open"))};
+document.addEventListener("click",e=>{if(!lbox.contains(e.target))setOpen(false)});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){setOpen(false);globe.blur()}});
+document.querySelectorAll(".langmenu button").forEach(b=>b.onclick=()=>{setLang(b.dataset.l);setOpen(false);b.blur();globe.blur()});
+setLang(lang);
+</script>
+</body>
+</html>
