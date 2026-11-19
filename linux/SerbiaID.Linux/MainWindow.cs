@@ -580,23 +580,20 @@ public sealed class MainWindow : Window
         foreach (var (key, value) in Rows(_personal))
         {
             bool hidden = Sensitive.Contains(key) && _cfg.MaskSensitive && !_revealAll;
-            var copy = Ui.Btn("⧉", "icon"); copy.Opacity = 0; copy.VerticalAlignment = VerticalAlignment.Bottom;
+            var copy = Ui.Btn("⧉", "icon"); copy.Opacity = 0.55; copy.VerticalAlignment = VerticalAlignment.Bottom;
             ToolTip.SetTip(copy, Loc.T("copy"));
             var v = value;
             copy.Click += async (_, _) => { try { await CopyText(v); copy.Content = "✔"; await Task.Delay(1000); copy.Content = "⧉"; } catch { } };
             var text = new StackPanel();
             text.Children.Add(Ui.Label(Loc.T(key), 11, false, "MutedBrush"));
-            var tb = new TextBox
-            {
-                Text = hidden ? "••••••••••" : value, IsReadOnly = true, BorderThickness = new Thickness(0), Background = Brushes.Transparent,
-                FontSize = 14, FontWeight = FontWeight.SemiBold, TextWrapping = TextWrapping.Wrap, Padding = new Thickness(0, 2), MinHeight = 0,
-            };
-            tb.Res(TextBox.ForegroundProperty, "TextBrush");
+            // plain text, not an input box: nothing to click or edit, the field has only its copy button
+            var tb = Ui.Label(hidden ? "••••••••••" : value, 14, true, "TextBrush", true);
+            tb.FontWeight = FontWeight.SemiBold; tb.Margin = new Thickness(0, 4);
             text.Children.Add(tb);
             var cell = new DockPanel { Width = 290, Margin = new Thickness(0, 0, 14, 14), Background = Brushes.Transparent };
             DockPanel.SetDock(copy, Dock.Right); cell.Children.Add(copy); cell.Children.Add(text);
             cell.PointerEntered += (_, _) => copy.Opacity = 1;
-            cell.PointerExited += (_, _) => copy.Opacity = 0;
+            cell.PointerExited += (_, _) => copy.Opacity = 0.55;
             _fields.Children.Add(cell);
         }
     }
