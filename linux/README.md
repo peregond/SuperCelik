@@ -27,6 +27,6 @@ The x64 builds contain the PKCS#11 module [srb-id-pkcs11](https://github.com/uba
     dotnet run --project linux/SerbiaID.Linux -- --demo --pdf out.pdf       # the print sheet as a PDF
     SuperCelik --selftest                                                  # a report on a real card without personal data (selftest.txt next to the program, or in the current folder if the install folder is read-only; a path can be given: `--selftest report.txt`)
 
-Settings: `~/.config/SuperCelik/settings.json`. The interface language comes from `LANG` (ru / sr / en) and can be changed on the “Settings” tab.
+Settings: `~/.config/SuperCelik/settings.json`. “Show demo data” on the Settings tab fills the window with fictional data (no card needed) and switches back to the real reader when turned off. The interface language comes from `LANG` (ru / sr / en) and can be changed on the “Settings” tab.
 
 **Status:** not tried on a real card under Linux (development was done on a Mac: the interface, PDF and build were checked; card reading through `libpcsclite` and the CMS signature were not checked on Linux). Run `--selftest` first.

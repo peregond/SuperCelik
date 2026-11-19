@@ -38,7 +38,8 @@ public sealed class MainWindow : Window
     private TextBlock _lblSetAppearance, _lblSetLang, _lblSetTheme, _lblSetPrivacy, _lblSetBehavior, _lblAutoHide;
     private TextBlock _lblAboutTitle, _lblAboutText, _lblVersion, _lblUpdateStatus;
     private ComboBox _cmbReader, _cmbLang, _cmbTheme;
-    private CheckBox _chkMask, _chkPrintJmbg, _chkAutoRead, _chkAutoUpdate;
+    private CheckBox _chkMask, _chkPrintJmbg, _chkAutoRead, _chkAutoUpdate, _chkDemo;
+    private TextBlock _lblDemoHint;
     private TextBox _txtAutoHide;
     private ProgressBar _busyBar;
     private Button _btnRefresh, _btnRead, _btnReadBig, _btnPrint, _btnPdf, _btnVerify, _btnEye, _btnMore, _btnProblemClose;
@@ -79,19 +80,28 @@ public sealed class MainWindow : Window
         SelectTab(Math.Clamp(_cfg.Tab, 0, 3));
         _loading = false;
 
-        if (opts.Demo) { LoadDemo(); return; }
+        if (opts.Demo) { LoadDemo(); _loading = true; _chkDemo.IsChecked = true; _loading = false; return; }
         ApplyLanguage();
         Refresh();
-        _poll.Tick += (_, _) => Poll(); _poll.Start();
-        _idle.Tick += (_, _) => CheckIdle(); _idle.Start();
-        AddHandler(PointerMovedEvent, (_, _) => _lastActivity = DateTime.Now, Avalonia.Interactivity.RoutingStrategies.Tunnel);
-        AddHandler(KeyDownEvent, (_, _) => _lastActivity = DateTime.Now, Avalonia.Interactivity.RoutingStrategies.Tunnel);
-        AddHandler(PointerPressedEvent, (_, _) => _lastActivity = DateTime.Now, Avalonia.Interactivity.RoutingStrategies.Tunnel);
+        StartPolling();
         Opened += async (_, _) =>
         {
             if (!_demo && BrowserSetup.HasModule && !_cfg.BrowserSetupAsked) await OfferBrowserSetup();
             if (_cfg.AutoUpdate) await AutoCheckUpdateAsync();
         };
+    }
+
+    private bool _polling;
+    /// Starts watching the reader (and the idle timer). Called once; a window launched with --demo starts it when the demo data is switched off.
+    private void StartPolling()
+    {
+        if (_polling) return;
+        _polling = true;
+        _poll.Tick += (_, _) => Poll(); _poll.Start();
+        _idle.Tick += (_, _) => CheckIdle(); _idle.Start();
+        AddHandler(PointerMovedEvent, (_, _) => _lastActivity = DateTime.Now, Avalonia.Interactivity.RoutingStrategies.Tunnel);
+        AddHandler(KeyDownEvent, (_, _) => _lastActivity = DateTime.Now, Avalonia.Interactivity.RoutingStrategies.Tunnel);
+        AddHandler(PointerPressedEvent, (_, _) => _lastActivity = DateTime.Now, Avalonia.Interactivity.RoutingStrategies.Tunnel);
     }
 
     protected override void OnClosing(WindowClosingEventArgs e)
@@ -328,10 +338,26 @@ public sealed class MainWindow : Window
 
         foreach (var c in new[] { _chkMask, _chkPrintJmbg, _chkAutoRead, _chkAutoUpdate }) c.IsCheckedChanged += (_, _) => SettingChanged();
 
+        _chkDemo = new CheckBox();
+        _lblDemoHint = Ui.Label("", 12, false, "MutedBrush", true); _lblDemoHint.Margin = new Thickness(28, 0, 0, 0);
+        _chkDemo.IsCheckedChanged += (_, _) =>
+        {
+            if (_loading) return;
+            if (_chkDemo.IsChecked == true)
+            {
+                // a card operation is still running: it would put real data over the demo data, so wait for it
+                if (_busy) { _loading = true; _chkDemo.IsChecked = false; _loading = false; return; }
+                ShowDemoData();
+            }
+            else HideDemoData();
+        };
+        var demo = Ui.Card(new StackPanel { Children = { _chkDemo, _lblDemoHint } });
+        demo.Margin = new Thickness(0, 16, 0, 0);
+
         return new ScrollViewer
         {
             VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-            Content = new StackPanel { Margin = new Thickness(24, 18, 24, 20), Width = 560, HorizontalAlignment = HorizontalAlignment.Left, Children = { appearance, privacy, behavior } },
+            Content = new StackPanel { Margin = new Thickness(24, 18, 24, 20), Width = 560, HorizontalAlignment = HorizontalAlignment.Left, Children = { appearance, privacy, behavior, demo } },
         };
     }
 
@@ -370,6 +396,7 @@ public sealed class MainWindow : Window
         _lblSetPrivacy.Text = Loc.T("setPrivacy"); _lblSetBehavior.Text = Loc.T("setBehavior");
         _chkMask.Content = Loc.T("setMask"); _chkPrintJmbg.Content = Loc.T("setPrintJmbg");
         _chkAutoRead.Content = Loc.T("setAutoRead"); _chkAutoUpdate.Content = Loc.T("setAutoUpdate");
+        _chkDemo.Content = Loc.T("demoData"); _lblDemoHint.Text = Loc.T("demoHint");
         _lblAutoHide.Text = Loc.T("setAutoHide");
         _loading = true;
         var ti = _cmbTheme.SelectedIndex;
@@ -398,7 +425,7 @@ public sealed class MainWindow : Window
     // ======================= busy / errors =======================
     private async Task Run(Func<Task> work)
     {
-        if (_busy) return;
+        if (_busy || _demo) return;           // demo data on screen: no real reader access
         _busy = true; _busyBar.IsVisible = true; UpdateCardLabel();
         try { await work(); }
         catch (Exception ex) { ShowProblem(ex); }
@@ -519,6 +546,7 @@ public sealed class MainWindow : Window
 
     private void Refresh()
     {
+        if (_demo) return;
         try
         {
             if (_serviceDown) { ResetPc(); _serviceDown = false; }
@@ -759,6 +787,7 @@ public sealed class MainWindow : Window
 
     private async Task ChangePin()
     {
+        if (_demo || _busy) return;
         var v = await AskPinSteps(Loc.T("changePin"), "pinStepOld", "pinOld");
         if (v == null) return;
         if (!v.All(ValidPin)) { ShowInfo(Loc.T("pinInvalid")); return; }
@@ -769,6 +798,7 @@ public sealed class MainWindow : Window
 
     private async Task UnblockPin()
     {
+        if (_demo || _busy) return;
         var v = await AskPinSteps(Loc.T("unblockPin"), "pinStepPuk", "pukEnter");
         if (v == null) return;
         if (!v.All(ValidPin)) { ShowInfo(Loc.T("pinInvalid")); return; }
@@ -779,6 +809,7 @@ public sealed class MainWindow : Window
 
     private async Task SignFile()
     {
+        if (_demo || _busy) return;
         var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { AllowMultiple = false });
         var src = files.FirstOrDefault()?.TryGetLocalPath();
         if (src == null) return;
@@ -911,11 +942,8 @@ public sealed class MainWindow : Window
     }
 
     // ======================= demo / screenshots (fictional data) =======================
-    private void LoadDemo()
+    private void FillDemoData()
     {
-        _demo = true;
-        _loading = true;
-        if (_opts.Dark) { _cfg.Theme = "dark"; ApplyTheme("dark"); }
         _cardPresent = true;
         _readers = new() { "Demo Reader" }; FillReaders(_readers);
         _personal = new PersonalData
@@ -932,6 +960,35 @@ public sealed class MainWindow : Window
             Label = "MARKO PETROVIC 000000000 Auth", ChainTrusted = true, Issuer = "MUP Stranci CA 4",
             NotBefore = DateTime.Today.AddMonths(-14), NotAfter = DateTime.Today.AddDays(75), Der = new byte[] { 0 },
         });
+    }
+
+    /// Settings > "Show demo data": fictional data on screen, the real reader is not polled meanwhile.
+    private void ShowDemoData()
+    {
+        _demo = true; _serviceDown = false;
+        FillDemoData();
+        _revealAll = false;
+        HideProblem();
+        ApplyLanguage();
+    }
+
+    /// Back to the real reader.
+    private void HideDemoData()
+    {
+        _demo = false;
+        _personal = null; _token = null; _sig = null; _revealAll = false; _cardPresent = false; _readers = new();
+        FillReaders(_readers);
+        ApplyLanguage();
+        StartPolling();
+        Refresh();
+    }
+
+    private void LoadDemo()
+    {
+        _demo = true;
+        _loading = true;
+        if (_opts.Dark) { _cfg.Theme = "dark"; ApplyTheme("dark"); }
+        FillDemoData();
         var state = _opts.State;
         if (state != null)
         {

@@ -166,6 +166,8 @@ public static class Loc
         ["setupNone"] = new[] { "Не найден профиль Firefox или Chrome / Chromium. Подключите модуль вручную: {0}", "No Firefox profile or Chrome / Chromium found. Add the module by hand: {0}", "Nije pronađen profil Firefox-a ili Chrome-a / Chromium-a. Dodajte modul ručno: {0}" },
         ["setupNoTool"] = new[] { "Нужна утилита modutil: sudo apt install libnss3-tools", "The modutil tool is needed: sudo apt install libnss3-tools", "Potreban je alat modutil: sudo apt install libnss3-tools" },
         ["setupFailed"] = new[] { "Не удалось подключить модуль: {0}", "Could not connect the module: {0}", "Nije uspelo povezivanje modula: {0}" },
+        ["demoData"] = new[] { "Показать демо-данные", "Show demo data", "Prikaži demo podatke" },
+        ["demoHint"] = new[] { "Вымышленные данные без карты, чтобы посмотреть, как выглядит программа. Пока включено, настоящий ридер не опрашивается.", "Fictional data without a card, to see what the app looks like. While it is on, the real reader is not polled.", "Izmišljeni podaci bez kartice, da vidite kako aplikacija izgleda. Dok je uključeno, pravi čitač se ne proverava." },
         ["updateFailed"] = new[] { "Не удалось обновить", "Update failed", "Ažuriranje nije uspelo" },
         ["sigOk"] = new[] { "Подпись верна, данные не изменены", "Signature valid, data unmodified", "Potpis je ispravan, podaci nisu menjani" },
         ["sigChain"] = new[] { "Не удалось построить цепочку доверия (это не значит, что данные неверны)", "Trust chain could not be established (does not mean the data is invalid)", "Nije uspostavljen lanac poverenja (ne znači da podaci nisu ispravni)" },

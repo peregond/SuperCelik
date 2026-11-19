@@ -29,6 +29,6 @@ Aplikacija proverava novu verziju i sama se ažurira. Sa `.deb` preuzima novi `.
     dotnet run --project linux/SerbiaID.Linux -- --demo --pdf out.pdf       # štampani list kao PDF
     SuperCelik --selftest                                                  # izveštaj o pravoj kartici bez ličnih podataka (selftest.txt pored programa, a ako je instalacioni folder samo za čitanje, u trenutnom folderu; putanja se može zadati: `--selftest report.txt`)
 
-Podešavanja: `~/.config/SuperCelik/settings.json`. Jezik interfejsa se uzima iz `LANG` (ru / sr / en), menja se na kartici „Podešavanja“.
+Podešavanja: `~/.config/SuperCelik/settings.json`. „Prikaži demo podatke“ na kartici „Podešavanja“ popunjava prozor izmišljenim podacima (kartica nije potrebna), a pri isključivanju vraća pravi čitač. Jezik interfejsa se uzima iz `LANG` (ru / sr / en), menja se na kartici „Podešavanja“.
 
 **Status:** nije probano na pravoj kartici pod Linux-om (razvoj je rađen na Mac-u: interfejs, PDF i gradnja su provereni, čitanje kartice preko `libpcsclite` i CMS potpis nisu provereni na Linux-u). Prvo pokrenite `--selftest`.
