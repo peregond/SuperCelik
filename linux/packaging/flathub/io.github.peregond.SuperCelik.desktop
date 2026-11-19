@@ -1,0 +1,13 @@
+[Desktop Entry]
+Type=Application
+Name=Super Čelik
+Name[sr]=Super Čelik
+Comment=Serbian electronic ID card reader
+Comment[ru]=Чтение электронной ID-карты Сербии
+Comment[sr]=Čitač elektronske lične karte
+Exec=supercelik
+Icon=io.github.peregond.SuperCelik
+Terminal=false
+Categories=Utility;Office;
+Keywords=ID;eID;card;smartcard;Serbia;licna karta;Čelik;
+StartupWMClass=SuperCelik
