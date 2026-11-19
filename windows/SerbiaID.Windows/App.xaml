@@ -5,6 +5,7 @@
              Startup="OnStartup">
     <Application.Resources>
         <!-- icon font (Icons.Init() swaps these on Windows without Segoe MDL2 Assets) -->
+        <FontFamily x:Key="UiFont">Segoe UI, Tahoma, Arial</FontFamily>
         <FontFamily x:Key="IconFont">Segoe Fluent Icons, Segoe MDL2 Assets</FontFamily>
         <sys:String x:Key="ChevronGlyph">&#xE70D;</sys:String>
 

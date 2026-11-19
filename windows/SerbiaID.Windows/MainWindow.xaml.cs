@@ -89,9 +89,10 @@ public partial class MainWindow : Window
         label.Text = text; label.Foreground = B(fg); pill.Background = B(bg); pill.Visibility = Visibility.Visible;
     }
 
-    internal static TextBlock Glyph(string g, double size = 15) => Icons.Available
-        ? new TextBlock { Text = g, FontFamily = Icons.Font, FontSize = size, VerticalAlignment = VerticalAlignment.Center }
-        : new TextBlock { Text = Icons.Fallback(g), FontSize = size, VerticalAlignment = VerticalAlignment.Center, Visibility = Icons.Fallback(g).Length == 0 ? Visibility.Collapsed : Visibility.Visible };
+    internal static TextBlock Glyph(string g, double size = 15) => new TextBlock
+    {
+        Text = Icons.Map(g), FontFamily = Icons.Font, FontSize = size, VerticalAlignment = VerticalAlignment.Center,
+    };
 
     private static void SetBtn(Button b, string glyph, string text)
     {
@@ -105,7 +106,7 @@ public partial class MainWindow : Window
 
     private Button IconBtn(string glyph, string tip)
     {
-        var b = new Button { Style = (Style)FindResource("IconButton"), Content = Icons.Available ? Glyph(glyph, 14) : (object)tip, ToolTip = tip, Margin = new Thickness(2, 0, 0, 0) };
+        var b = new Button { Style = (Style)FindResource("IconButton"), Content = Glyph(glyph, 14), ToolTip = tip, Margin = new Thickness(2, 0, 0, 0) };
         AutomationProperties.SetName(b, tip);
         return b;
     }
@@ -137,7 +138,7 @@ public partial class MainWindow : Window
     {
         Title = Loc.T("appTitle");
         LblBrand.Text = Loc.T("appTitle"); LblBrandSub.Text = Loc.T("brandSub");
-        BtnRefresh.Content = Icons.Available ? Glyph("", 15) : (object)Loc.T("refresh"); BtnRefresh.ToolTip = Loc.T("refresh"); AutomationProperties.SetName(BtnRefresh, Loc.T("refresh"));
+        BtnRefresh.Content = Glyph("", 15); BtnRefresh.ToolTip = Loc.T("refresh"); AutomationProperties.SetName(BtnRefresh, Loc.T("refresh"));
         SetBtn(BtnRead, "", Loc.T("readCard"));
         SetBtn(BtnReadBig, "", Loc.T("readCard"));
         SetBtn(BtnPrint, "", Loc.T("printCard"));
@@ -1206,7 +1207,7 @@ internal sealed class PreviewWindow : Window
         Title = $"{Loc.T("preview")} — {Loc.T("appTitle")}";
         Width = 760; Height = 860; MinWidth = 520; MinHeight = 500;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
-        FontFamily = new FontFamily("Segoe UI, Tahoma, Arial");
+        FontFamily = (FontFamily)Application.Current.Resources["UiFont"];
         SetResourceReference(BackgroundProperty, "BgBrush");
 
         var dock = new DockPanel();

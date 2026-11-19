@@ -3,7 +3,7 @@
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:local="clr-namespace:SerbiaID"
         Title="Super Čelik" Icon="app.ico" Width="1020" Height="720" MinWidth="820" MinHeight="600"
-        Background="{DynamicResource BgBrush}" FontFamily="Segoe UI, Tahoma, Arial" FontSize="13" Foreground="{DynamicResource TextBrush}"
+        Background="{DynamicResource BgBrush}" FontFamily="{DynamicResource UiFont}" FontSize="13" Foreground="{DynamicResource TextBrush}"
         WindowStartupLocation="CenterScreen">
     <DockPanel>
         <!-- Update banner -->

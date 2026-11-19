@@ -43,6 +43,8 @@
     <Page Include="..\SerbiaID.Windows\MainWindow.xaml" Link="MainWindow.xaml" />
     <Page Include="..\SerbiaID.Windows\Logo.xaml" Link="Logo.xaml" />
     <Resource Include="..\SerbiaID.Windows\app.ico" Link="app.ico" />
+    <!-- Windows XP / 7 have no Segoe MDL2 Assets (and XP no Segoe UI): Open Sans (OFL) and a subset of Fluent System Icons (MIT) -->
+    <Resource Include="Fonts\*.ttf" />
     <!-- the cartoon poses, shared with the macOS app -->
     <Resource Include="..\..\Sources\SerbiaID\Resources\Mascots\*.png" Link="Mascots\%(Filename)%(Extension)" />
     <!-- MUP root + intermediate CA certificates shared with the macOS app -->
