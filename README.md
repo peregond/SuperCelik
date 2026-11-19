@@ -17,7 +17,7 @@ An independent implementation, not affiliated with MUP RS or NetSeT/Veridos.
 - **Android 8+**: `SuperCelik-<version>-android.apk` from [Releases](https://github.com/peregond/SuperCelik/releases) (to install it by hand, allow installation from unknown sources). Reads the card through a USB smart-card reader (USB-C or OTG): data, MUP signature check, token, PIN change, file signing, eUprava sign-in.
 - **Windows 10/11 x64**: `SuperCelik-<version>-windows-x64-setup.exe`. The installer is not signed with a publisher certificate, so SmartScreen may warn you (“More info” → “Run anyway”).
 - **Windows XP SP3 / Vista / 7 and 32-bit Windows**: `SuperCelik-<version>-windows-x86-legacy-setup.exe` (a separate build on .NET Framework 4.0, which the installer asks for if it is missing). Everything works the same except: browser-login driver needs Windows Vista or newer (not on XP), and automatic updates need TLS 1.2 (Windows 7 with updates; not on XP). Built in CI, not yet tried on a real XP.
-- **Linux (x64 and arm64), beta**: `SuperCelik-<version>-linux-amd64.deb` / `-arm64.deb` (Debian, Ubuntu and derivatives: `sudo apt install ./SuperCelik-*.deb`, which pulls in `pcscd`) or `SuperCelik-<version>-linux-<x64|arm64>.tar.gz` (unpack and run `./SuperCelik`; needs `pcscd` and `libpcsclite1`). Reads the card through a USB reader over PC/SC; the .deb installs everything it needs (`pcscd`, the reader driver, the NSS tools) and the x64 builds carry the browser sign-in module. It has not been tried on a real card under Linux yet: please report what you see in [Issues](https://github.com/peregond/SuperCelik/issues/new).
+- **Linux (x64 and arm64), beta**: `SuperCelik-<version>-linux-amd64.deb` / `-arm64.deb` (Debian, Ubuntu and derivatives: `sudo apt install ./SuperCelik-*.deb`, which pulls in `pcscd`) or `SuperCelik-<version>-linux-<x86_64|aarch64>.AppImage` (any distribution: `chmod +x` and run; needs `pcscd` and `libpcsclite1` on the system) or `SuperCelik-<version>-linux-<x86_64|aarch64>.flatpak` (`flatpak install --user ./SuperCelik-*.flatpak`; uses the host `pcscd` through `--socket=pcsc`, so it needs Flatpak 1.15.x or later; no browser sign-in module inside the sandbox) or `SuperCelik-<version>-linux-<x64|arm64>.tar.gz` (unpack and run `./SuperCelik`; needs `pcscd` and `libpcsclite1`). Reads the card through a USB reader over PC/SC; the .deb installs everything it needs (`pcscd`, the reader driver, the NSS tools) and the x64 builds carry the browser sign-in module. It has not been tried on a real card under Linux yet: please report what you see in [Issues](https://github.com/peregond/SuperCelik/issues/new).
 
 Builds are made automatically in GitHub Actions: every push to `main` → artifacts; a `vX.Y.Z` tag → a release.
 
@@ -32,7 +32,7 @@ Linux (.NET 8 SDK, `dpkg-deb` for the .deb):
 
     dotnet run --project linux/SerbiaID.Linux                      # with a real reader (needs pcscd)
     dotnet run --project linux/SerbiaID.Linux -- --demo            # demo data, no card
-    bash scripts/make-linux.sh 0.9.9 x64                           # or arm64 → dist/*.deb and dist/*.tar.gz
+    bash scripts/make-linux.sh 0.9.9 x64                           # or arm64 → dist/*.deb, *.tar.gz, *.AppImage
 
 Windows (.NET 8 SDK):
 

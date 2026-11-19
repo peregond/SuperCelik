@@ -13,6 +13,8 @@ public sealed record Asset(string Name, string Url, string Sha256);
 /// Looks for a newer GitHub release and can install it.
 ///  - installed from the .deb (/opt/supercelik): downloads the matching .deb and installs it with `pkexec apt-get install`
 ///    (the system asks for the administrator password);
+///  - run as an AppImage: downloads the new .AppImage and replaces the file;
+///  - run from a Flatpak: no self-update (Flatpak does that), the button opens the release page;
 ///  - unpacked from the .tar.gz into a folder the user can write to: downloads the .tar.gz and copies the new files over the old ones.
 /// A file is installed only if its SHA-256 equals the digest GitHub reports for that release asset; otherwise the app only
 /// opens the release page. After a successful update the app starts itself again.
@@ -54,12 +56,15 @@ public static class Updater
 
     public static List<Asset> LatestAssets { get; private set; } = new();
 
+    private static string AppImagePath => Packaging.IsAppImage ? Environment.GetEnvironmentVariable("APPIMAGE") : null;
     private static bool IsDebInstall => AppContext.BaseDirectory.StartsWith("/opt/supercelik", StringComparison.Ordinal);
     private static bool Arm => RuntimeInformation.ProcessArchitecture == Architecture.Arm64;
 
-    private static bool FolderWritable()
+    private static bool FolderWritable() => FileWritable(AppContext.BaseDirectory);
+
+    private static bool FileWritable(string folder)
     {
-        try { var f = Path.Combine(AppContext.BaseDirectory, ".write-test-" + Guid.NewGuid().ToString("N")); File.WriteAllText(f, ""); File.Delete(f); return true; }
+        try { var f = Path.Combine(folder, ".write-test-" + Guid.NewGuid().ToString("N")); File.WriteAllText(f, ""); File.Delete(f); return true; }
         catch { return false; }
     }
 
@@ -68,6 +73,13 @@ public static class Updater
 
     private static Plan MakePlan()
     {
+        if (Packaging.IsFlatpak) return null;       // Flatpak updates itself through the store / `flatpak update`
+        if (AppImagePath != null)
+        {
+            if (!File.Exists(AppImagePath) || !FileWritable(Path.GetDirectoryName(AppImagePath))) return null;
+            var img = LatestAssets.FirstOrDefault(a => a.Sha256 != null && a.Name.EndsWith(Arm ? "linux-aarch64.AppImage" : "linux-x86_64.AppImage"));
+            return img == null ? null : new Plan(img, null, null);
+        }
         if (IsDebInstall)
         {
             if (!File.Exists("/usr/bin/pkexec")) return null;
@@ -104,7 +116,7 @@ public static class Updater
         }
         finally { try { Directory.Delete(dir, true); } catch { } }
 
-        Process.Start(new ProcessStartInfo(Environment.ProcessPath!) { UseShellExecute = false });
+        Process.Start(new ProcessStartInfo(AppImagePath ?? Environment.ProcessPath!) { UseShellExecute = false });
         Environment.Exit(0);
     }
 
@@ -132,7 +144,15 @@ public static class Updater
         if (!hash.Equals(asset.Sha256, StringComparison.OrdinalIgnoreCase)) throw new InvalidOperationException("SHA-256 does not match");
 
         status(installing);
-        if (IsDebInstall)
+        if (AppImagePath != null)
+        {
+            // an AppImage is a single file: put the new one next to the old one and rename over it (the running image stays valid)
+            var next = AppImagePath + ".new";
+            File.Copy(file, next, true);
+            File.SetUnixFileMode(next, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute | UnixFileMode.GroupRead | UnixFileMode.GroupExecute | UnixFileMode.OtherRead | UnixFileMode.OtherExecute);
+            File.Move(next, AppImagePath, true);
+        }
+        else if (IsDebInstall)
             await Run("pkexec", "env", "DEBIAN_FRONTEND=noninteractive", "apt-get", "install", "-y", file);
         else
         {

@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.peregond.SuperCelik</id>
+  <name>Super Čelik</name>
+  <summary>Serbian electronic ID card reader</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <url type="homepage">https://github.com/peregond/SuperCelik</url>
+  <url type="bugtracker">https://github.com/peregond/SuperCelik/issues</url>
+  <launchable type="desktop-id">io.github.peregond.SuperCelik.desktop</launchable>
+  <description>
+    <p>Reads the Serbian eID, foreigner ID card and residence permit through a USB smart card reader: personal data, signature check, token certificates, PIN change, file signing and a PDF printout.</p>
+    <p>The card reader service (pcscd) must run on the host system. Independent implementation, not affiliated with MUP RS or NetSeT/Veridos.</p>
+  </description>
+  <content_rating type="oars-1.1"/>
+  <releases>
+    <release version="VERSION_PLACEHOLDER" date="DATE_PLACEHOLDER"/>
+  </releases>
+</component>

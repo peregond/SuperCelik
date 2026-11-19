@@ -8,8 +8,28 @@ namespace SerbiaID;
 public static class BrowserSetup
 {
     public const string ModuleName = "Srb Id PKCS11";
-    public static string ModulePath => Path.Combine(AppContext.BaseDirectory, "pkcs11", "libsrb-id-pkcs11.so");
-    public static bool HasModule => File.Exists(ModulePath);
+    private static string Bundled => Path.Combine(AppContext.BaseDirectory, "pkcs11", "libsrb-id-pkcs11.so");
+
+    /// The module the browsers load. An AppImage is mounted at a new path on every start, so its module is copied to a fixed
+    /// place first; otherwise the browser entry would break after the next launch.
+    public static string ModulePath
+    {
+        get
+        {
+            if (!Packaging.IsAppImage) return Bundled;
+            try
+            {
+                var dir = Path.Combine(Home, ".local", "share", "SuperCelik", "pkcs11");
+                var dest = Path.Combine(dir, "libsrb-id-pkcs11.so");
+                if (!File.Exists(dest) || new FileInfo(dest).Length != new FileInfo(Bundled).Length) { Directory.CreateDirectory(dir); File.Copy(Bundled, dest, true); }
+                return dest;
+            }
+            catch { return Bundled; }
+        }
+    }
+
+    /// A Flatpak app cannot reach the browsers' databases and a host browser cannot load a library from inside the sandbox.
+    public static bool HasModule => !Packaging.IsFlatpak && File.Exists(Bundled);
 
     public sealed record Target(string Label, string Dir);
     public sealed record Result(string Kind, List<string> Names, string Detail);      // Kind: nomodule / notool / none / done / failed
