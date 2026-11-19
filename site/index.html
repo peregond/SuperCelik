@@ -506,7 +506,7 @@ const KEEP=new RegExp("(^|[^\\p{L}\\p{N}])(Super Čelik|SuperCelik-…-windows-x
 function translitText(t){let o="",last=0;
  for(const m of t.matchAll(KEEP)){o+=cyr(t.slice(last,m.index))+m[1]+m[2];last=m.index+m[0].length}
  return o+cyr(t.slice(last))}
-function translit(html){return html.split(/(<[^>]*>)/).map((p,i)=>i%2?p:translitText(p)).join("")}
+function translit(html){let code=false;return html.split(/(<[^>]*>)/).map((p,i)=>{if(i%2){if(/^<code[\s>]/i.test(p))code=true;else if(/^<\/code>/i.test(p))code=false;return p}return code?p:translitText(p)}).join("")}   // commands inside <code> stay as typed
 function tr(l,k){
  if(l==="sc"){const v=T.sr[k];return v!=null?translit(v):T.ru[k]}
  return ((T[l])||{})[k]??T.ru[k]}

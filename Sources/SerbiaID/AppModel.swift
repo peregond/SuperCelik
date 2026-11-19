@@ -61,7 +61,7 @@ final class AppModel: ObservableObject {
             loadDemo(problem: args.contains("--problem"))
             if let i = args.firstIndex(of: "--state"), i + 1 < args.count { applyShotState(args[i + 1]) }
         } else {
-            refresh()
+            initialRefresh = Task { await refreshAsync() }
             BrowserLogin.prepare()
         }
         let box = activity
@@ -93,6 +93,7 @@ final class AppModel: ObservableObject {
         refresh()
     }
 
+    private var initialRefresh: Task<Void, Never>?
     func refresh() { Task { await refreshAsync() } }
 
     /// PC/SC calls go through the system smart-card daemon and can block for a long time when it is stuck,
@@ -128,6 +129,7 @@ final class AppModel: ObservableObject {
     /// Runs forever from the root view: card insert / remove, and idle auto-hide.
     func startMonitoring() async {
         guard !isDemoUI else { return }
+        await initialRefresh?.value      // so a card already in the reader at launch is seen before the checks below
         // A card that was already in the reader at launch never produces an "inserted" change.
         if cardPresent { checkDriver() }
         if prefs.autoRead, cardPresent, personal == nil { await readCard() }
