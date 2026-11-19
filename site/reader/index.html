@@ -56,7 +56,8 @@ a{color:inherit}
 @keyframes led{0%,29%{fill:#ffb347}31%,73%{fill:#3ddc84}75%,100%{fill:#ffb347}}
 @keyframes ring{0%,29%{opacity:0;transform:scale(.6)}31%{opacity:.9;transform:scale(.9)}44%{opacity:0;transform:scale(2.6)}100%{opacity:0;transform:scale(2.6)}}
 @media(prefers-reduced-motion:reduce){.rd .card{animation:none;transform:none}.rd .led{animation:none;fill:#3ddc84}.rd .ring{animation:none}}
-.buy{padding:40px 0 8px;text-align:center}
+.buy{padding:40px 0 8px;text-align:left}
+.buy h2{max-width:680px;margin:0 auto 22px}
 h2{font-size:clamp(26px,4vw,38px);line-height:1.1;letter-spacing:-.03em;margin:0 0 22px;font-weight:800}
 /* one button per shop; replace the href of a button with a direct link to the product */
 .shops{list-style:none;margin:0 auto;padding:0;max-width:680px;text-align:left}
@@ -98,7 +99,6 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 28px;justify-content:space-bet
   <clipPath id="cc"><rect x="142" y="20" width="160" height="100" rx="9"/></clipPath>
   <path id="slab" d="M26 0H204a26 26 0 0 1 26 26V114a26 26 0 0 1-26 26H26A26 26 0 0 1 0 114V26A26 26 0 0 1 26 0Z"/>
  </defs>
- <ellipse cx="219" cy="198" rx="140" ry="9" fill="#000" style="fill-opacity:var(--sh)"/>
  <!-- thickness of the slab -->
  <g transform="translate(0 11)"><g transform="matrix(0.9 0.28 -0.42 0.6 176.0 56.8)"><use href="#slab" fill="#8f8b83"/></g></g>
  <g transform="matrix(0.9 0.28 -0.42 0.6 176.0 56.8)">
