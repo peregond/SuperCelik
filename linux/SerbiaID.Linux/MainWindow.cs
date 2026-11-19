@@ -340,7 +340,17 @@ public sealed class MainWindow : Window
 
         _chkDemo = new CheckBox();
         _lblDemoHint = Ui.Label("", 12, false, "MutedBrush", true); _lblDemoHint.Margin = new Thickness(28, 0, 0, 0);
-        _chkDemo.IsCheckedChanged += (_, _) => { if (_loading) return; if (_chkDemo.IsChecked == true) ShowDemoData(); else HideDemoData(); };
+        _chkDemo.IsCheckedChanged += (_, _) =>
+        {
+            if (_loading) return;
+            if (_chkDemo.IsChecked == true)
+            {
+                // a card operation is still running: it would put real data over the demo data, so wait for it
+                if (_busy) { _loading = true; _chkDemo.IsChecked = false; _loading = false; return; }
+                ShowDemoData();
+            }
+            else HideDemoData();
+        };
         var demo = Ui.Card(new StackPanel { Children = { _chkDemo, _lblDemoHint } });
         demo.Margin = new Thickness(0, 16, 0, 0);
 
@@ -415,7 +425,7 @@ public sealed class MainWindow : Window
     // ======================= busy / errors =======================
     private async Task Run(Func<Task> work)
     {
-        if (_busy) return;
+        if (_busy || _demo) return;           // demo data on screen: no real reader access
         _busy = true; _busyBar.IsVisible = true; UpdateCardLabel();
         try { await work(); }
         catch (Exception ex) { ShowProblem(ex); }
@@ -536,6 +546,7 @@ public sealed class MainWindow : Window
 
     private void Refresh()
     {
+        if (_demo) return;
         try
         {
             if (_serviceDown) { ResetPc(); _serviceDown = false; }
@@ -776,6 +787,7 @@ public sealed class MainWindow : Window
 
     private async Task ChangePin()
     {
+        if (_demo || _busy) return;
         var v = await AskPinSteps(Loc.T("changePin"), "pinStepOld", "pinOld");
         if (v == null) return;
         if (!v.All(ValidPin)) { ShowInfo(Loc.T("pinInvalid")); return; }
@@ -786,6 +798,7 @@ public sealed class MainWindow : Window
 
     private async Task UnblockPin()
     {
+        if (_demo || _busy) return;
         var v = await AskPinSteps(Loc.T("unblockPin"), "pinStepPuk", "pukEnter");
         if (v == null) return;
         if (!v.All(ValidPin)) { ShowInfo(Loc.T("pinInvalid")); return; }
@@ -796,6 +809,7 @@ public sealed class MainWindow : Window
 
     private async Task SignFile()
     {
+        if (_demo || _busy) return;
         var files = await StorageProvider.OpenFilePickerAsync(new FilePickerOpenOptions { AllowMultiple = false });
         var src = files.FirstOrDefault()?.TryGetLocalPath();
         if (src == null) return;
@@ -951,7 +965,7 @@ public sealed class MainWindow : Window
     /// Settings > "Show demo data": fictional data on screen, the real reader is not polled meanwhile.
     private void ShowDemoData()
     {
-        _demo = true; _serviceDown = false; _busy = false;
+        _demo = true; _serviceDown = false;
         FillDemoData();
         _revealAll = false;
         HideProblem();
@@ -961,7 +975,7 @@ public sealed class MainWindow : Window
     /// Back to the real reader.
     private void HideDemoData()
     {
-        _demo = false; _busy = false;
+        _demo = false;
         _personal = null; _token = null; _sig = null; _revealAll = false; _cardPresent = false; _readers = new();
         FillReaders(_readers);
         ApplyLanguage();
