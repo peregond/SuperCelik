@@ -51,7 +51,7 @@ modules:
     buildsystem: simple
     build-options:
       env:
-        SC_VERSION: 0.9.10      # keep in step with <Version> in SerbiaID.Linux.csproj
+        SC_VERSION: 0.9.12      # keep in step with <Version> in SerbiaID.Linux.csproj
       arch:
         x86_64: { env: { RID: linux-x64 } }
         aarch64: { env: { RID: linux-arm64 } }
