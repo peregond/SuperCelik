@@ -584,6 +584,7 @@ struct TokenView: View {
     var body: some View {
         ScrollView {
             VStack(spacing: 14) {
+                driverWarning   // above everything, so it is seen before the mascot
                 if model.tokenRows.isEmpty {
                     MascotArt(character: .key, mood: model.readerMood, size: 170)
                     Text(loc.t(.hintToken)).foregroundStyle(.secondary).multilineTextAlignment(.center)
@@ -602,7 +603,6 @@ struct TokenView: View {
                 ActionButton(title: loc.t(.loginEuprava), icon: "key.fill") {
                     NSWorkspace.shared.open(URL(string: "https://euprava.gov.rs/prijava")!)
                 }
-                driverWarning
             }
             .padding(20)
             .frame(maxWidth: 560)

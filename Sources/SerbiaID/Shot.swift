@@ -15,7 +15,13 @@ enum Shot {
     }
 
     /// The page the screenshot asks for (nil in a normal launch).
-    static var page: String? { arguments?.page }
+    /// `--page personal|token|settings` opens that page in the real window (with SERBIAID_DEMO=1), for store screenshots.
+    static var page: String? {
+        if let p = arguments?.page { return p }
+        let a = CommandLine.arguments
+        if let i = a.firstIndex(of: "--page"), i + 1 < a.count { return a[i + 1] }
+        return nil
+    }
 
     private static var window: NSWindow?
 

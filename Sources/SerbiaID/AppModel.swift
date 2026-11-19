@@ -54,10 +54,10 @@ final class AppModel: ObservableObject {
 
     init() {
         let args = CommandLine.arguments
-        isDemoUI = args.contains("--shot") || ProcessInfo.processInfo.environment["SERBIAID_DEMO"] == "1"
+        isDemoUI = args.contains("--shot") || args.contains("--page") || ProcessInfo.processInfo.environment["SERBIAID_DEMO"] == "1"
         service = isDemoUI ? MockCardService() : PCSCService()
-        if args.contains("--shot") {
-            Prefs.shared.theme = args.contains("--dark") ? "dark" : "light"
+        if args.contains("--shot") || args.contains("--page") {
+            Prefs.shared.theme = (args.contains("--dark") || args.contains("--night")) ? "dark" : "light"
             loadDemo(problem: args.contains("--problem"))
             if let i = args.firstIndex(of: "--state"), i + 1 < args.count { applyShotState(args[i + 1]) }
         } else {

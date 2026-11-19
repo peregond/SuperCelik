@@ -15,8 +15,8 @@ case "$ARCH" in
 esac
 
 APP="dist/SuperCelik.app"
-swift build -c release "${ARCHFLAGS[@]}"
-BIN_DIR="$(swift build -c release "${ARCHFLAGS[@]}" --show-bin-path)"
+swift build -c release "${ARCHFLAGS[@]}" -Xlinker -platform_version -Xlinker macos -Xlinker 13.0 -Xlinker 27.2
+BIN_DIR="$(swift build -c release "${ARCHFLAGS[@]}" -Xlinker -platform_version -Xlinker macos -Xlinker 13.0 -Xlinker 27.2 --show-bin-path)"
 
 rm -rf dist && mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 # Executable name matches CFBundleExecutable in Info.plist
