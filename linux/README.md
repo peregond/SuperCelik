@@ -15,7 +15,7 @@ PC/SC access through `libpcsclite` (`Native.cs`), the interface and the print sh
 
 ## What is missing compared with Windows
 - Browser sign-in with the card certificate: on Linux this is done with a PKCS#11 module (OpenSC or [srb-id-pkcs11](https://github.com/ubavic/srb-id-pkcs11)) in the browser settings; the app does not configure it.
-- Auto-update: the app only tells you about a new version and opens the release page.
+- Updates: the app checks for a new version and updates itself. With the .deb it downloads the new .deb and installs it through `pkexec apt-get install` (the system asks for the administrator password); with the .tar.gz in a folder you can write to it replaces the files in place. The package is installed only if its SHA-256 equals the digest GitHub shows for the release file; otherwise the app just opens the release page. After updating, the app restarts.
 - Printing: “Print” saves a PDF to a temporary file and opens it in the viewer (which has the print dialog); “Save PDF” puts the file where you choose.
 
 ## Run and check
