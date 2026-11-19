@@ -28,11 +28,17 @@ Name: "russian"; MessagesFile: "compiler:Languages\Russian.isl"
 Name: "serbian"; MessagesFile: "Serbian.isl"
 
 [CustomMessages]
-english.NeedDotNet=Super Čelik needs Microsoft .NET Framework 4.0 or newer (it is not installed on this computer).%nInstall it from Microsoft (dotnetfx40_Full_x86_x64.exe, "Microsoft .NET Framework 4 Web/Standalone Installer") and run this setup again.
-russian.NeedDotNet=Для Super Čelik нужен Microsoft .NET Framework 4.0 или новее (на этом компьютере он не установлен).%nУстановите его с сайта Microsoft (dotnetfx40_Full_x86_x64.exe, «Microsoft .NET Framework 4») и запустите установку ещё раз.
-serbian.NeedDotNet=Super Čelik zahteva Microsoft .NET Framework 4.0 ili noviji (nije instaliran na ovom računaru).%nInstalirajte ga sa Microsoft sajta (dotnetfx40_Full_x86_x64.exe, "Microsoft .NET Framework 4") i ponovo pokrenite instalaciju.
+english.InstallingDotNet=Installing Microsoft .NET Framework 4.0 (this can take a few minutes)...
+russian.InstallingDotNet=Установка Microsoft .NET Framework 4.0 (это может занять несколько минут)...
+serbian.InstallingDotNet=Instalacija Microsoft .NET Framework 4.0 (može potrajati nekoliko minuta)...
+english.DotNetFailed=Microsoft .NET Framework 4.0 could not be installed (error %1). Super Čelik needs it: install it from Microsoft and run this setup again.
+russian.DotNetFailed=Не удалось установить Microsoft .NET Framework 4.0 (ошибка %1). Он нужен для Super Čelik: установите его с сайта Microsoft и запустите установку ещё раз.
+serbian.DotNetFailed=Microsoft .NET Framework 4.0 nije mogao da se instalira (greška %1). Potreban je za Super Čelik: instalirajte ga sa Microsoft sajta i ponovo pokrenite instalaciju.
 
 [Files]
+; Microsoft .NET Framework 4.0 (Full) redistributable: installed first when the computer does not have .NET 4 yet
+; (downloaded by CI, see build.yml)
+Source: "..\dist\dotnetfx40_Full_x86_x64.exe"; DestDir: "{tmp}"; Flags: dontcopy
 ; framework-dependent publish output (see build.yml), both card minidrivers (x86 and x64) are in it
 Source: "..\dist\win-x86-legacy\*"; DestDir: "{app}"; Flags: recursesubdirs ignoreversion
 
@@ -57,29 +63,64 @@ Name: "desktopicon"; Description: "{cm:CreateDesktopIcon}"
 [Run]
 ; register the card driver for the exact ATR of the Gemalto-based Serbian eID (the app writes both registry views of
 ; a 64-bit Windows; Windows Vista or newer only)
-Filename: "{app}\SuperCelik.exe"; Parameters: "--register-driver 3BFF9400008131804380318065B0850201F3120FFF82900079"; MinVersion: 0,6.0; Flags: runhidden waituntilterminated
+Filename: "{app}\SuperCelik.exe"; Parameters: "--register-driver 3BFF9400008131804380318065B0850201F3120FFF82900079"; MinVersion: 0,6.0; Check: DotNetReady; Flags: runhidden waituntilterminated
 ; register the driver for the cards that are in a reader right now (the installer is elevated); never fails the install
-Filename: "{app}\SuperCelik.exe"; Parameters: "--register-driver auto"; Flags: runhidden waituntilterminated
+Filename: "{app}\SuperCelik.exe"; Parameters: "--register-driver auto"; Check: DotNetReady; Flags: runhidden waituntilterminated
 ; interactive install: "Launch Super Čelik" checkbox on the last page
-Filename: "{app}\SuperCelik.exe"; Description: "{cm:LaunchProgram,Super Čelik}"; Flags: nowait postinstall skipifsilent runasoriginaluser
+Filename: "{app}\SuperCelik.exe"; Description: "{cm:LaunchProgram,Super Čelik}"; Check: DotNetReady; Flags: nowait postinstall skipifsilent runasoriginaluser
 ; silent install (auto-update from inside the app): start the new version again automatically
-Filename: "{app}\SuperCelik.exe"; Flags: nowait runasoriginaluser; Check: WizardSilent
+Filename: "{app}\SuperCelik.exe"; Flags: nowait runasoriginaluser; Check: SilentAndDotNetReady
 
 [UninstallRun]
 ; take the browser-login driver out of Windows (asks for administrator rights); nothing happens if it was never installed
 Filename: "{app}\SuperCelik.exe"; Parameters: "--unregister-driver"; RunOnceId: "UnregisterDriver"; Flags: runhidden waituntilterminated
 
 [Code]
-// .NET Framework 4.0 (Client or Full) is what the program runs on; Windows XP and 7 do not have it out of the box.
-function InitializeSetup(): Boolean;
+var
+  RestartNeeded: Boolean;
+
+// .NET Framework 4.0 or newer (Client or Full profile) is what the program runs on
+function HasDotNet4(): Boolean;
 var
   Install: Cardinal;
 begin
-  Result := True;
-  if not (RegQueryDWordValue(HKLM, 'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full', 'Install', Install) and (Install = 1)) and
-     not (RegQueryDWordValue(HKLM, 'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Client', 'Install', Install) and (Install = 1)) then
+  Result := (RegQueryDWordValue(HKLM, 'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Full', 'Install', Install) and (Install = 1)) or
+            (RegQueryDWordValue(HKLM, 'SOFTWARE\Microsoft\NET Framework Setup\NDP\v4\Client', 'Install', Install) and (Install = 1));
+end;
+
+// the program can be started now: .NET is there and no restart is waiting for it
+function DotNetReady(): Boolean;
+begin
+  Result := (not RestartNeeded) and HasDotNet4();
+end;
+
+function SilentAndDotNetReady(): Boolean;
+begin
+  Result := WizardSilent and DotNetReady();
+end;
+
+procedure CurStepChanged(CurStep: TSetupStep);
+var
+  Code: Integer;
+  Switches: String;
+begin
+  if (CurStep = ssInstall) and (not HasDotNet4()) then
   begin
-    if not WizardSilent then MsgBox(ExpandConstant('{cm:NeedDotNet}'), mbError, MB_OK);
-    Result := False;
+    ExtractTemporaryFile('dotnetfx40_Full_x86_x64.exe');
+    WizardForm.StatusLabel.Caption := CustomMessage('InstallingDotNet');
+    if WizardSilent then Switches := '/q /norestart' else Switches := '/passive /norestart';
+    if Exec(ExpandConstant('{tmp}\dotnetfx40_Full_x86_x64.exe'), Switches, '', SW_SHOW, ewWaitUntilTerminated, Code) then
+    begin
+      if Code = 3010 then RestartNeeded := True           // installed, Windows wants a restart
+      else if (Code <> 0) and (Code <> 1638) and not HasDotNet4() then
+        if not WizardSilent then MsgBox(FmtMessage(CustomMessage('DotNetFailed'), [IntToStr(Code)]), mbError, MB_OK);
+    end
+    else if not WizardSilent then
+      MsgBox(FmtMessage(CustomMessage('DotNetFailed'), [SysErrorMessage(Code)]), mbError, MB_OK);
   end;
+end;
+
+function NeedRestart(): Boolean;
+begin
+  Result := RestartNeeded;
 end;
