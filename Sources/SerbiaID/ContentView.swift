@@ -407,7 +407,7 @@ struct PersonalView: View {
         ToolbarItem(placement: .navigation) {
             if model.personal != nil {
                 Button { model.clear() } label: { Label(loc.t(.close), systemImage: "xmark") }
-                    .help(loc.t(.close))
+                    .help(loc.t(.close)).disabled(model.busy)
             }
         }
         ToolbarItem(placement: .primaryAction) {
@@ -601,7 +601,7 @@ struct TokenView: View {
         .toolbar {
             ToolbarItem(placement: .navigation) {
                 if !model.tokenRows.isEmpty {
-                    Button { model.clear() } label: { Label(loc.t(.close), systemImage: "xmark") }.help(loc.t(.close))
+                    Button { model.clear() } label: { Label(loc.t(.close), systemImage: "xmark") }.help(loc.t(.close)).disabled(model.busy)
                 }
             }
         }

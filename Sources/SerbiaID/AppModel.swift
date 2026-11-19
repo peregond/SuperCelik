@@ -185,7 +185,8 @@ final class AppModel: ObservableObject {
     }
 
     /// The "x" in the toolbar: forget everything that was read (card and token), like on iPhone.
-    func clear() { clearData() }
+    /// Not while a read is running: its result would bring the data back.
+    func clear() { guard !busy else { return }; clearData() }
 
     private func clearData() {
         personal = nil; token = nil; tokenRows = []; signatureStatus = nil; revealAll = false

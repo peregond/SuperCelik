@@ -24,10 +24,21 @@ struct ReaderHelpSheet: View {
 
 private struct ReaderWebView: NSViewRepresentable {
     let url: URL
+    func makeCoordinator() -> Coordinator { Coordinator() }
     func makeNSView(context: Context) -> WKWebView {
         let w = WKWebView(frame: .zero, configuration: WKWebViewConfiguration())
+        w.uiDelegate = context.coordinator
         w.load(URLRequest(url: url))
         return w
     }
     func updateNSView(_ view: WKWebView, context: Context) {}
+
+    /// The shop links on the page open in a new window (`target="_blank"`): a web view has none, so they go to the default browser.
+    final class Coordinator: NSObject, WKUIDelegate {
+        func webView(_ webView: WKWebView, createWebViewWith configuration: WKWebViewConfiguration,
+                     for navigationAction: WKNavigationAction, windowFeatures: WKWindowFeatures) -> WKWebView? {
+            if let u = navigationAction.request.url, u.scheme == "https" || u.scheme == "http" { NSWorkspace.shared.open(u) }
+            return nil
+        }
+    }
 }
