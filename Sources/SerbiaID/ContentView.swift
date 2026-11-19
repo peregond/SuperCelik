@@ -521,6 +521,7 @@ struct TokenView: View {
                         }
                         Text(loc.t(.pinNote)).font(.caption).foregroundStyle(.secondary)
                             .multilineTextAlignment(.center).frame(maxWidth: 420)
+                        browserLoginCheck.frame(maxWidth: 460)
                     }
                 }
             } else {
@@ -536,6 +537,7 @@ struct TokenView: View {
                         ForEach(model.tokenRows) { certificate($0) }
                         pinButtons
                         Text(loc.t(.pinNote)).font(.caption).foregroundStyle(.secondary)
+                        browserLoginCheck
                     }
                     .padding(20)
                     .frame(maxWidth: 920, alignment: .leading)
@@ -551,6 +553,33 @@ struct TokenView: View {
                     readButton.labelStyle(.titleAndIcon).help(loc.t(.readToken))
                 }
             }
+        }
+    }
+
+    /// The two checks a user used to run in Terminal (pluginkit / security list-smartcards), as a status line.
+    private var browserLoginCheck: some View {
+        let ok = model.driverState == .ok
+        let missing = model.driverState == .missing
+        return Card {
+            HStack(alignment: .top, spacing: 12) {
+                Image(systemName: ok ? "checkmark.circle.fill" : (missing ? "exclamationmark.triangle.fill" : "globe"))
+                    .foregroundStyle(ok ? Color.green : (missing ? Color.orange : Color.secondary))
+                    .font(.title3)
+                VStack(alignment: .leading, spacing: 4) {
+                    Text(loc.t(.loginCheckTitle)).font(.subheadline.weight(.semibold))
+                    Text(loc.t(ok ? .loginCheckOk : (missing ? .loginCheckMissing : .loginCheckNoCard)))
+                        .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 8)
+                Button(loc.t(.loginCheckBtn)) { Task { await model.checkDriverNow() } }
+                    .disabled(!model.cardPresent || model.busy)
+            }
+        }
+        .task(id: model.cardPresent) {
+            // the system needs a few seconds to attach the driver after the card is inserted
+            guard model.cardPresent else { return }
+            try? await Task.sleep(nanoseconds: 6_000_000_000)
+            if !Task.isCancelled { await model.checkDriverNow() }
         }
     }
 
