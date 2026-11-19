@@ -71,7 +71,7 @@ final class Loc: ObservableObject {
         // iOS (NFC)
         case statusReading, emptyNoReaderT, emptyNoReaderH, emptyNoCardT, emptyNoCardH, emptyReadyT, emptyReadyH, demoData, demoHint, tabCardShort, tabTokenShort, readCardAuto, hintAuto, viewPdf, photo, scanUsb, usbNoReaderT, usbNoReaderH, hintUsb, scanCard, nfcPrompt, nfcReading, nfcDone, sharePdf, hintNfc, aboutTextIOS
         case nfcUnavailableT, nfcUnavailableH, nfcNoCardT, nfcNoCardH, nfcLostT, nfcLostH
-        case iosNoReaderH, iosNoCardH, iosReadyH
+        case iosNoReaderH, iosNoCardH, iosReadyH, iosNoReaderQ, readerHelpTitle
     }
 
     // swiftlint:disable line_length
@@ -102,8 +102,10 @@ final class Loc: ObservableObject {
         .sharePdf: [.ru: "Поделиться", .en: "Share PDF", .sr: "Podeli PDF"],
         .hintNfc: [.ru: "Нажмите «Прочитать карту по NFC» и приложите карту к верхней части iPhone.", .en: "Tap “Read card via NFC” and hold the card against the top of your iPhone.", .sr: "Dodirnite „Pročitaj karticu preko NFC-a“ i prislonite karticu uz gornji deo iPhone-a."],
         .aboutTextIOS: [.ru: "Чтение электронной ID-карты Сербии через считыватель смарт-карт. Независимая реализация, не связана с МУП РС и NetSeT/Veridos.", .en: "Reads the Serbian electronic ID card through a smart card reader. Independent implementation, not affiliated with MUP RS or NetSeT/Veridos.", .sr: "Čitanje elektronske lične karte Srbije preko čitača pametnih kartica. Nezavisna implementacija, nije povezana sa MUP RS i NetSeT/Veridos."],
-        .iosNoReaderH: [.ru: "Подключите считыватель смарт-карт к iPhone или iPad по USB-C: приложение увидит его само.", .en: "Plug a smart card reader into your iPhone or iPad over USB-C: the app will notice it by itself.", .sr: "Povežite čitač pametnih kartica na iPhone ili iPad preko USB-C: aplikacija će ga sama prepoznati."],
-        .iosNoCardH: [.ru: "Считыватель подключён. Вставьте карту в него до конца.", .en: "The reader is connected. Push the card all the way into it.", .sr: "Čitač je povezan. Umetnite karticu u njega do kraja."],
+        .readerHelpTitle: [.ru: "Нет считывателя?", .en: "No reader yet?", .sr: "Nemate čitač?"],
+        .iosNoReaderH: [.ru: "Подключите его по USB-C.", .en: "Plug it in over USB-C.", .sr: "Povežite ga preko USB-C."],
+        .iosNoReaderQ: [.ru: "Подключите считыватель смарт-карт к iPhone или iPad по USB-C: приложение увидит его само.", .en: "Plug a smart card reader into your iPhone or iPad over USB-C: the app will notice it by itself.", .sr: "Povežite čitač pametnih kartica na iPhone ili iPad preko USB-C: aplikacija će ga sama prepoznati."],
+        .iosNoCardH: [.ru: "Вставьте карту до конца.", .en: "Push the card all the way in.", .sr: "Umetnite karticu do kraja."],
         .iosReadyH: [.ru: "Нажмите «Прочитать карту». Данные останутся на этом устройстве.", .en: "Tap “Read card”. The data stays on this device.", .sr: "Dodirnite „Pročitaj karticu“. Podaci ostaju na ovom uređaju."],
         .nfcUnavailableT: [.ru: "NFC недоступен", .en: "NFC is not available", .sr: "NFC nije dostupan"],
         .nfcUnavailableH: [.ru: "Это устройство не умеет читать карты по NFC. Нужен iPhone 7 или новее.", .en: "This device cannot read cards over NFC. An iPhone 7 or newer is required.", .sr: "Ovaj uređaj ne može da čita kartice preko NFC-a. Potreban je iPhone 7 ili noviji."],
@@ -176,8 +178,8 @@ final class Loc: ObservableObject {
         .docSerial: [.ru: "Серийный номер документа", .en: "Document serial number", .sr: "Serijski broj dokumenta"],
         .pinUnsupported: [.ru: "Смена PIN доступна только для старой карты (до 18.08.2014)", .en: "PIN change is available only for the old card (issued before 18.08.2014)", .sr: "Promena PIN-a je moguća samo za staru karticu (pre 18.08.2014)"],
         .certMoiCA: [.ru: "Промежуточный сертификат МВД", .en: "MoI intermediate CA", .sr: "Posrednički sertifikat MUP-a"],
-        .certAuth: [.ru: "Сертификат аутентификации", .en: "Authentication certificate", .sr: "Sertifikat za autentikaciju"],
-        .certSign: [.ru: "Сертификат подписи", .en: "Signing certificate", .sr: "Sertifikat za potpisivanje"],
+        .certAuth: [.ru: "Сертификат входа", .en: "Sign-in certificate", .sr: "Sertifikat za prijavu"],
+        .certSign: [.ru: "Сертификат подписи", .en: "Signing certificate", .sr: "Sertifikat za potpis"],
         .certSigFixed: [.ru: "Подписант неизменяемых данных", .en: "Fixed-data signer", .sr: "Potpisnik nepromenljivih podataka"],
         .certSigVariable: [.ru: "Подписант изменяемых данных", .en: "Variable-data signer", .sr: "Potpisnik promenljivih podataka"],
         .appTitle: [.ru: "Super Čelik", .en: "Super Čelik", .sr: "Super Čelik"],
