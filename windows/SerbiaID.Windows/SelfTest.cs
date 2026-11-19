@@ -17,7 +17,7 @@ internal static class SelfTest
             if (readers.Count == 0) return;
             var r = readers[0];
             var atr = pc.Atr(r);
-            L("atr: " + (atr == null ? "none" : Convert.ToHexString(atr)));
+            L("atr: " + (atr == null ? "none" : Compat.Hex(atr)));
             if (atr == null) return;
 
             var p = SerbianCard.ReadPersonalData(pc, r);

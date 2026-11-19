@@ -1,5 +1,4 @@
-﻿using System.Text.Json;
-using System.Windows;
+﻿using System.Windows;
 using System.Windows.Media;
 using Microsoft.Win32;
 
@@ -45,7 +44,7 @@ public sealed class AppSettings
         {
             if (File.Exists(PathFile))
             {
-                var s = JsonSerializer.Deserialize<AppSettings>(File.ReadAllText(PathFile)) ?? new();
+                var s = Compat.FromJson<AppSettings>(File.ReadAllText(PathFile));
                 // the old default was "off", and it sits in every saved file: switch it on once, like on macOS
                 if (s.Version < 2) { s.AutoRead = true; s.Version = 2; }
                 return s;
@@ -60,7 +59,7 @@ public sealed class AppSettings
         try
         {
             Directory.CreateDirectory(System.IO.Path.GetDirectoryName(PathFile)!);
-            File.WriteAllText(PathFile, JsonSerializer.Serialize(this, new JsonSerializerOptions { WriteIndented = true }));
+            File.WriteAllText(PathFile, Compat.ToJson(this));
         }
         catch { }
     }

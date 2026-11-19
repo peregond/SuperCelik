@@ -1,6 +1,5 @@
 ﻿using System.Globalization;
 using System.Text;
-using System.Text.Json;
 using System.Windows;
 using System.Windows.Automation;
 using System.Windows.Controls;
@@ -37,14 +36,14 @@ public partial class MainWindow : Window
         Theme.Apply(_cfg.Theme);
         RestoreWindow();
 
-        foreach (var lang in Enum.GetValues<Lang>()) CmbLang.Items.Add(lang switch { Lang.ru => "Русский", Lang.en => "English", Lang.sr => "Srpski (latinica)", _ => "Српски (ћирилица)" });
+        foreach (var lang in (Lang[])Enum.GetValues(typeof(Lang))) CmbLang.Items.Add(lang switch { Lang.ru => "Русский", Lang.en => "English", Lang.sr => "Srpski (latinica)", _ => "Српски (ћирилица)" });
         CmbLang.SelectedIndex = (int)Loc.Current;
         for (int i = 0; i < 3; i++) CmbTheme.Items.Add("");
         CmbTheme.SelectedIndex = _cfg.Theme switch { "light" => 1, "dark" => 2, _ => 0 };
         ChkMask.IsChecked = _cfg.MaskSensitive; ChkPrintJmbg.IsChecked = _cfg.PrintJmbg;
         ChkAutoRead.IsChecked = _cfg.AutoRead; ChkAutoUpdate.IsChecked = _cfg.AutoUpdate;
         TxtAutoHide.Text = _cfg.AutoHideMinutes.ToString();
-        Tabs.SelectedIndex = Math.Clamp(_cfg.Tab, 0, Tabs.Items.Count - 1);
+        Tabs.SelectedIndex = Compat.Clamp(_cfg.Tab, 0, Tabs.Items.Count - 1);
         _loading = false;
 
         ApplyLanguage();
@@ -90,9 +89,9 @@ public partial class MainWindow : Window
         label.Text = text; label.Foreground = B(fg); pill.Background = B(bg); pill.Visibility = Visibility.Visible;
     }
 
-    private static TextBlock Glyph(string g, double size = 15) => new()
+    internal static TextBlock Glyph(string g, double size = 15) => new TextBlock
     {
-        Text = g, FontFamily = new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets"), FontSize = size, VerticalAlignment = VerticalAlignment.Center,
+        Text = Icons.Map(g), FontFamily = Icons.Font, FontSize = size, VerticalAlignment = VerticalAlignment.Center,
     };
 
     private static void SetBtn(Button b, string glyph, string text)
@@ -323,7 +322,7 @@ public partial class MainWindow : Window
         {
             if (_demo || !DriverSetup.Available || !_cardPresent || _readers.Count == 0) return;
             var reader = Reader;
-            var (atr, hasToken) = await Task.Run(() => SerbianCard.ProbeToken(_pc, reader));
+            var (atr, hasToken) = await Compat.Run(() => SerbianCard.ProbeToken(_pc, reader));
             if (!hasToken || atr == null) return;
             _lastTokenAtr = atr;
             var hex = DriverSetup.Hex(atr);
@@ -338,7 +337,7 @@ public partial class MainWindow : Window
     private async Task InstallDriverAsync(byte[] atr)
     {
         var hex = DriverSetup.Hex(atr);
-        bool ok = await Task.Run(() => DriverSetup.RunElevated("--register-driver " + hex));
+        bool ok = await Compat.Run(() => DriverSetup.RunElevated("--register-driver " + hex));
         if (ok) { _cfg.DriverDeclined = _cfg.DriverDeclined.Replace(hex + ";", ""); _cfg.Save(); }
         ShowInfo(Loc.T(ok ? "driverDone" : "driverFail"));
         UpdateDriverStatus();
@@ -358,7 +357,7 @@ public partial class MainWindow : Window
     {
         if (_lastTokenAtr == null)
         {
-            if (_cardPresent) await Task.Run(() => { var (a, t) = SerbianCard.ProbeToken(_pc, Reader); if (t) _lastTokenAtr = a; });
+            if (_cardPresent) await Compat.Run(() => { var (a, t) = SerbianCard.ProbeToken(_pc, Reader); if (t) _lastTokenAtr = a; });
             if (_lastTokenAtr == null) { ShowInfo(Loc.T("driverNoCard")); return; }
         }
         await InstallDriverAsync(_lastTokenAtr);
@@ -366,7 +365,7 @@ public partial class MainWindow : Window
 
     private async void DriverRemove_Click(object s, RoutedEventArgs e)
     {
-        bool ok = await Task.Run(() => DriverSetup.RunElevated("--unregister-driver"));
+        bool ok = await Compat.Run(() => DriverSetup.RunElevated("--unregister-driver"));
         if (!ok) ShowInfo(Loc.T("driverFail"));
         UpdateDriverStatus();
     }
@@ -413,7 +412,7 @@ public partial class MainWindow : Window
     private async Task ReadCardAsync()
     {
         var reader = Reader;
-        var p = await Task.Run(() => SerbianCard.ReadPersonalData(_pc, reader));
+        var p = await Compat.Run(() => SerbianCard.ReadPersonalData(_pc, reader));
         _personal = p; _sig = null; _revealAll = false; HideProblem();
         RenderAll();
     }
@@ -566,14 +565,14 @@ public partial class MainWindow : Window
         if (dlg.ShowDialog(this) != true) return;
         var obj = new Dictionary<string, string> { ["cardType"] = _personal.CardType.ToString() };
         foreach (var (k, v) in Rows(_personal)) obj[k] = v;
-        File.WriteAllText(dlg.FileName, JsonSerializer.Serialize(obj, new JsonSerializerOptions { WriteIndented = true, Encoder = System.Text.Encodings.Web.JavaScriptEncoder.UnsafeRelaxedJsonEscaping }));
+        File.WriteAllText(dlg.FileName, Compat.ToJsonReadable(obj));
     }
 
     // ---------- signature ----------
     private async void Verify_Click(object s, RoutedEventArgs e) => await Run(async () =>
     {
         var reader = Reader;
-        var (a, b) = await Task.Run(() => (SerbianCard.Verify(_pc, reader, SerbianCard.Block.Fixed), SerbianCard.Verify(_pc, reader, SerbianCard.Block.Variable)));
+        var (a, b) = await Compat.Run(() => (SerbianCard.Verify(_pc, reader, SerbianCard.Block.Fixed), SerbianCard.Verify(_pc, reader, SerbianCard.Block.Variable)));
         _sig = a.Result == SigResult.Invalid ? a : b.Result == SigResult.Invalid ? b
              : a.Result == SigResult.ChainNotTrusted ? a : b;
         HideProblem(); RenderSig();
@@ -600,7 +599,7 @@ public partial class MainWindow : Window
     private async void ReadToken_Click(object s, RoutedEventArgs e) => await Run(async () =>
     {
         var reader = Reader;
-        _token = await Task.Run(() => SerbianCard.ReadToken(_pc, reader));
+        _token = await Compat.Run(() => SerbianCard.ReadToken(_pc, reader));
         HideProblem(); RenderToken();
     });
 
@@ -641,7 +640,7 @@ public partial class MainWindow : Window
         var reader = Reader;
         await PinOp(async () =>
         {
-            await Task.Run(() => SerbianCard.ChangeTokenPin(_pc, reader, v[0], v[1]));
+            await Compat.Run(() => SerbianCard.ChangeTokenPin(_pc, reader, v[0], v[1]));
             ShowInfo(Loc.T("pinChanged"));
         });
     }
@@ -655,7 +654,7 @@ public partial class MainWindow : Window
         var reader = Reader;
         await PinOp(async () =>
         {
-            await Task.Run(() => SerbianCard.UnblockTokenPin(_pc, reader, v[0], v[1]));
+            await Compat.Run(() => SerbianCard.UnblockTokenPin(_pc, reader, v[0], v[1]));
             ShowInfo(Loc.T("pinUnblocked"));
         });
     }
@@ -672,7 +671,7 @@ public partial class MainWindow : Window
         var reader = Reader; var pin = v[0]; var src = open.FileName; var dst = save.FileName;
         await PinOp(async () =>
         {
-            var p7s = await Task.Run(() =>
+            var p7s = await Compat.Run(() =>
             {
                 var tok = _token ?? SerbianCard.ReadToken(_pc, reader);
                 if (tok.Certificates.Count == 0) throw new CardException(Loc.T("signNeedCert"));
@@ -778,7 +777,7 @@ public partial class MainWindow : Window
         _cfg.PrintJmbg = ChkPrintJmbg.IsChecked == true;
         _cfg.AutoRead = ChkAutoRead.IsChecked == true;
         _cfg.AutoUpdate = ChkAutoUpdate.IsChecked == true;
-        _cfg.AutoHideMinutes = int.TryParse(TxtAutoHide.Text, out var m) ? Math.Clamp(m, 0, 240) : 3;
+        _cfg.AutoHideMinutes = int.TryParse(TxtAutoHide.Text, out var m) ? Compat.Clamp(m, 0, 240) : 3;
         TxtAutoHide.Text = _cfg.AutoHideMinutes.ToString();
         _cfg.Save();
         RenderPersonal();
@@ -1139,7 +1138,11 @@ internal static class PrintSheet
         }
 
         private double Measure(string s) =>
+#if LEGACY
+            new FormattedText(s, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, _face, _fontSize, Brushes.Black).WidthIncludingTrailingWhitespace;
+#else
             new FormattedText(s, CultureInfo.InvariantCulture, FlowDirection.LeftToRight, _face, _fontSize, Brushes.Black, 1.0).WidthIncludingTrailingWhitespace;
+#endif
 
         private List<string> Wrap(string s, double width)
         {
@@ -1147,7 +1150,7 @@ internal static class PrintSheet
             foreach (var para in s.Split('\n'))
             {
                 var cur = "";
-                foreach (var word in para.Split(' ', StringSplitOptions.RemoveEmptyEntries))
+                foreach (var word in para.Split(new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries))
                 {
                     var next = cur.Length == 0 ? word : cur + " " + word;
                     if (cur.Length > 0 && Measure(next) > width) { output.Add(cur); cur = word; }
@@ -1204,7 +1207,7 @@ internal sealed class PreviewWindow : Window
         Title = $"{Loc.T("preview")} — {Loc.T("appTitle")}";
         Width = 760; Height = 860; MinWidth = 520; MinHeight = 500;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
-        FontFamily = new FontFamily("Segoe UI");
+        FontFamily = (FontFamily)Application.Current.Resources["UiFont"];
         SetResourceReference(BackgroundProperty, "BgBrush");
 
         var dock = new DockPanel();
@@ -1227,7 +1230,7 @@ internal sealed class PreviewWindow : Window
     {
         var b = new Button { Style = (Style)FindResource(style) };
         var sp = new StackPanel { Orientation = Orientation.Horizontal };
-        sp.Children.Add(new TextBlock { Text = glyph, FontFamily = new FontFamily("Segoe Fluent Icons, Segoe MDL2 Assets"), FontSize = 15, Margin = new Thickness(0, 1, 8, 0), VerticalAlignment = VerticalAlignment.Center });
+        var gl = MainWindow.Glyph(glyph, 15); gl.Margin = new Thickness(0, 1, 8, 0); sp.Children.Add(gl);
         sp.Children.Add(new TextBlock { Text = text, VerticalAlignment = VerticalAlignment.Center });
         b.Content = sp;
         return b;

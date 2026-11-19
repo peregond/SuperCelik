@@ -6,10 +6,11 @@ public partial class App : Application
 {
     private void OnStartup(object sender, StartupEventArgs e)
     {
+        Icons.Init();
         // `SerbiaID.exe --selftest` writes a PII-free report to selftest.txt and exits (no window).
         if (e.Args.Contains("--selftest"))
         {
-            SelfTest.Run(Path.Combine(AppContext.BaseDirectory, "selftest.txt"));
+            SelfTest.Run(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "selftest.txt"));
             Shutdown();
             return;
         }
@@ -31,14 +32,14 @@ public partial class App : Application
         // `--updatetest` checks GitHub and downloads+verifies the installer (does NOT run it); writes updatetest.txt
         if (e.Args.Contains("--updatetest"))
         {
-            var o = Path.Combine(AppContext.BaseDirectory, "updatetest.txt");
+            var o = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "updatetest.txt");
             try
             {
-                var (info, reachable) = Task.Run(() => Updater.CheckAsync()).GetAwaiter().GetResult();
+                var (info, reachable) = Compat.Run(() => Updater.CheckAsync()).GetAwaiter().GetResult();
                 var s = $"current={Updater.CurrentText} reachable={reachable} found={(info == null ? "none" : info.Version.ToString(3))}";
                 if (info != null)
                 {
-                    var p = Task.Run(() => Updater.DownloadAsync(info)).GetAwaiter().GetResult();
+                    var p = Compat.Run(() => Updater.DownloadAsync(info)).GetAwaiter().GetResult();
                     s += $"\ndownloaded={new FileInfo(p).Length} bytes, sha256 published={(info.Sha256.Length > 0)} (verified when present)";
                 }
                 File.WriteAllText(o, s);
@@ -55,7 +56,7 @@ public partial class App : Application
             w.LoadDemo(e.Args.Length > si + 2 ? int.Parse(e.Args[si + 2]) : 0, e.Args.Contains("--dark"), e.Args.Contains("--problem"),
                        st >= 0 && st + 1 < e.Args.Length ? e.Args[st + 1] : null);
             w.Show();
-            Dispatcher.InvokeAsync(() => { w.SaveScreenshot(e.Args[si + 1]); Shutdown(); }, System.Windows.Threading.DispatcherPriority.ContextIdle);
+            Dispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.ContextIdle, (Action)(() => { w.SaveScreenshot(e.Args[si + 1]); Shutdown(); }));
             return;
         }
         var shi = Array.IndexOf(e.Args, "--sheet");   // the printout as a PNG (testing the page fit)

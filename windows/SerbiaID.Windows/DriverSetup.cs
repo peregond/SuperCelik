@@ -15,18 +15,56 @@ internal static class DriverSetup
     private const string KeyPrefix = "SuperCelik-";
     private const string Dll = "SuperCelikMD.dll";
 
-    private static string Bundled => Path.Combine(AppContext.BaseDirectory, Dll);
-    private static string Installed => Path.Combine(Environment.SystemDirectory, Dll);
+    /// One copy of the driver: the DLL shipped with the app, where Windows looks for it, and the registry view that
+    /// lists it. A 64-bit Windows has two (32-bit programs read the 32-bit view and SysWOW64, 64-bit ones the native
+    /// ones); only the 32-bit build for Windows XP / 7 (an x86 program that may run on 64-bit Windows) needs both.
+    private sealed class Target
+    {
+        public string Bundled, Installed;
+        public RegistryView View;
+        public RegistryKey Open() => RegistryKey.OpenBaseKey(RegistryHive.LocalMachine, View);
+    }
 
-    /// This build carries the driver (the portable dev build does not).
-    public static bool Available => File.Exists(Bundled);
+    private static List<Target> Targets()
+    {
+        string baseDir = AppDomain.CurrentDomain.BaseDirectory;
+#if LEGACY
+        if (Environment.Is64BitOperatingSystem)
+        {
+            string win = Environment.GetFolderPath(Environment.SpecialFolder.Windows);
+            return new List<Target>
+            {
+                // x64 driver for 64-bit browsers: native System32, reached from this 32-bit process as Sysnative
+                new Target { View = RegistryView.Registry64, Bundled = Path.Combine(baseDir, "SuperCelikMD64.dll"), Installed = Path.Combine(win, "Sysnative", Dll) },
+                new Target { View = RegistryView.Registry32, Bundled = Path.Combine(baseDir, Dll), Installed = Path.Combine(Environment.SystemDirectory, Dll) },
+            };
+        }
+        return new List<Target> { new Target { View = RegistryView.Registry32, Bundled = Path.Combine(baseDir, Dll), Installed = Path.Combine(Environment.SystemDirectory, Dll) } };
+#else
+        return new List<Target> { new Target { View = RegistryView.Default, Bundled = Path.Combine(baseDir, Dll), Installed = Path.Combine(Environment.SystemDirectory, Dll) } };
+#endif
+    }
 
-    public static string Hex(byte[] b) => Convert.ToHexString(b);
+    /// This build carries the driver (the portable dev build does not), and Windows can use it
+    /// (card minidrivers need Windows Vista or newer; on XP the rest of the app works without it).
+    public static bool Available
+    {
+        get
+        {
+#if LEGACY
+            if (Environment.OSVersion.Version.Major < 6) return false;
+#endif
+            return Targets().All(t => File.Exists(t.Bundled));
+        }
+    }
+
+    public static string Hex(byte[] b) => Compat.Hex(b);
 
     /// Registered subkeys (name, ours?) whose ATR and mask match this card.
-    private static IEnumerable<(string Name, bool Ours)> Matching(byte[] atr)
+    private static IEnumerable<(string Name, bool Ours)> Matching(byte[] atr, Target t)
     {
-        using var all = Registry.LocalMachine.OpenSubKey(SmartCards);
+        using var hklm = t.Open();
+        using var all = hklm.OpenSubKey(SmartCards);
         if (all == null) yield break;
         foreach (var name in all.GetSubKeyNames())
         {
@@ -40,10 +78,11 @@ internal static class DriverSetup
         }
     }
 
-    /// Super Čelik's driver is registered for this ATR and the installed DLL is the one shipped with this version.
+    /// Super Čelik's driver is registered for this ATR and the installed DLL is the one shipped with this version
+    /// (in every copy the system keeps).
     public static bool IsRegistered(byte[] atr)
     {
-        try { return Matching(atr).Any(m => m.Ours) && SameFile(Bundled, Installed); }
+        try { return Targets().All(t => Matching(atr, t).Any(m => m.Ours) && SameFile(t.Bundled, t.Installed)); }
         catch { return false; }
     }
 
@@ -51,7 +90,7 @@ internal static class DriverSetup
     /// would fight over it, so Super Čelik leaves such a card alone.
     public static bool HandledByOtherDriver(byte[] atr)
     {
-        try { return Matching(atr).Any(m => !m.Ours); }
+        try { return Targets().Any(t => Matching(atr, t).Any(m => !m.Ours)); }
         catch { return false; }
     }
 
@@ -60,8 +99,12 @@ internal static class DriverSetup
     {
         try
         {
-            using var k = Registry.LocalMachine.OpenSubKey(SmartCards);
-            return k != null && k.GetSubKeyNames().Any(n => n.StartsWith(KeyPrefix, StringComparison.OrdinalIgnoreCase)) && File.Exists(Installed);
+            return Targets().All(t =>
+            {
+                using var hklm = t.Open();
+                using var k = hklm.OpenSubKey(SmartCards);
+                return k != null && k.GetSubKeyNames().Any(n => n.StartsWith(KeyPrefix, StringComparison.OrdinalIgnoreCase)) && File.Exists(t.Installed);
+            });
         }
         catch { return false; }
     }
@@ -72,7 +115,7 @@ internal static class DriverSetup
         {
             if (!File.Exists(a) || !File.Exists(b)) return false;
             using var sa = File.OpenRead(a); using var sb = File.OpenRead(b);
-            return SHA256.HashData(sa).AsSpan().SequenceEqual(SHA256.HashData(sb));
+            return Compat.Sha256(sa).SequenceEqual(Compat.Sha256(sb));
         }
         catch { return false; }
     }
@@ -88,7 +131,7 @@ internal static class DriverSetup
     {
         try
         {
-            var p = Process.Start(new ProcessStartInfo(Environment.ProcessPath!, args) { UseShellExecute = true, Verb = "runas", WindowStyle = ProcessWindowStyle.Hidden });
+            var p = Process.Start(new ProcessStartInfo(Process.GetCurrentProcess().MainModule.FileName, args) { UseShellExecute = true, Verb = "runas", WindowStyle = ProcessWindowStyle.Hidden });
             if (p == null) return false;
             p.WaitForExit();
             return p.ExitCode == 0;
@@ -103,19 +146,23 @@ internal static class DriverSetup
         try
         {
             if (!Available) return 2;
-            byte[] atr = Convert.FromHexString(atrHex);
+            byte[] atr = Compat.FromHex(atrHex);
             if (atr.Length < 2 || atr.Length > 33) return 3;
-            if (!SameFile(Bundled, Installed))
+            foreach (var t in Targets())
             {
-                try { File.Copy(Bundled, Installed, true); }
-                catch (IOException) when (File.Exists(Installed)) { /* in use by a running browser: the old copy stays until it is closed */ }
+                if (!SameFile(t.Bundled, t.Installed))
+                {
+                    try { File.Copy(t.Bundled, t.Installed, true); }
+                    catch (IOException) when (File.Exists(t.Installed)) { /* in use by a running browser: the old copy stays until it is closed */ }
+                }
+                using var hklm = t.Open();
+                using var k = hklm.CreateSubKey(SmartCards + "\\" + KeyPrefix + atrHex);
+                k.SetValue("ATR", atr, RegistryValueKind.Binary);
+                k.SetValue("ATRMask", Enumerable.Repeat((byte)0xFF, atr.Length).ToArray(), RegistryValueKind.Binary);
+                k.SetValue("Crypto Provider", "Microsoft Base Smart Card Crypto Provider", RegistryValueKind.String);
+                k.SetValue("Smart Card Key Storage Provider", "Microsoft Smart Card Key Storage Provider", RegistryValueKind.String);
+                k.SetValue("80000001", Dll, RegistryValueKind.String);
             }
-            using var k = Registry.LocalMachine.CreateSubKey(SmartCards + "\\" + KeyPrefix + atrHex);
-            k.SetValue("ATR", atr, RegistryValueKind.Binary);
-            k.SetValue("ATRMask", Enumerable.Repeat((byte)0xFF, atr.Length).ToArray(), RegistryValueKind.Binary);
-            k.SetValue("Crypto Provider", "Microsoft Base Smart Card Crypto Provider", RegistryValueKind.String);
-            k.SetValue("Smart Card Key Storage Provider", "Microsoft Smart Card Key Storage Provider", RegistryValueKind.String);
-            k.SetValue("80000001", Dll, RegistryValueKind.String);
             return 0;
         }
         catch { return 1; }
@@ -142,11 +189,15 @@ internal static class DriverSetup
     {
         try
         {
-            using (var k = Registry.LocalMachine.OpenSubKey(SmartCards, true))
-                if (k != null)
-                    foreach (var n in k.GetSubKeyNames().Where(n => n.StartsWith(KeyPrefix, StringComparison.OrdinalIgnoreCase)).ToList())
-                        k.DeleteSubKeyTree(n, false);
-            try { File.Delete(Installed); } catch (IOException) { /* in use: removed with the next restart of the browser and re-run */ }
+            foreach (var t in Targets())
+            {
+                using (var hklm = t.Open())
+                using (var k = hklm.OpenSubKey(SmartCards, true))
+                    if (k != null)
+                        foreach (var n in k.GetSubKeyNames().Where(n => n.StartsWith(KeyPrefix, StringComparison.OrdinalIgnoreCase)).ToList())
+                            k.DeleteSubKeyTree(n, false);
+                try { File.Delete(t.Installed); } catch (IOException) { /* in use: removed with the next restart of the browser and re-run */ }
+            }
             return 0;
         }
         catch { return 1; }

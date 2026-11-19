@@ -12,7 +12,7 @@ public static class Loc
     public static Lang Detect() => CultureInfo.CurrentUICulture.TwoLetterISOLanguageName switch
     {
         "ru" => Lang.ru,
-        "sr" => CultureInfo.CurrentUICulture.Name.Contains("Cyrl", StringComparison.OrdinalIgnoreCase) ? Lang.srCyrl : Lang.sr,
+        "sr" => CultureInfo.CurrentUICulture.Name.IndexOf("Cyrl", StringComparison.OrdinalIgnoreCase) >= 0 ? Lang.srCyrl : Lang.sr,
         "hr" or "bs" => Lang.sr,
         _ => Lang.en,
     };

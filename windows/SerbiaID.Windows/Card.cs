@@ -26,7 +26,7 @@ public sealed class CardSession : IDisposable
             int len = recv.Length;
             int rc = Native.SCardTransmit(_card, pci, apdu, apdu.Length, IntPtr.Zero, recv, ref len);
             if (rc != 0 || len < 2) throw new CardException(rc, "Transmit");
-            return (recv.AsSpan(0, len - 2).ToArray(), recv[len - 2] << 8 | recv[len - 1]);
+            return (Compat.Slice(recv, 0, len - 2), recv[len - 2] << 8 | recv[len - 1]);
         }
         finally { Marshal.FreeHGlobal(pci); }
     }
@@ -49,7 +49,7 @@ public sealed class CardSession : IDisposable
         var buf = new byte[64]; int len = buf.Length;
         int rc = Native.SCardGetAttrib(_card, 0x00090303, buf, ref len);
         if (rc != 0) throw new CardException(rc, "GetAttrib");
-        return buf.AsSpan(0, len).ToArray();
+        return Compat.Slice(buf, 0, len);
     }
 }
 
@@ -73,7 +73,7 @@ public sealed class PcscService : IDisposable
         var buf = new char[len];
         rc = Native.SCardListReadersW(_ctx, null, buf, ref len);
         if (rc != 0) throw new CardException(rc, "ListReaders");
-        return new string(buf).Split('\0', StringSplitOptions.RemoveEmptyEntries).ToList();
+        return new string(buf).Split(new[] { '\0' }, StringSplitOptions.RemoveEmptyEntries).ToList();
     }
 
     public CardSession Connect(string reader)
@@ -103,7 +103,7 @@ public static class SerbianCard
     };
     private const string Pkcs15Aid = "A000000063504B43532D3135";
 
-    private static byte[] Hex(string h) => Convert.FromHexString(h);
+    private static byte[] Hex(string h) => Compat.FromHex(h);
 
     private static byte[] Apdu(byte cla, byte ins, byte p1, byte p2, byte[] data = null, int? le = null)
     {
@@ -151,7 +151,7 @@ public static class SerbianCard
             ushort tag = (ushort)(file[p] | file[p + 1] << 8);
             int len = file[p + 2] | file[p + 3] << 8;
             if (p + 4 + len > file.Length) break;
-            d[tag] = file.AsSpan(p + 4, len).ToArray();
+            d[tag] = Compat.Slice(file, p + 4, len);
             p += 4 + len;
         }
         return d;
@@ -164,7 +164,7 @@ public static class SerbianCard
     private static string Date(Dictionary<ushort, byte[]> d, ushort tag)
     {
         var s = Str(d, tag);
-        return s.Length == 8 ? $"{s[..2]}.{s.Substring(2, 2)}.{s[4..]}" : s;
+        return s.Length == 8 ? $"{s.Substring(0, 2)}.{s.Substring(2, 2)}.{s.Substring(4)}" : s;
     }
 
     public static PersonalData ReadPersonalData(PcscService pc, string reader)
@@ -227,10 +227,10 @@ public static class SerbianCard
             if (content == null) return new SigStatus { Result = SigResult.Invalid, Detail = chainErr };
             foreach (var fid in covered)
             {
-                var h = SHA256.HashData(ReadRawFile(s, fid));
+                var h = Compat.Sha256(ReadRawFile(s, fid));
                 bool found = false;
                 for (int i = 0; i + 32 <= content.Length && !found; i += 32)
-                    found = content.AsSpan(i, 32).SequenceEqual(h);
+                    found = Compat.Slice(content, i, 32).SequenceEqual(h);
                 if (!found) return new SigStatus { Result = SigResult.Invalid, Detail = $"hash mismatch for file {fid:X4}" };
             }
             return chainOk
@@ -295,8 +295,14 @@ public static class SerbianCard
             var blob = ReadTokenFile(s, 0x7102);   // [len LE16][01 00][usize LE16][zlib]
             if (blob.Length > 8)
             {
+#if LEGACY
+                // .NET 4.0 has no ZLibStream: skip the 2-byte zlib header and inflate the raw deflate data
+                using var ms = new MemoryStream(blob, 8, blob.Length - 8);
+                using var z = new DeflateStream(ms, CompressionMode.Decompress);
+#else
                 using var ms = new MemoryStream(blob, 6, blob.Length - 6);
                 using var z = new ZLibStream(ms, CompressionMode.Decompress);
+#endif
                 using var outMs = new MemoryStream();
                 z.CopyTo(outMs);
                 var cert = new TokenCertificate { Der = outMs.ToArray() };

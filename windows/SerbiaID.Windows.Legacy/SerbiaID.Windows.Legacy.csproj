@@ -1,0 +1,54 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Super Čelik for Windows XP / Vista / 7 and for 32-bit Windows: the same sources as ../SerbiaID.Windows, built on
+       .NET Framework 4.0 (the last .NET that runs on Windows XP). Differences are behind `#if LEGACY` and in Legacy\. -->
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net40</TargetFramework>
+    <PlatformTarget>x86</PlatformTarget>
+    <UseWPF>true</UseWPF>
+    <LangVersion>latest</LangVersion>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>disable</ImplicitUsings>
+    <AssemblyName>SuperCelik</AssemblyName>
+    <Product>Super Čelik</Product>
+    <RootNamespace>SerbiaID</RootNamespace>
+    <Version>0.9.10</Version>
+    <ApplicationIcon>..\SerbiaID.Windows\app.ico</ApplicationIcon>
+    <DefineConstants>$(DefineConstants);LEGACY</DefineConstants>
+    <GenerateDocumentationFile>false</GenerateDocumentationFile>
+    <!-- Microsoft.Bcl.Async carries its own facades; without this MSBuild on Windows drops its references (MSB3268) -->
+    <_FindDependencies>false</_FindDependencies>
+    <SatelliteResourceLanguages>en</SatelliteResourceLanguages>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Using Include="System" />
+    <Using Include="System.IO" />
+    <Using Include="System.Linq" />
+    <Using Include="System.Collections.Generic" />
+    <Using Include="System.Threading.Tasks" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="System.Security" />
+    <!-- async/await and Task for .NET 4.0 -->
+    <PackageReference Include="Microsoft.Bcl.Async" Version="1.0.168" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <!-- the shared sources -->
+    <Compile Include="..\SerbiaID.Windows\*.cs" Link="%(Filename)%(Extension)" />
+    <ApplicationDefinition Include="..\SerbiaID.Windows\App.xaml" Link="App.xaml" />
+    <Page Include="..\SerbiaID.Windows\MainWindow.xaml" Link="MainWindow.xaml" />
+    <Page Include="..\SerbiaID.Windows\Logo.xaml" Link="Logo.xaml" />
+    <Resource Include="..\SerbiaID.Windows\app.ico" Link="app.ico" />
+    <!-- Windows XP / 7 have no Segoe MDL2 Assets (and XP no Segoe UI): Open Sans (OFL) and a subset of Fluent System Icons (MIT) -->
+    <Resource Include="Fonts\*.ttf" />
+    <!-- the cartoon poses, shared with the macOS app -->
+    <Resource Include="..\..\Sources\SerbiaID\Resources\Mascots\*.png" Link="Mascots\%(Filename)%(Extension)" />
+    <!-- MUP root + intermediate CA certificates shared with the macOS app -->
+    <Content Include="..\..\Sources\SerbiaID\Resources\CA\*.crt" Link="CA\%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+  </ItemGroup>
+
+</Project>
