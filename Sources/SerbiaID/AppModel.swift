@@ -35,6 +35,10 @@ final class AppModel: ObservableObject {
     @Published var problem: Problem?
     @Published var showPreview = false
 
+    /// Whether the system has attached our card driver to the inserted card (what browser sign-in needs).
+    enum DriverState { case unknown, ok, missing }
+    @Published var driverState: DriverState = .unknown
+
     @Published var update: UpdateInfo?
     @Published var updating = false
     @Published var updateStatus: String?
@@ -57,7 +61,7 @@ final class AppModel: ObservableObject {
             loadDemo(problem: args.contains("--problem"))
             if let i = args.firstIndex(of: "--state"), i + 1 < args.count { applyShotState(args[i + 1]) }
         } else {
-            refresh()
+            initialRefresh = Task { await refreshAsync() }
             BrowserLogin.prepare()
         }
         let box = activity
@@ -89,10 +93,20 @@ final class AppModel: ObservableObject {
         refresh()
     }
 
-    func refresh() {
+    private var initialRefresh: Task<Void, Never>?
+    func refresh() { Task { await refreshAsync() } }
+
+    /// PC/SC calls go through the system smart-card daemon and can block for a long time when it is stuck,
+    /// so they never run on the main thread (a stuck daemon froze the whole window before).
+    private func refreshAsync() async {
         if demoActive { demoActive = false; clearData() }
+        let svc = service, current = selectedReader
         do {
-            let list = try service.listReaders()
+            let (list, atr) = try await perform { () -> ([String], Data??) in
+                let list = try svc.listReaders()
+                let reader = list.contains(current) ? current : (list.first ?? "")
+                return (list, reader.isEmpty ? nil : .some(try svc.atr(reader: reader)))
+            }
             readers = list
             if !list.contains(selectedReader) { selectedReader = list.first ?? "" }
             guard !selectedReader.isEmpty else {
@@ -100,7 +114,7 @@ final class AppModel: ObservableObject {
                 if problem?.isInfo == false { problem = nil }
                 return
             }
-            applyAtr(try service.atr(reader: selectedReader))
+            applyAtr(atr ?? nil)
             if cardPresent, problem?.isInfo == false { problem = nil }
         } catch { showProblem(error) }
     }
@@ -115,26 +129,34 @@ final class AppModel: ObservableObject {
     /// Runs forever from the root view: card insert / remove, and idle auto-hide.
     func startMonitoring() async {
         guard !isDemoUI else { return }
+        await initialRefresh?.value      // so a card already in the reader at launch is seen before the checks below
         // A card that was already in the reader at launch never produces an "inserted" change.
         if cardPresent { checkDriver() }
         if prefs.autoRead, cardPresent, personal == nil { await readCard() }
         while !Task.isCancelled {
-            poll()
+            await poll()
             checkIdle()
             try? await Task.sleep(nanoseconds: 1_500_000_000)
         }
     }
 
-    private func poll() {
+    private func poll() async {
         guard !busy, !demoActive else { return }
+        let svc = service, current = selectedReader
         do {
-            let list = try service.listReaders()
+            // off the main thread: see refreshAsync()
+            let (list, atr) = try await perform { () -> ([String], Data?) in
+                let list = try svc.listReaders()
+                let reader = list.contains(current) ? current : (list.first ?? "")
+                return (list, reader.isEmpty ? nil : try svc.atr(reader: reader))
+            }
+            guard !busy, !demoActive else { return }
             if list != readers {
                 readers = list
                 if !list.contains(selectedReader) { selectedReader = list.first ?? "" }
             }
             var present = false
-            if !selectedReader.isEmpty, let atr = try service.atr(reader: selectedReader) {
+            if !selectedReader.isEmpty, let atr {
                 present = true
                 atrHex = atr.map { String(format: "%02X", $0) }.joined(separator: " ")
             } else { atrHex = nil }
@@ -146,6 +168,7 @@ final class AppModel: ObservableObject {
                 if prefs.autoRead { Task { await readCard() } }
             } else {
                 driverCheckGeneration += 1     // cancels a pending driver check
+                driverState = .unknown
                 clearData()          // privacy: drop data when the card is removed
             }
         } catch { /* reader unplugged mid-poll: a manual refresh reports it */ }
@@ -232,12 +255,21 @@ final class AppModel: ObservableObject {
             let attached = await Task.detached { BrowserLogin.driverAttached() }.value
             guard self.driverCheckGeneration == generation, self.cardPresent, self.selectedReader == reader else { return }
             if attached {
+                self.driverState = .ok
                 if self.problem?.titleKey == .driverStuck { self.problem = nil }
                 return
             }
+            self.driverState = .missing
             await Task.detached { BrowserLogin.repairDriver() }.value
             if self.driverCheckGeneration == generation, self.cardPresent, self.problem == nil { self.problem = Problem(titleKey: .driverStuck, isInfo: true) }
         }
+    }
+
+    /// The "Check" button on the Token tab.
+    func checkDriverNow() async {
+        guard cardPresent else { driverState = .unknown; return }
+        let attached = await Task.detached { BrowserLogin.driverAttached() }.value
+        driverState = cardPresent ? (attached ? .ok : .missing) : .unknown
     }
 
     // MARK: - Token PIN / PUK / signing (each wrong PIN/PUK burns a card try: one attempt, never retried)

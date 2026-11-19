@@ -1,14 +1,21 @@
 import Foundation
 import Security
+import CryptoTokenKit
+
+/// True when the system has attached a token from our CryptoTokenKit driver to the inserted card.
+/// Needs no helper tools, so it also works in the sandboxed Mac App Store build.
+func systemTokenAttached() -> Bool {
+    TKTokenWatcher().tokenIDs.contains { $0.hasPrefix("app.supercelik.token") }
+}
 
 #if APPSTORE
 /// Mac App Store build (sandboxed): macOS finds and starts the bundled CryptoTokenKit extension by itself, and the app
-/// may not run helper tools, so there is nothing to prepare or repair here.
+/// may not run helper tools, so there is nothing to prepare or repair here (it can only look whether the system attached the driver).
 enum BrowserLogin {
     static let extensionID = "app.supercelik.token"
     static func prepare() {}
     static func stopRunningDriver() {}
-    static func driverAttached() -> Bool { true }
+    static func driverAttached() -> Bool { systemTokenAttached() }
     static func repairDriver() {}
 }
 #else

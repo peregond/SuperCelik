@@ -119,7 +119,14 @@ jobs:
         with:
           arch: x64
       - name: Install the Cryptographic Provider Development Kit (cardmod.h)
-        run: choco install windows-cryptographic-provider-development-kit -y --no-progress
+        # community.chocolatey.org sometimes answers 504 and choco then "installs 0/0 packages" with exit code 0: retry and check the header is there
+        run: |
+          for ($i = 1; $i -le 4; $i++) {
+            choco install windows-cryptographic-provider-development-kit -y --no-progress
+            if (Test-Path "C:\Program Files (x86)\Windows Kits\10\Cryptographic Provider Development Kit\Include\cardmod.h") { exit 0 }
+            Write-Host "cardmod.h not found after attempt $i"; Start-Sleep -Seconds (15 * $i)
+          }
+          exit 1
       - name: Build the smart card minidriver (x64)
         shell: cmd
         run: |
