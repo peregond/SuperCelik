@@ -11,6 +11,8 @@ PC/SC access through `libpcsclite` (`Native.cs`), the interface and the print sh
 ## What the system needs
 - **With the .deb nothing has to be installed by hand**: the package depends on `pcscd` (smart-card service), `libccid` (driver of USB readers) and `libnss3-tools`, so `apt` installs them, and it starts the service (`pcscd.socket`) after the installation. If the app still says “The smart card service is not running”: `sudo systemctl enable --now pcscd.socket`.
 - With the **.tar.gz** (or on non-Debian systems) install `pcscd`, `libpcsclite1` and `libccid` (`pcsc-lite`, `ccid` elsewhere) yourself, and `libnss3-tools` if you want the browser setup below.
+- The **.AppImage** (any distribution): `chmod +x SuperCelik-*.AppImage && ./SuperCelik-*.AppImage`. It needs the same system parts as the .tar.gz (`pcscd`, `libpcsclite1`, `libccid`). It updates itself by replacing the file (checked against the SHA-256 of the release); the browser module is copied to `~/.local/share/SuperCelik/pkcs11` before it is added to a browser, because the AppImage is mounted at a new path on each start.
+- The **Flatpak** bundle: `flatpak install --user ./SuperCelik-*.flatpak`. The sandbox has no card service of its own: it talks to the host's `pcscd` through `--socket=pcsc` (Flatpak 1.15.x or later; the host needs `pcscd` and `libccid`). The browser sign-in module is not included (a host browser cannot load a library from inside the sandbox) and the app does not update itself: use `flatpak update`. Built by `scripts/make-linux-flatpak.sh` from the same files as the other packages (manifest in `linux/packaging/flatpak`); not on Flathub yet.
 - A USB smart-card reader (CCID class: nearly all of them).
 - `xdg-utils` to open the PDF / the release page (optional).
 

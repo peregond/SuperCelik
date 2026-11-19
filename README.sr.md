@@ -17,7 +17,7 @@ Nezavisna implementacija, nije povezana sa MUP RS niti sa NetSeT/Veridos.
 - **Android 8+**: `SuperCelik-<verzija>-android.apk` iz odeljka [Releases](https://github.com/peregond/SuperCelik/releases) (za ručnu instalaciju dozvolite instalaciju iz nepoznatih izvora). Čita karticu preko USB čitača pametnih kartica (USB-C ili OTG): podaci, provera MUP potpisa, token, promena PIN-a, potpisivanje fajla, prijava na eUprava.
 - **Windows 10/11 x64**: `SuperCelik-<verzija>-windows-x64-setup.exe`. Instalater nije potpisan sertifikatom izdavača, pa SmartScreen može da prikaže upozorenje („More info“ → „Run anyway“).
 - **Windows XP SP3 / Vista / 7 i 32-bitni Windows**: `SuperCelik-<verzija>-windows-x86-legacy-setup.exe` (posebna verzija na .NET Framework 4.0; instalater traži da ga instalirate ako ga nema). Sve radi isto, osim: drajver za prijavu u pregledaču zahteva Windows Vista ili noviji (na XP-u ga nema), a automatsko ažuriranje zahteva TLS 1.2 (Windows 7 sa ažuriranjima; na XP-u ne). Pravi se u CI-ju, na pravom XP-u još nije probana.
-- **Linux (x64 i arm64), beta**: `SuperCelik-<verzija>-linux-amd64.deb` / `-arm64.deb` (Debian, Ubuntu i izvedene distribucije: `sudo apt install ./SuperCelik-*.deb`, povući će `pcscd`) ili `SuperCelik-<verzija>-linux-<x64|arm64>.tar.gz` (raspakujte i pokrenite `./SuperCelik`; potrebni su `pcscd` i `libpcsclite1`). Čita karticu preko USB čitača putem PC/SC; `.deb` sam instalira sve potrebno (`pcscd`, drajver čitača, NSS alate), a gradnje za x64 sadrže modul za prijavu u pregledaču. Na pravoj kartici pod Linux-om još nije proverena: javite šta ste videli u [Issues](https://github.com/peregond/SuperCelik/issues/new).
+- **Linux (x64 i arm64), beta**: `SuperCelik-<verzija>-linux-amd64.deb` / `-arm64.deb` (Debian, Ubuntu i izvedene distribucije: `sudo apt install ./SuperCelik-*.deb`, povući će `pcscd`) ili `SuperCelik-<verzija>-linux-<x86_64|aarch64>.AppImage` (bilo koja distribucija: `chmod +x` i pokretanje; u sistemu su potrebni `pcscd` i `libpcsclite1`) ili `SuperCelik-<verzija>-linux-<x86_64|aarch64>.flatpak` (`flatpak install --user ./SuperCelik-*.flatpak`; koristi `pcscd` domaćina preko `--socket=pcsc`, potreban je Flatpak 1.15.x ili noviji; modula za prijavu u pregledaču unutar sandbox-a nema) ili `SuperCelik-<verzija>-linux-<x64|arm64>.tar.gz` (raspakujte i pokrenite `./SuperCelik`; potrebni su `pcscd` i `libpcsclite1`). Čita karticu preko USB čitača putem PC/SC; `.deb` sam instalira sve potrebno (`pcscd`, drajver čitača, NSS alate), a gradnje za x64 sadrže modul za prijavu u pregledaču. Na pravoj kartici pod Linux-om još nije proverena: javite šta ste videli u [Issues](https://github.com/peregond/SuperCelik/issues/new).
 
 Gradnja se automatski radi u GitHub Actions: svaki push na `main` → artefakti; tag `vX.Y.Z` → izdanje.
 
@@ -32,7 +32,7 @@ Linux (.NET 8 SDK, `dpkg-deb` za .deb):
 
     dotnet run --project linux/SerbiaID.Linux                      # sa pravim čitačem (potreban pcscd)
     dotnet run --project linux/SerbiaID.Linux -- --demo            # demo podaci bez kartice
-    bash scripts/make-linux.sh 0.9.9 x64                           # ili arm64 → dist/*.deb i dist/*.tar.gz
+    bash scripts/make-linux.sh 0.9.9 x64                           # ili arm64 → dist/*.deb, *.tar.gz, *.AppImage
 
 Windows (.NET 8 SDK):
 

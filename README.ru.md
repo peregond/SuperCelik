@@ -17,7 +17,7 @@
 - **Android 8+**: `SuperCelik-<версия>-android.apk` из раздела [Releases](https://github.com/peregond/SuperCelik/releases) (для установки вручную разрешите установку из неизвестных источников). Читает карту через USB-ридер смарт-карт (USB-C или OTG): данные, проверка подписи МУП, токен, смена PIN, подпись файла, вход на eUprava.
 - **Windows 10/11 x64**: `SuperCelik-<версия>-windows-x64-setup.exe`. Установщик не подписан сертификатом издателя: SmartScreen может показать предупреждение («Подробнее» → «Выполнить в любом случае»).
 - **Windows XP SP3 / Vista / 7 и 32-разрядная Windows**: `SuperCelik-<версия>-windows-x86-legacy-setup.exe` (отдельная сборка на .NET Framework 4.0; установщик попросит его поставить, если его нет). Всё работает так же, кроме: драйвер для входа в браузере требует Windows Vista или новее (на XP его нет), а автообновление требует TLS 1.2 (Windows 7 с обновлениями; на XP нет). Собирается в CI, на настоящей XP пока не проверялась.
-- **Linux (x64 и arm64), бета**: `SuperCelik-<версия>-linux-amd64.deb` / `-arm64.deb` (Debian, Ubuntu и производные: `sudo apt install ./SuperCelik-*.deb`, подтянет `pcscd`) или `SuperCelik-<версия>-linux-<x64|arm64>.tar.gz` (распаковать и запустить `./SuperCelik`; нужны `pcscd` и `libpcsclite1`). Читает карту через USB-ридер по PC/SC; `.deb` сам ставит всё нужное (`pcscd`, драйвер ридера, утилиты NSS), а в сборках для x64 есть модуль для входа в браузере. На реальной карте под Linux пока не проверялось: пишите, что получилось, в [Issues](https://github.com/peregond/SuperCelik/issues/new).
+- **Linux (x64 и arm64), бета**: `SuperCelik-<версия>-linux-amd64.deb` / `-arm64.deb` (Debian, Ubuntu и производные: `sudo apt install ./SuperCelik-*.deb`, подтянет `pcscd`) или `SuperCelik-<версия>-linux-<x86_64|aarch64>.AppImage` (любой дистрибутив: `chmod +x` и запуск; в системе нужны `pcscd` и `libpcsclite1`) или `SuperCelik-<версия>-linux-<x86_64|aarch64>.flatpak` (`flatpak install --user ./SuperCelik-*.flatpak`; использует `pcscd` хоста через `--socket=pcsc`, нужен Flatpak 1.15.x или новее; модуля входа в браузер внутри песочницы нет) или `SuperCelik-<версия>-linux-<x64|arm64>.tar.gz` (распаковать и запустить `./SuperCelik`; нужны `pcscd` и `libpcsclite1`). Читает карту через USB-ридер по PC/SC; `.deb` сам ставит всё нужное (`pcscd`, драйвер ридера, утилиты NSS), а в сборках для x64 есть модуль для входа в браузере. На реальной карте под Linux пока не проверялось: пишите, что получилось, в [Issues](https://github.com/peregond/SuperCelik/issues/new).
 
 Сборка делается автоматически в GitHub Actions: каждый push в `main` → артефакты; тег `vX.Y.Z` → релиз.
 
@@ -32,7 +32,7 @@ Linux (.NET 8 SDK, `dpkg-deb` для .deb):
 
     dotnet run --project linux/SerbiaID.Linux                      # с реальным ридером (нужен pcscd)
     dotnet run --project linux/SerbiaID.Linux -- --demo            # демо-данные без карты
-    bash scripts/make-linux.sh 0.9.9 x64                           # или arm64 → dist/*.deb и dist/*.tar.gz
+    bash scripts/make-linux.sh 0.9.9 x64                           # или arm64 → dist/*.deb, *.tar.gz, *.AppImage
 
 Windows (.NET 8 SDK):
 

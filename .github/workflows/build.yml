@@ -220,7 +220,8 @@ jobs:
           generate_release_notes: true
 
   linux:
-    # Self-contained .NET build (Avalonia): .tar.gz and .deb for x64 and arm64. Cross-published on one runner.
+    # Self-contained .NET build (Avalonia): .tar.gz, .deb and .AppImage for x64 and arm64. Cross-published on one runner.
+    # The published files are also handed to the linux-flatpak job.
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -232,12 +233,20 @@ jobs:
         run: |
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then v="${GITHUB_REF_NAME#v}"; else v="0.0.0-${GITHUB_SHA::7}"; fi
           echo "v=$v" >> "$GITHUB_OUTPUT"
+      - name: Build tools
+        run: sudo apt-get update && sudo apt-get install -y squashfs-tools
       - name: Build x64 and arm64
         run: |
+          export KEEP_PUBLISH=1
           bash scripts/make-linux.sh "${{ steps.ver.outputs.v }}" x64
           bash scripts/make-linux.sh "${{ steps.ver.outputs.v }}" arm64
+          tar -C dist -cf dist/linux-publish.tar publish-x64 publish-arm64
       - name: Check the packages
         run: |
+          ls dist/SuperCelik-*-linux-x86_64.AppImage dist/SuperCelik-*-linux-aarch64.AppImage
+          file dist/SuperCelik-*-linux-x86_64.AppImage dist/SuperCelik-*-linux-aarch64.AppImage
+          # unpack the x64 AppImage without FUSE and check its contents
+          (cd dist && ./SuperCelik-*-linux-x86_64.AppImage --appimage-extract >/dev/null && test -x squashfs-root/AppRun && test -x squashfs-root/usr/lib/supercelik/SuperCelik && test -f squashfs-root/usr/lib/supercelik/pkcs11/libsrb-id-pkcs11.so && rm -rf squashfs-root)
           dpkg-deb -I dist/SuperCelik-*-linux-amd64.deb
           dpkg-deb -c dist/SuperCelik-*-linux-amd64.deb | grep -E "opt/supercelik/SuperCelik$|opt/supercelik/CA/MUPRootCA4.crt|supercelik.desktop"
           dpkg-deb -c dist/SuperCelik-*-linux-amd64.deb | grep -E "opt/supercelik/pkcs11/libsrb-id-pkcs11.so$"
@@ -250,6 +259,12 @@ jobs:
             dist/*.tar.gz
             dist/*.zip
             dist/*.manifest.json
+            dist/*.AppImage
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SuperCelik-linux-publish
+          path: dist/linux-publish.tar
+          retention-days: 1
       - name: Publish release
         if: startsWith(github.ref, 'refs/tags/v')
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
@@ -259,6 +274,46 @@ jobs:
             dist/*.tar.gz
             dist/*.zip
             dist/*.manifest.json
+            dist/*.AppImage
+          generate_release_notes: true
+
+  linux-flatpak:
+    # Flatpak bundle, built natively on each architecture from the files of the linux job.
+    needs: linux
+    strategy:
+      matrix:
+        include:
+          - { runner: ubuntu-24.04, arch: x64 }
+          - { runner: ubuntu-24.04-arm, arch: arm64 }
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          name: SuperCelik-linux-publish
+          path: dist
+      - name: Version
+        id: ver
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then v="${GITHUB_REF_NAME#v}"; else v="0.0.0-${GITHUB_SHA::7}"; fi
+          echo "v=$v" >> "$GITHUB_OUTPUT"
+      - name: Install flatpak-builder
+        run: |
+          sudo apt-get update && sudo apt-get install -y flatpak flatpak-builder
+          flatpak remote-add --user --if-not-exists flathub https://flathub.org/repo/flathub.flatpakrepo
+      - name: Build the bundle
+        run: |
+          tar -C dist -xf dist/linux-publish.tar publish-${{ matrix.arch }}
+          bash scripts/make-linux-flatpak.sh "${{ steps.ver.outputs.v }}" ${{ matrix.arch }}
+      - uses: actions/upload-artifact@v4
+        with:
+          name: SuperCelik-flatpak-${{ matrix.arch }}
+          path: dist/*.flatpak
+      - name: Publish release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
+        with:
+          files: dist/*.flatpak
           generate_release_notes: true
 
   android:

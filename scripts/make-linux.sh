@@ -1,12 +1,13 @@
 #!/usr/bin/env bash
-# Linux build: a self-contained .tar.gz and a .deb (needs the .NET 8 SDK and dpkg-deb).
+# Linux build: a self-contained .tar.gz, a .deb and an .AppImage (needs the .NET 8 SDK; dpkg-deb for the .deb, mksquashfs + curl for the
+# .AppImage). The Flatpak bundle is built from the same files by scripts/make-linux-flatpak.sh.
 #   bash scripts/make-linux.sh <version> [x64|arm64]      -> dist/SuperCelik-<version>-linux-<arch>.tar.gz / .deb
 set -euo pipefail
 VERSION="${1:-0.0.0}"
 ARCH="${2:-x64}"
 case "$ARCH" in
-  x64)   RID=linux-x64;   DEB=amd64 ;;
-  arm64) RID=linux-arm64; DEB=arm64 ;;
+  x64)   RID=linux-x64;   DEB=amd64; AIARCH=x86_64 ;;
+  arm64) RID=linux-arm64; DEB=arm64; AIARCH=aarch64 ;;
   *) echo "arch: x64 or arm64" >&2; exit 1 ;;
 esac
 cd "$(dirname "$0")/.."
@@ -82,5 +83,34 @@ POST
   dpkg-deb --root-owner-group --build "$ROOT" "$OUT/SuperCelik-$VERSION-linux-$DEB.deb"
   rm -rf "$ROOT"
 fi
-rm -rf "$PUB"
+
+# ---- .AppImage: runs on any distribution with pcscd + libpcsclite (the same requirement as the .tar.gz)
+if command -v mksquashfs >/dev/null; then
+  TOOLS="$OUT/appimage-tools"; mkdir -p "$TOOLS"
+  AI_BASE=https://github.com/AppImage
+  [ -x "$TOOLS/appimagetool" ] || {
+    curl -fsSL --retry 3 -o "$TOOLS/appimagetool" "$AI_BASE/appimagetool/releases/download/continuous/appimagetool-$(uname -m).AppImage"
+    chmod +x "$TOOLS/appimagetool"; }
+  [ -f "$TOOLS/runtime-$AIARCH" ] || curl -fsSL --retry 3 -o "$TOOLS/runtime-$AIARCH" "$AI_BASE/type2-runtime/releases/download/continuous/runtime-$AIARCH"
+  APPDIR="$OUT/SuperCelik.AppDir"; rm -rf "$APPDIR"
+  mkdir -p "$APPDIR/usr/lib/supercelik"
+  cp -R "$PUB/." "$APPDIR/usr/lib/supercelik/"
+  cp linux/SerbiaID.Linux/Assets/icon.png "$APPDIR/supercelik.png"; cp linux/SerbiaID.Linux/Assets/icon.png "$APPDIR/.DirIcon"
+  sed 's/^Exec=supercelik$/Exec=SuperCelik/' linux/packaging/supercelik.desktop > "$APPDIR/supercelik.desktop"
+  printf 'X-AppImage-Version=%s\n' "$VERSION" >> "$APPDIR/supercelik.desktop"
+  cat > "$APPDIR/AppRun" <<'RUN'
+#!/bin/sh
+HERE="$(dirname "$(readlink -f "$0")")"
+exec "$HERE/usr/lib/supercelik/SuperCelik" "$@"
+RUN
+  chmod 755 "$APPDIR/AppRun"
+  # APPIMAGE_EXTRACT_AND_RUN: the CI runner has no FUSE; --runtime-file picks the runtime of the target architecture (also for arm64)
+  ARCH="$AIARCH" APPIMAGE_EXTRACT_AND_RUN=1 "$TOOLS/appimagetool" --runtime-file "$TOOLS/runtime-$AIARCH" --no-appstream \
+    "$APPDIR" "$OUT/SuperCelik-$VERSION-linux-$AIARCH.AppImage"
+  chmod +x "$OUT/SuperCelik-$VERSION-linux-$AIARCH.AppImage"
+  rm -rf "$APPDIR"
+fi
+
+# ---- the Flatpak script reads the published files, so keep them for it when asked
+if [ -n "${KEEP_PUBLISH:-}" ]; then mv "$PUB" "$OUT/publish-$ARCH"; else rm -rf "$PUB"; fi
 ls -l "$OUT"
