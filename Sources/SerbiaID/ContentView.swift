@@ -569,6 +569,13 @@ struct TokenView: View {
                     Text(loc.t(.loginCheckTitle)).font(.subheadline.weight(.semibold))
                     Text(loc.t(ok ? .loginCheckOk : (missing ? .loginCheckMissing : .loginCheckNoCard)))
                         .font(.caption).foregroundStyle(.secondary).fixedSize(horizontal: false, vertical: true)
+                    // opens the sign-in page in the default browser; the system offers the card certificate there
+                    Button { NSWorkspace.shared.open(URL(string: "https://euprava.gov.rs/prijava")!) } label: {
+                        Label(loc.t(.loginEuprava), systemImage: "person.badge.key")
+                    }
+                    .padding(.top, 4)
+                    Text(loc.t(.loginEupravaNote)).font(.caption2).foregroundStyle(.secondary)
+                        .fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer(minLength: 8)
                 Button(loc.t(.loginCheckBtn)) { Task { await model.checkDriverNow() } }
