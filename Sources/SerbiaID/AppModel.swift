@@ -481,6 +481,13 @@ final class AppModel: ObservableObject {
                                                                   notBefore: Date().addingTimeInterval(-420 * 86400),
                                                                   notAfter: Date().addingTimeInterval(75 * 86400),
                                                                   chainTrusted: true, chainError: nil),
+                                  der: Data()),
+                     // the card has two certificates: one to sign in, one to sign documents (like the iPhone demo)
+                     TokenCertRow(label: "MARKO PETROVIC 000000000 Sign",
+                                  summary: TokenCodec.CertSummary(subject: "MARKO PETROVIC", issuer: "MUP Stranci CA 4",
+                                                                  notBefore: Date().addingTimeInterval(-420 * 86400),
+                                                                  notAfter: Date().addingTimeInterval(1040 * 86400),
+                                                                  chainTrusted: true, chainError: nil),
                                   der: Data())]
         if withProblem { showProblem(CardError.pcsc(Int32(bitPattern: 0x8010002E), "ListReaders")) }
     }

@@ -520,7 +520,7 @@ struct TokenTab: View {
                     }.glassButton(prominent: false)
                 }
                 .padding(16)
-                .frame(maxWidth: 700)
+                .frame(maxWidth: 520)   // on iPad the buttons stay a sensible width
                 .frame(maxWidth: .infinity)
             }
             .modifier(ScrollCollapse(collapsed: $scanCollapsed))
