@@ -1,7 +1,7 @@
 import AppKit
 import SwiftUI
 
-/// `SuperCelik --shot out.png [personal|token|settings|about] [--dark] [--problem] [--state ...]`
+/// `SuperCelik --shot out.png [personal|token|settings|about] [--dark] [--problem] [--state ...] [--check [ok|reinsert|firefox]] [--height N]`
 /// Renders the main window with FICTIONAL demo data to a PNG, then quits (used in CI to review the UI).
 ///
 /// The window is built by hand rather than taken from the SwiftUI scene: on a CI runner the scene's
@@ -35,12 +35,15 @@ enum Shot {
             .environmentObject(prefs)
             .environmentObject(AppModel())
             .preferredColorScheme(prefs.colorScheme)
-        let w = NSWindow(contentRect: NSRect(x: 80, y: 80, width: 1100, height: 760),
+        let args = CommandLine.arguments
+        // --height N: a taller window, for pages whose content does not fit in the usual 760 points
+        let height = args.firstIndex(of: "--height").flatMap { $0 + 1 < args.count ? Double(args[$0 + 1]) : nil } ?? 760
+        let w = NSWindow(contentRect: NSRect(x: 80, y: 80, width: 1100, height: height),
                          styleMask: [.titled, .closable, .miniaturizable, .resizable], backing: .buffered, defer: false)
         w.isReleasedWhenClosed = false
         w.appearance = NSAppearance(named: CommandLine.arguments.contains("--dark") ? .darkAqua : .aqua)
         w.contentView = NSHostingView(rootView: root)
-        w.setContentSize(NSSize(width: 1100, height: 760))
+        w.setContentSize(NSSize(width: 1100, height: height))
         window = w
         NSApp.setActivationPolicy(.regular)
         w.makeKeyAndOrderFront(nil)

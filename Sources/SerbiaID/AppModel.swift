@@ -18,6 +18,44 @@ struct TokenCertRow: Identifiable {
     let der: Data
 }
 
+/// One line of the browser sign-in check: whether it is in order, and what it says.
+struct LoginCheckLine: Identifiable {
+    let id = UUID()
+    let ok: Bool
+    let key: Loc.L
+}
+
+/// The result of "Check browser sign-in" on the Token tab: what was looked at, and the one thing to do next.
+struct LoginReport {
+    var lines: [LoginCheckLine]
+    var step: Loc.L
+    var canRepair = false         // registering the driver again can help (not in the sandboxed Mac App Store build)
+    var canFixFirefox = false     // a Firefox profile is set not to use the keychain certificates
+}
+
+extension LoginReport {
+    /// The lines and the one next step for what the check found; the first thing that is wrong decides the step.
+    init(card: Bool, haveReader: Bool, registered: Bool?, attached: Bool, firefoxProfiles: Int, firefoxOff: Int, canRepair: Bool) {
+        var lines: [LoginCheckLine] = [.init(ok: card, key: card ? .cardPresent : (haveReader ? .noCard : .noReader))]
+        // one line for the driver: not registered / the card is not attached to it yet / in order
+        if registered == false { lines.append(.init(ok: false, key: .chkExtNo)) }
+        else if card { lines.append(.init(ok: attached, key: attached ? .chkAttachedOk : .chkAttachedNo)) }
+        else if registered == true { lines.append(.init(ok: true, key: .chkExtOk)) }
+        if firefoxProfiles > 0 { lines.append(.init(ok: firefoxOff == 0, key: firefoxOff == 0 ? .chkFfOk : .chkFfOff)) }
+
+        self.init(lines: lines, step: .loginCheckOk)
+        if registered == false {
+            step = .stepRepair; self.canRepair = canRepair            // registering needs no card, so it comes first
+        } else if !card {
+            step = .loginCheckNoCard
+        } else if !attached {
+            step = .loginCheckMissing; self.canRepair = canRepair
+        } else if firefoxOff > 0 {
+            step = .stepFirefox; canFixFirefox = true
+        }
+    }
+}
+
 /// Last user-input time, kept outside the main actor so the NSEvent monitor can write it.
 final class ActivityBox { var last = Date() }
 
@@ -26,7 +64,7 @@ final class AppModel: ObservableObject {
     @Published var readers: [String] = []
     @Published var selectedReader = ""
     @Published var atrHex: String?
-    @Published var cardPresent = false
+    @Published var cardPresent = false { didSet { if cardPresent != oldValue { loginReport = nil } } }      // what "Check browser sign-in" found was about the card that was in the reader
     @Published var personal: PersonalData?
     @Published var token: TokenInfo?
     @Published var tokenRows: [TokenCertRow] = []
@@ -41,6 +79,10 @@ final class AppModel: ObservableObject {
 
     /// Firefox profiles that are set not to use the keychain certificates (the card certificate would not show up in them), see FirefoxSetup.swift.
     @Published var firefoxOff = 0
+
+    /// Shown under the sign-in button after "Check browser sign-in", until it is closed or the card changes.
+    @Published var loginReport: LoginReport? { didSet { if loginReport != nil { loginReportSerial += 1 } } }
+    @Published private(set) var loginReportSerial = 0        // counts the results shown: the Token tab scrolls to a new one
 
     @Published var update: UpdateInfo?
     @Published var updating = false
@@ -64,6 +106,7 @@ final class AppModel: ObservableObject {
             loadDemo(problem: args.contains("--problem"))
             if args.contains("--preview") { showPreview = true }   // print preview sheet, for the PDF screenshot
             if let i = args.firstIndex(of: "--state"), i + 1 < args.count { applyShotState(args[i + 1]) }
+            if let i = args.firstIndex(of: "--check") { loginReport = AppModel.demoLoginReport(i + 1 < args.count && !args[i + 1].hasPrefix("--") ? args[i + 1] : "ok") }
         } else {
             initialRefresh = Task { await refreshAsync() }
             BrowserLogin.prepare()
@@ -275,6 +318,33 @@ final class AppModel: ObservableObject {
         guard cardPresent else { driverState = .unknown; return }
         let attached = await Task.detached { BrowserLogin.driverAttached() }.value
         driverState = cardPresent ? (attached ? .ok : .missing) : .unknown
+    }
+
+    /// "Check browser sign-in": what the app sees (reader, card), what macOS has (the driver extension, the card attached to it) and what Firefox does,
+    /// then the one thing to do next. Nothing is changed here; the buttons in the result do that.
+    func runLoginCheck() async {
+        if isDemoUI { loginReport = AppModel.demoLoginReport("ok"); return }        // demo / screenshots: no real driver to ask
+        let card = cardPresent, haveReader = !readers.isEmpty
+        let found = await Task.detached { () -> (registered: Bool?, attached: Bool, firefoxProfiles: Int, firefoxOff: Int) in
+            let firefox = FirefoxSetup.check()
+            return (BrowserLogin.extensionRegistered(), BrowserLogin.driverAttached(), firefox.profiles, firefox.disabled.count)
+        }.value
+        loginReport = LoginReport(card: card, haveReader: haveReader, registered: found.registered, attached: found.attached,
+                                  firefoxProfiles: found.firefoxProfiles, firefoxOff: found.firefoxOff, canRepair: BrowserLogin.canRepair)
+    }
+
+    /// A made-up result for screenshots (`--check [ok|reinsert|firefox]`): all in order, the card not attached to the driver yet, or Firefox set not to use the keychain.
+    static func demoLoginReport(_ variant: String) -> LoginReport {
+        LoginReport(card: true, haveReader: true, registered: true, attached: variant != "reinsert",
+                    firefoxProfiles: 1, firefoxOff: variant == "firefox" ? 1 : 0, canRepair: true)
+    }
+
+    /// The "Repair" button of the check: registers the driver again and stops a stale instance; the card has to be put in again afterwards.
+    func repairLogin() async {
+        guard !isDemoUI else { return }
+        await Task.detached { BrowserLogin.repairDriver() }.value
+        loginReport = nil
+        problem = Problem(titleKey: .driverStuck, isInfo: true)
     }
 
     // MARK: - Firefox (takes the card certificate from the keychain too, when its preference for that is on)

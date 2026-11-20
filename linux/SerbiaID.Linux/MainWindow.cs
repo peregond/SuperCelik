@@ -43,7 +43,7 @@ public sealed class MainWindow : Window
     private TextBox _txtAutoHide;
     private ProgressBar _busyBar;
     private Button _btnRefresh, _btnRead, _btnReadBig, _btnPrint, _btnPdf, _btnVerify, _btnEye, _btnMore, _btnProblemClose;
-    private TextBlock _lblBeta; private Button _btnFeedback, _btnLoginEu, _btnSetupBrowser;
+    private TextBlock _lblBeta; private Button _btnFeedback, _btnLoginEu, _btnSetupBrowser, _btnCheckBrowser;
     private const string EuLoginUrl = "https://euprava.gov.rs/prijava";
     private const string FeedbackUrl = "https://github.com/peregond/SuperCelik/issues/new";
     // the site pages open in the language of the app (?lang=), the changelog in this app's own section (?app=)
@@ -52,6 +52,10 @@ public sealed class MainWindow : Window
     private static string ChangelogUrl => "https://celik.peregon.cc/changelog/?lang=" + LangCode + "&app=linux";
     private Button _btnReadToken, _btnChangePin, _btnUnblockPin, _btnSignFile, _btnCheckUpdates, _btnUpdate, _btnWhatsNew, _btnReaderHelp;
     private StackPanel _emptyState, _certList;
+    // "Check browser sign-in": the result sits in the certificates card, under the certificates
+    private StackPanel _checkPanel, _checkRows; private TextBlock _checkTitle, _checkStep;
+    private sealed record CheckShown(BrowserSetup.Diagnosis D, int Readers, bool Card);
+    private CheckShown _checkShown;
     private Control _personalContent;
     private WrapPanel _fields;
     private Image _imgPortrait;
@@ -288,18 +292,26 @@ public sealed class MainWindow : Window
         _btnSignFile = Ui.Btn(""); _btnSignFile.Click += async (_, _) => await SignFile();
         _btnLoginEu = Ui.Btn(""); _btnLoginEu.Click += async (_, _) => await LoginEu();
         _btnSetupBrowser = Ui.Btn(""); _btnSetupBrowser.IsVisible = BrowserSetup.HasModule; _btnSetupBrowser.Click += async (_, _) => await SetupBrowser();
+        _btnCheckBrowser = Ui.Btn(""); _btnCheckBrowser.IsVisible = BrowserSetup.HasModule; _btnCheckBrowser.Click += async (_, _) => await CheckBrowser();
         _lblTokenInfo = Ui.Label("", 13, false, "MutedBrush"); _lblTokenInfo.VerticalAlignment = VerticalAlignment.Center;
         // the buttons wrap with a gap in a narrow window; the token name sits on its own line under them
         var buttons = new WrapPanel();
-        foreach (var b in new[] { _btnReadToken, _btnChangePin, _btnUnblockPin, _btnSignFile, _btnLoginEu, _btnSetupBrowser }) { b.Margin = new Thickness(0, 0, 10, 10); buttons.Children.Add(b); }
+        foreach (var b in new[] { _btnReadToken, _btnChangePin, _btnUnblockPin, _btnSignFile, _btnLoginEu, _btnSetupBrowser, _btnCheckBrowser }) { b.Margin = new Thickness(0, 0, 10, 10); buttons.Children.Add(b); }
         _lblTokenInfo.VerticalAlignment = VerticalAlignment.Center; _lblTokenInfo.Margin = new Thickness(2, 0, 0, 12);
         var bar = new StackPanel { Margin = new Thickness(0, 0, 0, 4), Children = { buttons, _lblTokenInfo } };
         _lblPinNote = Ui.Label("", 13, false, "MutedBrush", true); _lblPinNote.Margin = new Thickness(2, 14, 0, 0);
         _lblCerts = Ui.Label("", 15, true); _lblCerts.FontWeight = FontWeight.Bold; _lblCerts.Margin = new Thickness(0, 0, 0, 10);
         _certList = new StackPanel();
+        _checkTitle = Ui.Label("", 14, true); _checkTitle.VerticalAlignment = VerticalAlignment.Center;
+        var checkClose = Ui.Btn("", "icon"); Ui.SetBtn(checkClose, "x", null); checkClose.Click += (_, _) => HideCheck();
+        var checkHead = new DockPanel { Margin = new Thickness(0, 0, 0, 8) };
+        DockPanel.SetDock(checkClose, Dock.Right); checkHead.Children.Add(checkClose); checkHead.Children.Add(_checkTitle);
+        _checkRows = new StackPanel { Spacing = 6 };
+        _checkStep = Ui.Label("", 13, false, "MutedBrush", true); _checkStep.Margin = new Thickness(0, 10, 0, 0);
+        _checkPanel = new StackPanel { IsVisible = false, Margin = new Thickness(0, 6, 0, 4), Children = { checkHead, _checkRows, _checkStep } };
         var inner = new DockPanel();
         DockPanel.SetDock(_lblCerts, Dock.Top); inner.Children.Add(_lblCerts);
-        inner.Children.Add(new ScrollViewer { Content = _certList, VerticalScrollBarVisibility = ScrollBarVisibility.Auto });
+        inner.Children.Add(new ScrollViewer { Content = new StackPanel { Children = { _certList, _checkPanel } }, VerticalScrollBarVisibility = ScrollBarVisibility.Auto });
         var dock = new DockPanel { Margin = new Thickness(24, 18, 24, 20) };
         DockPanel.SetDock(bar, Dock.Top); dock.Children.Add(bar);
         DockPanel.SetDock(_lblPinNote, Dock.Bottom); dock.Children.Add(_lblPinNote);
@@ -408,7 +420,8 @@ public sealed class MainWindow : Window
         Ui.SetBtn(_btnCheckUpdates, "refresh-cw", Loc.T("checkUpdates")); Ui.SetBtn(_btnUpdate, "download", Loc.T("updateNow"));
         _tabButtons[0].Content = Loc.T("tabPersonal"); _tabButtons[1].Content = Loc.T("tabToken"); _tabButtons[2].Content = Loc.T("tabSettings"); _tabButtons[3].Content = Loc.T("tabAbout");
         _lblCerts.Text = Loc.T("certificates"); _lblPinNote.Text = Loc.T("pinNote") + "\n" + Loc.T(BrowserSetup.HasModule ? "loginEupravaNote" : "loginEupravaNoteManual");
-        Ui.SetBtn(_btnLoginEu, "log-in", Loc.T("loginEuprava")); Ui.SetBtn(_btnSetupBrowser, "plug", Loc.T("setupBrowser"));
+        Ui.SetBtn(_btnLoginEu, "log-in", Loc.T("loginEuprava")); Ui.SetBtn(_btnSetupBrowser, "plug", Loc.T("setupBrowser")); Ui.SetBtn(_btnCheckBrowser, "circle-check", Loc.T("checkBrowser"));
+        if (_checkPanel != null) RenderCheck();
         _lblAboutTitle.Text = Loc.T("appTitle"); _lblAboutText.Text = Loc.T("aboutText"); _lblBeta.Text = "BETA · " + Loc.T("betaNote"); Ui.SetBtn(_btnFeedback, "bug", Loc.T("betaReport")); _lblVersion.Text = $"{Loc.T("version")} {Updater.CurrentText}";
         _lblSetLang.Text = Loc.T("language"); _lblSetAppearance.Text = Loc.T("setAppearance"); _lblSetTheme.Text = Loc.T("setTheme");
         _lblSetPrivacy.Text = Loc.T("setPrivacy"); _lblSetBehavior.Text = Loc.T("setBehavior");
@@ -535,6 +548,74 @@ public sealed class MainWindow : Window
         catch (Exception ex) { if (!quiet) ShowInfo(string.Format(Loc.T("setupFailed"), ex.Message)); }
     }
 
+    /// "Check browser sign-in": what the app sees (reader, card), what the browsers have (the module), what the module itself sees, and the one
+    /// thing to do next, in the certificates card. The browsers' view comes from NSS (`modutil -list` loads the module the way a browser does),
+    /// so it is the real one.
+    private async Task CheckBrowser()
+    {
+        _btnCheckBrowser.IsEnabled = false;
+        try
+        {
+            var d = _demo ? new BrowserSetup.Diagnosis("checked", new() { "Firefox", "Chrome" }, new(), new(), true, null, 1, "Super Čelik")
+                          : await BrowserSetup.Diagnose();
+            _checkShown = new CheckShown(d, _readers.Count, _cardPresent);
+            RenderCheck();
+            Dispatcher.UIThread.Post(() => _checkPanel.BringIntoView());      // the certificates can fill the card: scroll the result into view
+        }
+        catch (Exception ex) { ShowInfo(string.Format(Loc.T("setupFailed"), ex.Message)); }
+        finally { _btnCheckBrowser.IsEnabled = true; }
+    }
+
+    private void HideCheck() { _checkShown = null; if (_checkPanel != null) _checkPanel.IsVisible = false; }
+
+    /// Draws the last check (again after a language change): up to three lines with a tick or a cross, then what to do.
+    private void RenderCheck()
+    {
+        if (_checkShown == null) { _checkPanel.IsVisible = false; return; }
+        var (d, readers, card) = _checkShown;
+        _checkTitle.Text = Loc.T("chkTitle");
+        _checkRows.Children.Clear();
+        void Row(bool ok, string text)
+        {
+            var row = new Grid { ColumnDefinitions = new ColumnDefinitions("Auto,*") };
+            var mark = Ui.Mark(ok); mark.Margin = new Thickness(0, 1, 8, 0);
+            var label = Ui.Label(text, 13, false, "TextBrush", true); Grid.SetColumn(label, 1);
+            row.Children.Add(mark); row.Children.Add(label);
+            _checkRows.Children.Add(row);
+        }
+        if (d.Kind == "checked")
+        {
+            Row(card, Loc.T(card ? "chkCardOk" : readers == 0 ? "chkNoReader" : "chkNoCard"));
+            if (d.Missing.Count > 0) Row(false, string.Format(Loc.T("chkNotConnected"), string.Join(", ", d.Missing)));
+            else if (!d.Loaded) Row(false, Loc.T("chkNotLoaded"));
+            else
+            {
+                Row(true, string.Format(Loc.T("chkConnected"), string.Join(", ", d.Connected)));
+                Row(d.Token.Length > 0, Loc.T(d.Token.Length > 0 ? "chkSeesCard" : d.Slots == 0 ? "chkNoSeeReader" : "chkNoSeeCard"));
+            }
+        }
+        _checkStep.Text = CheckStepText(d, BrowserSetup.NextStep(d, readers, card));
+        _checkPanel.IsVisible = true;
+    }
+
+    private static string CheckStepText(BrowserSetup.Diagnosis d, string step) => step switch
+    {
+        "nomodule" => Loc.T("loginEupravaNoteManual"),
+        "notool" => Loc.T("setupNoTool"),
+        "none" => string.Format(Loc.T("setupNone"), BrowserSetup.ModulePath),
+        "sandboxed" => string.Format(Loc.T("setupSandboxed"), string.Join(", ", d.Sandboxed)),
+        "stuck" => Loc.T("stepStuck"),
+        "connect" => Loc.T("stepConnect"),
+        "noservice" => Loc.T("stepNoService"),
+        "oldlibc" => Loc.T("setupOldLibc"),
+        "nolib" => Loc.T("stepNoLib"),
+        "noload" => Loc.T("stepNoLoad"),
+        "noreader" => Loc.T("stepNoReader"),
+        "nocard" => Loc.T("stepNoCard"),
+        "reinsert" => Loc.T("stepReinsert"),
+        _ => Loc.T("stepOk"),
+    };
+
     /// What went wrong, in words the user can act on (the raw NSS text only when nothing more specific is known).
     private static string ProblemText(BrowserSetup.Result r) => r.Why switch
     {
@@ -607,7 +688,9 @@ public sealed class MainWindow : Window
         {
             if (_serviceDown) { ResetPc(); _serviceDown = false; }
             FillReaders(_pc.ListReaders());
+            var cardWas = _cardPresent;
             _cardPresent = _readers.Count > 0 && _pc.Atr(Reader) != null;
+            if (cardWas != _cardPresent) HideCheck();
             HideProblem();
             UpdateCardLabel();
         }
@@ -630,6 +713,7 @@ public sealed class MainWindow : Window
             bool present = _readers.Count > 0 && _pc.Atr(Reader) != null;
             if (present == _cardPresent) return;
             _cardPresent = present;
+            HideCheck();                                          // what the check found was about the card that was in the reader then
             UpdateCardLabel();
             if (present)
             {

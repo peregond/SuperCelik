@@ -68,5 +68,8 @@ Microsoft Edge je izgrađen na Chromium-u i prijavljuje se isto kao Chrome:
 - **Windows i macOS:** iz sistema (skladište sertifikata u Windows-u, Keychain na Mac-u), u koje drajver kartice aplikacije Super Čelik stavlja sertifikat kartice. U Edge-u ne treba ništa instalirati: potpuno ga zatvorite i ponovo otvorite sajt.
 - **Linux:** Edge deli jednu NSS bazu sa Chrome-om, Chromium-om i Brave-om, pa jedna registracija služi svima: posle vaše saglasnosti aplikacija povezuje svoj PKCS#11 modul sa njom. Baza je `~/.pki/nssdb`; Chromium 146 i noviji (Edge ga prati) koriste `~/.local/share/pki/nssdb` kad stare baze nema. Aplikacija povezuje modul sa svakom postojećom kopijom, a ako je nema i neki od ovih pregledača je instaliran, pravi `~/.pki/nssdb`. Edge iz Flatpak-a radi u izolovanom okruženju i ostaje netaknut, kao Firefox iz Snap-a. Detalji: [linux/README.sr.md](linux/README.sr.md).
 
+## Ako pregledač ne nudi karticu
+Potpuno zatvorite pregledač (sve prozore; na Mac-u ⌘Q) i ponovo otvorite stranicu za prijavu. Ako ne pomogne, izvadite karticu iz čitača i ponovo je umetnite. U **macOS-u** i **Linux-u** dugme „Proveri prijavu u pregledaču“ uz „Prijava na eUpravu“ pokazuje šta nije u redu (čitač i kartica, drajver kartice na Mac-u ili modul na Linux-u, Firefox) i kaže šta dalje; u **Windows-u** stanje drajvera i Firefox-a vidi se na kartici „Podešavanja“.
+
 ## Bezbednost
 Ne komitujte dumpove kartice ni bilo kakve lične podatke (vidi `.gitignore`).

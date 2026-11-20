@@ -1,4 +1,5 @@
 using System.Diagnostics;
+using System.Text.RegularExpressions;
 
 namespace SerbiaID;
 
@@ -195,6 +196,21 @@ public static class BrowserSetup
         return (p.ExitCode, (await o) + (await e));
     }
 
+    /// Like Run, but gives up after `limit` and kills the tool: a stuck smart card service (pcscd) makes `modutil` wait for ever, and the check is
+    /// what people press when something is wrong.
+    private static async Task<(int Code, string Output, bool TimedOut)> RunLimited(TimeSpan limit, string tool, params string[] args)
+    {
+        var psi = new ProcessStartInfo(tool) { UseShellExecute = false, RedirectStandardOutput = true, RedirectStandardError = true, RedirectStandardInput = true };
+        foreach (var a in args) psi.ArgumentList.Add(a);
+        using var p = Process.Start(psi)!;
+        p.StandardInput.Close();
+        var o = p.StandardOutput.ReadToEndAsync(); var e = p.StandardError.ReadToEndAsync();
+        using var cts = new CancellationTokenSource(limit);
+        try { await p.WaitForExitAsync(cts.Token); }
+        catch (OperationCanceledException) { try { p.Kill(true); } catch { } return (-1, "", true); }
+        return (p.ExitCode, (await o) + (await e), false);
+    }
+
     /// True when every found browser database already has the module at the current path (nothing to do).
     public static async Task<bool> IsSetUp()
     {
@@ -231,6 +247,99 @@ public static class BrowserSetup
         if (modutilOutput.Contains("GLIBC_") && modutilOutput.Contains("not found")) return "oldlibc";             // version `GLIBC_2.36' not found
         if (modutilOutput.Contains("libpcsclite") && modutilOutput.Contains("cannot open shared object")) return "nolib";
         return null;
+    }
+
+    // ---- "Check browser sign-in": what a browser would find ----
+
+    /// What `modutil -list` says about our module in one database. NSS loads the module to print this, the same way a browser does, so it shows
+    /// what the browser would get: Loaded = the module started (it does not when the smart card service is stopped or a library is missing),
+    /// Slots = the readers it reports (one slot per reader), Token = the name of the card in the first reader that has one ("" = no card seen).
+    public sealed record ModuleState(bool Registered, bool Loaded, int Slots, string Token);
+
+    internal static ModuleState ParseListing(string listing)
+    {
+        bool inside = false, registered = false, loaded = false; int slots = 0; string token = "";
+        foreach (var raw in listing.Split('\n'))
+        {
+            var line = raw.Trim();
+            if (line.Length == 0) continue;
+            var header = Regex.Match(line, @"^\d+\.\s+(.*)$");                         // "2. Srb Id PKCS11": the next module starts
+            if (header.Success) { inside = header.Groups[1].Value.Trim() == ModuleName; registered |= inside; continue; }
+            if (line.StartsWith("---")) { inside = false; continue; }
+            if (!inside) continue;
+            if (line.StartsWith("status:")) loaded = line.Substring("status:".Length).Trim() == "loaded";       // otherwise "Not loaded"
+            else if (line.StartsWith("slot:")) slots++;
+            else if (line.StartsWith("token:") && token.Length == 0) token = line.Substring("token:".Length).Trim();    // empty for a reader without a card
+        }
+        return new ModuleState(registered, loaded, slots, token);
+    }
+
+    /// How long one `modutil` call may take in the check (it takes a fraction of a second when the smart card service is healthy).
+    internal static TimeSpan CheckTimeout = TimeSpan.FromSeconds(15);
+
+    /// Kind: nomodule / notool / none / sandboxed (nothing the app could check), stuck (the smart card service does not answer), or checked. Connected / Missing = the browsers whose database has
+    /// the module (at the current path) and those whose database lacks it. Loaded / Why / Slots / Token: what the module does when loaded
+    /// (Why = the reason it does not start, see WhyFailed; only known when no database loads it).
+    public sealed record Diagnosis(string Kind, List<string> Connected, List<string> Missing, List<string> Sandboxed, bool Loaded, string Why, int Slots, string Token);
+
+    public static async Task<Diagnosis> Diagnose()
+    {
+        var none = new List<string>();
+        if (!HasModule) return new Diagnosis("nomodule", none, none, none, false, null, 0, "");
+        var modutil = Which("modutil");
+        if (modutil == null) return new Diagnosis("notool", none, none, none, false, null, 0, "");
+        var sandboxed = FindSandboxedBrowsers();
+        var targets = FindTargets(createChromeDb: true);                // a database that Setup would make counts as "not connected yet"
+        if (targets.Count == 0) return new Diagnosis(sandboxed.Count > 0 ? "sandboxed" : "none", none, none, sandboxed, false, null, 0, "");
+
+        var connected = new List<string>(); var missing = new List<string>();
+        bool loaded = false; int slots = 0; string token = "";
+        foreach (var t in targets)
+        {
+            var (code, text, timedOut) = await RunLimited(CheckTimeout, modutil, "-dbdir", "sql:" + t.Dir, "-list");
+            if (timedOut) return new Diagnosis("stuck", none, none, sandboxed, false, null, 0, "");
+            var s = code == 0 ? ParseListing(text) : new ModuleState(false, false, 0, "");
+            if (s.Registered && text.Contains(ModulePath))
+            {
+                if (!connected.Contains(t.Label)) connected.Add(t.Label);
+                loaded |= s.Loaded; slots = Math.Max(slots, s.Slots);
+                if (token.Length == 0) token = s.Token;
+            }
+            else if (!missing.Contains(t.Label)) missing.Add(t.Label);                  // not there, or there under an old path (Setup replaces it)
+        }
+        var why = connected.Count > 0 && !loaded ? await WhyNotLoaded() : null;
+        return new Diagnosis("checked", connected, missing, sandboxed, loaded, why, slots, token);
+    }
+
+    /// Adds the module to an empty throw-away database to get NSS's own explanation of why it does not start (the listing only says "Not loaded").
+    private static async Task<string> WhyNotLoaded()
+    {
+        var dir = Path.Combine(Path.GetTempPath(), "supercelik-nss-" + Guid.NewGuid().ToString("N"));
+        try
+        {
+            var certutil = Which("certutil"); var modutil = Which("modutil");
+            if (certutil == null || modutil == null) return null;
+            Directory.CreateDirectory(dir);
+            var (c, _, _) = await RunLimited(CheckTimeout, certutil, "-N", "-d", "sql:" + dir, "--empty-password");
+            if (c != 0) return null;
+            var (ac, ao, timedOut) = await RunLimited(CheckTimeout, modutil, "-dbdir", "sql:" + dir, "-add", ModuleName, "-libfile", ModulePath, "-force");
+            return timedOut ? null : ac == 0 ? null : WhyFailed(ao);
+        }
+        catch { return null; }
+        finally { try { Directory.Delete(dir, true); } catch { } }
+    }
+
+    /// The one thing to do next, from the first thing that is wrong. `readers` / `cardInApp` = what the app itself sees through the smart card
+    /// service. Returns the Kind for the cases Diagnose could not check (nomodule / notool / none / sandboxed / stuck), otherwise: connect (the browsers lack the module), noservice / oldlibc /
+    /// nolib / noload (the module does not start), noreader / nocard (nothing to read yet), reinsert (the app sees the card, the module does not), ok.
+    public static string NextStep(Diagnosis d, int readers, bool cardInApp)
+    {
+        if (d.Kind != "checked") return d.Kind;
+        if (d.Missing.Count > 0) return "connect";
+        if (!d.Loaded) return (d.Why is "noservice" or "oldlibc" or "nolib") ? d.Why : "noload";
+        if (d.Token.Length > 0) return "ok";
+        if (d.Slots == 0) return readers == 0 ? "noreader" : "reinsert";
+        return cardInApp ? "reinsert" : "nocard";
     }
 
     /// Registers the module in every found browser database (replacing an entry with another path).
