@@ -4,6 +4,7 @@
     <string name="title_personal">Лични подаци</string>
     <string name="read_usb">Читај преко USB читача</string>
     <string name="hint_idle">Убаците картицу у USB читач паметних картица и повежите га са телефоном (USB-C или преко OTG адаптера). Читање почиње аутоматски.</string>
+    <string name="reader_help">Немате читач?</string>
     <string name="hint_usb_wait">Тражим USB читач…</string>
     <string name="reading">Читам картицу…</string>
     <string name="cancel">Откажи</string>

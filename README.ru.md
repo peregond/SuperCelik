@@ -5,7 +5,7 @@
 # Super Čelik
 
 Единое приложение вместо Čelik + TrustEdge ID для сербской электронной ID-карты, карты иностранца и вида на жительство. Бесплатно, без аккаунта и серверов: данные карты не покидают ваше устройство.
-Сайт: <https://celik.peregon.cc> · Политика конфиденциальности: [docs/PRIVACY.md](docs/PRIVACY.md) · Ошибки и отзывы: [GitHub Issues](https://github.com/peregond/SuperCelik/issues/new)
+Сайт: <https://celik.peregon.cc> · Что нового: <https://celik.peregon.cc/changelog/> · Политика конфиденциальности: [docs/PRIVACY.md](docs/PRIVACY.md) · Ошибки и отзывы: [GitHub Issues](https://github.com/peregond/SuperCelik/issues/new)
 
 Языки: RU / EN / SR (латиница) / SR (кириллица). Сербская кириллица получается из сербской латиницы автоматической транслитерацией (`scripts/translit_sr.py`, те же правила в Swift и C#).
 Платформы: **iOS и iPadOS** (SwiftUI, чтение через USB-C ридер, см. [ios/README.ru.md](ios/README.ru.md)), **macOS** (SwiftUI, см. [macos/README.ru.md](macos/README.ru.md)), **Android** (Kotlin + Jetpack Compose, Material You, см. [android/README.ru.md](android/README.ru.md)), **Windows** (WPF, .NET 8) и **Linux** (**бета**, Avalonia, .NET 8, см. [linux/README.ru.md](linux/README.ru.md)).

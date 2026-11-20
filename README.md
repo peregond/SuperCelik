@@ -5,7 +5,7 @@
 # Super Čelik
 
 One app instead of Čelik + TrustEdge ID for the Serbian electronic ID card, foreigner ID card and residence permit. Free, no account, no servers: card data never leaves your device.
-Website: <https://celik.peregon.cc> · Privacy policy: [docs/PRIVACY.md](docs/PRIVACY.md) · Bugs and feedback: [GitHub Issues](https://github.com/peregond/SuperCelik/issues/new)
+Website: <https://celik.peregon.cc> · What’s new: <https://celik.peregon.cc/changelog/> · Privacy policy: [docs/PRIVACY.md](docs/PRIVACY.md) · Bugs and feedback: [GitHub Issues](https://github.com/peregond/SuperCelik/issues/new)
 
 Languages: RU / EN / SR (Latin) / SR (Cyrillic). Serbian Cyrillic is produced from Serbian Latin by automatic transliteration (`scripts/translit_sr.py`, the same rules in Swift and C#).
 Platforms: **iOS and iPadOS** (SwiftUI, reads through a USB-C reader, see [ios/README.md](ios/README.md)), **macOS** (SwiftUI, see [macos/README.md](macos/README.md)), **Android** (Kotlin + Jetpack Compose, Material You, see [android/README.md](android/README.md)), **Windows** (WPF, .NET 8) and **Linux** (**beta**, Avalonia, .NET 8, see [linux/README.md](linux/README.md)).

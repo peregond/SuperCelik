@@ -5,7 +5,7 @@
 # Super Čelik
 
 Jedna aplikacija umesto Čelik + TrustEdge ID za srpsku elektronsku ličnu kartu, ličnu kartu za strance i boravišnu dozvolu. Besplatno, bez naloga i servera: podaci sa kartice ne napuštaju vaš uređaj.
-Sajt: <https://celik.peregon.cc> · Politika privatnosti: [docs/PRIVACY.md](docs/PRIVACY.md) · Greške i povratne informacije: [GitHub Issues](https://github.com/peregond/SuperCelik/issues/new)
+Sajt: <https://celik.peregon.cc> · Šta je novo: <https://celik.peregon.cc/changelog/> · Politika privatnosti: [docs/PRIVACY.md](docs/PRIVACY.md) · Greške i povratne informacije: [GitHub Issues](https://github.com/peregond/SuperCelik/issues/new)
 
 Jezici: RU / EN / SR (latinica) / SR (ćirilica). Srpska ćirilica se dobija iz srpske latinice automatskom transliteracijom (`scripts/translit_sr.py`, ista pravila u Swift-u i C#-u).
 Platforme: **iOS i iPadOS** (SwiftUI, čitanje preko USB-C čitača, vidi [ios/README.sr.md](ios/README.sr.md)), **macOS** (SwiftUI, vidi [macos/README.sr.md](macos/README.sr.md)), **Android** (Kotlin + Jetpack Compose, Material You, vidi [android/README.sr.md](android/README.sr.md)), **Windows** (WPF, .NET 8) i **Linux** (**beta**, Avalonia, .NET 8, vidi [linux/README.sr.md](linux/README.sr.md)).

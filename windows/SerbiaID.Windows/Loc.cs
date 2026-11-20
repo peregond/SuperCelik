@@ -154,6 +154,8 @@ public static class Loc
         ["pdfSaved"] = new[] { "PDF сохранён", "PDF saved", "PDF je sačuvan" },
         ["version"] = new[] { "Версия", "Version", "Verzija" },
         ["checkUpdates"] = new[] { "Проверить обновления", "Check for updates", "Proveri ažuriranja" },
+        ["readerHelp"] = new[] { "Нет считывателя?", "No reader yet?", "Nemate čitač?" },
+        ["whatsNew"] = new[] { "Что нового?", "What’s new?", "Šta je novo?" },
         ["updateAvailable"] = new[] { "Доступна новая версия {0}", "New version {0} is available", "Dostupna je nova verzija {0}" },
         ["updateNow"] = new[] { "Обновить", "Update", "Ažuriraj" },
         ["updateDownloading"] = new[] { "Загрузка обновления…", "Downloading update…", "Preuzimanje ažuriranja…" },

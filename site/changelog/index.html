@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>What's new — Super Čelik</title>
+<meta name="description" content="What changed in Super Čelik: the history of every version for Windows, Linux, macOS, iOS and Android.">
+<meta property="og:title" content="What's new — Super Čelik">
+<meta property="og:image" content="/img/icon.png">
+<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+<link rel="preload" href="../fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="icon" href="/img/favicon.png">
+<style>
+/* Inter, embedded (SIL OFL, see fonts/Inter-OFL.txt): one look on every device */
+@font-face{font-family:"Inter";font-style:normal;font-display:swap;font-weight:100 900;src:url(../fonts/inter-cyrillic-ext-wght-normal.woff2) format("woff2");unicode-range:U+0460-052F,U+1C80-1C8A,U+20B4,U+2DE0-2DFF,U+A640-A69F,U+FE2E-FE2F}
+@font-face{font-family:"Inter";font-style:normal;font-display:swap;font-weight:100 900;src:url(../fonts/inter-cyrillic-wght-normal.woff2) format("woff2");unicode-range:U+0301,U+0400-045F,U+0490-0491,U+04B0-04B1,U+2116}
+@font-face{font-family:"Inter";font-style:normal;font-display:swap;font-weight:100 900;src:url(../fonts/inter-latin-ext-wght-normal.woff2) format("woff2");unicode-range:U+0100-02BA,U+02BD-02C5,U+02C7-02CC,U+02CE-02D7,U+02DD-02FF,U+0304,U+0308,U+0329,U+1D00-1DBF,U+1E00-1E9F,U+1EF2-1EFF,U+2020,U+20A0-20AB,U+20AD-20C0,U+2113,U+2C60-2C7F,U+A720-A7FF}
+@font-face{font-family:"Inter";font-style:normal;font-display:swap;font-weight:100 900;src:url(../fonts/inter-latin-wght-normal.woff2) format("woff2");unicode-range:U+0000-00FF,U+0131,U+0152-0153,U+02BB-02BC,U+02C6,U+02DA,U+02DC,U+0304,U+0308,U+0329,U+2000-206F,U+20AC,U+2122,U+2191,U+2193,U+2212,U+2215,U+FEFF,U+FFFD}
+
+:root{color-scheme:light dark;--bg:#fff;--ink:#1d1d1f;--muted:#6e6e73;--line:#d2d2d7;--red:#E23D47;--d1:#555b68;--d2:#1d2027;--dr:#3a404c;--cab:#2b3040;--plug:#3a404c;--cl:#d2d2d7;--sh:.16}
+@media(prefers-color-scheme:dark){:root{--bg:#000;--ink:#f5f5f7;--muted:#a1a1a6;--line:#2e2e32;--d1:#eef1f6;--d2:#aab3c2;--dr:#cfd6e2;--cab:#5c6376;--plug:#d6dce8;--cl:#4a4a50;--sh:0}}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;font:19px/1.5 "Inter",-apple-system,BlinkMacSystemFont,"SF Pro Display","Segoe UI",Roboto,Helvetica,Arial,sans-serif;color:var(--ink);background:var(--bg);-webkit-font-smoothing:antialiased;overflow-x:hidden}
+a{color:inherit}
+.wrap{max-width:900px;margin:0 auto;padding:0 24px}
+/* language: a globe that opens on hover, in the colours of the page */
+.langbox{position:fixed;top:14px;right:16px;z-index:60}
+.globe{width:40px;height:40px;border-radius:50%;border:1px solid var(--line);background:color-mix(in srgb,var(--bg) 82%,transparent);-webkit-backdrop-filter:blur(14px);backdrop-filter:blur(14px);color:var(--ink);display:grid;place-items:center;cursor:pointer;transition:border-color .2s}
+.globe svg{width:21px;height:21px}
+.globe:hover,.langbox.open .globe,.globe:focus-visible{border-color:var(--ink)}
+.langmenu{position:absolute;right:0;top:100%;padding-top:8px;opacity:0;visibility:hidden;transform:translateY(-6px) scale(.96);transform-origin:top right;transition:opacity .18s,transform .18s,visibility .18s}
+.langmenu .in{display:flex;flex-direction:column;min-width:200px;padding:6px;border-radius:16px;background:color-mix(in srgb,var(--bg) 94%,transparent);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border:1px solid var(--line);box-shadow:0 18px 40px -18px rgba(0,0,0,.35)}
+.langmenu button{display:flex;align-items:center;gap:12px;text-align:left;border:0;background:none;color:var(--ink);padding:10px 12px;border-radius:10px;font:600 16px inherit;font-family:inherit;cursor:pointer}
+.langmenu .fl{width:26px;height:18px;border-radius:4px;flex:none;box-shadow:0 0 0 1px var(--line)}
+.langmenu button:hover{background:color-mix(in srgb,var(--ink) 8%,transparent)}
+.langmenu button[aria-pressed=true]::after{content:"✓";color:var(--red);font-weight:800;margin-left:auto;padding-left:10px}
+.langbox.open .langmenu,.langbox:focus-within .langmenu{opacity:1;visibility:visible;transform:none}
+@media(hover:hover){.langbox:hover .langmenu{opacity:1;visibility:visible;transform:none}}
+@media(max-width:480px){.langbox{top:10px;right:10px}}
+.hero{padding:56px 0 8px;text-align:left}
+.hero h1{max-width:720px;margin:0 auto;font-size:clamp(30px,5vw,48px);line-height:1.05;letter-spacing:-.035em;font-weight:800}
+.hero p{max-width:720px;margin:14px auto 0;color:var(--muted);font-size:clamp(17px,2vw,21px);line-height:1.4}
+.tabs{max-width:720px;margin:28px auto 0;display:flex;flex-wrap:wrap;gap:8px}
+.tabs button{font:600 15px/1 inherit;font-family:inherit;border:1px solid var(--line);background:none;color:var(--ink);padding:10px 16px;border-radius:999px;cursor:pointer;transition:background .15s,border-color .15s}
+.tabs button:hover{border-color:var(--ink)}
+.tabs button[aria-pressed=true]{background:var(--ink);color:var(--bg);border-color:var(--ink)}
+.log{max-width:720px;margin:12px auto 0;padding:0}
+.rel{padding:26px 0 6px;border-top:1px solid var(--line);margin-top:22px}
+.rel:first-child{border-top:0;margin-top:0}
+.rel h2{display:flex;align-items:baseline;gap:14px;margin:0 0 10px;font-size:clamp(22px,3vw,28px);letter-spacing:-.02em;font-weight:800}
+.rel h2 time{font-size:15px;font-weight:500;color:var(--muted);letter-spacing:0}
+.rel ul{list-style:none;margin:0;padding:0}
+.rel li{padding:9px 0;font-size:17px;line-height:1.45}
+.apps{display:inline-flex;flex-wrap:wrap;gap:6px;margin-right:10px;vertical-align:1px}
+.apps b{font-size:12px;font-weight:700;letter-spacing:.02em;padding:3px 9px;border-radius:999px;border:1px solid var(--line);color:var(--muted);white-space:nowrap}
+.empty{max-width:720px;margin:30px auto 0;color:var(--muted)}
+footer{margin-top:64px;border-top:1px solid var(--line);padding:26px 0 44px;color:var(--muted);font-size:13px}
+footer .wrap{display:flex;flex-wrap:wrap;gap:10px 28px;justify-content:space-between}
+@media(max-width:620px){body{font-size:17px}.wrap{padding:0 16px}.hero{padding-top:48px}}
+</style>
+</head>
+<body>
+<div class="langbox" id="langbox">
+  <button class="globe" id="globe" type="button" aria-label="Language" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.2"/><path d="M2.8 12h18.4M12 2.8c3.1 3.4 3.1 14 0 18.4M12 2.8c-3.1 3.4-3.1 14 0 18.4"/></svg></button>
+  <div class="langmenu" role="menu"><div class="in">
+    <button type="button" role="menuitem" data-l="ru" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#fff"/><rect y="5.33" width="24" height="5.34" fill="#0039A6"/><rect y="10.67" width="24" height="5.33" fill="#D52B1E"/></svg><span>Русский</span></button>
+    <button type="button" role="menuitem" data-l="en" aria-pressed="false"><svg class="fl" viewBox="0 0 60 40" preserveAspectRatio="none" aria-hidden="true"><rect width="60" height="40" fill="#012169"/><path d="M0 0L60 40M60 0L0 40" stroke="#fff" stroke-width="8"/><path d="M0 0L60 40M60 0L0 40" stroke="#C8102E" stroke-width="3"/><path d="M30 0V40M0 20H60" stroke="#fff" stroke-width="13"/><path d="M30 0V40M0 20H60" stroke="#C8102E" stroke-width="8"/></svg><span>English</span></button>
+    <button type="button" role="menuitem" data-l="sr" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#fff"/><rect width="24" height="5.33" fill="#C6363C"/><rect y="5.33" width="24" height="5.34" fill="#0C4076"/></svg><span>Srpski</span></button>
+    <button type="button" role="menuitem" data-l="sc" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#fff"/><rect width="24" height="5.33" fill="#C6363C"/><rect y="5.33" width="24" height="5.34" fill="#0C4076"/></svg><span>Српски</span></button>
+  </div></div>
+</div>
+
+<header class="hero"><div class="wrap">
+  <h1 id="h1"></h1>
+  <p id="lead"></p>
+  <div class="tabs" id="tabs" role="group"></div>
+</div></header>
+
+<main><div class="wrap"><div class="log" id="log"></div><p class="empty" id="empty" hidden></p></div></main>
+
+<footer><div class="wrap">
+  <div id="disc"></div>
+  <div><a href="/">Super Čelik</a> · <a href="/privacy">Privacy</a> · <a href="https://github.com/peregond/SuperCelik/releases">GitHub</a></div>
+</div></footer>
+
+<script>
+const LANGS=["ru","en","sr","sc"];
+const T={
+ ru:{title:"Что нового",lead:"История изменений Super Čelik по приложениям. Новое сверху.",all:"Все приложения",next:"Следующий релиз",empty:"Для этого приложения записей пока нет.",disc:"Super Čelik — независимое приложение, не связано с МУП РС и NetSeT/Veridos."},
+ en:{title:"What's new",lead:"What changed in Super Čelik, app by app. The newest is on top.",all:"All apps",next:"Next release",empty:"There are no entries for this app yet.",disc:"Super Čelik — independent app, not affiliated with MUP RS or NetSeT/Veridos."},
+ sr:{title:"Šta je novo",lead:"Šta se promenilo u aplikaciji Super Čelik, po aplikacijama. Najnovije je na vrhu.",all:"Sve aplikacije",next:"Sledeće izdanje",empty:"Za ovu aplikaciju još nema zapisa.",disc:"Super Čelik — nezavisna aplikacija, nije povezana sa MUP RS niti NetSeT/Veridos."}
+};
+T.sc=T.sr;
+const APPS={windows:"Windows",linux:"Linux",macos:"macOS",ios:"iOS / iPadOS",android:"Android"};
+const ALL=Object.keys(APPS);
+// [version, date, [[apps, ru, en, sr], ...]]. Newest first. "next" = not released yet.
+const LOG=[
+["next","",[
+ [["linux"],"Вход в браузере: Firefox (в том числе профили Firefox 147+), Chrome, Edge, Chromium и Brave. Новые профили и браузеры подключаются сами после первого согласия. Понятные сообщения, если служба смарт-карт не запущена или система слишком старая для модуля (нужен glibc 2.36+).","Browser sign-in: Firefox (including the profiles of Firefox 147+), Chrome, Edge, Chromium and Brave. New profiles and browsers are connected by themselves after you agree once. Clear messages when the smart card service is not running or the system is too old for the module (glibc 2.36+ is needed).","Prijava u pregledaču: Firefox (uključujući profile Firefox-a 147+), Chrome, Edge, Chromium i Brave. Novi profili i pregledači povezuju se sami posle prve saglasnosti. Jasne poruke kad usluga za pametne kartice nije pokrenuta ili je sistem prestar za modul (potreban je glibc 2.36+)."],
+ [["windows","macos"],"Firefox и Edge берут сертификат карты из системы, как Chrome. Приложение проверяет настройку Firefox и, если она выключена, включает её после вашего согласия.","Firefox and Edge take the card certificate from the system, like Chrome. The app checks the Firefox setting for this and, if it is off, turns it on after you agree.","Firefox i Edge uzimaju sertifikat kartice iz sistema, kao Chrome. Aplikacija proverava podešavanje Firefox-a i, ako je isključeno, uključuje ga uz vašu saglasnost."],
+ [["windows","linux","android"],"Кнопка «Нет считывателя?» открывает страницу о том, какой считыватель купить (в macOS и iOS она уже была).","The “No reader yet?” button opens the page about which reader to get (macOS and iOS already had it).","Dugme „Nemate čitač?“ otvara stranicu o tome koji čitač kupiti (macOS i iOS su je već imali)."],
+ [["windows","linux"],"Кнопка «Что нового?» в разделе «О программе» открывает эту страницу.","The “What's new?” button in About opens this page.","Dugme „Šta je novo?“ u odeljku „O programu“ otvara ovu stranicu."]
+]],
+["0.9.13","2026-11-20",[
+ [["linux"],"Пакеты AppImage (x86_64, aarch64) и Flatpak рядом с .deb и .tar.gz. AppImage обновляет себя сам.","AppImage (x86_64, aarch64) and Flatpak packages next to the .deb and .tar.gz. The AppImage updates itself.","AppImage (x86_64, aarch64) i Flatpak paketi pored .deb i .tar.gz. AppImage sam sebe ažurira."]
+]],
+["0.9.12","2026-11-19",[
+ [["windows"],"Версия для Windows XP, Vista и 7 (и 32-битных систем) на .NET Framework 4.0. Драйвер карты для входа в браузере требует Windows Vista или новее, автообновление требует TLS 1.2.","A build for Windows XP, Vista and 7 (and 32-bit systems) on .NET Framework 4.0. The card driver for browser sign-in needs Windows Vista or newer, automatic updates need TLS 1.2.","Verzija za Windows XP, Vista i 7 (i 32-bitne sisteme) na .NET Framework 4.0. Drajver kartice za prijavu u pregledaču zahteva Windows Vista ili noviji, automatsko ažuriranje zahteva TLS 1.2."],
+ [["ios","macos"],"Проще вкладки «Карта» и «Токен» (Liquid Glass).","Simpler Card and Token tabs (Liquid Glass).","Jednostavnije kartice „Kartica“ i „Token“ (Liquid Glass)."]
+]],
+["0.9.11","2026-11-19",[
+ [["linux"],"«Показать демо-данные» в настройках: окно с вымышленными данными, чтобы посмотреть программу без карты.","“Show demo data” in Settings: the window with fictional data, to see the app without a card.","„Prikaži demo podatke“ u podešavanjima: prozor sa izmišljenim podacima, da vidite aplikaciju bez kartice."]
+]],
+["0.9.10","2026-11-19",[
+ [["linux"],"Иконки, анимированные персонажи и кнопка входа на eUprava. Пакет .deb сам ставит нужные службы, программа работает сразу после установки.","Icons, animated mascots and an eUprava sign-in button. The .deb installs the services it needs, so the app works right after the installation.","Ikone, animirani likovi i dugme za prijavu na eUpravu. Paket .deb sam instalira potrebne usluge, aplikacija radi odmah posle instalacije."]
+]],
+["0.9.9","2026-11-19",[
+ [ALL,"Приложение называется Super Čelik.","The app is now called Super Čelik.","Aplikacija se zove Super Čelik."],
+ [["linux"],"Первая бета-версия для Linux: пакеты .deb и .tar.gz, автообновление.","The first Linux beta: .deb and .tar.gz packages, self-update.","Prva beta verzija za Linux: paketi .deb i .tar.gz, automatsko ažuriranje."],
+ [["ios","android"],"Карта читается только через USB-считыватель, NFC убран.","The card is read only through a USB reader, NFC is gone.","Kartica se čita samo preko USB čitača, NFC je uklonjen."],
+ [["ios"],"iOS 1.3.1: смена PIN, вход на eUprava, быстрые действия; подпись файлов, сохранение фото и экспорт в JSON.","iOS 1.3.1: PIN change, eUprava sign-in, quick actions; file signing, saving the photo and JSON export.","iOS 1.3.1: promena PIN-a, prijava na eUpravu, brze radnje; potpisivanje fajlova, čuvanje fotografije i izvoz u JSON."],
+ [["android"],"Вход на eUprava с картой: страница входа открывается в приложении, ключ остаётся на карте.","Sign-in to eUprava with the card: the page opens inside the app, the key stays on the card.","Prijava na eUpravu karticom: stranica se otvara u aplikaciji, ključ ostaje na kartici."],
+ [["macos"],"Окно больше не зависает, если системная служба смарт-карт застряла.","The window no longer freezes when the system's smart card service is stuck.","Prozor se više ne zamrzava kad sistemska usluga za pametne kartice zapne."],
+ [["macos","ios"],"Один идентификатор приложения для iOS и macOS, сборка для Mac App Store.","One app identifier for iOS and macOS, a build for the Mac App Store.","Jedan identifikator aplikacije za iOS i macOS, izgradnja za Mac App Store."]
+]],
+["0.9.8","2026-11-12",[
+ [["windows"],"Исправления после проверки безопасности: проверки длины данных в драйвере карты, PIN стирается из памяти сразу после проверки, исправлен ATR карты в установщике, сертификаты МУП сверяются с зашитыми отпечатками.","Fixes after a security review: length checks in the card driver, the PIN is wiped from memory right after the check, the card ATR in the installer is fixed, the MUP certificates are checked against built-in fingerprints.","Ispravke posle bezbednosne provere: provere dužine podataka u drajveru kartice, PIN se briše iz memorije odmah posle provere, ispravljen ATR kartice u instalateru, MUP sertifikati se proveravaju sa ugrađenim otiscima."],
+ [["windows","macos"],"Обновление ставится, только если файл совпал с опубликованной контрольной суммой.","An update is installed only if the file matches the published checksum.","Ažuriranje se instalira samo ako se fajl poklapa sa objavljenom kontrolnom sumom."],
+ [["android"],"Демо-режим нельзя включить из другого приложения, PDF для «Поделиться» удаляется из кэша.","The demo mode cannot be switched on from another app, the PDF made for Share is removed from the cache.","Demo režim se ne može uključiti iz druge aplikacije, PDF napravljen za „Podeli“ briše se iz keša."]
+]],
+["0.9.7","2026-11-12",[
+ [["windows"],"Драйвер карты ставится вместе с программой: вход в Chrome и Edge по сертификату работает без драйвера МУП/NetSeT. Установщик просит права администратора.","The card driver is installed with the app: certificate sign-in in Chrome and Edge works without the MUP/NetSeT driver. The installer asks for administrator rights.","Drajver kartice se instalira zajedno sa aplikacijom: prijava sertifikatom u Chrome-u i Edge-u radi bez MUP/NetSeT drajvera. Instalater traži administratorska prava."]
+]],
+["0.9.6","2026-11-12",[
+ [["windows"],"Собственный драйвер карты: вход в браузере по сертификату без официального драйвера МУП/NetSeT. В настройках его состояние, установка и удаление.","The app's own card driver: browser sign-in with the certificate without the official MUP/NetSeT driver. Its state, installation and removal are in Settings.","Sopstveni drajver kartice: prijava u pregledaču sertifikatom bez zvaničnog MUP/NetSeT drajvera. Njegovo stanje, instalacija i uklanjanje su u podešavanjima."],
+ [["macos"],"«Сохранить PDF» даёт ту же страницу, что «Напечатать → Сохранить как PDF».","“Save PDF” gives the same page as “Print → Save as PDF”.","„Sačuvaj PDF“ daje istu stranicu kao „Štampaj → Sačuvaj kao PDF“."]
+]],
+["0.9.4","2026-11-12",[
+ [["windows","macos","ios","android"],"Печатная форма и PDF: нижние сноски больше не обрезаются, даже если данные длинные.","Printout and PDF: the footnotes at the bottom are no longer cut off, even when the data is long.","Štampa i PDF: donje napomene se više ne seku, čak ni kad su podaci dugački."]
+]],
+["0.9.1","2026-11-12",[
+ [["windows","macos"],"Новые персонажи: считыватель и ключ меняют позу в зависимости от состояния и оживают при вставке карты и чтении.","New characters: the reader and the key change pose with the state and come alive when a card is inserted and while reading.","Novi likovi: čitač i ključ menjaju pozu prema stanju i oživljavaju pri umetanju kartice i čitanju."]
+]],
+["0.9.0","2026-11-12",[
+ [["windows"],"Чтение карты при подключении включено по умолчанию, как на Mac.","Reading the card as soon as it is inserted is on by default, as on the Mac.","Čitanje kartice čim se umetne uključeno je podrazumevano, kao na Mac-u."],
+ [["windows","macos"],"Считыватель с лицом и плавные переходы между экранами.","A reader with a face and smooth transitions between screens.","Čitač sa licem i glatki prelazi između ekrana."]
+]],
+["0.8.0","2026-11-11",[
+ [ALL,"Сербская кириллица рядом с латиницей во всех приложениях.","Serbian Cyrillic next to Latin in all apps.","Srpska ćirilica pored latinice u svim aplikacijama."],
+ [["ios","macos"],"Подготовка к App Store и Mac App Store.","Preparation for the App Store and the Mac App Store.","Priprema za App Store i Mac App Store."]
+]],
+["0.7.0","2026-11-11",[
+ [["ios"],"Дизайн Liquid Glass, просмотр PDF в приложении, одна кнопка чтения, двухколонный вид на iPad.","Liquid Glass design, a PDF preview in the app, one Read button, a two-column layout on the iPad.","Liquid Glass dizajn, pregled PDF-a u aplikaciji, jedno dugme za čitanje, dvokolonski prikaz na iPad-u."],
+ [["android"],"Просмотр, печать и отправка PDF, фото крупнее.","PDF viewing, printing and sharing, a bigger photo.","Pregled, štampa i deljenje PDF-a, veća fotografija."]
+]],
+["0.6.0","2026-11-11",[
+ [["android"],"Первая версия для Android: чтение через USB-считыватель, проверка подписи, токен, PIN и PUK, подпись файлов, PDF.","The first Android version: reading through a USB reader, signature check, token, PIN and PUK, file signing, PDF.","Prva verzija za Android: čitanje preko USB čitača, provera potpisa, token, PIN i PUK, potpisivanje fajlova, PDF."],
+ [["ios"],"Работает на iPad; чтение через USB-считыватель.","Works on the iPad; reading through a USB reader.","Radi na iPad-u; čitanje preko USB čitača."]
+]],
+["0.5.0","2026-11-10",[
+ [["windows","macos"],"Смена PIN, разблокировка по PUK, подпись файлов.","PIN change, PUK unblocking, file signing.","Promena PIN-a, odblokiranje PUK-om, potpisivanje fajlova."]
+]],
+["0.4.0","2026-11-10",[
+ [["ios"],"Первая версия для iPhone (тогда чтение по NFC).","The first iPhone version (reading over NFC at that time).","Prva verzija za iPhone (tada čitanje preko NFC-a)."],
+ [["macos"],"Новый вид главного окна.","A new look of the main window.","Novi izgled glavnog prozora."]
+]],
+["0.3.5","2026-11-09",[
+ [["macos"],"Драйвер карты: Chrome входит на eid.gov.rs по сертификату с карты.","The card driver: Chrome can sign in to eid.gov.rs with the card certificate.","Drajver kartice: Chrome se prijavljuje na eid.gov.rs sertifikatom sa kartice."]
+]],
+["0.3.0","2026-11-09",[
+ [["windows","macos"],"Определение вставки и извлечения карты, один «глазок» для скрытия данных, копирование полей, срок действия документа, сертификаты токена, предпросмотр печати, настройки.","Card insert and removal detection, one eye to hide the data, copying fields, the document's validity, token certificates, a print preview, settings.","Prepoznavanje umetanja i vađenja kartice, jedno „oko“ za skrivanje podataka, kopiranje polja, rok važenja dokumenta, sertifikati tokena, pregled pred štampu, podešavanja."]
+]]
+];
+
+function detectLang(){
+ const list=(navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language||""]).map(x=>String(x).toLowerCase());
+ for(const l of list){
+  if(l.startsWith("sr")) return /cyrl/.test(l)?"sc":"sr";
+  if(/^(bs|hr|me)\b/.test(l)) return "sr";
+  if(/^(ru|uk|be|kk)\b/.test(l)) return "ru";
+  if(l.startsWith("en")) return "en";
+ }
+ return "en";
+}
+// ?lang=ru|en|sr|sc and ?app=windows|linux|macos|ios|android let the app open the page in its own language and section
+const qs=new URLSearchParams(location.search);
+let lang=LANGS.includes(qs.get("lang"))?qs.get("lang"):localStorage.getItem("sc-lang");
+if(!LANGS.includes(lang))lang=detectLang();
+let app=ALL.includes(qs.get("app"))?qs.get("app"):"all";
+const CYR={a:"а",b:"б",v:"в",g:"г",d:"д",đ:"ђ",e:"е",ž:"ж",z:"з",i:"и",j:"ј",k:"к",l:"л",m:"м",n:"н",o:"о",p:"п",r:"р",s:"с",t:"т",ć:"ћ",u:"у",f:"ф",h:"х",c:"ц",č:"ч",š:"ш"};
+function cyr(s){let o="",i=0;
+ while(i<s.length){const c=s[i],d=(c+(s[i+1]||"")).toLowerCase(),up=c!==c.toLowerCase();
+  const di={lj:"љ",nj:"њ",dž:"џ"}[d];
+  if(di){o+=up?di.toUpperCase():di;i+=2;continue}
+  const m=CYR[c.toLowerCase()];
+  if(m){o+=up?m.toUpperCase():m}else o+=c;
+  i++}
+ return o}
+// brand and technical names stay Latin in the Cyrillic text
+const KEEP=/(^|[^\p{L}\p{N}])(Super Čelik|eUprava|eid\.gov\.rs|Mac App Store|App Store|Liquid Glass|iPadOS|iPhone|iPad|iOS|macOS|Mac|Windows|Linux|Android|Firefox|Chrome|Chromium|Brave|Edge|Safari|AppImage|Flatpak|\.deb|\.tar\.gz|x86_64|aarch64|glibc|\.NET Framework|NetSeT|Veridos|MUP|ATR|PIN|PUK|PDF|JSON|USB|NFC|TLS|XP|Vista|ID)(?![\p{L}\p{N}])/gu;
+function translitText(t){let o="",last=0;
+ for(const m of t.matchAll(KEEP)){o+=cyr(t.slice(last,m.index))+m[1]+m[2];last=m.index+m[0].length}
+ return o+cyr(t.slice(last))}
+function pick(item,l){const i={ru:1,en:2,sr:3}[l==="sc"?"sr":l];const t=item[i];return l==="sc"?translitText(t):t}
+function build(){
+ const tx=T[lang],sc=lang==="sc",L=s=>sc?translitText(s):s;
+ const box=document.getElementById("log");box.textContent="";
+ let shown=0;
+ for(const [ver,date,items] of LOG){
+  const rows=items.filter(it=>app==="all"||it[0].includes(app));
+  if(!rows.length)continue;
+  shown+=rows.length;
+  const sec=document.createElement("section");sec.className="rel";
+  const h=document.createElement("h2");h.append(ver==="next"?L(tx.next):ver);
+  if(date){const t=document.createElement("time");t.dateTime=date;t.textContent=date;h.append(t)}
+  sec.append(h);
+  const ul=document.createElement("ul");
+  for(const it of rows){
+   const li=document.createElement("li");
+   if(app==="all"&&it[0].length<ALL.length){const a=document.createElement("span");a.className="apps";
+    it[0].forEach(k=>{const b=document.createElement("b");b.textContent=APPS[k];a.append(b)});li.append(a)}
+   li.append(pick(it,lang));ul.append(li)}
+  sec.append(ul);box.append(sec)}
+ const em=document.getElementById("empty");em.hidden=shown>0;em.textContent=L(tx.empty);
+}
+function buildTabs(){
+ const tx=T[lang],sc=lang==="sc",L=s=>sc?translitText(s):s;
+ const box=document.getElementById("tabs");box.textContent="";
+ [["all",L(tx.all)],...ALL.map(k=>[k,APPS[k]])].forEach(([k,label])=>{
+  const b=document.createElement("button");b.type="button";b.textContent=label;b.setAttribute("aria-pressed",k===app);
+  b.onclick=()=>{app=k;try{const u=new URL(location.href);k==="all"?u.searchParams.delete("app"):u.searchParams.set("app",k);history.replaceState(null,"",u)}catch(e){}buildTabs();build()};
+  box.append(b)})}
+function setLang(l){lang=l;try{localStorage.setItem("sc-lang",l)}catch(e){}
+ document.documentElement.lang={ru:"ru",en:"en",sr:"sr-Latn",sc:"sr-Cyrl"}[l];
+ const tx=T[l],L=s=>l==="sc"?translitText(s):s;
+ document.getElementById("h1").textContent=L(tx.title);document.getElementById("lead").textContent=L(tx.lead);
+ document.getElementById("disc").textContent=l==="sc"?"Super Čelik — независна апликација, није повезана са МУП РС нити NetSeT/Veridos.":tx.disc;
+ document.title=L(tx.title)+" — Super Čelik";
+ buildTabs();build();
+ document.querySelectorAll(".langmenu button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l===l))}
+const lbox=document.getElementById("langbox"),globe=document.getElementById("globe");
+const setOpen=o=>{lbox.classList.toggle("open",o);globe.setAttribute("aria-expanded",o)};
+globe.onclick=e=>{e.stopPropagation();setOpen(!lbox.classList.contains("open"))};
+document.addEventListener("click",e=>{if(!lbox.contains(e.target))setOpen(false)});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"){setOpen(false);globe.blur()}});
+document.querySelectorAll(".langmenu button").forEach(b=>b.onclick=()=>{setLang(b.dataset.l);setOpen(false);b.blur();globe.blur()});
+setLang(lang);
+</script>
+</body>
+</html>

@@ -46,7 +46,11 @@ public sealed class MainWindow : Window
     private TextBlock _lblBeta; private Button _btnFeedback, _btnLoginEu, _btnSetupBrowser;
     private const string EuLoginUrl = "https://euprava.gov.rs/prijava";
     private const string FeedbackUrl = "https://github.com/peregond/SuperCelik/issues/new";
-    private Button _btnReadToken, _btnChangePin, _btnUnblockPin, _btnSignFile, _btnCheckUpdates, _btnUpdate;
+    // the site pages open in the language of the app (?lang=), the changelog in this app's own section (?app=)
+    private static string LangCode => Loc.Current switch { Lang.ru => "ru", Lang.en => "en", Lang.sr => "sr", _ => "sc" };
+    private static string ReaderPageUrl => "https://celik.peregon.cc/reader/?lang=" + LangCode;
+    private static string ChangelogUrl => "https://celik.peregon.cc/changelog/?lang=" + LangCode + "&app=linux";
+    private Button _btnReadToken, _btnChangePin, _btnUnblockPin, _btnSignFile, _btnCheckUpdates, _btnUpdate, _btnWhatsNew, _btnReaderHelp;
     private StackPanel _emptyState, _certList;
     private Control _personalContent;
     private WrapPanel _fields;
@@ -235,10 +239,12 @@ public sealed class MainWindow : Window
         _emptyMascot = new MascotArt(MascotCharacter.Reader, 170);
         _lblEmptyTitle = Ui.Label("", 20, true); _lblEmptyTitle.TextAlignment = TextAlignment.Center; _lblEmptyTitle.Margin = new Thickness(0, 14, 0, 0);
         _lblHint = Ui.Label("", 14, false, "MutedBrush", true); _lblHint.TextAlignment = TextAlignment.Center; _lblHint.MaxWidth = 420; _lblHint.Margin = new Thickness(0, 8, 0, 0);
+        _btnReaderHelp = Ui.Btn(""); _btnReaderHelp.HorizontalAlignment = HorizontalAlignment.Center; _btnReaderHelp.Margin = new Thickness(0, 16, 0, 0); _btnReaderHelp.IsVisible = false;
+        _btnReaderHelp.Click += (_, _) => OpenUrl(ReaderPageUrl);
         _btnReadBig = Ui.Btn("", "primary"); _btnReadBig.HorizontalAlignment = HorizontalAlignment.Center; _btnReadBig.Margin = new Thickness(0, 20, 0, 0);
         _btnReadBig.Click += async (_, _) => await Run(ReadCardAsync);
         _emptyState = new StackPanel { VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 0, 0, 40),
-            Children = { _emptyMascot, _lblEmptyTitle, _lblHint, _btnReadBig } };
+            Children = { _emptyMascot, _lblEmptyTitle, _lblHint, _btnReaderHelp, _btnReadBig } };
         grid.Children.Add(_emptyState);
 
         // content
@@ -379,9 +385,11 @@ public sealed class MainWindow : Window
         _lblBeta = Ui.Label("", 13, true, "AccentBrush", true); _lblBeta.TextAlignment = TextAlignment.Center; _lblBeta.Margin = new Thickness(0, 14, 0, 0);
         _btnFeedback = Ui.Btn(""); _btnFeedback.HorizontalAlignment = HorizontalAlignment.Center; _btnFeedback.Margin = new Thickness(0, 10, 0, 0); _btnFeedback.Click += (_, _) => OpenUrl(FeedbackUrl);
         _lblVersion = Ui.Label("", 13, true); _lblVersion.HorizontalAlignment = HorizontalAlignment.Center; _lblVersion.Margin = new Thickness(0, 18, 0, 8);
-        _btnCheckUpdates = Ui.Btn(""); _btnCheckUpdates.HorizontalAlignment = HorizontalAlignment.Center; _btnCheckUpdates.Click += async (_, _) => await CheckUpdates();
+        _btnCheckUpdates = Ui.Btn(""); _btnCheckUpdates.Click += async (_, _) => await CheckUpdates();
+        _btnWhatsNew = Ui.Btn(""); _btnWhatsNew.Click += (_, _) => OpenUrl(ChangelogUrl);
+        var updateButtons = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, HorizontalAlignment = HorizontalAlignment.Center, Children = { _btnCheckUpdates, _btnWhatsNew } };
         _lblUpdateStatus = Ui.Label("", 13, false, "MutedBrush", true); _lblUpdateStatus.HorizontalAlignment = HorizontalAlignment.Center; _lblUpdateStatus.TextAlignment = TextAlignment.Center; _lblUpdateStatus.Margin = new Thickness(0, 10, 0, 0);
-        var card = Ui.Card(new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, Children = { logo, _lblAboutTitle, _lblAboutText, _lblBeta, _btnFeedback, _lblVersion, _btnCheckUpdates, _lblUpdateStatus } }, new Thickness(40, 32));
+        var card = Ui.Card(new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, Children = { logo, _lblAboutTitle, _lblAboutText, _lblBeta, _btnFeedback, _lblVersion, updateButtons, _lblUpdateStatus } }, new Thickness(40, 32));
         card.HorizontalAlignment = HorizontalAlignment.Center; card.VerticalAlignment = VerticalAlignment.Center; card.MaxWidth = 520;
         return new Grid { Children = { card } };
     }
@@ -396,6 +404,7 @@ public sealed class MainWindow : Window
         Ui.SetBtn(_btnPrint, "printer", Loc.T("printCard")); Ui.SetBtn(_btnPdf, "save", Loc.T("savePdf")); Ui.SetBtn(_btnVerify, "check", Loc.T("verifySignature"));
         Ui.SetBtn(_btnMore, "ellipsis", Loc.T("more"));
         Ui.SetBtn(_btnReadToken, "key-round", Loc.T("readToken")); Ui.SetBtn(_btnChangePin, "lock", Loc.T("changePin")); Ui.SetBtn(_btnUnblockPin, "lock-open", Loc.T("unblockPin")); Ui.SetBtn(_btnSignFile, "pen-line", Loc.T("signFile"));
+        Ui.SetBtn(_btnWhatsNew, "info", Loc.T("whatsNew")); Ui.SetBtn(_btnReaderHelp, "circle-help", Loc.T("readerHelp"));
         Ui.SetBtn(_btnCheckUpdates, "refresh-cw", Loc.T("checkUpdates")); Ui.SetBtn(_btnUpdate, "download", Loc.T("updateNow"));
         _tabButtons[0].Content = Loc.T("tabPersonal"); _tabButtons[1].Content = Loc.T("tabToken"); _tabButtons[2].Content = Loc.T("tabSettings"); _tabButtons[3].Content = Loc.T("tabAbout");
         _lblCerts.Text = Loc.T("certificates"); _lblPinNote.Text = Loc.T("pinNote") + "\n" + Loc.T(BrowserSetup.HasModule ? "loginEupravaNote" : "loginEupravaNoteManual");
@@ -569,6 +578,7 @@ public sealed class MainWindow : Window
         string hint = mood switch { ReaderMood.Busy => null, ReaderMood.NoReader => "emptyNoReaderH", _ => _cardPresent ? "emptyReadyH" : "emptyNoCardH" };
         _lblEmptyTitle.Text = Loc.T(title);
         _lblHint.Text = hint == null ? "" : Loc.T(hint);
+        _btnReaderHelp.IsVisible = mood == ReaderMood.NoReader;      // which reader to get: the page opens in the browser
         _btnReadBig.Opacity = _cardPresent && !_busy ? 1 : 0;
         _btnReadBig.IsHitTestVisible = _cardPresent && !_busy;
         if (_keyMascot != null) _keyMascot.Set(mood);

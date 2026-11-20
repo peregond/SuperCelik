@@ -150,6 +150,7 @@ public partial class MainWindow : Window
         SetBtn(BtnUnblockPin, "\uE785", Loc.T("unblockPin"));
         SetBtn(BtnSignFile, "\uE70F", Loc.T("signFile"));
         SetBtn(BtnCheckUpdates, "", Loc.T("checkUpdates"));
+        BtnWhatsNew.Content = Loc.T("whatsNew"); BtnReaderHelp.Content = Loc.T("readerHelp");
         SetBtn(BtnUpdate, "", Loc.T("updateNow"));
         BtnProblemClose.Content = Glyph("", 12); AutomationProperties.SetName(BtnProblemClose, Loc.T("close"));
         TabPersonal.Header = Loc.T("tabPersonal");
@@ -281,6 +282,7 @@ public partial class MainWindow : Window
         };
         LblEmptyTitle.Text = Loc.T(title);
         LblHint.Text = hint == null ? "" : Loc.T(hint);
+        BtnReaderHelp.Visibility = mood == ReaderMood.NoReader ? Visibility.Visible : Visibility.Collapsed;      // which reader to get: the page opens in the browser
         bool canRead = _cardPresent && !_busy;
         if (canRead && BtnReadBig.Visibility != Visibility.Visible && EmptyState.Visibility == Visibility.Visible) Fx.Pop(BtnReadBig);
         BtnReadBig.Visibility = canRead ? Visibility.Visible : Visibility.Hidden;
@@ -854,6 +856,19 @@ public partial class MainWindow : Window
         }
         catch { /* offline: stay silent */ }
     }
+
+    // the site pages open in the language of the app (?lang=), the changelog in this app's own section (?app=)
+    private static string LangCode => Loc.Current switch { Lang.ru => "ru", Lang.en => "en", Lang.sr => "sr", _ => "sc" };
+    private static string ReaderPageUrl => "https://celik.peregon.cc/reader/?lang=" + LangCode;
+    private static string ChangelogUrl => "https://celik.peregon.cc/changelog/?lang=" + LangCode + "&app=windows";
+
+    private static void OpenUrl(string url)
+    {
+        try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url) { UseShellExecute = true }); } catch { }
+    }
+
+    private void ReaderHelp_Click(object s, RoutedEventArgs e) => OpenUrl(ReaderPageUrl);
+    private void WhatsNew_Click(object s, RoutedEventArgs e) => OpenUrl(ChangelogUrl);
 
     private async void CheckUpdates_Click(object s, RoutedEventArgs e)
     {
