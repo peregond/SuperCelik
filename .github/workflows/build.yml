@@ -36,7 +36,6 @@ jobs:
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
           files: dist/*.dmg
-          generate_release_notes: true
 
   macos-appstore:
     # Compile and layout check of the Mac App Store variant (sandbox entitlements, no updater); the ad-hoc signed
@@ -98,7 +97,6 @@ jobs:
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
           files: dist/*
-          generate_release_notes: true
 
   windows:
     runs-on: windows-latest
@@ -145,7 +143,6 @@ jobs:
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
           files: dist/*-setup.exe
-          generate_release_notes: true
 
   windows-legacy:
     # Windows XP / Vista / 7 and 32-bit Windows: .NET Framework 4.0 build (the last .NET that runs on XP), x86, with
@@ -217,7 +214,6 @@ jobs:
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
           files: dist/*-setup.exe
-          generate_release_notes: true
 
   linux:
     # Self-contained .NET build (Avalonia): .tar.gz, .deb and .AppImage for x64 and arm64. Cross-published on one runner.
@@ -275,7 +271,7 @@ jobs:
             dist/*.zip
             dist/*.manifest.json
             dist/*.AppImage
-          generate_release_notes: true
+          generate_release_notes: true   # only here: every publishing job appends the notes again, so they used to repeat
 
   linux-flatpak:
     # Flatpak bundle, built natively on each architecture from the files of the linux job.
@@ -314,7 +310,6 @@ jobs:
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
           files: dist/*.flatpak
-          generate_release_notes: true
 
   android:
     runs-on: ubuntu-latest
@@ -368,4 +363,3 @@ jobs:
         uses: softprops/action-gh-release@3bb12739c298aeb8a4eeaf626c5b8d85266b0e65 # v2
         with:
           files: dist/*.apk
-          generate_release_notes: true
