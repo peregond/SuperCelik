@@ -48,6 +48,17 @@ internal static class Ui
         return new Viewbox { Width = size, Height = size, VerticalAlignment = VerticalAlignment.Center, Child = new Canvas { Width = 24, Height = 24, Children = { path } } };
     }
 
+    /// A round tick (green) or cross (red) from the theme colours, for a list of checks.
+    public static Control Mark(bool ok, double size = 16)
+    {
+        var path = new Avalonia.Controls.Shapes.Path
+        {
+            Data = Geometry.Parse(Icons.Paths[ok ? "circle-check" : "circle-x"]), StrokeThickness = 2, StrokeLineCap = PenLineCap.Round, StrokeJoin = PenLineJoin.Round, Fill = null,
+        };
+        path.Res(Shape.StrokeProperty, ok ? "OkBrush" : "BadBrush");
+        return new Viewbox { Width = size, Height = size, VerticalAlignment = VerticalAlignment.Top, Child = new Canvas { Width = 24, Height = 24, Children = { path } } };
+    }
+
     /// Button content: icon + text (text = null: icon only).
     public static void SetBtn(Button b, string icon, string text)
     {

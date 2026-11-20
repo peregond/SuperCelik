@@ -309,8 +309,10 @@ final class AppModel: ObservableObject {
         }.value
 
         var lines: [LoginCheckLine] = [.init(ok: card, key: card ? .cardPresent : (haveReader ? .noCard : .noReader))]
-        if let registered = found.registered { lines.append(.init(ok: registered, key: registered ? .chkExtOk : .chkExtNo)) }
-        if card { lines.append(.init(ok: found.attached, key: found.attached ? .chkAttachedOk : .chkAttachedNo)) }
+        // one line for the driver: not registered / the card is not attached to it yet / in order
+        if found.registered == false { lines.append(.init(ok: false, key: .chkExtNo)) }
+        else if card { lines.append(.init(ok: found.attached, key: found.attached ? .chkAttachedOk : .chkAttachedNo)) }
+        else if found.registered == true { lines.append(.init(ok: true, key: .chkExtOk)) }
         if found.firefoxProfiles > 0 { lines.append(.init(ok: found.firefoxOff == 0, key: found.firefoxOff == 0 ? .chkFfOk : .chkFfOff)) }
 
         var report = LoginReport(lines: lines, step: .loginCheckOk)
