@@ -3,8 +3,9 @@ using System.Diagnostics;
 namespace SerbiaID;
 
 /// Browser sign-in with the card certificate on Linux: the browser needs a PKCS#11 module (srb-id-pkcs11, public domain,
-/// shipped inside the app in <app folder>/pkcs11) in its NSS database. This finds Firefox profiles and the Chrome / Chromium
-/// database and registers the module with `modutil` (package libnss3-tools). It only runs when the user asks for it.
+/// shipped inside the app in <app folder>/pkcs11) in its NSS database. This finds Firefox profiles (every place Firefox keeps
+/// them, see FirefoxProfiles.cs) and the Chrome / Chromium database and registers the module with `modutil` (package
+/// libnss3-tools). It only runs when the user agrees (and keeps running after that, so a new profile is covered too).
 public static class BrowserSetup
 {
     public const string ModuleName = "Srb Id PKCS11";
@@ -32,20 +33,44 @@ public static class BrowserSetup
     public static bool HasModule => !Packaging.IsFlatpak && File.Exists(Bundled);
 
     public sealed record Target(string Label, string Dir);
-    public sealed record Result(string Kind, List<string> Names, string Detail);      // Kind: nomodule / notool / none / done / failed
+    /// Kind: nomodule / notool / none / noservice / sandboxed / failed, or done (everything connected) / partial (some of it; `Detail`
+    /// says why the rest failed). Names = the browsers that have the module now. Sandboxed = Firefox from Snap / Flatpak found: it cannot
+    /// load a module from outside its sandbox, so it is left alone. NoService = pcscd is not running. Changed = something was connected just now.
+    public sealed record Result(string Kind, List<string> Names, string Detail, List<string> Sandboxed = null, bool NoService = false, bool Changed = false);
 
     private static string Home => Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
+
+    private static string ConfigHome
+    {
+        get
+        {
+            var xdg = Environment.GetEnvironmentVariable("XDG_CONFIG_HOME");
+            return !string.IsNullOrEmpty(xdg) && Path.IsPathRooted(xdg) ? xdg : Path.Combine(Home, ".config");
+        }
+    }
+
+    /// The folders where Firefox keeps profiles.ini, and whether that Firefox is sandboxed. Firefox up to 146 (and every Firefox that
+    /// was started before 147) uses ~/.mozilla/firefox; a new Firefox 147+ profile lives under XDG_CONFIG_HOME (~/.config/mozilla/firefox).
+    private static List<(string Root, string Kind)> FirefoxRoots() => new()
+    {
+        (Path.Combine(Home, ".mozilla", "firefox"), ""),
+        (Path.Combine(ConfigHome, "mozilla", "firefox"), ""),
+        (Path.Combine(Home, "snap", "firefox", "common", ".mozilla", "firefox"), "Snap"),                    // Ubuntu's default Firefox
+        (Path.Combine(Home, "snap", "firefox", "common", ".config", "mozilla", "firefox"), "Snap"),
+        (Path.Combine(Home, "snap", "firefox", "current", ".config", "mozilla", "firefox"), "Snap"),
+        (Path.Combine(Home, ".var", "app", "org.mozilla.firefox", ".mozilla", "firefox"), "Flatpak"),
+        (Path.Combine(Home, ".var", "app", "org.mozilla.firefox", "config", "mozilla", "firefox"), "Flatpak"),
+    };
 
     /// NSS databases of the installed browsers: every Firefox profile, and the shared Chrome / Chromium database.
     public static List<Target> FindTargets(bool createChromeDb = false)
     {
         var list = new List<Target>();
-        foreach (var root in new[] { Path.Combine(Home, ".mozilla", "firefox"), Path.Combine(Home, "snap", "firefox", "common", ".mozilla", "firefox") })
+        foreach (var (root, kind) in FirefoxRoots())
         {
-            if (!Directory.Exists(root)) continue;
-            foreach (var dir in Directory.GetDirectories(root))
-                if (File.Exists(Path.Combine(dir, "cert9.db")) || File.Exists(Path.Combine(dir, "prefs.js")))
-                    list.Add(new Target("Firefox", dir));
+            if (kind != "") continue;
+            foreach (var p in FirefoxProfiles.Find(root))
+                if (!list.Any(t => t.Dir == p.Dir)) list.Add(new Target("Firefox", p.Dir));
         }
         var chromeDb = new[] { Path.Combine(Home, ".pki", "nssdb"), Path.Combine(Home, ".local", "share", "pki", "nssdb") }
             .FirstOrDefault(d => File.Exists(Path.Combine(d, "cert9.db")));
@@ -56,6 +81,16 @@ public static class BrowserSetup
 
     private static bool ChromiumInstalled() =>
         new[] { "google-chrome", "google-chrome-stable", "chromium", "chromium-browser", "microsoft-edge", "brave-browser" }.Any(n => Which(n) != null);
+
+    /// "Snap" / "Flatpak" for every sandboxed Firefox that has a profile. Its sandbox hides our module (and the host's smart card
+    /// libraries), so there is nothing we could register: the user is told what to do instead.
+    public static List<string> FindSandboxedFirefox()
+    {
+        var kinds = new List<string>();
+        foreach (var (root, kind) in FirefoxRoots())
+            if (kind != "" && !kinds.Contains(kind) && FirefoxProfiles.Find(root, kind).Count > 0) kinds.Add(kind);
+        return kinds;
+    }
 
     public static string Which(string tool)
     {
@@ -98,12 +133,14 @@ public static class BrowserSetup
         if (!HasModule) return new Result("nomodule", new(), ModulePath);
         var modutil = Which("modutil");
         if (modutil == null) return new Result("notool", new(), "");
+        var sandboxed = FindSandboxedFirefox();
         var targets = FindTargets(createChromeDb: true);
-        if (targets.Count == 0) return new Result("none", new(), ModulePath);
+        if (targets.Count == 0) return sandboxed.Count > 0 ? new Result("sandboxed", new(), "", sandboxed) : new Result("none", new(), ModulePath);
 
-        var done = new List<string>(); string error = null;
+        var done = new List<string>(); string error = null; bool noService = false, failed = false, changed = false;
         foreach (var t in targets)
         {
+            bool good = false;
             try
             {
                 var db = "sql:" + t.Dir;
@@ -111,22 +148,31 @@ public static class BrowserSetup
                 {
                     Directory.CreateDirectory(t.Dir);
                     var certutil = Which("certutil");
-                    if (certutil == null) { error = "certutil"; continue; }
+                    if (certutil == null) throw new InvalidOperationException("certutil (libnss3-tools)");
                     var (c0, o0) = await Run(certutil, "-N", "-d", db, "--empty-password");
-                    if (c0 != 0) { error = o0.Trim(); continue; }
+                    if (c0 != 0) throw new InvalidOperationException(o0.Trim());
                 }
                 var (lc, listing) = await Run(modutil, "-dbdir", db, "-list");
-                if (lc == 0 && listing.Contains(ModuleName))
+                if (lc == 0 && listing.Contains(ModuleName) && listing.Contains(ModulePath)) good = true;
+                else
                 {
-                    if (listing.Contains(ModulePath)) { if (!done.Contains(t.Label)) done.Add(t.Label); continue; }
-                    await Run(modutil, "-dbdir", db, "-delete", ModuleName, "-force");        // the app moved: replace the old entry
+                    if (lc == 0 && listing.Contains(ModuleName))
+                        await Run(modutil, "-dbdir", db, "-delete", ModuleName, "-force");        // the app moved: replace the old entry
+                    var (ac, ao) = await Run(modutil, "-dbdir", db, "-add", ModuleName, "-libfile", ModulePath, "-force");
+                    if (ac == 0) { good = true; changed = true; }
+                    else
+                    {
+                        error = ao.Trim();
+                        // NSS loads the module to add it, and the module starts by connecting to the smart card service: without a running pcscd it answers CKR_FUNCTION_FAILED
+                        if (ao.Contains("CKR_FUNCTION_FAILED")) noService = true;
+                    }
                 }
-                var (ac, ao) = await Run(modutil, "-dbdir", db, "-add", ModuleName, "-libfile", ModulePath, "-force");
-                if (ac == 0) { if (!done.Contains(t.Label)) done.Add(t.Label); }
-                else error = ao.Trim();
             }
             catch (Exception ex) { error = ex.Message; }
+            if (good) { if (!done.Contains(t.Label)) done.Add(t.Label); }
+            else failed = true;
         }
-        return done.Count > 0 ? new Result("done", done, "") : new Result("failed", new(), error ?? "");
+        if (done.Count == 0) return new Result(noService ? "noservice" : "failed", new(), error ?? "", sandboxed, noService);
+        return new Result(failed ? "partial" : "done", done, failed ? error ?? "" : "", sandboxed, noService, changed);
     }
 }

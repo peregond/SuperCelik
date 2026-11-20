@@ -13,6 +13,7 @@ public sealed class AppSettings
     public bool PrintJmbg { get; set; } = true;      // include the personal number on printouts / PDF
     public int AutoHideMinutes { get; set; } = 3;    // clear data after N idle minutes (0 = never)
     public bool BrowserSetupAsked { get; set; }      // the one-time offer to connect the card module to the browsers was shown
+    public bool BrowserSetupAccepted { get; set; }   // the user agreed to it: from then on a new browser profile is connected without asking again
     public double WindowWidth { get; set; }
     public double WindowHeight { get; set; }
     public int Tab { get; set; }

@@ -86,7 +86,11 @@ public sealed class MainWindow : Window
         StartPolling();
         Opened += async (_, _) =>
         {
-            if (!_demo && BrowserSetup.HasModule && !_cfg.BrowserSetupAsked) await OfferBrowserSetup();
+            if (!_demo && BrowserSetup.HasModule)
+            {
+                if (!_cfg.BrowserSetupAsked) await OfferBrowserSetup();
+                else if (_cfg.BrowserSetupAccepted) await KeepBrowserSetup();
+            }
             if (_cfg.AutoUpdate) await AutoCheckUpdateAsync();
         };
     }
@@ -272,7 +276,7 @@ public sealed class MainWindow : Window
         _btnUnblockPin = Ui.Btn(""); _btnUnblockPin.Click += async (_, _) => await UnblockPin();
         _btnSignFile = Ui.Btn(""); _btnSignFile.Click += async (_, _) => await SignFile();
         _btnLoginEu = Ui.Btn(""); _btnLoginEu.Click += async (_, _) => await LoginEu();
-        _btnSetupBrowser = Ui.Btn(""); _btnSetupBrowser.IsVisible = BrowserSetup.HasModule; _btnSetupBrowser.Click += async (_, _) => await SetupBrowser(true);
+        _btnSetupBrowser = Ui.Btn(""); _btnSetupBrowser.IsVisible = BrowserSetup.HasModule; _btnSetupBrowser.Click += async (_, _) => await SetupBrowser();
         _lblTokenInfo = Ui.Label("", 13, false, "MutedBrush"); _lblTokenInfo.VerticalAlignment = VerticalAlignment.Center;
         // the buttons wrap with a gap in a narrow window; the token name sits on its own line under them
         var buttons = new WrapPanel();
@@ -461,37 +465,60 @@ public sealed class MainWindow : Window
     {
         _cfg.BrowserSetupAsked = true; _cfg.Save();
         if (await BrowserSetup.IsSetUp()) return;
-        if (await Dialogs.Confirm(this, Loc.T("setupBrowser"), Loc.T("setupAsk"), Loc.T("setupConnect"), Loc.T("setupLater"))) await SetupBrowser(false);
+        if (await Dialogs.Confirm(this, Loc.T("setupBrowser"), Loc.T("setupAsk"), Loc.T("setupConnect"), Loc.T("setupLater"))) await SetupBrowser();
     }
 
-    /// "Sign in to eUprava": offers to connect the module first if the browsers do not have it yet, then opens the page.
+    /// The user agreed once: when a browser (a new Firefox profile, a browser installed later, the app moved) lacks the module,
+    /// connect it again without asking. Silent unless something was actually connected.
+    private async Task KeepBrowserSetup()
+    {
+        try { if (!await BrowserSetup.IsSetUp()) await SetupBrowser(quiet: true); }
+        catch { }
+    }
+
+    /// "Sign in to eUprava": connects the module first if the browsers do not have it yet (asking only the first time), then opens the page.
     private async Task LoginEu()
     {
         try
         {
-            if (!_demo && BrowserSetup.HasModule && !await BrowserSetup.IsSetUp()
-                && await Dialogs.Confirm(this, Loc.T("setupBrowser"), Loc.T("setupAsk"), Loc.T("setupConnect"), Loc.T("setupLater")))
-                await SetupBrowser(false);
+            if (!_demo && BrowserSetup.HasModule && !await BrowserSetup.IsSetUp())
+            {
+                if (_cfg.BrowserSetupAccepted) await SetupBrowser(quiet: true);
+                else if (await Dialogs.Confirm(this, Loc.T("setupBrowser"), Loc.T("setupAsk"), Loc.T("setupConnect"), Loc.T("setupLater"))) await SetupBrowser();
+            }
         }
         catch { }
         OpenUrl(EuLoginUrl);
     }
 
-    private async Task SetupBrowser(bool report)
+    /// Connects the card module to the browsers. `quiet`: a background re-check, so only a success is announced.
+    private async Task SetupBrowser(bool quiet = false)
     {
         try
         {
             var r = await BrowserSetup.Setup();
+            var sandbox = r.Sandboxed is { Count: > 0 } ? "\n" + string.Format(Loc.T("setupSandboxed"), string.Join(" / ", r.Sandboxed)) : "";
+            if (r.Kind is "done" or "partial")
+            {
+                if (quiet && !r.Changed) return;                      // a background re-check has nothing to say when nothing was connected
+                if (!_cfg.BrowserSetupAccepted) { _cfg.BrowserSetupAccepted = true; _cfg.Save(); }
+                var text = string.Format(Loc.T("setupDone"), string.Join(", ", r.Names));
+                if (r.Kind == "partial") text += "\n" + (r.NoService ? Loc.T("setupNoService") : string.Format(Loc.T("setupFailed"), r.Detail));
+                ShowInfo(text + sandbox);
+                return;
+            }
+            if (quiet) return;
             switch (r.Kind)
             {
-                case "done": ShowInfo(string.Format(Loc.T("setupDone"), string.Join(", ", r.Names))); break;
                 case "notool": ShowInfo(Loc.T("setupNoTool")); break;
+                case "noservice": ShowInfo(Loc.T("setupNoService") + sandbox); break;
                 case "none": ShowInfo(string.Format(Loc.T("setupNone"), r.Detail)); break;
+                case "sandboxed": ShowInfo(sandbox.TrimStart('\n')); break;
                 case "nomodule": ShowInfo(Loc.T("loginEupravaNoteManual")); break;
-                default: ShowInfo(string.Format(Loc.T("setupFailed"), r.Detail)); break;
+                default: ShowInfo(string.Format(Loc.T("setupFailed"), r.Detail) + sandbox); break;
             }
         }
-        catch (Exception ex) { ShowInfo(string.Format(Loc.T("setupFailed"), ex.Message)); }
+        catch (Exception ex) { if (!quiet) ShowInfo(string.Format(Loc.T("setupFailed"), ex.Message)); }
     }
 
     private void ShowInfo(string text)

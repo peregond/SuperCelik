@@ -1,0 +1,21 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <!-- Checks of the Firefox profile logic that the Linux, Windows and Windows XP / 7 apps share (windows/SerbiaID.Windows/FirefoxProfiles.cs)
+       and of how the Linux app finds Firefox (linux/SerbiaID.Linux/BrowserSetup.cs). Plain console program, no test framework:
+       run it with "dotnet run" and this project's path (exit code 0 = all passed). Needs no card, no browser, no NSS tools. -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>SerbiaID</RootNamespace>
+    <InvariantGlobalization>true</InvariantGlobalization>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="..\..\windows\SerbiaID.Windows\FirefoxProfiles.cs" Link="Shared\FirefoxProfiles.cs" />
+    <Compile Include="..\..\linux\SerbiaID.Linux\BrowserSetup.cs" Link="Shared\BrowserSetup.cs" />
+    <Compile Include="..\..\linux\SerbiaID.Linux\Packaging.cs" Link="Shared\Packaging.cs" />
+  </ItemGroup>
+
+</Project>

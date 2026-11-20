@@ -233,6 +233,9 @@ jobs:
         run: |
           if [[ "$GITHUB_REF" == refs/tags/v* ]]; then v="${GITHUB_REF_NAME#v}"; else v="0.0.0-${GITHUB_SHA::7}"; fi
           echo "v=$v" >> "$GITHUB_OUTPUT"
+      - name: Test the Firefox profile logic
+        # shared by the Linux, Windows and Windows XP / 7 apps (windows/SerbiaID.Windows/FirefoxProfiles.cs); needs no card and no browser
+        run: dotnet run --project tests/FirefoxProfiles.Tests -c Release
       - name: Build tools
         run: sudo apt-get update && sudo apt-get install -y squashfs-tools
       - name: Build x64 and arm64

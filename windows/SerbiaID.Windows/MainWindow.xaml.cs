@@ -167,7 +167,9 @@ public partial class MainWindow : Window
         ChkMask.Content = Loc.T("setMask"); ChkPrintJmbg.Content = Loc.T("setPrintJmbg");
         LblSetBrowser.Text = Loc.T("setBrowser");
         BtnDriverInstall.Content = Loc.T("driverInstall"); BtnDriverRemove.Content = Loc.T("driverRemove");
+        BtnFirefoxFix.Content = Loc.T("firefoxFix");
         UpdateDriverStatus();
+        UpdateFirefoxStatus();
         ChkAutoRead.Content = Loc.T("setAutoRead"); ChkAutoUpdate.Content = Loc.T("setAutoUpdate");
         LblSetAutoHide.Text = Loc.T("setAutoHide");
         _loading = true;
@@ -305,7 +307,7 @@ public partial class MainWindow : Window
             _cardPresent = _readers.Count > 0 && _pc.Atr(Reader) != null;
             UpdateCardLabel();
             HideProblem();
-            if (_cardPresent) _ = OfferDriverAsync();
+            if (_cardPresent) _ = OfferBrowserAsync();
         }
         catch (Exception ex) { ShowProblem(ex); }
     }
@@ -370,6 +372,61 @@ public partial class MainWindow : Window
         UpdateDriverStatus();
     }
 
+    /// What the browsers need, one question at a time: the card driver first, then Firefox (two dialogs must not appear together).
+    private async Task OfferBrowserAsync()
+    {
+        await OfferDriverAsync();
+        await OfferFirefoxAsync();
+    }
+
+    // ---- Firefox: it uses the Windows certificate store as well, but only while its preference for that is on (see FirefoxSetup.cs) ----
+
+    private bool _firefoxAsked;
+
+    /// The card is in the reader and a Firefox profile does not use the Windows certificates: ask once, then turn the preference on.
+    private async Task OfferFirefoxAsync()
+    {
+        try
+        {
+            if (_demo || _firefoxAsked || _cfg.FirefoxDeclined || !_cardPresent) return;
+            var st = await Compat.Run(() => FirefoxSetup.Check());
+            if (st.Disabled.Count == 0) return;
+            _firefoxAsked = true;
+            if (MessageBox.Show(this, Loc.T("firefoxAsk"), Loc.T("appTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+            {
+                _cfg.FirefoxDeclined = true; _cfg.Save(); UpdateFirefoxStatus();
+                return;
+            }
+            EnableFirefox(st);
+        }
+        catch { /* the offer is optional: never disturb the reading */ }
+    }
+
+    private void EnableFirefox(FirefoxSetup.Status st)
+    {
+        int n = FirefoxSetup.Enable(st);
+        if (n > 0) { _cfg.FirefoxDeclined = false; _cfg.Save(); }
+        ShowInfo(Loc.T(n > 0 ? "firefoxDone" : "firefoxFail"));
+        UpdateFirefoxStatus();
+    }
+
+    private async void UpdateFirefoxStatus()
+    {
+        if (LblFirefoxStatus == null) return;
+        FirefoxSetup.Status st;
+        try { st = await Compat.Run(() => FirefoxSetup.Check()); }
+        catch { return; }
+        string text = st.Profiles == 0 ? null
+            : st.Disabled.Count > 0 ? Loc.T("firefoxOff")
+            : st.OldMajor > 0 ? string.Format(Loc.T("firefoxOld"), st.OldMajor)
+            : Loc.T("firefoxOn");
+        LblFirefoxStatus.Text = text ?? "";
+        LblFirefoxStatus.Visibility = text == null ? Visibility.Collapsed : Visibility.Visible;
+        BtnFirefoxFix.Visibility = st.Disabled.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void FirefoxFix_Click(object s, RoutedEventArgs e) => EnableFirefox(FirefoxSetup.Check());
+
     private void Refresh_Click(object s, RoutedEventArgs e) => Refresh();
     private void CmbReader_Changed(object s, SelectionChangedEventArgs e) { if (!_loading) Refresh(); }
 
@@ -388,7 +445,7 @@ public partial class MainWindow : Window
             if (present)
             {
                 HideProblem();
-                _ = OfferDriverAsync();
+                _ = OfferBrowserAsync();
                 if (_cfg.AutoRead) await Run(ReadCardAsync);
             }
             else if (_personal != null || _token != null)
