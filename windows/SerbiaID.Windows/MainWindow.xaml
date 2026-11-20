@@ -41,7 +41,7 @@
             <DockPanel>
                 <Button x:Name="BtnProblemClose" DockPanel.Dock="Right" Style="{StaticResource IconButton}" VerticalAlignment="Top" Click="ProblemClose_Click"/>
                 <StackPanel>
-                    <TextBlock x:Name="LblProblemTitle" FontWeight="Bold" Foreground="{DynamicResource BadBrush}"/>
+                    <TextBlock x:Name="LblProblemTitle" FontWeight="Bold" TextWrapping="Wrap" Foreground="{DynamicResource BadBrush}"/>
                     <TextBlock x:Name="LblProblemHint" Foreground="{DynamicResource TextBrush}" TextWrapping="Wrap" Margin="0,2,0,0"/>
                     <TextBlock x:Name="LblProblemTech" TextWrapping="Wrap" FontSize="11" Foreground="{DynamicResource MutedBrush}" Margin="0,4,0,0"/>
                 </StackPanel>

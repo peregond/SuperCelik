@@ -183,7 +183,7 @@ public sealed class MainWindow : Window
         DockPanel.SetDock(_busyBar, Dock.Top); root.Children.Add(_busyBar);
 
         // problem banner
-        _lblProblemTitle = Ui.Label("", 13, true); _lblProblemTitle.FontWeight = FontWeight.Bold;
+        _lblProblemTitle = Ui.Label("", 13, true, "TextBrush", true); _lblProblemTitle.FontWeight = FontWeight.Bold;
         _lblProblemHint = Ui.Label("", 13, false, "TextBrush", true); _lblProblemHint.Margin = new Thickness(0, 2, 0, 0);
         _lblProblemTech = Ui.Label("", 11, false, "MutedBrush", true); _lblProblemTech.Margin = new Thickness(0, 4, 0, 0);
         _btnProblemClose = Ui.Btn("", "icon"); Ui.SetBtn(_btnProblemClose, "x", null); _btnProblemClose.VerticalAlignment = VerticalAlignment.Top; _btnProblemClose.Click += (_, _) => HideProblem();
@@ -533,7 +533,12 @@ public sealed class MainWindow : Window
     private void ShowInfo(string text)
     {
         _problemBanner.Res(Border.BackgroundProperty, "BannerBrush"); _lblProblemTitle.Res(TextBlock.ForegroundProperty, "TextBrush");
-        _lblProblemTitle.Text = text; _lblProblemHint.IsVisible = false; _lblProblemTech.Text = "";
+        // the first line in bold, a longer explanation (the messages about the browsers can have several sentences) in the normal weight below it
+        int nl = text.IndexOf('\n');
+        _lblProblemTitle.Text = nl < 0 ? text : text.Substring(0, nl);
+        _lblProblemHint.Text = nl < 0 ? "" : text.Substring(nl + 1);
+        _lblProblemHint.IsVisible = nl >= 0;
+        _lblProblemTech.Text = "";
         ShowBanner(error: false);
     }
 
