@@ -585,6 +585,7 @@ struct TokenView: View {
         ScrollView {
             VStack(spacing: 14) {
                 driverWarning   // above everything, so it is seen before the mascot
+                firefoxWarning
                 if model.tokenRows.isEmpty {
                     MascotArt(character: .key, mood: model.readerMood, size: 170)
                     Text(loc.t(.hintToken)).foregroundStyle(.secondary).multilineTextAlignment(.center)
@@ -609,6 +610,7 @@ struct TokenView: View {
             .frame(maxWidth: .infinity)
         }
         .animation(.easeInOut(duration: 0.25), value: model.tokenRows.isEmpty)
+        .task { await model.checkFirefox() }
         .task(id: model.cardPresent) {
             // the system needs a few seconds to attach the driver after the card is inserted
             guard model.cardPresent else { return }
@@ -637,6 +639,25 @@ struct TokenView: View {
                 Spacer(minLength: 8)
                 Button(loc.t(.loginCheckBtn)) { Task { await model.checkDriverNow() } }
                     .glassButton().controlSize(.small).disabled(!model.cardPresent || model.busy)
+            }
+            .padding(12).glassSurface(cornerRadius: 16)
+        }
+    }
+
+    /// Only when a Firefox profile is set not to use the keychain certificates: the card certificate would not show up in it.
+    @ViewBuilder private var firefoxWarning: some View {
+        if model.firefoxOff > 0 {
+            HStack(alignment: .top, spacing: 10) {
+                Image(systemName: "exclamationmark.triangle.fill").foregroundStyle(.orange)
+                Text(loc.t(.firefoxOff)).font(.caption).foregroundStyle(.secondary)
+                    .fixedSize(horizontal: false, vertical: true)
+                Spacer(minLength: 8)
+                VStack(spacing: 6) {
+                    Button(loc.t(.firefoxFix)) { Task { await model.fixFirefox() } }
+                        .glassButton(prominent: true).controlSize(.small).disabled(model.busy)
+                    Button(loc.t(.firefoxLater)) { model.dismissFirefox() }
+                        .glassButton().controlSize(.small)
+                }
             }
             .padding(12).glassSurface(cornerRadius: 16)
         }

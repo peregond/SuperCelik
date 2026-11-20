@@ -150,6 +150,7 @@ public partial class MainWindow : Window
         SetBtn(BtnUnblockPin, "\uE785", Loc.T("unblockPin"));
         SetBtn(BtnSignFile, "\uE70F", Loc.T("signFile"));
         SetBtn(BtnCheckUpdates, "", Loc.T("checkUpdates"));
+        BtnWhatsNew.Content = Loc.T("whatsNew"); BtnReaderHelp.Content = Loc.T("readerHelp");
         SetBtn(BtnUpdate, "", Loc.T("updateNow"));
         BtnProblemClose.Content = Glyph("", 12); AutomationProperties.SetName(BtnProblemClose, Loc.T("close"));
         TabPersonal.Header = Loc.T("tabPersonal");
@@ -167,7 +168,9 @@ public partial class MainWindow : Window
         ChkMask.Content = Loc.T("setMask"); ChkPrintJmbg.Content = Loc.T("setPrintJmbg");
         LblSetBrowser.Text = Loc.T("setBrowser");
         BtnDriverInstall.Content = Loc.T("driverInstall"); BtnDriverRemove.Content = Loc.T("driverRemove");
+        BtnFirefoxFix.Content = Loc.T("firefoxFix");
         UpdateDriverStatus();
+        UpdateFirefoxStatus();
         ChkAutoRead.Content = Loc.T("setAutoRead"); ChkAutoUpdate.Content = Loc.T("setAutoUpdate");
         LblSetAutoHide.Text = Loc.T("setAutoHide");
         _loading = true;
@@ -279,6 +282,7 @@ public partial class MainWindow : Window
         };
         LblEmptyTitle.Text = Loc.T(title);
         LblHint.Text = hint == null ? "" : Loc.T(hint);
+        BtnReaderHelp.Visibility = mood == ReaderMood.NoReader ? Visibility.Visible : Visibility.Collapsed;      // which reader to get: the page opens in the browser
         bool canRead = _cardPresent && !_busy;
         if (canRead && BtnReadBig.Visibility != Visibility.Visible && EmptyState.Visibility == Visibility.Visible) Fx.Pop(BtnReadBig);
         BtnReadBig.Visibility = canRead ? Visibility.Visible : Visibility.Hidden;
@@ -305,7 +309,7 @@ public partial class MainWindow : Window
             _cardPresent = _readers.Count > 0 && _pc.Atr(Reader) != null;
             UpdateCardLabel();
             HideProblem();
-            if (_cardPresent) _ = OfferDriverAsync();
+            if (_cardPresent) _ = OfferBrowserAsync();
         }
         catch (Exception ex) { ShowProblem(ex); }
     }
@@ -370,6 +374,62 @@ public partial class MainWindow : Window
         UpdateDriverStatus();
     }
 
+    /// What the browsers need, one question at a time: the card driver first, then Firefox (two dialogs must not appear together).
+    private async Task OfferBrowserAsync()
+    {
+        await OfferDriverAsync();
+        await OfferFirefoxAsync();
+    }
+
+    // ---- Firefox: it uses the Windows certificate store as well, but only while its preference for that is on (see FirefoxSetup.cs) ----
+
+    private bool _firefoxAsked;
+
+    /// The card is in the reader and a Firefox profile does not use the Windows certificates: ask once, then turn the preference on.
+    private async Task OfferFirefoxAsync()
+    {
+        try
+        {
+            if (_demo || _firefoxAsked || _cfg.FirefoxDeclined || !_cardPresent) return;
+            _firefoxAsked = true;                                    // before the first await: two overlapping calls must not both ask
+            var st = await Compat.Run(() => FirefoxSetup.Check());
+            if (st.Disabled.Count == 0) { _firefoxAsked = false; return; }          // nothing to ask: look again the next time
+            if (MessageBox.Show(this, Loc.T("firefoxAsk"), Loc.T("appTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
+            {
+                _cfg.FirefoxDeclined = true; _cfg.Save(); UpdateFirefoxStatus();
+                return;
+            }
+            EnableFirefox(st);
+        }
+        catch { /* the offer is optional: never disturb the reading */ }
+    }
+
+    private void EnableFirefox(FirefoxSetup.Status st)
+    {
+        int n = FirefoxSetup.Enable(st);
+        if (n > 0) { _cfg.FirefoxDeclined = false; _cfg.Save(); }
+        ShowInfo(Loc.T(n > 0 && n == st.Disabled.Count ? "firefoxDone" : "firefoxFail"));        // "done" only when every profile was changed
+        UpdateFirefoxStatus();
+    }
+
+    private async void UpdateFirefoxStatus()
+    {
+        if (LblFirefoxStatus == null) return;
+        FirefoxSetup.Status st;
+        try { st = await Compat.Run(() => FirefoxSetup.Check()); }
+        catch { return; }
+        bool driverOn = DriverSetup.Available && DriverSetup.AnyRegistered();        // without our card driver the certificate is not in the store: do not claim Firefox is fine
+        string text = st.Profiles == 0 ? null
+            : st.Disabled.Count > 0 ? Loc.T("firefoxOff")
+            : st.OldMajor > 0 ? string.Format(Loc.T("firefoxOld"), st.OldMajor)
+            : driverOn ? Loc.T("firefoxOn") : null;
+        LblFirefoxStatus.Text = text ?? "";
+        LblFirefoxStatus.Visibility = text == null ? Visibility.Collapsed : Visibility.Visible;
+        BtnFirefoxFix.Visibility = st.Disabled.Count > 0 ? Visibility.Visible : Visibility.Collapsed;
+    }
+
+    private void FirefoxFix_Click(object s, RoutedEventArgs e) => EnableFirefox(FirefoxSetup.Check());
+
     private void Refresh_Click(object s, RoutedEventArgs e) => Refresh();
     private void CmbReader_Changed(object s, SelectionChangedEventArgs e) { if (!_loading) Refresh(); }
 
@@ -388,7 +448,7 @@ public partial class MainWindow : Window
             if (present)
             {
                 HideProblem();
-                _ = OfferDriverAsync();
+                _ = OfferBrowserAsync();
                 if (_cfg.AutoRead) await Run(ReadCardAsync);
             }
             else if (_personal != null || _token != null)
@@ -796,6 +856,19 @@ public partial class MainWindow : Window
         }
         catch { /* offline: stay silent */ }
     }
+
+    // the site pages open in the language of the app (?lang=), the changelog in this app's own section (?app=)
+    private static string LangCode => Loc.Current switch { Lang.ru => "ru", Lang.en => "en", Lang.sr => "sr", _ => "sc" };
+    private static string ReaderPageUrl => "https://celik.peregon.cc/reader/?lang=" + LangCode;
+    private static string ChangelogUrl => "https://celik.peregon.cc/changelog/?lang=" + LangCode + "&app=windows";
+
+    private static void OpenUrl(string url)
+    {
+        try { System.Diagnostics.Process.Start(new System.Diagnostics.ProcessStartInfo(url) { UseShellExecute = true }); } catch { }
+    }
+
+    private void ReaderHelp_Click(object s, RoutedEventArgs e) => OpenUrl(ReaderPageUrl);
+    private void WhatsNew_Click(object s, RoutedEventArgs e) => OpenUrl(ChangelogUrl);
 
     private async void CheckUpdates_Click(object s, RoutedEventArgs e)
     {

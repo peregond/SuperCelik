@@ -39,6 +39,9 @@ final class AppModel: ObservableObject {
     enum DriverState { case unknown, ok, missing }
     @Published var driverState: DriverState = .unknown
 
+    /// Firefox profiles that are set not to use the keychain certificates (the card certificate would not show up in them), see FirefoxSetup.swift.
+    @Published var firefoxOff = 0
+
     @Published var update: UpdateInfo?
     @Published var updating = false
     @Published var updateStatus: String?
@@ -272,6 +275,34 @@ final class AppModel: ObservableObject {
         guard cardPresent else { driverState = .unknown; return }
         let attached = await Task.detached { BrowserLogin.driverAttached() }.value
         driverState = cardPresent ? (attached ? .ok : .missing) : .unknown
+    }
+
+    // MARK: - Firefox (takes the card certificate from the keychain too, when its preference for that is on)
+
+    private static let firefoxDeclinedKey = "firefoxDeclined"      // the user answered "Not now": do not show the hint again
+
+    func checkFirefox() async {
+        guard !isDemoUI, !UserDefaults.standard.bool(forKey: Self.firefoxDeclinedKey) else { return }
+        firefoxOff = await Task.detached { FirefoxSetup.check().disabled.count }.value
+    }
+
+    /// The "Turn on" button: switches the preference on in the profiles where it is off.
+    func fixFirefox() async {
+        let (fixed, wanted) = await Task.detached { () -> (Int, Int) in
+            let status = FirefoxSetup.check()
+            return (FirefoxSetup.enable(status), status.disabled.count)
+        }.value
+        let allDone = fixed == wanted          // "done" only when every profile was changed, otherwise the warning comes back with an error
+        problem = Problem(titleKey: allDone ? .firefoxDone : .firefoxFail, isInfo: allDone)
+        if fixed > 0 { UserDefaults.standard.set(false, forKey: Self.firefoxDeclinedKey) }
+        firefoxOff = 0
+        await checkFirefox()
+    }
+
+    /// The "Not now" button (some people switch the preference off on purpose).
+    func dismissFirefox() {
+        UserDefaults.standard.set(true, forKey: Self.firefoxDeclinedKey)
+        firefoxOff = 0
     }
 
     // MARK: - Token PIN / PUK / signing (each wrong PIN/PUK burns a card try: one attempt, never retried)

@@ -1,5 +1,6 @@
 package com.peregond.supercelik
 
+import android.content.ActivityNotFoundException
 import android.content.Context
 import android.content.Intent
 import android.graphics.BitmapFactory
@@ -92,6 +93,17 @@ fun msgText(m: Msg): String = if (m.arg != null) stringResource(m.id, m.arg) els
 
 // ---------------------------------------------------------------- card tab
 
+/** The reader page of the site, in the language of the app (Cyrillic or Latin Serbian by the script of the locale). */
+private fun readerUrl(ctx: Context): String {
+    val loc = ctx.resources.configuration.locales[0]
+    val code = when (loc.language) {
+        "ru" -> "ru"
+        "sr" -> if (loc.script == "Latn") "sr" else "sc"
+        else -> "en"
+    }
+    return "https://celik.peregon.cc/reader/?lang=$code"
+}
+
 @Composable
 fun CardScreen(vm: CardViewModel, reveal: Boolean) {
     val personal by vm.personal.collectAsStateWithLifecycle()
@@ -110,6 +122,10 @@ fun CardScreen(vm: CardViewModel, reveal: Boolean) {
             FilledTonalButton(onClick = { vm.readCard(ctx) }, Modifier.fillMaxWidth().height(56.dp)) {
                 Icon(Icons.Filled.Usb, null); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.read_usb))
             }
+            // which reader to get: the page opens in the browser (the same page as in the macOS and iOS apps)
+            TextButton(onClick = {
+                try { ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(readerUrl(ctx)))) } catch (_: ActivityNotFoundException) { }
+            }) { Text(stringResource(R.string.reader_help)) }
             Text(stringResource(R.string.about_note), textAlign = TextAlign.Center,
                 style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }

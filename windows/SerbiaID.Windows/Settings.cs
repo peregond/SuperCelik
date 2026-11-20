@@ -13,6 +13,7 @@ public sealed class AppSettings
     public bool MaskSensitive { get; set; } = true;  // hide JMBG / address / document number behind •••
     public bool AutoRead { get; set; } = true;       // read the card as soon as it is inserted
     public string DriverDeclined { get; set; } = "";   // ATRs (hex;) for which the user said "no" to the browser-login driver
+    public bool FirefoxDeclined { get; set; }          // the user said "no" to turning on Firefox's use of the Windows certificates
     public int Version { get; set; }                 // settings schema; 2 = auto-read is on by default
     public bool PrintJmbg { get; set; } = true;      // include the personal number on printouts / PDF
     public int AutoHideMinutes { get; set; } = 3;    // clear data after N idle minutes (0 = never)

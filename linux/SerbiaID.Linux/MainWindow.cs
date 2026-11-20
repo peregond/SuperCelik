@@ -46,7 +46,11 @@ public sealed class MainWindow : Window
     private TextBlock _lblBeta; private Button _btnFeedback, _btnLoginEu, _btnSetupBrowser;
     private const string EuLoginUrl = "https://euprava.gov.rs/prijava";
     private const string FeedbackUrl = "https://github.com/peregond/SuperCelik/issues/new";
-    private Button _btnReadToken, _btnChangePin, _btnUnblockPin, _btnSignFile, _btnCheckUpdates, _btnUpdate;
+    // the site pages open in the language of the app (?lang=), the changelog in this app's own section (?app=)
+    private static string LangCode => Loc.Current switch { Lang.ru => "ru", Lang.en => "en", Lang.sr => "sr", _ => "sc" };
+    private static string ReaderPageUrl => "https://celik.peregon.cc/reader/?lang=" + LangCode;
+    private static string ChangelogUrl => "https://celik.peregon.cc/changelog/?lang=" + LangCode + "&app=linux";
+    private Button _btnReadToken, _btnChangePin, _btnUnblockPin, _btnSignFile, _btnCheckUpdates, _btnUpdate, _btnWhatsNew, _btnReaderHelp;
     private StackPanel _emptyState, _certList;
     private Control _personalContent;
     private WrapPanel _fields;
@@ -86,7 +90,16 @@ public sealed class MainWindow : Window
         StartPolling();
         Opened += async (_, _) =>
         {
-            if (!_demo && BrowserSetup.HasModule && !_cfg.BrowserSetupAsked) await OfferBrowserSetup();
+            if (!_demo && BrowserSetup.HasModule)
+            {
+                if (!_cfg.BrowserSetupAsked) await OfferBrowserSetup();
+                else
+                {
+                    // someone who connected the module in an earlier version has agreed too, that version just did not write it down
+                    if (!_cfg.BrowserSetupAccepted && await BrowserSetup.AnyConnected()) { _cfg.BrowserSetupAccepted = true; _cfg.Save(); }
+                    if (_cfg.BrowserSetupAccepted) await KeepBrowserSetup();
+                }
+            }
             if (_cfg.AutoUpdate) await AutoCheckUpdateAsync();
         };
     }
@@ -179,7 +192,7 @@ public sealed class MainWindow : Window
         DockPanel.SetDock(_busyBar, Dock.Top); root.Children.Add(_busyBar);
 
         // problem banner
-        _lblProblemTitle = Ui.Label("", 13, true); _lblProblemTitle.FontWeight = FontWeight.Bold;
+        _lblProblemTitle = Ui.Label("", 13, true, "TextBrush", true); _lblProblemTitle.FontWeight = FontWeight.Bold;
         _lblProblemHint = Ui.Label("", 13, false, "TextBrush", true); _lblProblemHint.Margin = new Thickness(0, 2, 0, 0);
         _lblProblemTech = Ui.Label("", 11, false, "MutedBrush", true); _lblProblemTech.Margin = new Thickness(0, 4, 0, 0);
         _btnProblemClose = Ui.Btn("", "icon"); Ui.SetBtn(_btnProblemClose, "x", null); _btnProblemClose.VerticalAlignment = VerticalAlignment.Top; _btnProblemClose.Click += (_, _) => HideProblem();
@@ -226,10 +239,12 @@ public sealed class MainWindow : Window
         _emptyMascot = new MascotArt(MascotCharacter.Reader, 170);
         _lblEmptyTitle = Ui.Label("", 20, true); _lblEmptyTitle.TextAlignment = TextAlignment.Center; _lblEmptyTitle.Margin = new Thickness(0, 14, 0, 0);
         _lblHint = Ui.Label("", 14, false, "MutedBrush", true); _lblHint.TextAlignment = TextAlignment.Center; _lblHint.MaxWidth = 420; _lblHint.Margin = new Thickness(0, 8, 0, 0);
+        _btnReaderHelp = Ui.Btn(""); _btnReaderHelp.HorizontalAlignment = HorizontalAlignment.Center; _btnReaderHelp.Margin = new Thickness(0, 16, 0, 0); _btnReaderHelp.IsVisible = false;
+        _btnReaderHelp.Click += (_, _) => OpenUrl(ReaderPageUrl);
         _btnReadBig = Ui.Btn("", "primary"); _btnReadBig.HorizontalAlignment = HorizontalAlignment.Center; _btnReadBig.Margin = new Thickness(0, 20, 0, 0);
         _btnReadBig.Click += async (_, _) => await Run(ReadCardAsync);
         _emptyState = new StackPanel { VerticalAlignment = VerticalAlignment.Center, HorizontalAlignment = HorizontalAlignment.Center, Margin = new Thickness(0, 0, 0, 40),
-            Children = { _emptyMascot, _lblEmptyTitle, _lblHint, _btnReadBig } };
+            Children = { _emptyMascot, _lblEmptyTitle, _lblHint, _btnReaderHelp, _btnReadBig } };
         grid.Children.Add(_emptyState);
 
         // content
@@ -272,7 +287,7 @@ public sealed class MainWindow : Window
         _btnUnblockPin = Ui.Btn(""); _btnUnblockPin.Click += async (_, _) => await UnblockPin();
         _btnSignFile = Ui.Btn(""); _btnSignFile.Click += async (_, _) => await SignFile();
         _btnLoginEu = Ui.Btn(""); _btnLoginEu.Click += async (_, _) => await LoginEu();
-        _btnSetupBrowser = Ui.Btn(""); _btnSetupBrowser.IsVisible = BrowserSetup.HasModule; _btnSetupBrowser.Click += async (_, _) => await SetupBrowser(true);
+        _btnSetupBrowser = Ui.Btn(""); _btnSetupBrowser.IsVisible = BrowserSetup.HasModule; _btnSetupBrowser.Click += async (_, _) => await SetupBrowser();
         _lblTokenInfo = Ui.Label("", 13, false, "MutedBrush"); _lblTokenInfo.VerticalAlignment = VerticalAlignment.Center;
         // the buttons wrap with a gap in a narrow window; the token name sits on its own line under them
         var buttons = new WrapPanel();
@@ -370,9 +385,11 @@ public sealed class MainWindow : Window
         _lblBeta = Ui.Label("", 13, true, "AccentBrush", true); _lblBeta.TextAlignment = TextAlignment.Center; _lblBeta.Margin = new Thickness(0, 14, 0, 0);
         _btnFeedback = Ui.Btn(""); _btnFeedback.HorizontalAlignment = HorizontalAlignment.Center; _btnFeedback.Margin = new Thickness(0, 10, 0, 0); _btnFeedback.Click += (_, _) => OpenUrl(FeedbackUrl);
         _lblVersion = Ui.Label("", 13, true); _lblVersion.HorizontalAlignment = HorizontalAlignment.Center; _lblVersion.Margin = new Thickness(0, 18, 0, 8);
-        _btnCheckUpdates = Ui.Btn(""); _btnCheckUpdates.HorizontalAlignment = HorizontalAlignment.Center; _btnCheckUpdates.Click += async (_, _) => await CheckUpdates();
+        _btnCheckUpdates = Ui.Btn(""); _btnCheckUpdates.Click += async (_, _) => await CheckUpdates();
+        _btnWhatsNew = Ui.Btn(""); _btnWhatsNew.Click += (_, _) => OpenUrl(ChangelogUrl);
+        var updateButtons = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, HorizontalAlignment = HorizontalAlignment.Center, Children = { _btnCheckUpdates, _btnWhatsNew } };
         _lblUpdateStatus = Ui.Label("", 13, false, "MutedBrush", true); _lblUpdateStatus.HorizontalAlignment = HorizontalAlignment.Center; _lblUpdateStatus.TextAlignment = TextAlignment.Center; _lblUpdateStatus.Margin = new Thickness(0, 10, 0, 0);
-        var card = Ui.Card(new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, Children = { logo, _lblAboutTitle, _lblAboutText, _lblBeta, _btnFeedback, _lblVersion, _btnCheckUpdates, _lblUpdateStatus } }, new Thickness(40, 32));
+        var card = Ui.Card(new StackPanel { HorizontalAlignment = HorizontalAlignment.Center, Children = { logo, _lblAboutTitle, _lblAboutText, _lblBeta, _btnFeedback, _lblVersion, updateButtons, _lblUpdateStatus } }, new Thickness(40, 32));
         card.HorizontalAlignment = HorizontalAlignment.Center; card.VerticalAlignment = VerticalAlignment.Center; card.MaxWidth = 520;
         return new Grid { Children = { card } };
     }
@@ -387,6 +404,7 @@ public sealed class MainWindow : Window
         Ui.SetBtn(_btnPrint, "printer", Loc.T("printCard")); Ui.SetBtn(_btnPdf, "save", Loc.T("savePdf")); Ui.SetBtn(_btnVerify, "check", Loc.T("verifySignature"));
         Ui.SetBtn(_btnMore, "ellipsis", Loc.T("more"));
         Ui.SetBtn(_btnReadToken, "key-round", Loc.T("readToken")); Ui.SetBtn(_btnChangePin, "lock", Loc.T("changePin")); Ui.SetBtn(_btnUnblockPin, "lock-open", Loc.T("unblockPin")); Ui.SetBtn(_btnSignFile, "pen-line", Loc.T("signFile"));
+        Ui.SetBtn(_btnWhatsNew, "info", Loc.T("whatsNew")); Ui.SetBtn(_btnReaderHelp, "circle-help", Loc.T("readerHelp"));
         Ui.SetBtn(_btnCheckUpdates, "refresh-cw", Loc.T("checkUpdates")); Ui.SetBtn(_btnUpdate, "download", Loc.T("updateNow"));
         _tabButtons[0].Content = Loc.T("tabPersonal"); _tabButtons[1].Content = Loc.T("tabToken"); _tabButtons[2].Content = Loc.T("tabSettings"); _tabButtons[3].Content = Loc.T("tabAbout");
         _lblCerts.Text = Loc.T("certificates"); _lblPinNote.Text = Loc.T("pinNote") + "\n" + Loc.T(BrowserSetup.HasModule ? "loginEupravaNote" : "loginEupravaNoteManual");
@@ -461,43 +479,80 @@ public sealed class MainWindow : Window
     {
         _cfg.BrowserSetupAsked = true; _cfg.Save();
         if (await BrowserSetup.IsSetUp()) return;
-        if (await Dialogs.Confirm(this, Loc.T("setupBrowser"), Loc.T("setupAsk"), Loc.T("setupConnect"), Loc.T("setupLater"))) await SetupBrowser(false);
+        if (await Dialogs.Confirm(this, Loc.T("setupBrowser"), Loc.T("setupAsk"), Loc.T("setupConnect"), Loc.T("setupLater"))) await SetupBrowser();
     }
 
-    /// "Sign in to eUprava": offers to connect the module first if the browsers do not have it yet, then opens the page.
+    /// The user agreed once: when a browser (a new Firefox profile, a browser installed later, the app moved) lacks the module,
+    /// connect it again without asking. Silent unless something was actually connected.
+    private async Task KeepBrowserSetup()
+    {
+        try { if (!await BrowserSetup.IsSetUp()) await SetupBrowser(quiet: true); }
+        catch { }
+    }
+
+    /// "Sign in to eUprava": connects the module first if the browsers do not have it yet (asking only the first time), then opens the page.
     private async Task LoginEu()
     {
         try
         {
-            if (!_demo && BrowserSetup.HasModule && !await BrowserSetup.IsSetUp()
-                && await Dialogs.Confirm(this, Loc.T("setupBrowser"), Loc.T("setupAsk"), Loc.T("setupConnect"), Loc.T("setupLater")))
-                await SetupBrowser(false);
+            if (!_demo && BrowserSetup.HasModule && !await BrowserSetup.IsSetUp())
+            {
+                if (_cfg.BrowserSetupAccepted) await SetupBrowser(quiet: true);
+                else if (await Dialogs.Confirm(this, Loc.T("setupBrowser"), Loc.T("setupAsk"), Loc.T("setupConnect"), Loc.T("setupLater"))) await SetupBrowser();
+            }
         }
         catch { }
         OpenUrl(EuLoginUrl);
     }
 
-    private async Task SetupBrowser(bool report)
+    /// Connects the card module to the browsers. `quiet`: a background re-check, so only a success is announced.
+    private async Task SetupBrowser(bool quiet = false)
     {
         try
         {
             var r = await BrowserSetup.Setup();
+            var sandbox = r.Sandboxed is { Count: > 0 } ? "\n" + string.Format(Loc.T("setupSandboxed"), string.Join(", ", r.Sandboxed)) : "";
+            if (r.Kind is "done" or "partial")
+            {
+                if (quiet && !r.Changed) return;                      // a background re-check has nothing to say when nothing was connected
+                if (!_cfg.BrowserSetupAccepted) { _cfg.BrowserSetupAccepted = true; _cfg.Save(); }
+                var text = string.Format(Loc.T("setupDone"), string.Join(", ", r.Names));
+                if (r.Kind == "partial") text += "\n" + ProblemText(r);
+                ShowInfo(text + sandbox);
+                return;
+            }
+            if (quiet) return;
             switch (r.Kind)
             {
-                case "done": ShowInfo(string.Format(Loc.T("setupDone"), string.Join(", ", r.Names))); break;
                 case "notool": ShowInfo(Loc.T("setupNoTool")); break;
+                case "noservice" or "oldlibc" or "nolib": ShowInfo(ProblemText(r) + sandbox); break;
                 case "none": ShowInfo(string.Format(Loc.T("setupNone"), r.Detail)); break;
+                case "sandboxed": ShowInfo(sandbox.TrimStart('\n')); break;
                 case "nomodule": ShowInfo(Loc.T("loginEupravaNoteManual")); break;
-                default: ShowInfo(string.Format(Loc.T("setupFailed"), r.Detail)); break;
+                default: ShowInfo(ProblemText(r) + sandbox); break;
             }
         }
-        catch (Exception ex) { ShowInfo(string.Format(Loc.T("setupFailed"), ex.Message)); }
+        catch (Exception ex) { if (!quiet) ShowInfo(string.Format(Loc.T("setupFailed"), ex.Message)); }
     }
+
+    /// What went wrong, in words the user can act on (the raw NSS text only when nothing more specific is known).
+    private static string ProblemText(BrowserSetup.Result r) => r.Why switch
+    {
+        "noservice" => Loc.T("setupNoService"),
+        "oldlibc" => Loc.T("setupOldLibc"),
+        "nolib" => Loc.T("setupNoPcscLib"),
+        _ => string.Format(Loc.T("setupFailed"), r.Detail),
+    };
 
     private void ShowInfo(string text)
     {
         _problemBanner.Res(Border.BackgroundProperty, "BannerBrush"); _lblProblemTitle.Res(TextBlock.ForegroundProperty, "TextBrush");
-        _lblProblemTitle.Text = text; _lblProblemHint.IsVisible = false; _lblProblemTech.Text = "";
+        // the first line in bold, a longer explanation (the messages about the browsers can have several sentences) in the normal weight below it
+        int nl = text.IndexOf('\n');
+        _lblProblemTitle.Text = nl < 0 ? text : text.Substring(0, nl);
+        _lblProblemHint.Text = nl < 0 ? "" : text.Substring(nl + 1);
+        _lblProblemHint.IsVisible = nl >= 0;
+        _lblProblemTech.Text = "";
         ShowBanner(error: false);
     }
 
@@ -523,6 +578,7 @@ public sealed class MainWindow : Window
         string hint = mood switch { ReaderMood.Busy => null, ReaderMood.NoReader => "emptyNoReaderH", _ => _cardPresent ? "emptyReadyH" : "emptyNoCardH" };
         _lblEmptyTitle.Text = Loc.T(title);
         _lblHint.Text = hint == null ? "" : Loc.T(hint);
+        _btnReaderHelp.IsVisible = mood == ReaderMood.NoReader;      // which reader to get: the page opens in the browser
         _btnReadBig.Opacity = _cardPresent && !_busy ? 1 : 0;
         _btnReadBig.IsHitTestVisible = _cardPresent && !_busy;
         if (_keyMascot != null) _keyMascot.Set(mood);

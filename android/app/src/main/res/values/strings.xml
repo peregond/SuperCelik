@@ -4,6 +4,7 @@
     <string name="title_personal">Personal data</string>
     <string name="read_usb">Read via USB reader</string>
     <string name="hint_idle">Insert the card into a USB smart card reader and connect it to the phone (USB-C or an OTG adapter). Reading starts automatically.</string>
+    <string name="reader_help">No reader yet?</string>
     <string name="hint_usb_wait">Looking for a USB reader…</string>
     <string name="reading">Reading the card…</string>
     <string name="cancel">Cancel</string>
