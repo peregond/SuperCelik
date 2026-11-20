@@ -31,8 +31,14 @@ git -C "$WORK/src" fetch -q --depth 1 "$SRC_URL" "$SRC_COMMIT"
 git -C "$WORK/src" checkout -q FETCH_HEAD
 [ "$(git -C "$WORK/src" rev-parse HEAD)" = "$SRC_COMMIT" ] || { echo "unexpected source commit" >&2; exit 1; }
 
-echo "== build for $TARGET"
-(cd "$WORK/src" && zig build -Dtarget="$TARGET" -Doptimize=ReleaseSafe --global-cache-dir "$WORK/zig-cache" --cache-dir "$WORK/zig-local-cache")
+# With an explicit target Zig does not look in the system library folders, so libpcsclite (the development package) is shown to it:
+# a prefix with lib/libpcsclite.so pointing at the system's copy. The headers are found through /usr/include/PCSC by the module's own build.
+PCSC=$(ls /usr/lib/*/libpcsclite.so /usr/lib/libpcsclite.so 2>/dev/null | head -1 || true)
+[ -n "$PCSC" ] || { echo "libpcsclite.so not found: install libpcsclite-dev" >&2; exit 1; }
+mkdir -p "$WORK/pcsc-prefix/lib"; ln -s "$PCSC" "$WORK/pcsc-prefix/lib/libpcsclite.so"
+
+echo "== build for $TARGET (libpcsclite: $PCSC)"
+(cd "$WORK/src" && zig build -Dtarget="$TARGET" -Doptimize=ReleaseSafe --search-prefix "$WORK/pcsc-prefix" --global-cache-dir "$WORK/zig-cache" --cache-dir "$WORK/zig-local-cache")
 cp -L "$WORK/src/zig-out/lib/libsrb-id-pkcs11.so" "$OUT/libsrb-id-pkcs11.so"
 
 echo "== checks"
