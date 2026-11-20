@@ -4,8 +4,9 @@ namespace SerbiaID;
 
 /// Browser sign-in with the card certificate on Linux: the browser needs a PKCS#11 module (srb-id-pkcs11, public domain,
 /// shipped inside the app in <app folder>/pkcs11) in its NSS database. This finds Firefox profiles (every place Firefox keeps
-/// them, see FirefoxProfiles.cs) and the Chrome / Chromium database and registers the module with `modutil` (package
-/// libnss3-tools). It only runs when the user agrees (and keeps running after that, so a new profile is covered too).
+/// them, see FirefoxProfiles.cs) and the shared NSS database of the Chromium-based browsers (Chrome, Chromium, Edge, Brave) and
+/// registers the module with `modutil` (package libnss3-tools). It only runs when the user agrees (and keeps running after that,
+/// so a new profile is covered too).
 public static class BrowserSetup
 {
     public const string ModuleName = "Srb Id PKCS11";
@@ -33,10 +34,12 @@ public static class BrowserSetup
     public static bool HasModule => !Packaging.IsFlatpak && File.Exists(Bundled);
 
     public sealed record Target(string Label, string Dir);
-    /// Kind: nomodule / notool / none / noservice / sandboxed / failed, or done (everything connected) / partial (some of it; `Detail`
-    /// says why the rest failed). Names = the browsers that have the module now. Sandboxed = Firefox from Snap / Flatpak found: it cannot
-    /// load a module from outside its sandbox, so it is left alone. NoService = pcscd is not running. Changed = something was connected just now.
-    public sealed record Result(string Kind, List<string> Names, string Detail, List<string> Sandboxed = null, bool NoService = false, bool Changed = false);
+    /// Kind: nomodule / notool / none, or sandboxed (only browsers that cannot be connected were found), or one of the reasons the module
+    /// could not be added: noservice (pcscd is not running) / oldlibc (the C library is older than the module needs) / nolib (libpcsclite is
+    /// missing) / failed (anything else), or done (everything connected) / partial (some of it; `Detail` and `Why` say why the rest failed).
+    /// Names = the browsers that have the module now. Sandboxed = browsers from Snap / Flatpak that were found and left alone.
+    /// Changed = something was connected just now.
+    public sealed record Result(string Kind, List<string> Names, string Detail, List<string> Sandboxed = null, string Why = null, bool Changed = false);
 
     private static string Home => Environment.GetFolderPath(Environment.SpecialFolder.UserProfile);
 
@@ -48,6 +51,8 @@ public static class BrowserSetup
             return !string.IsNullOrEmpty(xdg) && Path.IsPathRooted(xdg) ? xdg : Path.Combine(Home, ".config");
         }
     }
+
+    // ---- Firefox ----
 
     /// The folders where Firefox keeps profiles.ini, and whether that Firefox is sandboxed. Firefox up to 146 (and every Firefox that
     /// was started before 147) uses ~/.mozilla/firefox; a new Firefox 147+ profile lives under XDG_CONFIG_HOME (~/.config/mozilla/firefox).
@@ -62,7 +67,77 @@ public static class BrowserSetup
         (Path.Combine(Home, ".var", "app", "org.mozilla.firefox", "config", "mozilla", "firefox"), "Flatpak"),
     };
 
-    /// NSS databases of the installed browsers: every Firefox profile, and the shared Chrome / Chromium database.
+    // ---- Chrome, Chromium, Edge, Brave: one NSS database for all of them ----
+
+    /// A Chromium-based browser. Bins = the commands that show it is installed; Configs = folders under XDG_CONFIG_HOME that show it has been
+    /// used; Snap / Flatpak = the Snap name / Flatpak id of its sandboxed build (null = there is none).
+    private sealed record ChromiumBrowser(string Name, string[] Bins, string[] Configs, string Snap, string Flatpak);
+
+    private static readonly ChromiumBrowser[] ChromiumFamily =
+    {
+        new("Chrome", new[] { "google-chrome", "google-chrome-stable", "google-chrome-beta", "google-chrome-unstable" },
+            new[] { "google-chrome", "google-chrome-beta", "google-chrome-unstable" }, null, "com.google.Chrome"),
+        new("Chromium", new[] { "chromium", "chromium-browser" }, new[] { "chromium" }, "chromium", "org.chromium.Chromium"),
+        new("Edge", new[] { "microsoft-edge", "microsoft-edge-stable", "microsoft-edge-beta", "microsoft-edge-dev" },
+            new[] { "microsoft-edge", "microsoft-edge-beta", "microsoft-edge-dev" }, null, "com.microsoft.Edge"),
+        new("Brave", new[] { "brave-browser", "brave-browser-stable", "brave" }, new[] { "BraveSoftware" }, "brave", "com.brave.Browser"),
+    };
+
+    /// The places Chromium keeps its shared NSS database: ~/.pki/nssdb (older versions, and still the one any Chromium uses when it finds it
+    /// there) and ~/.local/share/pki/nssdb (the default of Chromium 146 and newer when ~/.pki/nssdb does not exist; Edge follows Chromium).
+    /// The module is registered in every one that exists, so it does not matter which one the installed version reads.
+    private static List<string> ChromiumDbDirs()
+    {
+        var dirs = new List<string> { Path.Combine(Home, ".pki", "nssdb"), Path.Combine(Home, ".local", "share", "pki", "nssdb") };
+        var data = Environment.GetEnvironmentVariable("XDG_DATA_HOME");
+        if (!string.IsNullOrEmpty(data) && Path.IsPathRooted(data))
+        {
+            var d = Path.Combine(data, "pki", "nssdb");
+            if (!dirs.Contains(d)) dirs.Add(d);
+        }
+        return dirs;
+    }
+
+    /// On Ubuntu `chromium-browser` (or a link into /snap/bin) is only a stub for the Snap version, which has its own sandbox and its own
+    /// NSS database: as far as this app can tell, that is not an installed browser.
+    private static bool IsSnapStub(string path)
+    {
+        try
+        {
+            if (path.StartsWith("/snap/", StringComparison.Ordinal)) return true;
+            var real = new FileInfo(path).ResolveLinkTarget(true)?.FullName ?? path;
+            if (real.StartsWith("/snap/", StringComparison.Ordinal)) return true;
+            if (new FileInfo(real).Length >= 16384) return false;           // a real browser, not a small stub script
+            var text = File.ReadAllText(real);
+            return text.Contains("/snap/") || text.Contains("snap install") || text.Contains("snap run");
+        }
+        catch { return false; }
+    }
+
+    /// The Chromium-based browsers that look installed (as a regular package): one of their commands is on PATH, or their config folder exists.
+    private static List<string> InstalledChromium()
+    {
+        var names = new List<string>();
+        foreach (var b in ChromiumFamily)
+        {
+            bool found = b.Bins.Any(bin => { var p = Which(bin); return p != null && !(b.Snap != null && IsSnapStub(p)); })
+                         || b.Configs.Any(c => Directory.Exists(Path.Combine(ConfigHome, c)));
+            if (found) names.Add(b.Name);
+        }
+        return names;
+    }
+
+    /// What to call the shared database in messages: the installed browsers ("Chrome / Edge"), or all the usual names when none is found.
+    private static string ChromiumLabel()
+    {
+        var names = InstalledChromium();
+        return names.Count > 0 ? string.Join(" / ", names) : "Chrome / Chromium / Edge";
+    }
+
+    // ---- what to connect ----
+
+    /// NSS databases of the installed browsers: every Firefox profile, and the shared Chromium database (every copy of it that exists; if there is
+    /// none and a Chromium-based browser is installed, `createChromeDb` makes one in ~/.pki/nssdb, which every Chromium version picks up).
     public static List<Target> FindTargets(bool createChromeDb = false)
     {
         var list = new List<Target>();
@@ -72,24 +147,31 @@ public static class BrowserSetup
             foreach (var p in FirefoxProfiles.Find(root))
                 if (!list.Any(t => t.Dir == p.Dir)) list.Add(new Target("Firefox", p.Dir));
         }
-        var chromeDb = new[] { Path.Combine(Home, ".pki", "nssdb"), Path.Combine(Home, ".local", "share", "pki", "nssdb") }
-            .FirstOrDefault(d => File.Exists(Path.Combine(d, "cert9.db")));
-        if (chromeDb != null) list.Add(new Target("Chrome / Chromium", chromeDb));
-        else if (createChromeDb && ChromiumInstalled()) list.Add(new Target("Chrome / Chromium", Path.Combine(Home, ".pki", "nssdb")));
+        var dbs = ChromiumDbDirs().Where(d => File.Exists(Path.Combine(d, "cert9.db"))).ToList();
+        if (dbs.Count > 0 || (createChromeDb && InstalledChromium().Count > 0))
+        {
+            var label = ChromiumLabel();
+            if (dbs.Count == 0) dbs.Add(ChromiumDbDirs()[0]);
+            foreach (var d in dbs) list.Add(new Target(label, d));
+        }
         return list;
     }
 
-    private static bool ChromiumInstalled() =>
-        new[] { "google-chrome", "google-chrome-stable", "chromium", "chromium-browser", "microsoft-edge", "brave-browser" }.Any(n => Which(n) != null);
-
-    /// "Snap" / "Flatpak" for every sandboxed Firefox that has a profile. Its sandbox hides our module (and the host's smart card
-    /// libraries), so there is nothing we could register: the user is told what to do instead.
-    public static List<string> FindSandboxedFirefox()
+    /// Browsers installed as a Snap or a Flatpak ("Firefox (Snap)", "Edge (Flatpak)", ...). Their sandbox keeps the card module of this app out
+    /// (Ubuntu describes manual steps for Snap browsers, but calls them experimental), so there is nothing reliable to register: the user is told
+    /// what to do instead. Firefox is recognised by its profiles, the others by their data folder.
+    public static List<string> FindSandboxedBrowsers()
     {
-        var kinds = new List<string>();
+        var found = new List<string>();
+        void Add(string name, string kind) { var s = name + " (" + kind + ")"; if (!found.Contains(s)) found.Add(s); }
         foreach (var (root, kind) in FirefoxRoots())
-            if (kind != "" && !kinds.Contains(kind) && FirefoxProfiles.Find(root, kind).Count > 0) kinds.Add(kind);
-        return kinds;
+            if (kind != "" && FirefoxProfiles.Find(root, kind).Count > 0) Add("Firefox", kind);
+        foreach (var b in ChromiumFamily)
+        {
+            if (b.Snap != null && Directory.Exists(Path.Combine(Home, "snap", b.Snap))) Add(b.Name, "Snap");
+            if (b.Flatpak != null && Directory.Exists(Path.Combine(Home, ".var", "app", b.Flatpak))) Add(b.Name, "Flatpak");
+        }
+        return found;
     }
 
     public static string Which(string tool)
@@ -127,17 +209,28 @@ public static class BrowserSetup
         return true;
     }
 
+    /// Why NSS refused to add the module, when its output says so (null = no known reason). NSS loads the module to add it, so the answers
+    /// come from the module's own start-up: it connects to the smart card service first (pcscd stopped: CKR_FUNCTION_FAILED), and the system
+    /// has to provide the libraries it was built against (the loader's text is part of the message).
+    internal static string WhyFailed(string modutilOutput)
+    {
+        if (modutilOutput.Contains("CKR_FUNCTION_FAILED")) return "noservice";
+        if (modutilOutput.Contains("GLIBC_") && modutilOutput.Contains("not found")) return "oldlibc";             // version `GLIBC_2.36' not found
+        if (modutilOutput.Contains("libpcsclite") && modutilOutput.Contains("cannot open shared object")) return "nolib";
+        return null;
+    }
+
     /// Registers the module in every found browser database (replacing an entry with another path).
     public static async Task<Result> Setup()
     {
         if (!HasModule) return new Result("nomodule", new(), ModulePath);
         var modutil = Which("modutil");
         if (modutil == null) return new Result("notool", new(), "");
-        var sandboxed = FindSandboxedFirefox();
+        var sandboxed = FindSandboxedBrowsers();
         var targets = FindTargets(createChromeDb: true);
         if (targets.Count == 0) return sandboxed.Count > 0 ? new Result("sandboxed", new(), "", sandboxed) : new Result("none", new(), ModulePath);
 
-        var done = new List<string>(); string error = null; bool noService = false, failed = false, changed = false;
+        var done = new List<string>(); string error = null, why = null; bool failed = false, changed = false;
         foreach (var t in targets)
         {
             bool good = false;
@@ -160,19 +253,14 @@ public static class BrowserSetup
                         await Run(modutil, "-dbdir", db, "-delete", ModuleName, "-force");        // the app moved: replace the old entry
                     var (ac, ao) = await Run(modutil, "-dbdir", db, "-add", ModuleName, "-libfile", ModulePath, "-force");
                     if (ac == 0) { good = true; changed = true; }
-                    else
-                    {
-                        error = ao.Trim();
-                        // NSS loads the module to add it, and the module starts by connecting to the smart card service: without a running pcscd it answers CKR_FUNCTION_FAILED
-                        if (ao.Contains("CKR_FUNCTION_FAILED")) noService = true;
-                    }
+                    else { error = ao.Trim(); why ??= WhyFailed(ao); }
                 }
             }
             catch (Exception ex) { error = ex.Message; }
             if (good) { if (!done.Contains(t.Label)) done.Add(t.Label); }
             else failed = true;
         }
-        if (done.Count == 0) return new Result(noService ? "noservice" : "failed", new(), error ?? "", sandboxed, noService);
-        return new Result(failed ? "partial" : "done", done, failed ? error ?? "" : "", sandboxed, noService, changed);
+        if (done.Count == 0) return new Result(why ?? "failed", new(), error ?? "", sandboxed, why);
+        return new Result(failed ? "partial" : "done", done, failed ? error ?? "" : "", sandboxed, why, changed);
     }
 }

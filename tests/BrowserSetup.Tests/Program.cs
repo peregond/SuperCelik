@@ -69,7 +69,7 @@ Console.WriteLine("Linux: where the app looks for Firefox");
 var home = Temp();
 Environment.SetEnvironmentVariable("HOME", home);
 Environment.SetEnvironmentVariable("XDG_CONFIG_HOME", null);
-Check(BrowserSetup.FindTargets().Count == 0 && BrowserSetup.FindSandboxedFirefox().Count == 0, "nothing installed: nothing found");
+Check(BrowserSetup.FindTargets().Count == 0 && BrowserSetup.FindSandboxedBrowsers().Count == 0, "nothing installed: nothing found");
 var legacy = Path.Combine(home, ".mozilla", "firefox");
 Profile(Path.Combine(legacy, "abcd1234.default-release"), "146");
 Write(legacy, "profiles.ini", "[Profile0]\nName=default-release\nIsRelative=1\nPath=abcd1234.default-release\nDefault=1\n");
@@ -85,13 +85,61 @@ Check(targets.Any(t => t.Dir == Path.Combine(xdg, "wxyz5678.default-release")), 
 Check(targets.Any(t => t.Dir == custom), "a profile with an absolute path in profiles.ini is found");
 Profile(Path.Combine(home, "snap", "firefox", "common", ".mozilla", "firefox", "snap1.default"), "146");
 Profile(Path.Combine(home, ".var", "app", "org.mozilla.firefox", ".mozilla", "firefox", "flat1.default"), "146");
-Check(BrowserSetup.FindSandboxedFirefox().SequenceEqual(new[] { "Snap", "Flatpak" }), "Snap and Flatpak Firefox are recognised");
+Check(BrowserSetup.FindSandboxedBrowsers().SequenceEqual(new[] { "Firefox (Snap)", "Firefox (Flatpak)" }), "Snap and Flatpak Firefox are recognised");
 Check(BrowserSetup.FindTargets().Count == 3, "and are not offered as targets: the module cannot be loaded there");
 var cfg = Path.Combine(home, "cfg-elsewhere");
 Environment.SetEnvironmentVariable("XDG_CONFIG_HOME", cfg);
 Profile(Path.Combine(cfg, "mozilla", "firefox", "elsewhere.default"), "147");
 Write(Path.Combine(cfg, "mozilla", "firefox"), "profiles.ini", "[Profile0]\r\nName=default\r\nIsRelative=1\r\nPath=elsewhere.default\r\nDefault=1\r\n");
 Check(BrowserSetup.FindTargets().Any(t => t.Dir == Path.Combine(cfg, "mozilla", "firefox", "elsewhere.default")), "XDG_CONFIG_HOME is respected");
+
+Console.WriteLine("Linux: Chrome, Chromium, Edge, Brave (one shared NSS database)");
+Environment.SetEnvironmentVariable("XDG_CONFIG_HOME", null);
+var bin = Temp();
+Environment.SetEnvironmentVariable("PATH", bin);                     // only the fake commands made below are "installed"
+void Command(string name, string script = "#!/bin/sh\nexit 0\n") { var f = Path.Combine(bin, name); File.WriteAllText(f, script); File.SetUnixFileMode(f, UnixFileMode.UserRead | UnixFileMode.UserWrite | UnixFileMode.UserExecute); }
+string Chromium(bool create = true) => BrowserSetup.FindTargets(create).Where(t => t.Label != "Firefox").Select(t => t.Label).FirstOrDefault();
+var legacyDb = Path.Combine(home, ".pki", "nssdb"); var xdgDb = Path.Combine(home, ".local", "share", "pki", "nssdb");
+
+Check(Chromium() == null, "no Chromium-based browser installed: no database to make");
+Command("microsoft-edge-stable");
+var edge = BrowserSetup.FindTargets(true).Where(t => t.Label != "Firefox").ToList();
+Check(edge.Count == 1 && edge[0].Label == "Edge" && edge[0].Dir == legacyDb, "Edge alone (its command is microsoft-edge-stable): a database is planned in ~/.pki/nssdb, labelled Edge");
+Check(Chromium(create: false) == null, "nothing is planned unless asked to create the database");
+Command("google-chrome-stable");
+Check(Chromium() == "Chrome / Edge", "Chrome and Edge share the database: label \"" + Chromium() + "\"");
+File.Delete(Path.Combine(bin, "google-chrome-stable")); File.Delete(Path.Combine(bin, "microsoft-edge-stable"));
+Command("chromium-browser", "#!/bin/sh\n# stub of the Snap version\nexec /snap/bin/chromium \"$@\"\n");
+Check(Chromium() == null, "Ubuntu's chromium-browser stub for the Snap is not an installed Chromium");
+Command("chromium", "#!/bin/sh\nexec /usr/lib/chromium/chromium \"$@\"\n");
+File.Delete(Path.Combine(bin, "chromium-browser"));
+Check(Chromium() == "Chromium", "a regular chromium command counts");
+File.Delete(Path.Combine(bin, "chromium"));
+Directory.CreateDirectory(Path.Combine(home, ".config", "microsoft-edge"));
+Check(Chromium() == "Edge", "Edge is recognised by its config folder even when its command is not on PATH");
+Directory.Delete(Path.Combine(home, ".config", "microsoft-edge"));
+
+Directory.CreateDirectory(legacyDb); File.WriteAllText(Path.Combine(legacyDb, "cert9.db"), "");
+Directory.CreateDirectory(xdgDb); File.WriteAllText(Path.Combine(xdgDb, "cert9.db"), "");
+var dbs = BrowserSetup.FindTargets().Where(t => t.Label != "Firefox").Select(t => t.Dir).ToList();
+Check(dbs.SequenceEqual(new[] { legacyDb, xdgDb }), "both shared databases are targets (Chromium 146+ reads the new one unless the old one exists)");
+Check(BrowserSetup.FindTargets().First(t => t.Dir == legacyDb).Label == "Chrome / Chromium / Edge", "with no browser found the database gets the general name");
+var dataElsewhere = Path.Combine(home, "data-elsewhere", "pki", "nssdb"); Directory.CreateDirectory(dataElsewhere); File.WriteAllText(Path.Combine(dataElsewhere, "cert9.db"), "");
+Environment.SetEnvironmentVariable("XDG_DATA_HOME", Path.Combine(home, "data-elsewhere"));
+Check(BrowserSetup.FindTargets().Any(t => t.Dir == dataElsewhere), "XDG_DATA_HOME is respected");
+Environment.SetEnvironmentVariable("XDG_DATA_HOME", null);
+
+Directory.CreateDirectory(Path.Combine(home, "snap", "chromium"));
+Directory.CreateDirectory(Path.Combine(home, ".var", "app", "com.microsoft.Edge"));
+Directory.CreateDirectory(Path.Combine(home, ".var", "app", "com.google.Chrome"));
+Check(BrowserSetup.FindSandboxedBrowsers().SequenceEqual(new[] { "Firefox (Snap)", "Firefox (Flatpak)", "Chrome (Flatpak)", "Chromium (Snap)", "Edge (Flatpak)" }),
+      "Snap and Flatpak browsers are named: " + string.Join(", ", BrowserSetup.FindSandboxedBrowsers()));
+
+Console.WriteLine("Linux: why NSS refused the module");
+Check(BrowserSetup.WhyFailed("ERROR: Failed to add module \"Srb Id PKCS11\". Probable cause : \"A PKCS #11 module returned CKR_FUNCTION_FAILED, indicating that the requested function could not be performed.\".") == "noservice", "CKR_FUNCTION_FAILED: the smart card service is not running");
+Check(BrowserSetup.WhyFailed("Probable cause : \"/opt/supercelik/pkcs11/libsrb-id-pkcs11.so: /lib/x86_64-linux-gnu/libc.so.6: version `GLIBC_2.36' not found (required by /opt/supercelik/pkcs11/libsrb-id-pkcs11.so)\".") == "oldlibc", "version GLIBC_2.36 not found: the C library is too old");
+Check(BrowserSetup.WhyFailed("Probable cause : \"libpcsclite.so.1: cannot open shared object file: No such file or directory\".") == "nolib", "libpcsclite.so.1 missing");
+Check(BrowserSetup.WhyFailed("SEC_ERROR_BAD_DATABASE: security library: bad database.") == null, "anything else: no special reason");
 
 Console.WriteLine(failures == 0 ? "ALL OK" : failures + " FAILED");
 return failures;

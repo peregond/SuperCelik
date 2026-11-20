@@ -497,13 +497,13 @@ public sealed class MainWindow : Window
         try
         {
             var r = await BrowserSetup.Setup();
-            var sandbox = r.Sandboxed is { Count: > 0 } ? "\n" + string.Format(Loc.T("setupSandboxed"), string.Join(" / ", r.Sandboxed)) : "";
+            var sandbox = r.Sandboxed is { Count: > 0 } ? "\n" + string.Format(Loc.T("setupSandboxed"), string.Join(", ", r.Sandboxed)) : "";
             if (r.Kind is "done" or "partial")
             {
                 if (quiet && !r.Changed) return;                      // a background re-check has nothing to say when nothing was connected
                 if (!_cfg.BrowserSetupAccepted) { _cfg.BrowserSetupAccepted = true; _cfg.Save(); }
                 var text = string.Format(Loc.T("setupDone"), string.Join(", ", r.Names));
-                if (r.Kind == "partial") text += "\n" + (r.NoService ? Loc.T("setupNoService") : string.Format(Loc.T("setupFailed"), r.Detail));
+                if (r.Kind == "partial") text += "\n" + ProblemText(r);
                 ShowInfo(text + sandbox);
                 return;
             }
@@ -511,15 +511,24 @@ public sealed class MainWindow : Window
             switch (r.Kind)
             {
                 case "notool": ShowInfo(Loc.T("setupNoTool")); break;
-                case "noservice": ShowInfo(Loc.T("setupNoService") + sandbox); break;
+                case "noservice" or "oldlibc" or "nolib": ShowInfo(ProblemText(r) + sandbox); break;
                 case "none": ShowInfo(string.Format(Loc.T("setupNone"), r.Detail)); break;
                 case "sandboxed": ShowInfo(sandbox.TrimStart('\n')); break;
                 case "nomodule": ShowInfo(Loc.T("loginEupravaNoteManual")); break;
-                default: ShowInfo(string.Format(Loc.T("setupFailed"), r.Detail) + sandbox); break;
+                default: ShowInfo(ProblemText(r) + sandbox); break;
             }
         }
         catch (Exception ex) { if (!quiet) ShowInfo(string.Format(Loc.T("setupFailed"), ex.Message)); }
     }
+
+    /// What went wrong, in words the user can act on (the raw NSS text only when nothing more specific is known).
+    private static string ProblemText(BrowserSetup.Result r) => r.Why switch
+    {
+        "noservice" => Loc.T("setupNoService"),
+        "oldlibc" => Loc.T("setupOldLibc"),
+        "nolib" => Loc.T("setupNoPcscLib"),
+        _ => string.Format(Loc.T("setupFailed"), r.Detail),
+    };
 
     private void ShowInfo(string text)
     {
