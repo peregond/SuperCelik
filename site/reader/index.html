@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Reader — Super Čelik</title>
+<title>Reader – Super Čelik</title>
 <meta name="description" content="Reader: what a smart card reader is and where to buy one in Serbia. Plain links, no affiliate codes.">
-<meta property="og:title" content="Reader — Super Čelik">
+<meta property="og:title" content="Reader – Super Čelik">
 <meta property="og:image" content="/img/icon.png">
 <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
@@ -150,14 +150,14 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 28px;justify-content:space-bet
 </div></main>
 
 <footer><div class="wrap">
-  <div id="disc">Super Čelik — независимое приложение, не связано с МУП РС и NetSeT/Veridos.</div>
+  <div id="disc">Super Čelik – независимое приложение, не связано с МУП РС и NetSeT/Veridos.</div>
   <div><a href="/privacy">Privacy</a> · <a href="https://github.com/peregond/SuperCelik">GitHub</a></div>
 </div></footer>
 
 <script>
 const LANGS=["ru","en","sr","sc"];
 const LEAD={ru:"Для использования Super Čelik вам понадобится USB-считыватель ID-карт. Подойдёт любой считыватель, который подключается к вашему устройству через USB. <span class=sub>Если у вашего считывателя разъём USB-A, вы можете использовать переходник на USB-C.</span>",en:"To use Super Čelik you need a USB ID card reader. Any reader that connects to your device over USB will do. <span class=sub>If your reader has a USB-A connector, you can use a USB-C adapter.</span>",sr:"Za korišćenje aplikacije Super Čelik potreban vam je USB čitač ID kartica. Odgovara bilo koji čitač koji se na vaš uređaj povezuje preko USB-a. <span class=sub>Ako vaš čitač ima USB-A priključak, možete koristiti adapter na USB-C.</span>",sc:"За коришћење апликације Super Čelik потребан вам је USB читач ID картица. Одговара било који читач који се на ваш уређај повезује преко USB-а. <span class=sub>Ако ваш читач има USB-A прикључак, можете користити адаптер на USB-C.</span>"};
-const DISC={ru:"Super Čelik — независимое приложение, не связано с МУП РС и NetSeT/Veridos.",en:"Super Čelik — independent app, not affiliated with MUP RS or NetSeT/Veridos.",sr:"Super Čelik — nezavisna aplikacija, nije povezana sa MUP RS niti NetSeT/Veridos.",sc:"Super Čelik — независна апликација, није повезана са МУП РС нити NetSeT/Veridos."};
+const DISC={ru:"Super Čelik – независимое приложение, не связано с МУП РС и NetSeT/Veridos.",en:"Super Čelik – independent app, not affiliated with MUP RS or NetSeT/Veridos.",sr:"Super Čelik – nezavisna aplikacija, nije povezana sa MUP RS niti NetSeT/Veridos.",sc:"Super Čelik – независна апликација, није повезана са МУП РС нити NetSeT/Veridos."};
 function detectLang(){
  const list=(navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language||""]).map(x=>String(x).toLowerCase());
  for(const l of list){
@@ -196,7 +196,7 @@ function setLang(l){lang=l;try{localStorage.setItem("sc-lang",l)}catch(e){}
  if(l==="sc")buildCyr();
  document.querySelectorAll(".doc>div").forEach(d=>d.hidden=d.dataset.l!==l);
  document.getElementById("lead").innerHTML=LEAD[l];document.getElementById("disc").textContent=DISC[l];
- document.title="Reader — Super Čelik";
+ document.title="Reader – Super Čelik";
  document.querySelectorAll(".langmenu button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l===l))}
 const lbox=document.getElementById("langbox"),globe=document.getElementById("globe");
 const setOpen=o=>{lbox.classList.toggle("open",o);globe.setAttribute("aria-expanded",o)};
