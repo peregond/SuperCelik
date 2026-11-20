@@ -582,58 +582,63 @@ struct TokenView: View {
     @EnvironmentObject var model: AppModel
 
     var body: some View {
-        ScrollView {
-            VStack(spacing: 14) {
-                driverWarning   // above everything, so it is seen before the mascot
-                firefoxWarning
-                if model.tokenRows.isEmpty {
-                    MascotArt(character: .key, mood: model.readerMood, size: 170)
-                    Text(loc.t(.hintToken)).foregroundStyle(.secondary).multilineTextAlignment(.center)
-                    ActionButton(title: loc.t(.readToken), icon: "key", prominent: true) { Task { await model.readToken() } }
-                        .disabled(!model.cardPresent || model.busy)
-                } else {
-                    ForEach(model.tokenRows) { certificate($0) }
-                }
-                VStack(spacing: 10) {
-                    ActionButton(title: loc.t(.changePin), icon: "lock.rotation") { Task { await model.changePin() } }
-                    ActionButton(title: loc.t(.unblockPin), icon: "lock.open") { Task { await model.unblockPin() } }
-                    ActionButton(title: loc.t(.signFile), icon: "signature") { Task { await model.signFile() } }
-                }
-                .disabled(!model.cardPresent || model.busy)
-                // opens the sign-in page in the default browser; the system offers the card certificate there
-                VStack(spacing: 6) {
-                    ActionButton(title: loc.t(.loginEuprava), icon: "key.fill") {
-                        NSWorkspace.shared.open(URL(string: "https://euprava.gov.rs/prijava")!)
+        ScrollViewReader { proxy in
+            ScrollView {
+                VStack(spacing: 14) {
+                    driverWarning   // above everything, so it is seen before the mascot
+                    firefoxWarning
+                    if model.tokenRows.isEmpty {
+                        MascotArt(character: .key, mood: model.readerMood, size: 170)
+                        Text(loc.t(.hintToken)).foregroundStyle(.secondary).multilineTextAlignment(.center)
+                        ActionButton(title: loc.t(.readToken), icon: "key", prominent: true) { Task { await model.readToken() } }
+                            .disabled(!model.cardPresent || model.busy)
+                    } else {
+                        ForEach(model.tokenRows) { certificate($0) }
                     }
-                    Text(loc.t(.loginHint)).font(.caption).foregroundStyle(.secondary)
-                        .multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
-                    Button(loc.t(.loginCheckRun)) { Task { await model.runLoginCheck() } }
-                        .buttonStyle(.link).font(.caption).disabled(model.busy)
+                    VStack(spacing: 10) {
+                        ActionButton(title: loc.t(.changePin), icon: "lock.rotation") { Task { await model.changePin() } }
+                        ActionButton(title: loc.t(.unblockPin), icon: "lock.open") { Task { await model.unblockPin() } }
+                        ActionButton(title: loc.t(.signFile), icon: "signature") { Task { await model.signFile() } }
+                    }
+                    .disabled(!model.cardPresent || model.busy)
+                    // opens the sign-in page in the default browser; the system offers the card certificate there
+                    VStack(spacing: 6) {
+                        ActionButton(title: loc.t(.loginEuprava), icon: "key.fill") {
+                            NSWorkspace.shared.open(URL(string: "https://euprava.gov.rs/prijava")!)
+                        }
+                        Text(loc.t(.loginHint)).font(.caption).foregroundStyle(.secondary)
+                            .multilineTextAlignment(.center).fixedSize(horizontal: false, vertical: true)
+                        Button(loc.t(.loginCheckRun)) { Task { await model.runLoginCheck() } }
+                            .buttonStyle(.link).font(.caption).disabled(model.busy)
+                    }
+                    loginReportCard.id("loginReport")
                 }
-                loginReportCard
+                .padding(20)
+                .frame(maxWidth: 560)
+                .frame(maxWidth: .infinity)
             }
-            .padding(20)
-            .frame(maxWidth: 560)
-            .frame(maxWidth: .infinity)
-        }
-        .animation(.easeInOut(duration: 0.25), value: model.tokenRows.isEmpty)
-        .task { await model.checkFirefox() }
-        .task(id: model.cardPresent) {
-            // the system needs a few seconds to attach the driver after the card is inserted
-            guard model.cardPresent else { return }
-            try? await Task.sleep(nanoseconds: 6_000_000_000)
-            if !Task.isCancelled { await model.checkDriverNow() }
-        }
-        .toolbar {
-            ToolbarItem(placement: .primaryAction) {
-                // while nothing is read, the empty state has the one Read button
-                if !model.tokenRows.isEmpty {
-                    Button { Task { await model.readToken() } } label: { Label(loc.t(.readToken), systemImage: "key") }
-                        .labelStyle(.titleAndIcon).buttonStyle(.borderedProminent)
-                        .disabled(!model.cardPresent || model.busy).help(loc.t(.readToken))
+            .animation(.easeInOut(duration: 0.25), value: model.tokenRows.isEmpty)
+            .task { await model.checkFirefox() }
+            .task(id: model.cardPresent) {
+                // the system needs a few seconds to attach the driver after the card is inserted
+                guard model.cardPresent else { return }
+                try? await Task.sleep(nanoseconds: 6_000_000_000)
+                if !Task.isCancelled { await model.checkDriverNow() }
+            }
+            .toolbar {
+                ToolbarItem(placement: .primaryAction) {
+                    // while nothing is read, the empty state has the one Read button
+                    if !model.tokenRows.isEmpty {
+                        Button { Task { await model.readToken() } } label: { Label(loc.t(.readToken), systemImage: "key") }
+                            .labelStyle(.titleAndIcon).buttonStyle(.borderedProminent)
+                            .disabled(!model.cardPresent || model.busy).help(loc.t(.readToken))
+                    }
                 }
             }
+            .onChange(of: model.loginReportSerial) { _ in scrollToReport(proxy) }
+            .onAppear { if model.loginReport != nil { scrollToReport(proxy) } }
         }
+
     }
 
     /// Only when something is wrong (the card driver is not attached); otherwise nothing is shown.
@@ -648,6 +653,14 @@ struct TokenView: View {
                     .glassButton().controlSize(.small).disabled(!model.cardPresent || model.busy)
             }
             .padding(12).glassSurface(cornerRadius: 16)
+        }
+    }
+
+    /// The result sits at the bottom of a page that can be taller than the window: scroll it into view once it has been laid out.
+    private func scrollToReport(_ proxy: ScrollViewProxy) {
+        Task { @MainActor in
+            try? await Task.sleep(nanoseconds: 250_000_000)
+            withAnimation { proxy.scrollTo("loginReport", anchor: .bottom) }
         }
     }
 

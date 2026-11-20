@@ -81,7 +81,8 @@ final class AppModel: ObservableObject {
     @Published var firefoxOff = 0
 
     /// Shown under the sign-in button after "Check browser sign-in", until it is closed or the card changes.
-    @Published var loginReport: LoginReport?
+    @Published var loginReport: LoginReport? { didSet { if loginReport != nil { loginReportSerial += 1 } } }
+    @Published private(set) var loginReportSerial = 0        // counts the results shown: the Token tab scrolls to a new one
 
     @Published var update: UpdateInfo?
     @Published var updating = false
