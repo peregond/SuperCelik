@@ -389,9 +389,9 @@ public partial class MainWindow : Window
         try
         {
             if (_demo || _firefoxAsked || _cfg.FirefoxDeclined || !_cardPresent) return;
+            _firefoxAsked = true;                                    // before the first await: two overlapping calls must not both ask
             var st = await Compat.Run(() => FirefoxSetup.Check());
-            if (st.Disabled.Count == 0) return;
-            _firefoxAsked = true;
+            if (st.Disabled.Count == 0) { _firefoxAsked = false; return; }          // nothing to ask: look again the next time
             if (MessageBox.Show(this, Loc.T("firefoxAsk"), Loc.T("appTitle"), MessageBoxButton.YesNo, MessageBoxImage.Question) != MessageBoxResult.Yes)
             {
                 _cfg.FirefoxDeclined = true; _cfg.Save(); UpdateFirefoxStatus();
@@ -406,7 +406,7 @@ public partial class MainWindow : Window
     {
         int n = FirefoxSetup.Enable(st);
         if (n > 0) { _cfg.FirefoxDeclined = false; _cfg.Save(); }
-        ShowInfo(Loc.T(n > 0 ? "firefoxDone" : "firefoxFail"));
+        ShowInfo(Loc.T(n > 0 && n == st.Disabled.Count ? "firefoxDone" : "firefoxFail"));        // "done" only when every profile was changed
         UpdateFirefoxStatus();
     }
 
@@ -416,10 +416,11 @@ public partial class MainWindow : Window
         FirefoxSetup.Status st;
         try { st = await Compat.Run(() => FirefoxSetup.Check()); }
         catch { return; }
+        bool driverOn = DriverSetup.Available && DriverSetup.AnyRegistered();        // without our card driver the certificate is not in the store: do not claim Firefox is fine
         string text = st.Profiles == 0 ? null
             : st.Disabled.Count > 0 ? Loc.T("firefoxOff")
             : st.OldMajor > 0 ? string.Format(Loc.T("firefoxOld"), st.OldMajor)
-            : Loc.T("firefoxOn");
+            : driverOn ? Loc.T("firefoxOn") : null;
         LblFirefoxStatus.Text = text ?? "";
         LblFirefoxStatus.Visibility = text == null ? Visibility.Collapsed : Visibility.Visible;
         BtnFirefoxFix.Visibility = st.Disabled.Count > 0 ? Visibility.Visible : Visibility.Collapsed;

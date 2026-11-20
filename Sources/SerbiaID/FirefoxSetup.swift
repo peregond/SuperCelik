@@ -18,7 +18,6 @@ enum FirefoxSetup {
     struct Status {
         var profiles = 0              // 0 = no Firefox profile found (not installed, or never started)
         var disabled: [Profile] = []  // the preference is off in these: it can be turned on
-        var oldMajor = 0              // every profile is older than Firefox 75, which cannot use keychain certificates at all: the newest version seen (0 = no such case)
     }
 
     static var root: URL {
@@ -30,18 +29,14 @@ enum FirefoxSetup {
         return Status()
         #else
         var status = Status()
-        var tooOld = 0, newest = 0
         for p in findProfiles(root: root) {
             status.profiles += 1
-            if p.major > 0 && p.major < minMajor {
-                tooOld += 1
-                newest = max(newest, p.major)
-            } else if readBoolPref(p.url, pref) == false {
-                status.disabled.append(p)
-            }
+            // "Disabled" only when the preference is explicitly off. A profile last used with Firefox before 75 cannot use the keychain at all (nothing
+            // to turn on), and one from 75-89, where the preference was off by default, is from 2021 or older: an abandoned profile, not worth a question.
+            // (The Windows app also tells people whose only Firefox is older than 75; a Mac that runs macOS 13 or newer has no such Firefox.)
+            if p.major > 0 && p.major < minMajor { continue }
+            if readBoolPref(p.url, pref) == false { status.disabled.append(p) }
         }
-        // an old profile next to a current one is just an abandoned profile: only report it when nothing else is left
-        if tooOld > 0 && tooOld == status.profiles { status.oldMajor = newest }
         return status
         #endif
     }

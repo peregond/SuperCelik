@@ -89,7 +89,12 @@ public sealed class MainWindow : Window
             if (!_demo && BrowserSetup.HasModule)
             {
                 if (!_cfg.BrowserSetupAsked) await OfferBrowserSetup();
-                else if (_cfg.BrowserSetupAccepted) await KeepBrowserSetup();
+                else
+                {
+                    // someone who connected the module in an earlier version has agreed too, that version just did not write it down
+                    if (!_cfg.BrowserSetupAccepted && await BrowserSetup.AnyConnected()) { _cfg.BrowserSetupAccepted = true; _cfg.Save(); }
+                    if (_cfg.BrowserSetupAccepted) await KeepBrowserSetup();
+                }
             }
             if (_cfg.AutoUpdate) await AutoCheckUpdateAsync();
         };

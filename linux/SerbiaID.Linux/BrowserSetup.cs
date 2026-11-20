@@ -209,6 +209,19 @@ public static class BrowserSetup
         return true;
     }
 
+    /// True when at least one browser database already has our module, under any path: the user connected it earlier (this also covers people who
+    /// agreed in a version that did not remember it yet).
+    public static async Task<bool> AnyConnected()
+    {
+        if (!HasModule || Which("modutil") == null) return false;
+        foreach (var t in FindTargets())
+        {
+            var (code, text) = await Run("modutil", "-dbdir", "sql:" + t.Dir, "-list");
+            if (code == 0 && text.Contains(ModuleName)) return true;
+        }
+        return false;
+    }
+
     /// Why NSS refused to add the module, when its output says so (null = no known reason). NSS loads the module to add it, so the answers
     /// come from the module's own start-up: it connects to the smart card service first (pcscd stopped: CKR_FUNCTION_FAILED), and the system
     /// has to provide the libraries it was built against (the loader's text is part of the message).
@@ -253,10 +266,10 @@ public static class BrowserSetup
                         await Run(modutil, "-dbdir", db, "-delete", ModuleName, "-force");        // the app moved: replace the old entry
                     var (ac, ao) = await Run(modutil, "-dbdir", db, "-add", ModuleName, "-libfile", ModulePath, "-force");
                     if (ac == 0) { good = true; changed = true; }
-                    else { error = ao.Trim(); why ??= WhyFailed(ao); }
+                    else if (error == null) { error = ao.Trim(); why = WhyFailed(ao); }          // the first failure explains the result: its text and its reason belong together
                 }
             }
-            catch (Exception ex) { error = ex.Message; }
+            catch (Exception ex) { error ??= ex.Message; }
             if (good) { if (!done.Contains(t.Label)) done.Add(t.Label); }
             else failed = true;
         }

@@ -288,8 +288,12 @@ final class AppModel: ObservableObject {
 
     /// The "Turn on" button: switches the preference on in the profiles where it is off.
     func fixFirefox() async {
-        let fixed = await Task.detached { FirefoxSetup.enable(FirefoxSetup.check()) }.value
-        problem = Problem(titleKey: fixed > 0 ? .firefoxDone : .firefoxFail, isInfo: fixed > 0)
+        let (fixed, wanted) = await Task.detached { () -> (Int, Int) in
+            let status = FirefoxSetup.check()
+            return (FirefoxSetup.enable(status), status.disabled.count)
+        }.value
+        let allDone = fixed == wanted          // "done" only when every profile was changed, otherwise the warning comes back with an error
+        problem = Problem(titleKey: allDone ? .firefoxDone : .firefoxFail, isInfo: allDone)
         if fixed > 0 { UserDefaults.standard.set(false, forKey: Self.firefoxDeclinedKey) }
         firefoxOff = 0
         await checkFirefox()
