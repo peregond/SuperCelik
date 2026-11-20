@@ -236,7 +236,7 @@ jobs:
       - name: Check that NSS (what the browsers use) can load it
         # modutil loads the module to add it, and the module starts by talking to the smart card service: this is the same step the app does
         run: |
-          sudo pcscd --disable-polkit
+          sudo pcscd        # starts as a daemon (the 22.04 version has no --disable-polkit)
           for i in $(seq 1 20); do [ -S /run/pcscd/pcscd.comm ] && break; sleep 0.5; done
           export HOME="$RUNNER_TEMP/nss-home"; mkdir -p "$HOME/db"
           certutil -N -d "sql:$HOME/db" --empty-password
