@@ -43,7 +43,7 @@ public sealed class MainWindow : Window
     private TextBox _txtAutoHide;
     private ProgressBar _busyBar;
     private Button _btnRefresh, _btnRead, _btnReadBig, _btnPrint, _btnPdf, _btnVerify, _btnEye, _btnMore, _btnProblemClose;
-    private TextBlock _lblBeta; private Button _btnFeedback, _btnLoginEu, _btnSetupBrowser;
+    private TextBlock _lblBeta; private Button _btnFeedback, _btnLoginEu, _btnSetupBrowser, _btnCheckBrowser;
     private const string EuLoginUrl = "https://euprava.gov.rs/prijava";
     private const string FeedbackUrl = "https://github.com/peregond/SuperCelik/issues/new";
     // the site pages open in the language of the app (?lang=), the changelog in this app's own section (?app=)
@@ -288,10 +288,11 @@ public sealed class MainWindow : Window
         _btnSignFile = Ui.Btn(""); _btnSignFile.Click += async (_, _) => await SignFile();
         _btnLoginEu = Ui.Btn(""); _btnLoginEu.Click += async (_, _) => await LoginEu();
         _btnSetupBrowser = Ui.Btn(""); _btnSetupBrowser.IsVisible = BrowserSetup.HasModule; _btnSetupBrowser.Click += async (_, _) => await SetupBrowser();
+        _btnCheckBrowser = Ui.Btn(""); _btnCheckBrowser.IsVisible = BrowserSetup.HasModule; _btnCheckBrowser.Click += async (_, _) => await CheckBrowser();
         _lblTokenInfo = Ui.Label("", 13, false, "MutedBrush"); _lblTokenInfo.VerticalAlignment = VerticalAlignment.Center;
         // the buttons wrap with a gap in a narrow window; the token name sits on its own line under them
         var buttons = new WrapPanel();
-        foreach (var b in new[] { _btnReadToken, _btnChangePin, _btnUnblockPin, _btnSignFile, _btnLoginEu, _btnSetupBrowser }) { b.Margin = new Thickness(0, 0, 10, 10); buttons.Children.Add(b); }
+        foreach (var b in new[] { _btnReadToken, _btnChangePin, _btnUnblockPin, _btnSignFile, _btnLoginEu, _btnSetupBrowser, _btnCheckBrowser }) { b.Margin = new Thickness(0, 0, 10, 10); buttons.Children.Add(b); }
         _lblTokenInfo.VerticalAlignment = VerticalAlignment.Center; _lblTokenInfo.Margin = new Thickness(2, 0, 0, 12);
         var bar = new StackPanel { Margin = new Thickness(0, 0, 0, 4), Children = { buttons, _lblTokenInfo } };
         _lblPinNote = Ui.Label("", 13, false, "MutedBrush", true); _lblPinNote.Margin = new Thickness(2, 14, 0, 0);
@@ -408,7 +409,7 @@ public sealed class MainWindow : Window
         Ui.SetBtn(_btnCheckUpdates, "refresh-cw", Loc.T("checkUpdates")); Ui.SetBtn(_btnUpdate, "download", Loc.T("updateNow"));
         _tabButtons[0].Content = Loc.T("tabPersonal"); _tabButtons[1].Content = Loc.T("tabToken"); _tabButtons[2].Content = Loc.T("tabSettings"); _tabButtons[3].Content = Loc.T("tabAbout");
         _lblCerts.Text = Loc.T("certificates"); _lblPinNote.Text = Loc.T("pinNote") + "\n" + Loc.T(BrowserSetup.HasModule ? "loginEupravaNote" : "loginEupravaNoteManual");
-        Ui.SetBtn(_btnLoginEu, "log-in", Loc.T("loginEuprava")); Ui.SetBtn(_btnSetupBrowser, "plug", Loc.T("setupBrowser"));
+        Ui.SetBtn(_btnLoginEu, "log-in", Loc.T("loginEuprava")); Ui.SetBtn(_btnSetupBrowser, "plug", Loc.T("setupBrowser")); Ui.SetBtn(_btnCheckBrowser, "circle-check", Loc.T("checkBrowser"));
         _lblAboutTitle.Text = Loc.T("appTitle"); _lblAboutText.Text = Loc.T("aboutText"); _lblBeta.Text = "BETA · " + Loc.T("betaNote"); Ui.SetBtn(_btnFeedback, "bug", Loc.T("betaReport")); _lblVersion.Text = $"{Loc.T("version")} {Updater.CurrentText}";
         _lblSetLang.Text = Loc.T("language"); _lblSetAppearance.Text = Loc.T("setAppearance"); _lblSetTheme.Text = Loc.T("setTheme");
         _lblSetPrivacy.Text = Loc.T("setPrivacy"); _lblSetBehavior.Text = Loc.T("setBehavior");
@@ -533,6 +534,52 @@ public sealed class MainWindow : Window
             }
         }
         catch (Exception ex) { if (!quiet) ShowInfo(string.Format(Loc.T("setupFailed"), ex.Message)); }
+    }
+
+    /// "Check browser sign-in": what the app sees (reader, card), what the browsers have (the module), what the module itself sees, and the one
+    /// thing to do next. The browsers' view comes from NSS (`modutil -list` loads the module the way a browser does), so it is the real one.
+    private async Task CheckBrowser()
+    {
+        try
+        {
+            var d = _demo ? new BrowserSetup.Diagnosis("checked", new() { "Firefox", "Chrome" }, new(), new(), true, null, 1, "Super Čelik")
+                          : await BrowserSetup.Diagnose();
+            int readers = _readers.Count; bool card = _cardPresent;
+            var step = BrowserSetup.NextStep(d, readers, card);
+            string StepText() => step switch
+            {
+                "nomodule" => Loc.T("loginEupravaNoteManual"),
+                "notool" => Loc.T("setupNoTool"),
+                "none" => string.Format(Loc.T("setupNone"), BrowserSetup.ModulePath),
+                "sandboxed" => string.Format(Loc.T("setupSandboxed"), string.Join(", ", d.Sandboxed)),
+                "stuck" => Loc.T("stepStuck"),
+                "connect" => Loc.T("stepConnect"),
+                "noservice" => Loc.T("stepNoService"),
+                "oldlibc" => Loc.T("setupOldLibc"),
+                "nolib" => Loc.T("stepNoLib"),
+                "noload" => Loc.T("stepNoLoad"),
+                "noreader" => Loc.T("stepNoReader"),
+                "nocard" => Loc.T("stepNoCard"),
+                "reinsert" => Loc.T("stepReinsert"),
+                _ => Loc.T("stepOk"),
+            };
+            if (d.Kind != "checked") { ShowInfo(StepText()); return; }      // nothing to look at yet: the step says why
+
+            string Mark(bool ok, string text) => (ok ? "✓ " : "✗ ") + text;
+            var lines = new List<string> { Loc.T("chkTitle") };
+            lines.Add(Mark(card, Loc.T(card ? "chkCardOk" : readers == 0 ? "chkNoReader" : "chkNoCard")));
+            lines.Add(d.Missing.Count == 0 ? Mark(true, string.Format(Loc.T("chkConnected"), string.Join(", ", d.Connected)))
+                                           : Mark(false, string.Format(Loc.T("chkNotConnected"), string.Join(", ", d.Missing))));
+            if (d.Connected.Count > 0)
+            {
+                lines.Add(Mark(d.Loaded, Loc.T(d.Loaded ? "chkLoaded" : "chkNotLoaded")));
+                if (d.Loaded) lines.Add(d.Token.Length > 0 ? Mark(true, Loc.T("chkSeesCard")) : Mark(false, Loc.T(d.Slots == 0 ? "chkNoSeeReader" : "chkNoSeeCard")));
+            }
+            lines.Add("");                                                // a blank line sets the next step apart from the list
+            lines.Add(StepText());
+            ShowInfo(string.Join("\n", lines));
+        }
+        catch (Exception ex) { ShowInfo(string.Format(Loc.T("setupFailed"), ex.Message)); }
     }
 
     /// What went wrong, in words the user can act on (the raw NSS text only when nothing more specific is known).

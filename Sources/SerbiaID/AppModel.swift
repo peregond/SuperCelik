@@ -18,6 +18,21 @@ struct TokenCertRow: Identifiable {
     let der: Data
 }
 
+/// One line of the browser sign-in check: whether it is in order, and what it says.
+struct LoginCheckLine: Identifiable {
+    let id = UUID()
+    let ok: Bool
+    let key: Loc.L
+}
+
+/// The result of "Check browser sign-in" on the Token tab: what was looked at, and the one thing to do next.
+struct LoginReport {
+    var lines: [LoginCheckLine]
+    var step: Loc.L
+    var canRepair = false         // registering the driver again can help (not in the sandboxed Mac App Store build)
+    var canFixFirefox = false     // a Firefox profile is set not to use the keychain certificates
+}
+
 /// Last user-input time, kept outside the main actor so the NSEvent monitor can write it.
 final class ActivityBox { var last = Date() }
 
@@ -41,6 +56,9 @@ final class AppModel: ObservableObject {
 
     /// Firefox profiles that are set not to use the keychain certificates (the card certificate would not show up in them), see FirefoxSetup.swift.
     @Published var firefoxOff = 0
+
+    /// Shown under the sign-in button after "Check browser sign-in", until it is closed or the card changes.
+    @Published var loginReport: LoginReport?
 
     @Published var update: UpdateInfo?
     @Published var updating = false
@@ -275,6 +293,45 @@ final class AppModel: ObservableObject {
         guard cardPresent else { driverState = .unknown; return }
         let attached = await Task.detached { BrowserLogin.driverAttached() }.value
         driverState = cardPresent ? (attached ? .ok : .missing) : .unknown
+    }
+
+    /// "Check browser sign-in": what the app sees (reader, card), what macOS has (the driver extension, the card attached to it) and what Firefox does,
+    /// then the one thing to do next. Nothing is changed here; the buttons in the result do that.
+    func runLoginCheck() async {
+        if isDemoUI {         // demo / screenshots: no real driver to ask
+            loginReport = LoginReport(lines: [.init(ok: true, key: .cardPresent), .init(ok: true, key: .chkExtOk), .init(ok: true, key: .chkAttachedOk)], step: .loginCheckOk)
+            return
+        }
+        let card = cardPresent, haveReader = !readers.isEmpty
+        let found = await Task.detached { () -> (registered: Bool?, attached: Bool, firefoxProfiles: Int, firefoxOff: Int) in
+            let firefox = FirefoxSetup.check()
+            return (BrowserLogin.extensionRegistered(), BrowserLogin.driverAttached(), firefox.profiles, firefox.disabled.count)
+        }.value
+
+        var lines: [LoginCheckLine] = [.init(ok: card, key: card ? .cardPresent : (haveReader ? .noCard : .noReader))]
+        if let registered = found.registered { lines.append(.init(ok: registered, key: registered ? .chkExtOk : .chkExtNo)) }
+        if card { lines.append(.init(ok: found.attached, key: found.attached ? .chkAttachedOk : .chkAttachedNo)) }
+        if found.firefoxProfiles > 0 { lines.append(.init(ok: found.firefoxOff == 0, key: found.firefoxOff == 0 ? .chkFfOk : .chkFfOff)) }
+
+        var report = LoginReport(lines: lines, step: .loginCheckOk)
+        if found.registered == false {
+            report.step = .stepRepair; report.canRepair = BrowserLogin.canRepair      // registering needs no card, so it comes first
+        } else if !card {
+            report.step = .loginCheckNoCard
+        } else if !found.attached {
+            report.step = .loginCheckMissing; report.canRepair = BrowserLogin.canRepair
+        } else if found.firefoxOff > 0 {
+            report.step = .stepFirefox; report.canFixFirefox = true
+        }
+        loginReport = report
+    }
+
+    /// The "Repair" button of the check: registers the driver again and stops a stale instance; the card has to be put in again afterwards.
+    func repairLogin() async {
+        guard !isDemoUI else { return }
+        await Task.detached { BrowserLogin.repairDriver() }.value
+        loginReport = nil
+        problem = Problem(titleKey: .driverStuck, isInfo: true)
     }
 
     // MARK: - Firefox (takes the card certificate from the keychain too, when its preference for that is on)

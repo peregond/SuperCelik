@@ -17,6 +17,8 @@ enum BrowserLogin {
     static func stopRunningDriver() {}
     static func driverAttached() -> Bool { systemTokenAttached() }
     static func repairDriver() {}
+    static let canRepair = false
+    static func extensionRegistered() -> Bool? { nil }        // the sandbox does not let the app ask pluginkit
 }
 #else
 
@@ -97,6 +99,27 @@ enum BrowserLogin {
         stopRunningDriver()
         Thread.sleep(forTimeInterval: 1)
         registerExtension()
+    }
+
+    static let canRepair = true
+
+    /// Whether macOS has our extension registered and not switched off; nil when that could not be found out (the check then leaves it out).
+    /// `pluginkit -m` lists the registered extensions, `-A` also the ones that are switched off, and every line starts with the election:
+    /// "+" in use, "-" switched off by the user (registerExtension turns it on again), blank = the default (in use).
+    static func extensionRegistered() -> Bool? {
+        let p = Process()
+        p.executableURL = URL(fileURLWithPath: "/usr/bin/pluginkit")
+        p.arguments = ["-mA", "-i", extensionID]
+        let pipe = Pipe()
+        p.standardOutput = pipe
+        p.standardError = FileHandle.nullDevice
+        do { try p.run() } catch { return nil }
+        let out = pipe.fileHandleForReading.readDataToEndOfFile()
+        p.waitUntilExit()
+        guard let text = String(data: out, encoding: .utf8) else { return nil }
+        let mine = text.split(separator: "\n").map { $0.trimmingCharacters(in: .whitespaces) }.filter { $0.contains(extensionID) }
+        if mine.isEmpty { return false }
+        return mine.contains { !$0.hasPrefix("-") }
     }
 
     @discardableResult

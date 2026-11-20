@@ -167,6 +167,7 @@ public partial class MainWindow : Window
         LblSetPrivacy.Text = Loc.T("setPrivacy"); LblSetBehavior.Text = Loc.T("setBehavior");
         ChkMask.Content = Loc.T("setMask"); ChkPrintJmbg.Content = Loc.T("setPrintJmbg");
         LblSetBrowser.Text = Loc.T("setBrowser");
+        LblBrowserHint.Text = Loc.T("browserHint");
         BtnDriverInstall.Content = Loc.T("driverInstall"); BtnDriverRemove.Content = Loc.T("driverRemove");
         BtnFirefoxFix.Content = Loc.T("firefoxFix");
         UpdateDriverStatus();

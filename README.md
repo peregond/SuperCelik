@@ -68,5 +68,8 @@ Microsoft Edge is built on Chromium and signs in the same way as Chrome:
 - **Windows and macOS:** from the system (the certificate store on Windows, the keychain on a Mac), where the card driver of Super Čelik puts the card certificate. There is nothing to install in Edge: quit it completely and open the site again.
 - **Linux:** Edge shares one NSS database with Chrome, Chromium and Brave, so one registration serves all of them: after you agree once, the app connects its PKCS#11 module to it. The database is `~/.pki/nssdb`; Chromium 146 and newer (Edge follows it) use `~/.local/share/pki/nssdb` when the old one does not exist. The app connects the module to every copy that exists, and makes `~/.pki/nssdb` when there is none and one of these browsers is installed. Edge from Flatpak runs in a sandbox and is left alone, like Firefox from Snap. Details: [linux/README.md](linux/README.md).
 
+## If the browser does not offer the card
+Quit the browser completely (all windows; on a Mac ⌘Q) and open the sign-in page again. If that does not help, take the card out of the reader and put it back in. On **macOS** and **Linux** the “Check browser sign-in” button next to “Sign in to eUprava” shows what is wrong (reader and card, the card driver on a Mac or the module on Linux, Firefox) and says what to do next; on **Windows** the Settings tab shows the state of the driver and of Firefox.
+
 ## Security
 Do not commit card dumps or any personal data (see `.gitignore`).

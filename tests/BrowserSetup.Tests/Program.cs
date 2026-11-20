@@ -141,5 +141,47 @@ Check(BrowserSetup.WhyFailed("Probable cause : \"/opt/supercelik/pkcs11/libsrb-i
 Check(BrowserSetup.WhyFailed("Probable cause : \"libpcsclite.so.1: cannot open shared object file: No such file or directory\".") == "nolib", "libpcsclite.so.1 missing");
 Check(BrowserSetup.WhyFailed("SEC_ERROR_BAD_DATABASE: security library: bad database.") == null, "anything else: no special reason");
 
+Console.WriteLine("Linux: what `modutil -list` says about the module (real NSS 3.98 output, with a stand-in module that behaves like srb-id-pkcs11)");
+string Listing(string module) =>
+    "Listing of PKCS #11 Modules\n-----------------------------------------------------------\n" +
+    "  1. NSS Internal PKCS #11 Module\n\t   slots: 2 slots attached\n\t  status: loaded\n\n\t   slot: NSS Internal Cryptographic Services\n\t  token: NSS Generic Crypto Services\n" +
+    "\t    uri: pkcs11:token=NSS%20Generic%20Crypto%20Services;manufacturer=Mozilla%20Foundation;serial=0000000000000000;model=NSS%203\n\n" +
+    "\t   slot: NSS User Private Key and Certificate Services\n\t  token: NSS Certificate DB\n\t    uri: pkcs11:token=NSS%20Certificate%20DB;manufacturer=Mozilla%20Foundation;serial=0000000000000000;model=NSS%203\n" +
+    module + "-----------------------------------------------------------\n";
+const string Head = "  2. Srb Id PKCS11\n\tlibrary name: /opt/supercelik/pkcs11/libsrb-id-pkcs11.so\n\t   uri: pkcs11:library-description=srb-id;library-version=0.6\n";
+var withCard = BrowserSetup.ParseListing(Listing(Head + "\t slots: 1 slot attached\n\tstatus: loaded\n\n\t slot: ACS ACR39U 00 00\n\ttoken: Serbian eID card\n\t  uri: pkcs11:token=Serbian%20eID%20card;serial=0001\n"));
+Check(withCard == new BrowserSetup.ModuleState(true, true, 1, "Serbian eID card"), "reader and card: registered, loaded, 1 slot, the card's name");
+var noCard = BrowserSetup.ParseListing(Listing(Head + "\t slots: 1 slot attached\n\tstatus: loaded\n\n\t slot: ACS ACR39U 00 00\n\ttoken: \n\t  uri: pkcs11:\n"));
+Check(noCard == new BrowserSetup.ModuleState(true, true, 1, ""), "reader without a card: 1 slot, empty token");
+var noReader = BrowserSetup.ParseListing(Listing(Head + "\t slots: There are no slots attached to this module\n\tstatus: loaded\n"));
+Check(noReader == new BrowserSetup.ModuleState(true, true, 0, ""), "no reader: no slots");
+var stopped = BrowserSetup.ParseListing(Listing("  2. Srb Id PKCS11\n\tlibrary name: /opt/supercelik/pkcs11/libsrb-id-pkcs11.so\n\t slots: There are no slots attached to this module\n\tstatus: Not loaded\n"));
+Check(stopped == new BrowserSetup.ModuleState(true, false, 0, ""), "the module does not start (service stopped, library missing): registered, not loaded");
+var absent = BrowserSetup.ParseListing(Listing(""));
+Check(absent == new BrowserSetup.ModuleState(false, false, 0, ""), "a database without the module: not registered (the other modules' slots and tokens are not counted)");
+var other = BrowserSetup.ParseListing(Listing("  2. OpenSC smartcard framework\n\tlibrary name: opensc-pkcs11.so\n\t slots: 1 slot attached\n\tstatus: loaded\n\n\t slot: Reader\n\ttoken: Someone's card\n"));
+Check(!other.Registered && other.Token == "", "another card module is not taken for ours");
+var third = BrowserSetup.ParseListing(Listing("  2. OpenSC smartcard framework\n\t slots: 1 slot attached\n\tstatus: loaded\n\n\t slot: Reader\n\ttoken: Someone's card\n" +
+    "  3. Srb Id PKCS11\n\tlibrary name: /x.so\n\t slots: 1 slot attached\n\tstatus: loaded\n\n\t slot: R\n\ttoken: Mine\n"));
+Check(third == new BrowserSetup.ModuleState(true, true, 1, "Mine"), "our module listed after another one: only its own slots and token count");
+Check(BrowserSetup.ParseListing("") == new BrowserSetup.ModuleState(false, false, 0, ""), "empty output: not registered");
+
+Console.WriteLine("Linux: what to do next");
+var none = new List<string>();
+BrowserSetup.Diagnosis Dg(string kind = "checked", string[] connected = null, string[] missing = null, bool loaded = true, string why = null, int slots = 1, string token = "Card") =>
+    new(kind, (connected ?? new[] { "Firefox" }).ToList(), (missing ?? Array.Empty<string>()).ToList(), none, loaded, why, slots, token);
+Check(BrowserSetup.NextStep(Dg("nomodule"), 1, true) == "nomodule" && BrowserSetup.NextStep(Dg("notool"), 1, true) == "notool"
+      && BrowserSetup.NextStep(Dg("none"), 1, true) == "none" && BrowserSetup.NextStep(Dg("sandboxed"), 1, true) == "sandboxed"
+      && BrowserSetup.NextStep(Dg("stuck"), 1, true) == "stuck", "nothing to check: the kind itself (no module / no tool / no browser / only sandboxed ones / the service does not answer)");
+Check(BrowserSetup.NextStep(Dg(missing: new[] { "Chrome" }), 1, true) == "connect", "a browser without the module: connect it first");
+Check(BrowserSetup.NextStep(Dg(loaded: false, why: "noservice"), 1, true) == "noservice", "does not start, service stopped");
+Check(BrowserSetup.NextStep(Dg(loaded: false, why: "oldlibc"), 1, true) == "oldlibc" && BrowserSetup.NextStep(Dg(loaded: false, why: "nolib"), 1, true) == "nolib", "does not start: old C library / missing libpcsclite");
+Check(BrowserSetup.NextStep(Dg(loaded: false), 1, true) == "noload", "does not start, reason unknown");
+Check(BrowserSetup.NextStep(Dg(), 1, true) == "ok", "the module sees the card: all in order");
+Check(BrowserSetup.NextStep(Dg(slots: 0, token: ""), 0, false) == "noreader", "no reader anywhere: plug it in");
+Check(BrowserSetup.NextStep(Dg(slots: 0, token: ""), 1, true) == "reinsert", "the app sees a reader, the module sees none: take the card out and in");
+Check(BrowserSetup.NextStep(Dg(token: ""), 1, false) == "nocard", "reader without a card: insert it");
+Check(BrowserSetup.NextStep(Dg(token: ""), 1, true) == "reinsert", "the app sees the card, the module does not: take it out and in, restart the service");
+
 Console.WriteLine(failures == 0 ? "ALL OK" : failures + " FAILED");
 return failures;

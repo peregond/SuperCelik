@@ -162,6 +162,7 @@
                                     <Button x:Name="BtnDriverInstall" Style="{StaticResource SecondaryButton}" Click="DriverInstall_Click" Margin="0,0,10,0"/>
                                     <Button x:Name="BtnDriverRemove" Style="{StaticResource SecondaryButton}" Click="DriverRemove_Click"/>
                                 </WrapPanel>
+                                <TextBlock x:Name="LblBrowserHint" Foreground="{DynamicResource MutedBrush}" TextWrapping="Wrap" Margin="0,10,0,0"/>
                             </StackPanel>
                         </Border>
                         <Border Style="{StaticResource Card}">
