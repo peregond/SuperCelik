@@ -236,8 +236,9 @@ jobs:
       - name: Check that NSS (what the browsers use) can load it
         # modutil loads the module to add it, and the module starts by talking to the smart card service: this is the same step the app does
         run: |
-          sudo pcscd        # starts as a daemon (the 22.04 version has no --disable-polkit)
-          for i in $(seq 1 20); do [ -S /run/pcscd/pcscd.comm ] && break; sleep 0.5; done
+          sudo sh -c 'mkdir -p /run/pcscd; nohup pcscd --foreground > /tmp/pcscd.log 2>&1 &'
+          for i in $(seq 1 30); do [ -S /run/pcscd/pcscd.comm ] && break; sleep 0.5; done || true
+          ls -la /run/pcscd || true; cat /tmp/pcscd.log || true
           export HOME="$RUNNER_TEMP/nss-home"; mkdir -p "$HOME/db"
           certutil -N -d "sql:$HOME/db" --empty-password
           echo | modutil -dbdir "sql:$HOME/db" -add "Srb Id PKCS11" -libfile "$GITHUB_WORKSPACE/dist/p11/srb-id-pkcs11-${{ matrix.arch }}/libsrb-id-pkcs11.so" -force
