@@ -513,7 +513,7 @@ struct TokenTab: View {
                         action("lock.open", .unblockPin) { pinMode = .unblock }
                         action("signature", .signFile) { importing = true }
                     }
-                    .disabled(model.busy || model.readerState != .cardReady)
+                    .disabled(model.busy || (model.readerState != .cardReady && !PhoneModel.screenshotMode))
                     // Sign in to eUprava: Safari takes the card certificate from the token extension inside this app.
                     Button { if model.driverAttached { showLogin = true } else { askLogin = true } } label: {
                         Label(loc.t(.loginEuprava), systemImage: "key.fill").frame(maxWidth: .infinity).padding(.vertical, 6)

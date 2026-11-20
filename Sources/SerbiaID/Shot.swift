@@ -15,7 +15,13 @@ enum Shot {
     }
 
     /// The page the screenshot asks for (nil in a normal launch).
-    static var page: String? { arguments?.page }
+    /// `--page personal|token|settings` opens that page in the real window (with SERBIAID_DEMO=1), for store screenshots.
+    static var page: String? {
+        if let p = arguments?.page { return p }
+        let a = CommandLine.arguments
+        if let i = a.firstIndex(of: "--page"), i + 1 < a.count { return a[i + 1] }
+        return nil
+    }
 
     private static var window: NSWindow?
 
@@ -64,6 +70,19 @@ enum Shot {
 /// Starts the screenshot once the app has launched. Does nothing in a normal launch.
 final class ShotDelegate: NSObject, NSApplicationDelegate {
     func applicationDidFinishLaunching(_ notification: Notification) {
+        if Shot.arguments == nil, CommandLine.arguments.contains("--page") {
+            // real window for store screenshots: a roomy, fixed size
+            Task { @MainActor in
+                for _ in 0..<20 {
+                    try? await Task.sleep(nanoseconds: 300_000_000)
+                    if let w = NSApp.windows.first(where: { $0.isVisible && $0.styleMask.contains(.titled) }) {
+                        w.setContentSize(NSSize(width: 1100, height: 860)); w.center()
+                        NSApp.activate(ignoringOtherApps: true); w.makeKeyAndOrderFront(nil); return
+                    }
+                }
+            }
+            return
+        }
         guard Shot.arguments != nil else { return }
         Task { @MainActor in await Shot.run() }
     }

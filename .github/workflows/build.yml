@@ -14,7 +14,7 @@ jobs:
   macos:
     # macOS 26 image: building against the current SDK is what gives the app the current system
     # look (glass toolbar and sidebar) on macOS 26 and later. The app still runs on macOS 13+.
-    runs-on: macos-26
+    runs-on: xcode-27
     strategy:
       matrix:
         arch: [arm64, x86_64]   # Apple Silicon, Intel
@@ -41,7 +41,7 @@ jobs:
   macos-appstore:
     # Compile and layout check of the Mac App Store variant (sandbox entitlements, no updater); the ad-hoc signed
     # app is not uploadable. The real signed package comes from the "App Store (macOS)" workflow.
-    runs-on: macos-26
+    runs-on: xcode-27
     steps:
       - uses: actions/checkout@v4
       - name: Build the App Store variant (ad-hoc signed)
@@ -58,7 +58,7 @@ jobs:
     # Unsigned builds: an .ipa for re-signing and a simulator app that runs on a Mac as is.
     # Installing on an iPhone with working NFC needs the user's own paid Apple Developer team
     # (NFC tag reading is not available to free teams), see ios/README.md.
-    runs-on: macos-26
+    runs-on: xcode-27
     steps:
       - uses: actions/checkout@v4
       - name: Version
