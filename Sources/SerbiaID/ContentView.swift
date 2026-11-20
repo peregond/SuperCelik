@@ -619,7 +619,6 @@ struct TokenView: View {
         .animation(.easeInOut(duration: 0.25), value: model.tokenRows.isEmpty)
         .task { await model.checkFirefox() }
         .task(id: model.cardPresent) {
-            model.loginReport = nil        // what the check found is about the card that was in the reader then
             // the system needs a few seconds to attach the driver after the card is inserted
             guard model.cardPresent else { return }
             try? await Task.sleep(nanoseconds: 6_000_000_000)

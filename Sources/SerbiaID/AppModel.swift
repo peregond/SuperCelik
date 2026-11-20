@@ -33,6 +33,29 @@ struct LoginReport {
     var canFixFirefox = false     // a Firefox profile is set not to use the keychain certificates
 }
 
+extension LoginReport {
+    /// The lines and the one next step for what the check found; the first thing that is wrong decides the step.
+    init(card: Bool, haveReader: Bool, registered: Bool?, attached: Bool, firefoxProfiles: Int, firefoxOff: Int, canRepair: Bool) {
+        var lines: [LoginCheckLine] = [.init(ok: card, key: card ? .cardPresent : (haveReader ? .noCard : .noReader))]
+        // one line for the driver: not registered / the card is not attached to it yet / in order
+        if registered == false { lines.append(.init(ok: false, key: .chkExtNo)) }
+        else if card { lines.append(.init(ok: attached, key: attached ? .chkAttachedOk : .chkAttachedNo)) }
+        else if registered == true { lines.append(.init(ok: true, key: .chkExtOk)) }
+        if firefoxProfiles > 0 { lines.append(.init(ok: firefoxOff == 0, key: firefoxOff == 0 ? .chkFfOk : .chkFfOff)) }
+
+        self.init(lines: lines, step: .loginCheckOk)
+        if registered == false {
+            step = .stepRepair; self.canRepair = canRepair            // registering needs no card, so it comes first
+        } else if !card {
+            step = .loginCheckNoCard
+        } else if !attached {
+            step = .loginCheckMissing; self.canRepair = canRepair
+        } else if firefoxOff > 0 {
+            step = .stepFirefox; canFixFirefox = true
+        }
+    }
+}
+
 /// Last user-input time, kept outside the main actor so the NSEvent monitor can write it.
 final class ActivityBox { var last = Date() }
 
@@ -41,7 +64,7 @@ final class AppModel: ObservableObject {
     @Published var readers: [String] = []
     @Published var selectedReader = ""
     @Published var atrHex: String?
-    @Published var cardPresent = false
+    @Published var cardPresent = false { didSet { if cardPresent != oldValue { loginReport = nil } } }      // what "Check browser sign-in" found was about the card that was in the reader
     @Published var personal: PersonalData?
     @Published var token: TokenInfo?
     @Published var tokenRows: [TokenCertRow] = []
@@ -82,6 +105,7 @@ final class AppModel: ObservableObject {
             loadDemo(problem: args.contains("--problem"))
             if args.contains("--preview") { showPreview = true }   // print preview sheet, for the PDF screenshot
             if let i = args.firstIndex(of: "--state"), i + 1 < args.count { applyShotState(args[i + 1]) }
+            if let i = args.firstIndex(of: "--check") { loginReport = AppModel.demoLoginReport(i + 1 < args.count && !args[i + 1].hasPrefix("--") ? args[i + 1] : "ok") }
         } else {
             initialRefresh = Task { await refreshAsync() }
             BrowserLogin.prepare()
@@ -298,34 +322,20 @@ final class AppModel: ObservableObject {
     /// "Check browser sign-in": what the app sees (reader, card), what macOS has (the driver extension, the card attached to it) and what Firefox does,
     /// then the one thing to do next. Nothing is changed here; the buttons in the result do that.
     func runLoginCheck() async {
-        if isDemoUI {         // demo / screenshots: no real driver to ask
-            loginReport = LoginReport(lines: [.init(ok: true, key: .cardPresent), .init(ok: true, key: .chkExtOk), .init(ok: true, key: .chkAttachedOk)], step: .loginCheckOk)
-            return
-        }
+        if isDemoUI { loginReport = AppModel.demoLoginReport("ok"); return }        // demo / screenshots: no real driver to ask
         let card = cardPresent, haveReader = !readers.isEmpty
         let found = await Task.detached { () -> (registered: Bool?, attached: Bool, firefoxProfiles: Int, firefoxOff: Int) in
             let firefox = FirefoxSetup.check()
             return (BrowserLogin.extensionRegistered(), BrowserLogin.driverAttached(), firefox.profiles, firefox.disabled.count)
         }.value
+        loginReport = LoginReport(card: card, haveReader: haveReader, registered: found.registered, attached: found.attached,
+                                  firefoxProfiles: found.firefoxProfiles, firefoxOff: found.firefoxOff, canRepair: BrowserLogin.canRepair)
+    }
 
-        var lines: [LoginCheckLine] = [.init(ok: card, key: card ? .cardPresent : (haveReader ? .noCard : .noReader))]
-        // one line for the driver: not registered / the card is not attached to it yet / in order
-        if found.registered == false { lines.append(.init(ok: false, key: .chkExtNo)) }
-        else if card { lines.append(.init(ok: found.attached, key: found.attached ? .chkAttachedOk : .chkAttachedNo)) }
-        else if found.registered == true { lines.append(.init(ok: true, key: .chkExtOk)) }
-        if found.firefoxProfiles > 0 { lines.append(.init(ok: found.firefoxOff == 0, key: found.firefoxOff == 0 ? .chkFfOk : .chkFfOff)) }
-
-        var report = LoginReport(lines: lines, step: .loginCheckOk)
-        if found.registered == false {
-            report.step = .stepRepair; report.canRepair = BrowserLogin.canRepair      // registering needs no card, so it comes first
-        } else if !card {
-            report.step = .loginCheckNoCard
-        } else if !found.attached {
-            report.step = .loginCheckMissing; report.canRepair = BrowserLogin.canRepair
-        } else if found.firefoxOff > 0 {
-            report.step = .stepFirefox; report.canFixFirefox = true
-        }
-        loginReport = report
+    /// A made-up result for screenshots (`--check [ok|reinsert|firefox]`): all in order, the card not attached to the driver yet, or Firefox set not to use the keychain.
+    static func demoLoginReport(_ variant: String) -> LoginReport {
+        LoginReport(card: true, haveReader: true, registered: true, attached: variant != "reinsert",
+                    firefoxProfiles: 1, firefoxOff: variant == "firefox" ? 1 : 0, canRepair: true)
     }
 
     /// The "Repair" button of the check: registers the driver again and stops a stale instance; the card has to be put in again afterwards.

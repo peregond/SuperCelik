@@ -13,3 +13,6 @@ token-empty-noreader token --state noreader
 token-empty-nocard token --state nocard
 token-empty-busy token --state busy
 token-empty-error token --state error
+token-check token --check --height 960
+token-check-reinsert token --check reinsert --height 960
+token-check-firefox token --check firefox --height 960
