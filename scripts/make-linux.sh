@@ -17,11 +17,17 @@ rm -rf "$PUB"; mkdir -p "$OUT"
 dotnet publish linux/SerbiaID.Linux -c Release -r "$RID" --self-contained -p:Version="$VERSION" -p:DebugType=None -o "$PUB"
 chmod +x "$PUB/SuperCelik"
 
-# ---- PKCS#11 module for browser sign-in (srb-id-pkcs11 by ubavic, Unlicense = public domain). Upstream publishes a Linux build
-# for x86_64 only, so only x64 gets it. The app connects it to Firefox / Chrome when the user agrees (BrowserSetup.cs).
+# ---- PKCS#11 module for browser sign-in (srb-id-pkcs11 by ubavic, Unlicense = public domain). CI builds it from source for glibc 2.28+
+# on both architectures (scripts/build-srb-module.sh) and passes the folder in P11_PREBUILT. Without it (a local build) x64 falls
+# back to the binary that upstream publishes (glibc 2.36+, no arm64 build exists). The app connects it to Firefox / Chrome / Edge when
+# the user agrees (BrowserSetup.cs).
 P11_VER=0.6.0
 P11_SHA=8f2f55e69459df21035982948719213fe595e97bb9b9bca9dabc85047204453c
-if [ "$ARCH" = x64 ]; then
+P11_BUILT="${P11_PREBUILT:-}/srb-id-pkcs11-$ARCH"
+if [ -n "${P11_PREBUILT:-}" ] && [ -f "$P11_BUILT/libsrb-id-pkcs11.so" ]; then
+  mkdir -p "$PUB/pkcs11"
+  cp "$P11_BUILT/libsrb-id-pkcs11.so" "$P11_BUILT/README.txt" "$PUB/pkcs11/"
+elif [ "$ARCH" = x64 ]; then
   mkdir -p "$PUB/pkcs11"
   curl -fsSL --retry 3 -o "$PUB/pkcs11/libsrb-id-pkcs11.so" "https://github.com/ubavic/srb-id-pkcs11/releases/download/v$P11_VER/libsrb-id-pkcs11.so.$P11_VER"
   if command -v sha256sum >/dev/null; then GOT=$(sha256sum "$PUB/pkcs11/libsrb-id-pkcs11.so" | cut -d' ' -f1); else GOT=$(shasum -a 256 "$PUB/pkcs11/libsrb-id-pkcs11.so" | cut -d' ' -f1); fi
@@ -29,7 +35,7 @@ if [ "$ARCH" = x64 ]; then
   cat > "$PUB/pkcs11/README.txt" <<TXT
 libsrb-id-pkcs11.so is srb-id-pkcs11 $P11_VER, a PKCS#11 module for Serbian eID cards.
 Source and licence (Unlicense, public domain): https://github.com/ubavic/srb-id-pkcs11
-Super Čelik registers it in Firefox and Chrome / Chromium on request (button "Set up browser sign-in").
+Super Čelik registers it in Firefox and Chrome / Chromium / Edge on request (button "Set up browser sign-in").
 TXT
 fi
 

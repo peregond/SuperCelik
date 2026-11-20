@@ -215,12 +215,49 @@ jobs:
         with:
           files: dist/*-setup.exe
 
+  p11-module:
+    # The browser sign-in module srb-id-pkcs11, built from source (Zig) for glibc 2.28+ on both architectures: the binary that upstream
+    # publishes needs glibc 2.36 (not Ubuntu 22.04 / Linux Mint 21) and there is no arm64 one. Built natively on the oldest runners.
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - arch: x64
+            runner: ubuntu-22.04
+          - arch: arm64
+            runner: ubuntu-22.04-arm
+    runs-on: ${{ matrix.runner }}
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build tools
+        run: sudo apt-get update && sudo apt-get install -y libpcsclite-dev libnss3-tools pcscd
+      - name: Build the module from source
+        run: bash scripts/build-srb-module.sh ${{ matrix.arch }}
+      - name: Check that NSS (what the browsers use) can load it
+        # modutil loads the module to add it, and the module starts by talking to the smart card service: this is the same step the app does
+        run: |
+          sudo pcscd --disable-polkit
+          for i in $(seq 1 20); do [ -S /run/pcscd/pcscd.comm ] && break; sleep 0.5; done
+          export HOME="$RUNNER_TEMP/nss-home"; mkdir -p "$HOME/db"
+          certutil -N -d "sql:$HOME/db" --empty-password
+          echo | modutil -dbdir "sql:$HOME/db" -add "Srb Id PKCS11" -libfile "$GITHUB_WORKSPACE/dist/p11/srb-id-pkcs11-${{ matrix.arch }}/libsrb-id-pkcs11.so" -force
+          modutil -dbdir "sql:$HOME/db" -list | grep "Srb Id PKCS11"
+      - uses: actions/upload-artifact@v4
+        with:
+          name: srb-id-pkcs11-${{ matrix.arch }}
+          path: dist/p11/srb-id-pkcs11-${{ matrix.arch }}/*
+
   linux:
     # Self-contained .NET build (Avalonia): .tar.gz, .deb and .AppImage for x64 and arm64. Cross-published on one runner.
     # The published files are also handed to the linux-flatpak job.
+    needs: p11-module
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: srb-id-pkcs11-*
+          path: dist/p11
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: 8.0.x
@@ -237,6 +274,7 @@ jobs:
       - name: Build x64 and arm64
         run: |
           export KEEP_PUBLISH=1
+          export P11_PREBUILT="$PWD/dist/p11"      # the module built by the p11-module job (both architectures)
           bash scripts/make-linux.sh "${{ steps.ver.outputs.v }}" x64
           bash scripts/make-linux.sh "${{ steps.ver.outputs.v }}" arm64
           tar -C dist -cf dist/linux-publish.tar publish-x64 publish-arm64
@@ -246,6 +284,7 @@ jobs:
           file dist/SuperCelik-*-linux-x86_64.AppImage dist/SuperCelik-*-linux-aarch64.AppImage
           # unpack the x64 AppImage without FUSE and check its contents
           (cd dist && ./SuperCelik-*-linux-x86_64.AppImage --appimage-extract >/dev/null && test -x squashfs-root/AppRun && test -x squashfs-root/usr/lib/supercelik/SuperCelik && test -f squashfs-root/usr/lib/supercelik/pkcs11/libsrb-id-pkcs11.so && rm -rf squashfs-root)
+          tar -tzf dist/SuperCelik-*-linux-arm64.tar.gz | grep -E "pkcs11/libsrb-id-pkcs11.so$"
           dpkg-deb -I dist/SuperCelik-*-linux-amd64.deb
           dpkg-deb -c dist/SuperCelik-*-linux-amd64.deb | grep -E "opt/supercelik/SuperCelik$|opt/supercelik/CA/MUPRootCA4.crt|supercelik.desktop"
           dpkg-deb -c dist/SuperCelik-*-linux-amd64.deb | grep -E "opt/supercelik/pkcs11/libsrb-id-pkcs11.so$"
