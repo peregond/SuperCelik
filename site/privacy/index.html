@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Super Čelik — Политика конфиденциальности / Privacy Policy / Politika privatnosti</title>
+<title>Super Čelik – Политика конфиденциальности / Privacy Policy / Politika privatnosti</title>
 <meta name="description" content="Super Čelik: no accounts, no analytics, no tracking, no server. Card data never leaves your device.">
-<meta property="og:title" content="Super Čelik — Privacy Policy">
+<meta property="og:title" content="Super Čelik – Privacy Policy">
 <meta property="og:image" content="/img/icon.png">
 <meta name="theme-color" content="#05162f">
 <link rel="preload" href="../fonts/inter-latin-wght-normal.woff2" as="font" type="font/woff2" crossorigin>
@@ -68,7 +68,7 @@ footer a{color:#a9c3e6}
 </head>
 <body>
 <div class="langbox" id="langbox">
-  <button class="globe" id="globe" type="button" aria-label="Language" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.2"/><path d="M2.8 12h18.4M12 2.8c3.1 3.4 3.1 14 0 18.4M12 2.8c-3.1 3.4-3.1 14 0 18.4"/></svg></button>
+  <button class="globe" id="globe" type="button" data-aria="lang" aria-label="Language" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.2"/><path d="M2.8 12h18.4M12 2.8c3.1 3.4 3.1 14 0 18.4M12 2.8c-3.1 3.4-3.1 14 0 18.4"/></svg></button>
   <div class="langmenu" role="menu"><div class="in">
     <button type="button" role="menuitem" data-l="ru" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#fff"/><rect y="5.33" width="24" height="5.34" fill="#0039A6"/><rect y="10.67" width="24" height="5.33" fill="#D52B1E"/></svg><span>Русский</span></button>
     <button type="button" role="menuitem" data-l="en" aria-pressed="false"><svg class="fl" viewBox="0 0 60 40" preserveAspectRatio="none" aria-hidden="true"><rect width="60" height="40" fill="#012169"/><path d="M0 0L60 40M60 0L0 40" stroke="#fff" stroke-width="8"/><path d="M0 0L60 40M60 0L0 40" stroke="#C8102E" stroke-width="3"/><path d="M30 0V40M0 20H60" stroke="#fff" stroke-width="13"/><path d="M30 0V40M0 20H60" stroke="#C8102E" stroke-width="8"/></svg><span>English</span></button>
@@ -150,8 +150,8 @@ Aplikacija sama ništa ne šalje; sertifikat kartice i PIN obrađuje sistem (PIN
 </article></div></main>
 
 <footer><div class="wrap">
-  <div class="disc">Super Čelik — Independent app, not affiliated with MUP RS or NetSeT/Veridos.</div>
-  <div><a href="/">Super Čelik</a> · <a href="https://github.com/peregond/SuperCelik">GitHub</a> · <a href="https://github.com/peregond/SuperCelik/releases">Releases</a></div>
+  <div class="disc" id="disc">Super Čelik – independent app, not affiliated with MUP RS or NetSeT/Veridos.</div>
+  <div><a href="/">Super Čelik</a> · <a href="https://github.com/peregond/SuperCelik">GitHub</a> · <a href="https://github.com/peregond/SuperCelik/releases" id="frel">All versions</a></div>
 </div></footer>
 
 <script>
@@ -188,12 +188,19 @@ function buildCyr(){const sc=document.getElementById("sc");if(sc.firstChild)retu
  const w=document.createTreeWalker(c,NodeFilter.SHOW_TEXT);const nodes=[];while(w.nextNode())nodes.push(w.currentNode);
  nodes.forEach(n=>{if(!n.parentNode.closest("a"))n.nodeValue=translitText(n.nodeValue)});
  while(c.firstChild)sc.appendChild(c.firstChild)}
+const ARIA={ru:{lang:"Язык",cpu:"Процессор",shot:"Скриншот"},en:{lang:"Language",cpu:"CPU",shot:"Screenshot"},sr:{lang:"Jezik",cpu:"Procesor",shot:"Snimak ekrana"},sc:{lang:"Језик",cpu:"Процесор",shot:"Снимак екрана"}};
+const FOOT={ru:{disc:"Super Čelik – независимое приложение, не связано с МУП РС и NetSeT/Veridos.",rel:"Все версии",d:"Super Čelik: без аккаунтов, аналитики и отслеживания, без сервера. Данные карты никогда не покидают устройство."},en:{disc:"Super Čelik – independent app, not affiliated with MUP RS or NetSeT/Veridos.",rel:"All versions",d:"Super Čelik: no accounts, no analytics, no tracking, no server. Card data never leaves your device."},sr:{disc:"Super Čelik – nezavisna aplikacija, nije povezana sa MUP RS niti NetSeT/Veridos.",rel:"Sve verzije",d:"Super Čelik: bez naloga, analitike i praćenja, bez servera. Podaci kartice nikada ne napuštaju uređaj."},sc:{disc:"Super Čelik – независна апликација, није повезана са МУП РС нити NetSeT/Veridos.",rel:"Све верзије",d:"Super Čelik: без налога, аналитике и праћења, без сервера. Подаци картице никада не напуштају уређај."}};
+function localizeMisc(l){
+ document.querySelectorAll("[data-aria]").forEach(e=>e.setAttribute("aria-label",ARIA[l][e.dataset.aria]));
+ const f=FOOT[l];document.getElementById("disc").textContent=f.disc;document.getElementById("frel").textContent=f.rel;
+ const d=document.querySelector('meta[name="description"]');if(d)d.setAttribute("content",f.d);
+ const o=document.querySelector('meta[property="og:title"]');if(o)o.setAttribute("content","Super Čelik – "+TITLE[l][0])}
 function setLang(l){lang=l;localStorage.setItem("sc-lang",l);
  document.documentElement.lang={ru:"ru",en:"en",sr:"sr-Latn",sc:"sr-Cyrl"}[l];
  if(l==="sc")buildCyr();
  document.querySelectorAll(".doc>div").forEach(d=>d.hidden=d.dataset.l!==l);
  document.getElementById("h1").textContent=TITLE[l][0];document.getElementById("upd").textContent=TITLE[l][1];
- document.title="Super Čelik — "+TITLE[l][0];
+ document.title="Super Čelik – "+TITLE[l][0];localizeMisc(l);
  document.querySelectorAll(".langmenu button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l===l))}
 const lbox=document.getElementById("langbox"),globe=document.getElementById("globe");
 const setOpen=o=>{lbox.classList.toggle("open",o);globe.setAttribute("aria-expanded",o)};
