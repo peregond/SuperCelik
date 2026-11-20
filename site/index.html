@@ -535,11 +535,15 @@ const OS=(()=>{const u=navigator.userAgent,p=navigator.platform||"";
  if(/Win/.test(p)||/Windows/.test(u))return"win";if(/Mac/.test(p)||/Mac OS/.test(u))return"mac";if(/Linux|X11/.test(p+u))return"linux";return null})();
 const NAMES={mac:"macOS",win:"Windows",android:"Android",ios:"iPhone",linux:"Linux"};
 let version="";
+// macOS and iPhone screenshots follow the chosen language (English files have no suffix; Serbian Cyrillic uses the Latin ones)
+const SHOT_RE=/^(img\/(?:shot|full)-(?:iphone|iphone-dark|mac|mac-token))(?:-(?:ru|sr))?\.webp$/;
+function localizeShots(l){const sfx={ru:"-ru",sr:"-sr",sc:"-sr"}[l]||"";
+ document.querySelectorAll("img[src],[data-full]").forEach(e=>{for(const a of ["src","data-full"]){const v=e.getAttribute(a),m=v&&SHOT_RE.exec(v);if(m){const n=m[1]+sfx+".webp";if(n!==v)e.setAttribute(a,n)}}})}
 function setLang(l){lang=l;localStorage.setItem("sc-lang",l);document.documentElement.lang={ru:"ru",en:"en",sr:"sr-Latn",sc:"sr-Cyrl"}[l];
  document.querySelectorAll("[data-i18n]").forEach(e=>{const v=tr(l,e.dataset.i18n);if(v!=null)e.textContent=v});
  document.querySelectorAll("[data-i18n-html]").forEach(e=>{const v=tr(l,e.dataset.i18nHtml);if(v!=null)e.innerHTML=v});
  document.querySelectorAll(".langmenu button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l===l));
- labels();splitH1()}
+ localizeShots(l);labels();splitH1()}
 function labels(){
  // the tile of the visitor's device says "Download for <OS>", the others just "Download"
   document.querySelectorAll(".verv").forEach(e=>e.textContent=version?tr(lang,"ver_l")+version:"")}
