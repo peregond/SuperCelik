@@ -15,6 +15,9 @@ import android.os.Build
 import kotlinx.coroutines.suspendCancellableCoroutine
 import kotlin.coroutines.resume
 
+/** The USB service, or null on a device that has none (no USB host: some emulators, cloud phones and containers). A plain cast would crash there. */
+fun usbManager(context: Context): UsbManager? = context.getSystemService(Context.USB_SERVICE) as? UsbManager
+
 /** Follows T=0 "61xx" (GET RESPONSE) and "6Cxx" (wrong Le) like the desktop apps do. */
 class FollowingTransport(private val inner: CardTransport) : CardTransport {
     override fun transmit(apdu: ByteArray): Resp = inner.follow(apdu)
@@ -101,7 +104,7 @@ class UsbCcidTransport private constructor(
 
         /** Asks the user for access if needed, then opens the reader. Returns null if access was denied. */
         suspend fun open(context: Context, device: UsbDevice): UsbCcidTransport? {
-            val usb = context.getSystemService(Context.USB_SERVICE) as UsbManager
+            val usb = usbManager(context) ?: return null
             if (!usb.hasPermission(device)) {
                 val granted = suspendCancellableCoroutine<Boolean> { cont ->
                     val receiver = object : BroadcastReceiver() {

@@ -11,6 +11,7 @@
     <string name="clear">Clear</string>
     <string name="err_no_usb">No USB smart card reader found. Connect it with an OTG adapter.</string>
     <string name="err_usb_denied">USB access was not granted.</string>
+    <string name="err_no_usb_host">This device has no USB host support, so a card reader cannot be connected here.</string>
     <string name="err_no_card">No card in the reader.</string>
     <string name="err_unsupported">Unsupported card (no known applet; old Apollo cards are not supported).</string>
     <string name="err_generic">Could not read the card</string>

@@ -594,6 +594,7 @@ public sealed class MainWindow : Window
                 Row(d.Token.Length > 0, Loc.T(d.Token.Length > 0 ? "chkSeesCard" : d.Slots == 0 ? "chkNoSeeReader" : "chkNoSeeCard"));
             }
         }
+        if (d.Kind == "checked" && d.Sandboxed.Count > 0) Row(false, string.Format(Loc.T("chkSandboxed"), string.Join(", ", d.Sandboxed)));     // a browser from Snap / Flatpak next to the others
         _checkStep.Text = CheckStepText(d, BrowserSetup.NextStep(d, readers, card));
         _checkPanel.IsVisible = true;
     }

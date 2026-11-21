@@ -11,6 +11,7 @@
     <string name="clear">Obriši</string>
     <string name="err_no_usb">USB čitač nije pronađen. Povežite ga preko OTG adaptera.</string>
     <string name="err_usb_denied">Pristup USB-u nije odobren.</string>
+    <string name="err_no_usb_host">Ovaj uređaj nema podršku za USB host, pa se čitač kartica ovde ne može povezati.</string>
     <string name="err_no_card">Nema kartice u čitaču.</string>
     <string name="err_unsupported">Kartica nije podržana (nema poznatog apleta; stare Apollo kartice nisu podržane).</string>
     <string name="err_generic">Nije moguće pročitati karticu</string>

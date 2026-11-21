@@ -332,12 +332,13 @@ public static class BrowserSetup
     /// The one thing to do next, from the first thing that is wrong. `readers` / `cardInApp` = what the app itself sees through the smart card
     /// service. Returns the Kind for the cases Diagnose could not check (nomodule / notool / none / sandboxed / stuck), otherwise: connect (the browsers lack the module), noservice / oldlibc /
     /// nolib / noload (the module does not start), noreader / nocard (nothing to read yet), reinsert (the app sees the card, the module does not), ok.
+    /// With a browser from Snap / Flatpak next to the others (it cannot get the module), "ok" becomes sandboxed: all good would be wrong for that browser.
     public static string NextStep(Diagnosis d, int readers, bool cardInApp)
     {
         if (d.Kind != "checked") return d.Kind;
         if (d.Missing.Count > 0) return "connect";
         if (!d.Loaded) return (d.Why is "noservice" or "oldlibc" or "nolib") ? d.Why : "noload";
-        if (d.Token.Length > 0) return "ok";
+        if (d.Token.Length > 0) return d.Sandboxed.Count > 0 ? "sandboxed" : "ok";
         if (d.Slots == 0) return readers == 0 ? "noreader" : "reinsert";
         return cardInApp ? "reinsert" : "nocard";
     }

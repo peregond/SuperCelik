@@ -1,7 +1,6 @@
 package com.peregond.supercelik
 
 import android.content.Context
-import android.hardware.usb.UsbManager
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
@@ -247,7 +246,7 @@ object EuLogin {
     private suspend fun openSession(pair: TokenKeyPair, pin: CharArray) {
         closeSession()
         val ctx = App.instance
-        val usb = ctx.getSystemService(Context.USB_SERVICE) as UsbManager
+        val usb = usbManager(ctx) ?: throw UsbProblem(Msg(R.string.err_no_usb_host))
         val device = UsbCcidTransport.findReader(usb) ?: throw UsbProblem(Msg(R.string.err_no_usb))
         val transport = UsbCcidTransport.open(ctx, device) ?: throw UsbProblem(Msg(R.string.err_usb_denied))
         try {
