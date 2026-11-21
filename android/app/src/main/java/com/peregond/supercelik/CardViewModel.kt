@@ -2,7 +2,6 @@ package com.peregond.supercelik
 
 import android.app.Application
 import android.content.Context
-import android.hardware.usb.UsbManager
 import android.net.Uri
 import androidx.annotation.StringRes
 import androidx.lifecycle.AndroidViewModel
@@ -127,12 +126,13 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
         // coming back from the eUprava sign-in screen: the user is on the Token tab, do not read the card by itself
         if (EuLogin.skipAutoStart) { EuLogin.skipAutoStart = false; return }
         if (_phase.value != Phase.Idle || _personal.value != null) return
-        val usb = context.getSystemService(Context.USB_SERVICE) as UsbManager
+        val usb = usbManager(context) ?: return         // no USB service on this device: nothing to look for (the card screen says so)
         if (UsbCcidTransport.findReader(usb) != null) startUsb(context)
     }
 
     fun startUsb(context: Context) {
-        val usb = context.getSystemService(Context.USB_SERVICE) as UsbManager
+        val usb = usbManager(context)
+        if (usb == null) { pending = null; _phase.value = Phase.Idle; _message.value = Msg(R.string.err_no_usb_host); return }
         val device = UsbCcidTransport.findReader(usb)
         if (device == null) { pending = null; _phase.value = Phase.Idle; _message.value = Msg(R.string.err_no_usb); return }
         _phase.value = Phase.WaitingUsb

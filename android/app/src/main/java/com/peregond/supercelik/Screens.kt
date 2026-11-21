@@ -119,6 +119,11 @@ fun CardScreen(vm: CardViewModel, reveal: Boolean) {
             Text(stringResource(R.string.hint_ready), textAlign = TextAlign.Center, style = MaterialTheme.typography.titleMedium)
             Text(stringResource(R.string.hint_idle), textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
+            // a device without USB host support (some emulators, cloud phones): a reader cannot be connected here
+            if (remember { usbManager(ctx) == null }) {
+                Text(stringResource(R.string.err_no_usb_host), textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.error)
+            }
             FilledTonalButton(onClick = { vm.readCard(ctx) }, Modifier.fillMaxWidth().height(56.dp)) {
                 Icon(Icons.Filled.Usb, null); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.read_usb))
             }

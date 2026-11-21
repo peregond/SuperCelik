@@ -11,6 +11,7 @@
     <string name="clear">Очистить</string>
     <string name="err_no_usb">USB-ридер не найден. Подключите его через OTG-переходник.</string>
     <string name="err_usb_denied">Доступ к USB не разрешён.</string>
+    <string name="err_no_usb_host">В этом устройстве нет поддержки USB-хоста, поэтому подключить ридер карт здесь нельзя.</string>
     <string name="err_no_card">В ридере нет карты.</string>
     <string name="err_unsupported">Карта не поддерживается (нет известного апплета; старые карты Apollo не поддерживаются).</string>
     <string name="err_generic">Не удалось прочитать карту</string>
