@@ -191,6 +191,7 @@ public static class Loc
         ["chkSeesCard"] = new[] { "Модуль видит карту", "The module sees the card", "Modul vidi karticu" },
         ["chkNoSeeCard"] = new[] { "Модуль не видит карту", "The module does not see the card", "Modul ne vidi karticu" },
         ["chkNoSeeReader"] = new[] { "Модуль не видит ридер", "The module does not see a reader", "Modul ne vidi čitač" },
+        ["chkSandboxed"] = new[] { "Подключить нельзя (песочница): {0}", "Cannot be connected (sandbox): {0}", "Ne može da se poveže (izolovano okruženje): {0}" },
         ["stepConnect"] = new[] { "Нажмите «Настроить вход в браузере».", "Press “Set up browser sign-in”.", "Pritisnite „Podesi prijavu u pregledaču“." },
         ["stepNoService"] = new[] { "Служба смарт-карт (pcscd) не запущена. Запустите её и проверьте ещё раз.", "The smart card service (pcscd) is not running. Start it and check again.", "Usluga za pametne kartice (pcscd) nije pokrenuta. Pokrenite je i ponovo proverite." },
         ["stepStuck"] = new[] { "Служба смарт-карт (pcscd) не отвечает. Перезапустите её.", "The smart card service (pcscd) does not answer. Restart it.", "Usluga za pametne kartice (pcscd) ne odgovara. Ponovo je pokrenite." },

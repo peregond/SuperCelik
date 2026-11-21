@@ -168,8 +168,8 @@ Check(BrowserSetup.ParseListing("") == new BrowserSetup.ModuleState(false, false
 
 Console.WriteLine("Linux: what to do next");
 var none = new List<string>();
-BrowserSetup.Diagnosis Dg(string kind = "checked", string[] connected = null, string[] missing = null, bool loaded = true, string why = null, int slots = 1, string token = "Card") =>
-    new(kind, (connected ?? new[] { "Firefox" }).ToList(), (missing ?? Array.Empty<string>()).ToList(), none, loaded, why, slots, token);
+BrowserSetup.Diagnosis Dg(string kind = "checked", string[] connected = null, string[] missing = null, bool loaded = true, string why = null, int slots = 1, string token = "Card", string[] sandboxed = null) =>
+    new(kind, (connected ?? new[] { "Firefox" }).ToList(), (missing ?? Array.Empty<string>()).ToList(), (sandboxed ?? Array.Empty<string>()).ToList(), loaded, why, slots, token);
 Check(BrowserSetup.NextStep(Dg("nomodule"), 1, true) == "nomodule" && BrowserSetup.NextStep(Dg("notool"), 1, true) == "notool"
       && BrowserSetup.NextStep(Dg("none"), 1, true) == "none" && BrowserSetup.NextStep(Dg("sandboxed"), 1, true) == "sandboxed"
       && BrowserSetup.NextStep(Dg("stuck"), 1, true) == "stuck", "nothing to check: the kind itself (no module / no tool / no browser / only sandboxed ones / the service does not answer)");
@@ -178,6 +178,9 @@ Check(BrowserSetup.NextStep(Dg(loaded: false, why: "noservice"), 1, true) == "no
 Check(BrowserSetup.NextStep(Dg(loaded: false, why: "oldlibc"), 1, true) == "oldlibc" && BrowserSetup.NextStep(Dg(loaded: false, why: "nolib"), 1, true) == "nolib", "does not start: old C library / missing libpcsclite");
 Check(BrowserSetup.NextStep(Dg(loaded: false), 1, true) == "noload", "does not start, reason unknown");
 Check(BrowserSetup.NextStep(Dg(), 1, true) == "ok", "the module sees the card: all in order");
+Check(BrowserSetup.NextStep(Dg(sandboxed: new[] { "Firefox (Snap)" }), 1, true) == "sandboxed", "all in order, but a Snap browser stands next to the others: not \"all good\", the sandbox is what is left to say");
+Check(BrowserSetup.NextStep(Dg(sandboxed: new[] { "Firefox (Snap)" }, missing: new[] { "Chrome" }), 1, true) == "connect"
+      && BrowserSetup.NextStep(Dg(sandboxed: new[] { "Firefox (Snap)" }, token: "", slots: 1), 1, false) == "nocard", "a real problem still comes first, the sandboxed browser does not hide it");
 Check(BrowserSetup.NextStep(Dg(slots: 0, token: ""), 0, false) == "noreader", "no reader anywhere: plug it in");
 Check(BrowserSetup.NextStep(Dg(slots: 0, token: ""), 1, true) == "reinsert", "the app sees a reader, the module sees none: take the card out and in");
 Check(BrowserSetup.NextStep(Dg(token: ""), 1, false) == "nocard", "reader without a card: insert it");
