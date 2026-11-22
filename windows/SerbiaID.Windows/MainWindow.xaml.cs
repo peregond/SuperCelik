@@ -229,7 +229,6 @@ public partial class MainWindow : Window
         ProblemBanner.Background = B("BadBgBrush"); LblProblemTitle.Foreground = B("BadBrush");
         LblProblemTitle.Text = Loc.T(t); LblProblemHint.Text = Loc.T(h);
         LblProblemHint.Visibility = Visibility.Visible;
-        LblProblemTech.Text = $"{Loc.T("techDetails")}: {ex.Message}";
         ShowBanner(error: true);
     }
 
@@ -247,7 +246,7 @@ public partial class MainWindow : Window
     private void ShowInfo(string text)
     {
         ProblemBanner.Background = B("BannerBrush"); LblProblemTitle.Foreground = B("TextBrush");
-        LblProblemTitle.Text = text; LblProblemHint.Visibility = Visibility.Collapsed; LblProblemTech.Text = "";
+        LblProblemTitle.Text = text; LblProblemHint.Visibility = Visibility.Collapsed;
         ShowBanner(error: false);
     }
 

@@ -86,9 +86,6 @@ struct ProblemBanner: View {
                 Label(loc.t(problem.title), systemImage: "exclamationmark.triangle.fill")
                     .font(.headline).foregroundStyle(.orange)
                 Text(loc.t(problem.hint)).font(.subheadline)
-                if !problem.tech.isEmpty {
-                    Text(problem.tech).font(.caption.monospaced()).foregroundStyle(.secondary)
-                }
             }
             Spacer(minLength: 0)
             // the message can be dismissed; it comes back only with the next failed read

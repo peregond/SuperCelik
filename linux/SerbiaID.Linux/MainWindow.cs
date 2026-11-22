@@ -33,7 +33,7 @@ public sealed class MainWindow : Window
 
     // ---- controls ----
     private Border _updateBanner, _problemBanner, _pillExpiry, _pillSig, _portraitFrame;
-    private TextBlock _lblUpdate, _lblBrand, _lblBrandSub, _lblReader, _lblProblemTitle, _lblProblemHint, _lblProblemTech;
+    private TextBlock _lblUpdate, _lblBrand, _lblBrandSub, _lblReader, _lblProblemTitle, _lblProblemHint;
     private TextBlock _lblEmptyTitle, _lblHint, _lblName, _lblDocType, _lblTokenInfo, _lblCerts, _lblPinNote;
     private TextBlock _lblSetAppearance, _lblSetLang, _lblSetTheme, _lblSetPrivacy, _lblSetBehavior, _lblAutoHide;
     private TextBlock _lblAboutTitle, _lblAboutText, _lblVersion, _lblUpdateStatus;
@@ -198,11 +198,10 @@ public sealed class MainWindow : Window
         // problem banner
         _lblProblemTitle = Ui.Label("", 13, true, "TextBrush", true); _lblProblemTitle.FontWeight = FontWeight.Bold;
         _lblProblemHint = Ui.Label("", 13, false, "TextBrush", true); _lblProblemHint.Margin = new Thickness(0, 2, 0, 0);
-        _lblProblemTech = Ui.Label("", 11, false, "MutedBrush", true); _lblProblemTech.Margin = new Thickness(0, 4, 0, 0);
         _btnProblemClose = Ui.Btn("", "icon"); Ui.SetBtn(_btnProblemClose, "x", null); _btnProblemClose.VerticalAlignment = VerticalAlignment.Top; _btnProblemClose.Click += (_, _) => HideProblem();
         var pb = new DockPanel();
         DockPanel.SetDock(_btnProblemClose, Dock.Right); pb.Children.Add(_btnProblemClose);
-        pb.Children.Add(new StackPanel { Children = { _lblProblemTitle, _lblProblemHint, _lblProblemTech } });
+        pb.Children.Add(new StackPanel { Children = { _lblProblemTitle, _lblProblemHint } });
         _problemBanner = new Border { Padding = new Thickness(24, 10), Child = pb, IsVisible = false };
         DockPanel.SetDock(_problemBanner, Dock.Top); root.Children.Add(_problemBanner);
 
@@ -479,7 +478,6 @@ public sealed class MainWindow : Window
         }
         _problemBanner.Res(Border.BackgroundProperty, "BadBgBrush"); _lblProblemTitle.Res(TextBlock.ForegroundProperty, "BadBrush");
         _lblProblemTitle.Text = Loc.T(t); _lblProblemHint.Text = Loc.T(h); _lblProblemHint.IsVisible = true;
-        _lblProblemTech.Text = $"{Loc.T("techDetails")}: {ex.Message}";
         ShowBanner(error: true);
     }
 
@@ -634,7 +632,6 @@ public sealed class MainWindow : Window
         _lblProblemTitle.Text = nl < 0 ? text : text.Substring(0, nl);
         _lblProblemHint.Text = nl < 0 ? "" : text.Substring(nl + 1);
         _lblProblemHint.IsVisible = nl >= 0;
-        _lblProblemTech.Text = "";
         ShowBanner(error: false);
     }
 

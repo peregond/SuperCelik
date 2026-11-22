@@ -371,10 +371,6 @@ struct ContentView: View {
                     VStack(alignment: .leading, spacing: 3) {
                         Text(p.titleKey.map { loc.t($0) } ?? p.raw).fontWeight(.semibold)
                         if let h = p.hintKey { Text(loc.t(h)).foregroundStyle(.secondary) }
-                        if !p.tech.isEmpty {
-                            Text("\(loc.t(.techDetails)): \(p.tech)").font(.caption).foregroundStyle(.secondary)
-                                .textSelection(.enabled)
-                        }
                     }
                     Spacer()
                     Button { model.problem = nil } label: { Image(systemName: "xmark") }
