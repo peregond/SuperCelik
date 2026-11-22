@@ -474,6 +474,7 @@ final class AppModel: ObservableObject {
     // MARK: - Errors
 
     func showProblem(_ error: Error) {
+        DiagLog.error(error)
         var t: Loc.L = .errGenericT, h: Loc.L = .errGenericH
         if let ce = error as? CardError {
             switch ce {

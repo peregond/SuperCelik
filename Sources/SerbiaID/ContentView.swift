@@ -371,10 +371,6 @@ struct ContentView: View {
                     VStack(alignment: .leading, spacing: 3) {
                         Text(p.titleKey.map { loc.t($0) } ?? p.raw).fontWeight(.semibold)
                         if let h = p.hintKey { Text(loc.t(h)).foregroundStyle(.secondary) }
-                        if !p.tech.isEmpty {
-                            Text("\(loc.t(.techDetails)): \(p.tech)").font(.caption).foregroundStyle(.secondary)
-                                .textSelection(.enabled)
-                        }
                     }
                     Spacer()
                     Button { model.problem = nil } label: { Image(systemName: "xmark") }
@@ -838,6 +834,14 @@ struct SettingsView: View {
                     get: { model.demoActive },
                     set: { $0 ? model.showDemoData() : model.hideDemoData() }))
             } footer: { Text(loc.t(.demoHint)) }
+            Section {
+                Button {
+                    let state = "Readers: \(model.readers.isEmpty ? "none" : model.readers.joined(separator: ", ")); card in the reader: \(model.cardPresent ? "yes" : "no")"
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(DiagLog.report(version: Updater.currentVersion, language: loc.language.rawValue, state: state), forType: .string)
+                    model.problem = Problem(raw: loc.t(.copyLogsDone), isInfo: true)
+                } label: { Label(loc.t(.copyLogs), systemImage: "doc.on.doc") }
+            } footer: { Text(loc.t(.copyLogsHint)) }
             Section(loc.t(.tabAbout)) { AboutView() }
         }
         .groupedForm()
@@ -859,11 +863,21 @@ struct AboutView: View {
             Text("\(loc.t(.version)) \(Updater.currentVersion)").foregroundStyle(.secondary)
             Text(loc.t(.aboutText)).multilineTextAlignment(.center).foregroundStyle(.secondary)
                 .font(.callout).frame(maxWidth: 400).padding(.top, 2)
-            #if !APPSTORE
-            Button { Task { await model.checkUpdates(manual: true) } } label: {
-                Label(loc.t(.checkUpdates), systemImage: "arrow.triangle.2.circlepath")
+            HStack(spacing: 10) {
+                #if !APPSTORE
+                Button { Task { await model.checkUpdates(manual: true) } } label: {
+                    Label(loc.t(.checkUpdates), systemImage: "arrow.triangle.2.circlepath")
+                }
+                #endif
+                Button { NSWorkspace.shared.open(loc.changelogURL) } label: {
+                    Label(loc.t(.whatsNew), systemImage: "sparkles")
+                }
             }
             .padding(.top, 6)
+            Button { NSWorkspace.shared.open(Loc.feedbackURL) } label: {
+                Label(loc.t(.betaReport), systemImage: "ladybug")
+            }
+            #if !APPSTORE
             if let s = model.updateStatus {
                 Text(s).font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.center).frame(maxWidth: 400)
             }

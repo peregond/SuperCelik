@@ -36,6 +36,20 @@ final class Loc: ObservableObject {
         }
     }
 
+    /// The language code the site pages (reader help, what's new) take.
+    var siteLang: String {
+        switch language { case .ru: return "ru"; case .en: return "en"; case .sr: return "sr"; case .srCyrl: return "sc" }
+    }
+    var changelogURL: URL {
+        #if os(iOS)
+        let app = "ios"
+        #else
+        let app = "macos"
+        #endif
+        return URL(string: "https://celik.peregon.cc/changelog/?lang=\(siteLang)&app=\(app)")!
+    }
+    static let feedbackURL = URL(string: "https://github.com/peregond/SuperCelik/issues/new")!
+
     func t(_ key: L) -> String {
         // Serbian Cyrillic is the Serbian (Latin) text run through SerbianScript, once per key
         if language == .srCyrl {
@@ -73,7 +87,7 @@ final class Loc: ObservableObject {
         // iOS (NFC)
         case statusReading, emptyNoReaderT, emptyNoReaderH, emptyNoCardT, emptyNoCardH, emptyReadyT, emptyReadyH, demoData, demoHint, tabCardShort, tabTokenShort, readCardAuto, hintAuto, viewPdf, photo, scanUsb, usbNoReaderT, usbNoReaderH, hintUsb, scanCard, nfcPrompt, nfcReading, nfcDone, sharePdf, hintNfc, aboutTextIOS
         case nfcUnavailableT, nfcUnavailableH, nfcNoCardT, nfcNoCardH, nfcLostT, nfcLostH
-        case iosNoReaderH, iosNoCardH, iosReadyH, iosNoReaderQ, readerHelpTitle
+        case iosNoReaderH, iosNoCardH, iosReadyH, iosNoReaderQ, readerHelpTitle, whatsNew, betaReport, copyLogs, copyLogsHint, copyLogsDone
     }
 
     // swiftlint:disable line_length
@@ -105,6 +119,11 @@ final class Loc: ObservableObject {
         .hintNfc: [.ru: "Нажмите «Прочитать карту по NFC» и приложите карту к верхней части iPhone.", .en: "Tap “Read card via NFC” and hold the card against the top of your iPhone.", .sr: "Dodirnite „Pročitaj karticu preko NFC-a“ i prislonite karticu uz gornji deo iPhone-a."],
         .aboutTextIOS: [.ru: "Чтение электронной ID-карты Сербии через считыватель смарт-карт. Независимая реализация, не связана с МУП РС и NetSeT/Veridos.", .en: "Reads the Serbian electronic ID card through a smart card reader. Independent implementation, not affiliated with MUP RS or NetSeT/Veridos.", .sr: "Čitanje elektronske lične karte Srbije preko čitača pametnih kartica. Nezavisna implementacija, nije povezana sa MUP RS i NetSeT/Veridos."],
         .readerHelpTitle: [.ru: "Нет считывателя?", .en: "No reader yet?", .sr: "Nemate čitač?"],
+        .copyLogs: [.ru: "Скопировать логи и ошибки", .en: "Copy logs and errors", .sr: "Kopiraj logove i greške"],
+        .copyLogsHint: [.ru: "Копирует технические сведения об ошибках (без ваших данных с карты), чтобы вставить их в сообщение об ошибке.", .en: "Copies the technical details of the errors (without your card data) so you can paste them into a bug report.", .sr: "Kopira tehničke podatke o greškama (bez vaših podataka sa kartice) da ih nalepite u prijavu greške."],
+        .copyLogsDone: [.ru: "Логи скопированы. Вставьте их в сообщение об ошибке.", .en: "Logs copied. Paste them into your bug report.", .sr: "Logovi su kopirani. Nalepite ih u prijavu greške."],
+        .whatsNew: [.ru: "Что нового?", .en: "What’s new?", .sr: "Šta je novo?"],
+        .betaReport: [.ru: "Сообщить об ошибке или оставить отзыв", .en: "Report a bug or leave feedback", .sr: "Prijavi grešku ili ostavi povratnu informaciju"],
         .iosNoReaderH: [.ru: "Подключите его по USB-C.", .en: "Plug it in over USB-C.", .sr: "Povežite ga preko USB-C."],
         .iosNoReaderQ: [.ru: "Подключите считыватель смарт-карт к iPhone или iPad по USB-C: приложение увидит его само.", .en: "Plug a smart card reader into your iPhone or iPad over USB-C: the app will notice it by itself.", .sr: "Povežite čitač pametnih kartica na iPhone ili iPad preko USB-C: aplikacija će ga sama prepoznati."],
         .iosNoCardH: [.ru: "Вставьте карту до конца.", .en: "Push the card all the way in.", .sr: "Umetnite karticu do kraja."],

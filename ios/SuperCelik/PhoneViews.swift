@@ -86,9 +86,6 @@ struct ProblemBanner: View {
                 Label(loc.t(problem.title), systemImage: "exclamationmark.triangle.fill")
                     .font(.headline).foregroundStyle(.orange)
                 Text(loc.t(problem.hint)).font(.subheadline)
-                if !problem.tech.isEmpty {
-                    Text(problem.tech).font(.caption.monospaced()).foregroundStyle(.secondary)
-                }
             }
             Spacer(minLength: 0)
             // the message can be dismissed; it comes back only with the next failed read
@@ -782,6 +779,8 @@ struct SettingsTab: View {
     @EnvironmentObject var loc: Loc
     @EnvironmentObject var prefs: Prefs
 
+    @State private var logsCopied = false
+
     private var version: String {
         Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.0.0"
     }
@@ -815,9 +814,20 @@ struct SettingsTab: View {
                         set: { $0 ? model.loadDemo() : model.hideDemo() }))
                 } footer: { Text(loc.t(.demoHint)) }
                 .listRowBackground(Rectangle().fill(.regularMaterial))
+                Section {
+                    Button {
+                        UIPasteboard.general.string = DiagLog.report(version: version, language: loc.language.rawValue, state: "")
+                        logsCopied = true
+                    } label: {
+                        Label(loc.t(logsCopied ? .copyLogsDone : .copyLogs), systemImage: logsCopied ? "checkmark.circle" : "doc.on.doc")
+                    }
+                } footer: { Text(loc.t(.copyLogsHint)) }
+                .listRowBackground(Rectangle().fill(.regularMaterial))
                 Section(loc.t(.tabAbout)) {
                     Text(loc.t(.aboutTextIOS)).font(.subheadline)
                     LabeledContent(loc.t(.version), value: version)
+                    Link(loc.t(.whatsNew), destination: loc.changelogURL)
+                    Link(loc.t(.betaReport), destination: Loc.feedbackURL)
                 }
                 .listRowBackground(Rectangle().fill(.regularMaterial))
             }

@@ -43,7 +43,6 @@
                 <StackPanel>
                     <TextBlock x:Name="LblProblemTitle" FontWeight="Bold" TextWrapping="Wrap" Foreground="{DynamicResource BadBrush}"/>
                     <TextBlock x:Name="LblProblemHint" Foreground="{DynamicResource TextBrush}" TextWrapping="Wrap" Margin="0,2,0,0"/>
-                    <TextBlock x:Name="LblProblemTech" TextWrapping="Wrap" FontSize="11" Foreground="{DynamicResource MutedBrush}" Margin="0,4,0,0"/>
                 </StackPanel>
             </DockPanel>
         </Border>
@@ -111,13 +110,28 @@
                         <Button x:Name="BtnReadToken" Style="{StaticResource PrimaryButton}" Click="ReadToken_Click" Margin="0,0,10,0"/>
                         <Button x:Name="BtnChangePin" Style="{StaticResource SecondaryButton}" Click="ChangePin_Click" Margin="0,0,10,0"/>
                         <Button x:Name="BtnUnblockPin" Style="{StaticResource SecondaryButton}" Click="UnblockPin_Click" Margin="0,0,10,0"/>
-                        <Button x:Name="BtnSignFile" Style="{StaticResource SecondaryButton}" Click="SignFile_Click" Margin="0,0,14,0"/>
-                        <TextBlock x:Name="LblTokenInfo" Foreground="{DynamicResource MutedBrush}" VerticalAlignment="Center"/>
+                        <Button x:Name="BtnSignFile" Style="{StaticResource SecondaryButton}" Click="SignFile_Click" Margin="0,0,10,0"/>
+                        <Button x:Name="BtnLoginEu" Style="{StaticResource SecondaryButton}" Click="LoginEu_Click" Margin="0,0,10,0"/>
+                        <Button x:Name="BtnSetupBrowser" Style="{StaticResource SecondaryButton}" Click="SetupBrowser_Click" Margin="0,0,10,0"/>
+                        <Button x:Name="BtnCheckBrowser" Style="{StaticResource SecondaryButton}" Click="CheckBrowser_Click" Margin="0,0,10,0"/>
                     </WrapPanel>
+                    <TextBlock x:Name="LblTokenInfo" DockPanel.Dock="Top" Foreground="{DynamicResource MutedBrush}" Margin="2,-8,0,12"/>
                     <TextBlock x:Name="LblPinNote" DockPanel.Dock="Bottom" Foreground="{DynamicResource MutedBrush}" TextWrapping="Wrap" Margin="2,14,0,0"/>
                     <Border Style="{StaticResource Card}">
                         <DockPanel>
                             <TextBlock x:Name="LblCerts" Foreground="{DynamicResource TextBrush}" DockPanel.Dock="Top" FontSize="15" FontWeight="Bold" Margin="0,0,0,10"/>
+                            <StackPanel x:Name="PnlCheck" DockPanel.Dock="Bottom" Visibility="Collapsed" Margin="0,12,0,0">
+                                <Border BorderBrush="{DynamicResource LineBrush}" BorderThickness="0,1,0,0" Padding="0,14,0,0">
+                                    <StackPanel>
+                                        <DockPanel Margin="0,0,0,8">
+                                            <Button x:Name="BtnCheckClose" DockPanel.Dock="Right" Style="{StaticResource IconButton}" Click="CheckClose_Click" VerticalAlignment="Top"/>
+                                            <TextBlock x:Name="LblCheckTitle" Foreground="{DynamicResource TextBrush}" FontSize="14" FontWeight="SemiBold" VerticalAlignment="Center"/>
+                                        </DockPanel>
+                                        <StackPanel x:Name="LstCheck"/>
+                                        <TextBlock x:Name="LblCheckStep" Foreground="{DynamicResource MutedBrush}" TextWrapping="Wrap" Margin="0,8,0,0"/>
+                                    </StackPanel>
+                                </Border>
+                            </StackPanel>
                             <ScrollViewer VerticalScrollBarVisibility="Auto"><StackPanel x:Name="LstCerts"/></ScrollViewer>
                         </DockPanel>
                     </Border>
@@ -172,6 +186,18 @@
                                 <CheckBox x:Name="ChkAutoUpdate" Click="Setting_Click"/>
                             </StackPanel>
                         </Border>
+                        <Border Style="{StaticResource Card}" Margin="0,16,0,0">
+                            <StackPanel>
+                                <CheckBox x:Name="ChkDemo" Click="Demo_Click"/>
+                                <TextBlock x:Name="LblDemoHint" Foreground="{DynamicResource MutedBrush}" TextWrapping="Wrap" Margin="24,4,0,0"/>
+                            </StackPanel>
+                        </Border>
+                        <Border Style="{StaticResource Card}" Margin="0,16,0,0">
+                            <StackPanel>
+                                <Button x:Name="BtnCopyLogs" Style="{StaticResource SecondaryButton}" Click="CopyLogs_Click" HorizontalAlignment="Left"/>
+                                <TextBlock x:Name="LblCopyLogsHint" Foreground="{DynamicResource MutedBrush}" TextWrapping="Wrap" Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>
@@ -188,6 +214,7 @@
                             <Button x:Name="BtnCheckUpdates" Style="{StaticResource SecondaryButton}" Click="CheckUpdates_Click" Margin="0,0,10,0"/>
                             <Button x:Name="BtnWhatsNew" Style="{StaticResource SecondaryButton}" Click="WhatsNew_Click"/>
                         </WrapPanel>
+                        <Button x:Name="BtnFeedback" Style="{StaticResource SecondaryButton}" Click="Feedback_Click" HorizontalAlignment="Center" Margin="0,10,0,0"/>
                         <TextBlock x:Name="LblUpdateStatus" HorizontalAlignment="Center" Foreground="{DynamicResource MutedBrush}" Margin="0,10,0,0" TextWrapping="Wrap" TextAlignment="Center"/>
                     </StackPanel>
                 </Border>

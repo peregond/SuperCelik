@@ -5,6 +5,17 @@
     <string name="read_usb">Read via USB reader</string>
     <string name="hint_idle">Insert the card into a USB smart card reader and connect it to the phone (USB-C or an OTG adapter). Reading starts automatically.</string>
     <string name="reader_help">No reader yet?</string>
+    <string name="whats_new">What’s new?</string>
+    <string name="demo_data">Show demo data</string>
+    <string name="demo_hint">Fictional data without a card, to see what the app looks like. Real reading is off while it is on.</string>
+    <string name="group_appearance">Appearance</string>
+    <string name="group_privacy">Privacy</string>
+    <string name="group_reading">Card reading</string>
+    <string name="group_help">Help</string>
+    <string name="copy_logs">Copy logs and errors</string>
+    <string name="copy_logs_hint">Copies the technical details of the errors (without your card data) so you can paste them into a bug report.</string>
+    <string name="logs_copied">Logs copied</string>
+    <string name="report_bug">Report a bug or leave feedback</string>
     <string name="hint_usb_wait">Looking for a USB reader…</string>
     <string name="reading">Reading the card…</string>
     <string name="cancel">Cancel</string>
@@ -79,7 +90,6 @@
     <string name="signed_saved">Signature saved</string>
     <string name="pin_note">Reading the token does not use the PIN. Signing creates a detached CMS .p7s file that any CMS-capable tool can verify.</string>
     <string name="ok">OK</string>
-    <string name="auto_cleared">Data cleared automatically</string>
     <string name="settings_theme">Theme</string>
     <string name="theme_system">System</string>
     <string name="theme_light">Light</string>
@@ -88,9 +98,8 @@
     <string name="settings_dynamic_hint">Take colours from your wallpaper (Material You)</string>
     <string name="settings_mask">Hide sensitive fields</string>
     <string name="settings_mask_hint">JMBG, document number and address are shown as dots until you tap the eye</string>
-    <string name="settings_autoclear">Clear data automatically after</string>
-    <string name="minutes_off">Never</string>
-    <string name="minutes_n">%d min</string>
+    <string name="settings_auto_read">Read the card automatically when inserted</string>
+    <string name="settings_auto_read_hint">Reading starts as soon as a card is put into the connected reader</string>
     <string name="settings_language">Language</string>
     <string name="settings_language_hint">Choose the app language in system settings</string>
     <string name="photo">Photo</string>

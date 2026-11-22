@@ -5,6 +5,17 @@
     <string name="read_usb">Читај преко USB читача</string>
     <string name="hint_idle">Убаците картицу у USB читач паметних картица и повежите га са телефоном (USB-C или преко OTG адаптера). Читање почиње аутоматски.</string>
     <string name="reader_help">Немате читач?</string>
+    <string name="whats_new">Шта је ново?</string>
+    <string name="demo_data">Прикажи демо податке</string>
+    <string name="demo_hint">Измишљени подаци без картице, да видите како изгледа апликација. Док је укључено, право читање не ради.</string>
+    <string name="group_appearance">Изглед</string>
+    <string name="group_privacy">Приватност</string>
+    <string name="group_reading">Читање картице</string>
+    <string name="group_help">Помоћ</string>
+    <string name="copy_logs">Копирај логове и грешке</string>
+    <string name="copy_logs_hint">Копира техничке податке о грешкама (без ваших података са картице) да их налепите у пријаву грешке.</string>
+    <string name="logs_copied">Логови су копирани</string>
+    <string name="report_bug">Пријави грешку или остави повратну информацију</string>
     <string name="hint_usb_wait">Тражим USB читач…</string>
     <string name="reading">Читам картицу…</string>
     <string name="cancel">Откажи</string>
@@ -79,7 +90,6 @@
     <string name="signed_saved">Потпис је сачуван</string>
     <string name="pin_note">Читање токена не користи ПИН. Потпис прави одвојени CMS .p7s фајл који може да провери сваки алат са CMS подршком.</string>
     <string name="ok">У реду</string>
-    <string name="auto_cleared">Подаци су аутоматски обрисани</string>
     <string name="settings_theme">Тема</string>
     <string name="theme_system">Системска</string>
     <string name="theme_light">Светла</string>
@@ -88,9 +98,8 @@
     <string name="settings_dynamic_hint">Узми боје са позадине (Material You)</string>
     <string name="settings_mask">Сакриј осетљива поља</string>
     <string name="settings_mask_hint">ЈМБГ, број документа и адреса су сакривени док не додирнете око</string>
-    <string name="settings_autoclear">Аутоматски обриши податке после</string>
-    <string name="minutes_off">Никад</string>
-    <string name="minutes_n">%d мин</string>
+    <string name="settings_auto_read">Аутоматски прочитај картицу при уметању</string>
+    <string name="settings_auto_read_hint">Читање почиње чим се картица стави у повезани читач</string>
     <string name="settings_language">Језик</string>
     <string name="settings_language_hint">Језик апликације се бира у подешавањима система</string>
     <string name="photo">Фотографија</string>

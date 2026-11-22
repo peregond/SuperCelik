@@ -5,6 +5,17 @@
     <string name="read_usb">Читать через USB-ридер</string>
     <string name="hint_idle">Вставьте карту в USB-ридер смарт-карт и подключите его к телефону (USB-C или через OTG-переходник). Чтение начнётся автоматически.</string>
     <string name="reader_help">Нет считывателя?</string>
+    <string name="whats_new">Что нового?</string>
+    <string name="demo_data">Показать демо-данные</string>
+    <string name="demo_hint">Вымышленные данные без карты, чтобы посмотреть, как выглядит приложение. Пока включено, настоящее чтение не работает.</string>
+    <string name="group_appearance">Оформление</string>
+    <string name="group_privacy">Приватность</string>
+    <string name="group_reading">Чтение карты</string>
+    <string name="group_help">Помощь</string>
+    <string name="copy_logs">Скопировать логи и ошибки</string>
+    <string name="copy_logs_hint">Копирует технические сведения об ошибках (без ваших данных с карты), чтобы вставить их в сообщение об ошибке.</string>
+    <string name="logs_copied">Логи скопированы</string>
+    <string name="report_bug">Сообщить об ошибке или оставить отзыв</string>
     <string name="hint_usb_wait">Ищу USB-ридер…</string>
     <string name="reading">Читаю карту…</string>
     <string name="cancel">Отмена</string>
@@ -79,7 +90,6 @@
     <string name="signed_saved">Подпись сохранена</string>
     <string name="pin_note">Чтение токена не использует PIN. Подпись создаёт отдельный файл .p7s (CMS, отсоединённая), проверяемый любой программой с поддержкой CMS.</string>
     <string name="ok">ОК</string>
-    <string name="auto_cleared">Данные стёрты автоматически</string>
     <string name="settings_theme">Тема</string>
     <string name="theme_system">Системная</string>
     <string name="theme_light">Светлая</string>
@@ -88,9 +98,8 @@
     <string name="settings_dynamic_hint">Брать цвета из обоев (Material You)</string>
     <string name="settings_mask">Скрывать чувствительные поля</string>
     <string name="settings_mask_hint">ЕМБГ, номер документа и адрес скрыты точками, пока вы не нажмёте на глаз</string>
-    <string name="settings_autoclear">Стирать данные автоматически через</string>
-    <string name="minutes_off">Никогда</string>
-    <string name="minutes_n">%d мин</string>
+    <string name="settings_auto_read">Читать карту автоматически при вставке</string>
+    <string name="settings_auto_read_hint">Чтение начинается, как только карта вставлена в подключённый считыватель</string>
     <string name="settings_language">Язык</string>
     <string name="settings_language_hint">Язык приложения выбирается в настройках системы</string>
     <string name="photo">Фото</string>

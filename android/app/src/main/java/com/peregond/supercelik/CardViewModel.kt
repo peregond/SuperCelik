@@ -53,34 +53,45 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
     val dynamic: StateFlow<Boolean> = _dynamic.asStateFlow()      // true = wallpaper (Material You) palette
     private val _mask = MutableStateFlow(prefs.getBoolean("mask", true))
     val mask: StateFlow<Boolean> = _mask.asStateFlow()
-    private val _autoClear = MutableStateFlow(prefs.getInt("autoClear", 5))     // minutes, 0 = off
-    val autoClear: StateFlow<Int> = _autoClear.asStateFlow()
 
     private val _printJmbg = MutableStateFlow(prefs.getBoolean("printJmbg", true))
     val printJmbg: StateFlow<Boolean> = _printJmbg.asStateFlow()
     fun setPrintJmbg(v: Boolean) { _printJmbg.value = v; prefs.edit().putBoolean("printJmbg", v).apply() }
 
+    private val _failed = MutableStateFlow(false)
+    /** The last card operation (or the reader search) failed and nothing has been tried since: the mascots look worried. */
+    val failed: StateFlow<Boolean> = _failed.asStateFlow()
+
+    private fun report(m: Msg) { _message.value = m; if (m.error) _failed.value = true }
+
+    private val _demo = MutableStateFlow(false)
+    val demo: StateFlow<Boolean> = _demo.asStateFlow()      // fictional data on screen (Settings switch), no card involved
+
+    /** Settings switch: shows fictional card data to look at the app, or goes back to the real reader. */
+    fun setDemo(on: Boolean) { if (on) { cancel(); showDemo() } else { clear() } }
+
+    private val _autoRead = MutableStateFlow(prefs.getBoolean("autoRead", true))
+    val autoRead: StateFlow<Boolean> = _autoRead.asStateFlow()
+    fun setAutoRead(v: Boolean) { _autoRead.value = v; prefs.edit().putBoolean("autoRead", v).apply() }
+
     fun setTheme(v: Int) { _theme.value = v; prefs.edit().putInt("theme", v).apply() }
     fun setDynamic(v: Boolean) { _dynamic.value = v; prefs.edit().putBoolean("wallpaper", v).apply() }
     fun setMask(v: Boolean) { _mask.value = v; prefs.edit().putBoolean("mask", v).apply() }
-    fun setAutoClear(v: Int) { _autoClear.value = v; prefs.edit().putInt("autoClear", v).apply(); scheduleClear() }
 
     // ---- card operations ----
 
     /** The operation that runs when a card shows up. Null = read the card (the default, started by plugging in a reader). */
     private var pending: ((EidCard) -> Unit)? = null
     private var job: Job? = null
-    private var clearJob: Job? = null
 
     private val readOp: (EidCard) -> Unit = { card ->
         val p = card.readPersonalData()
         val s = card.verifySignatures()
         _personal.value = p; _sig.value = s
-        scheduleClear()
     }
 
     private fun begin(op: (EidCard) -> Unit, context: Context) {
-        _message.value = null
+        _message.value = null; _failed.value = false
         pending = op
         startUsb(context)
     }
@@ -125,20 +136,55 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
     fun autoStart(context: Context) {
         // coming back from the eUprava sign-in screen: the user is on the Token tab, do not read the card by itself
         if (EuLogin.skipAutoStart) { EuLogin.skipAutoStart = false; return }
+        if (!_autoRead.value) return                    // the user turned automatic reading off: only the buttons read
         if (_phase.value != Phase.Idle || _personal.value != null) return
         val usb = usbManager(context) ?: return         // no USB service on this device: nothing to look for (the card screen says so)
         if (UsbCcidTransport.findReader(usb) != null) startUsb(context)
     }
 
+    private var watchJob: Job? = null
+
+    /** While the app is in front: when a card is put into an already connected reader, read it (the same as the desktop apps).
+     *  A card that is already in when the app opens is read by autoStart; after any read the card has to be taken out first,
+     *  so a card that cannot be read does not make the app retry in a loop. Needs the USB permission to be granted already. */
+    fun watchCard(context: Context) {
+        if (watchJob?.isActive == true) return
+        val app = context.applicationContext
+        watchJob = viewModelScope.launch {
+            var removed = false                   // saw the slot empty since the last read
+            while (true) {
+                delay(1200)
+                // keeps watching while a result is shown: taking the card out and putting another in reads the new one
+                if (!_autoRead.value || _demo.value || _phase.value != Phase.Idle) { removed = false; continue }
+                val usb = usbManager(app) ?: return@launch
+                val device = UsbCcidTransport.findReader(usb)
+                if (device == null || !usb.hasPermission(device)) { removed = false; continue }
+                val present = withContext(Dispatchers.IO) {
+                    try {
+                        val t = UsbCcidTransport.open(app, device) ?: return@withContext null
+                        try { t.cardPresent() } finally { t.release() }
+                    } catch (_: Exception) { null }
+                } ?: continue
+                if (!present) removed = true
+                else if (removed && _phase.value == Phase.Idle) { removed = false; readCard(app) }
+            }
+        }
+    }
+
+    fun stopWatching() { watchJob?.cancel(); watchJob = null }
+
+    /** A reader was plugged in (the system started or woke the app for it): read only when automatic reading is on. */
+    fun onReaderAttached(context: Context) { if (_autoRead.value) startUsb(context) }
+
     fun startUsb(context: Context) {
         val usb = usbManager(context)
-        if (usb == null) { pending = null; _phase.value = Phase.Idle; _message.value = Msg(R.string.err_no_usb_host); return }
+        if (usb == null) { pending = null; _phase.value = Phase.Idle; report(Msg(R.string.err_no_usb_host)); return }
         val device = UsbCcidTransport.findReader(usb)
-        if (device == null) { pending = null; _phase.value = Phase.Idle; _message.value = Msg(R.string.err_no_usb); return }
+        if (device == null) { pending = null; _phase.value = Phase.Idle; report(Msg(R.string.err_no_usb)); return }
         _phase.value = Phase.WaitingUsb
         job = viewModelScope.launch {
             val transport = UsbCcidTransport.open(context, device)
-            if (transport == null) { pending = null; _phase.value = Phase.Idle; _message.value = Msg(R.string.err_usb_denied); return@launch }
+            if (transport == null) { pending = null; _phase.value = Phase.Idle; report(Msg(R.string.err_usb_denied)); return@launch }
             _phase.value = Phase.Reading
             withContext(Dispatchers.IO) {
                 try {
@@ -163,12 +209,13 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     private fun fail(e: Exception) {
+        DiagLog.error(e)
         pending = null
         _phase.value = Phase.Idle
-        _message.value = cardError(e)
+        report(cardError(e))
     }
 
-    fun notify(m: Msg) { _message.value = m }
+    fun notify(m: Msg) = report(m)
 
     fun consumeMessage() { _message.value = null }
 
@@ -183,19 +230,8 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
     /** Drops all personal data from memory. */
     fun clear() {
         cancel()
-        clearJob?.cancel()
+        _demo.value = false; _failed.value = false
         _personal.value = null; _sig.value = null; _token.value = null
-    }
-
-    private fun scheduleClear() {
-        clearJob?.cancel()
-        val minutes = _autoClear.value
-        if (minutes <= 0 || _personal.value == null) return
-        clearJob = viewModelScope.launch {
-            delay(minutes * 60_000L)
-            _personal.value = null; _sig.value = null; _token.value = null
-            _message.value = Msg(R.string.auto_cleared, error = false)
-        }
     }
 
     /** Demo/screenshots only: open the PDF viewer as soon as the result is shown. */
@@ -203,6 +239,7 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
 
     /** Fictional data for screenshots (launch intent extra "demo"); never touches a card. */
     fun showDemo() {
+        _demo.value = true
         _personal.value = PersonalData(
             cardType = CardType.RP2024, docRegNo = "001234567", documentType = "RP",
             issuingDate = "01.01.2024", expiryDate = "01.01.2030", issuingAuthority = "MUP RS", docSerial = "RS1234567",

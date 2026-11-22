@@ -88,6 +88,22 @@ class UsbCcidTransport private constructor(
 
     fun powerOn(): ByteArray = exchange(message(0x62))     // returns the ATR
 
+    /** True when a card sits in the reader (CCID GetSlotStatus: no power-up, so it can be polled). */
+    fun cardPresent(): Boolean {
+        val msg = message(0x65)
+        if (conn.bulkTransfer(bulkOut, msg, msg.size, 2000) < 0) throw CardException(CardException.Kind.Lost, "USB write")
+        val buf = ByteArray(64)
+        val n = conn.bulkTransfer(bulkIn, buf, buf.size, 2000)
+        if (n < 10) throw CardException(CardException.Kind.Lost, "USB read")
+        return (buf[7].toInt() and 3) != 2
+    }
+
+    /** Lets go of the reader without powering the card off (for the card watcher; a read powers it on itself). */
+    fun release() {
+        try { conn.releaseInterface(iface) } catch (_: Exception) { }
+        conn.close()
+    }
+
     override fun transmit(apdu: ByteArray): Resp = split(exchange(message(0x6F, apdu)))
 
     override fun close() {
