@@ -124,6 +124,7 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
     fun autoStart(context: Context) {
         // coming back from the eUprava sign-in screen: the user is on the Token tab, do not read the card by itself
         if (EuLogin.skipAutoStart) { EuLogin.skipAutoStart = false; return }
+        if (!_autoRead.value) return                    // the user turned automatic reading off: only the buttons read
         if (_phase.value != Phase.Idle || _personal.value != null) return
         val usb = usbManager(context) ?: return         // no USB service on this device: nothing to look for (the card screen says so)
         if (UsbCcidTransport.findReader(usb) != null) startUsb(context)
@@ -141,7 +142,8 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
             var removed = false                   // saw the slot empty since the last read
             while (true) {
                 delay(1200)
-                if (!_autoRead.value || _phase.value != Phase.Idle || _personal.value != null || _token.value != null) { removed = false; continue }
+                // keeps watching while a result is shown: taking the card out and putting another in reads the new one
+                if (!_autoRead.value || _phase.value != Phase.Idle) { removed = false; continue }
                 val usb = usbManager(app) ?: return@launch
                 val device = UsbCcidTransport.findReader(usb)
                 if (device == null || !usb.hasPermission(device)) { removed = false; continue }
@@ -158,6 +160,9 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     fun stopWatching() { watchJob?.cancel(); watchJob = null }
+
+    /** A reader was plugged in (the system started or woke the app for it): read only when automatic reading is on. */
+    fun onReaderAttached(context: Context) { if (_autoRead.value) startUsb(context) }
 
     fun startUsb(context: Context) {
         val usb = usbManager(context)

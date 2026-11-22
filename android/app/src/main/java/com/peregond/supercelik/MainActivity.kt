@@ -69,7 +69,7 @@ class MainActivity : ComponentActivity() {
 
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
-        if (intent.action == UsbManager.ACTION_USB_DEVICE_ATTACHED) vm.startUsb(this)
+        if (intent.action == UsbManager.ACTION_USB_DEVICE_ATTACHED) vm.onReaderAttached(this)
         if (demoAllowed && intent.getBooleanExtra("demo", false)) { vm.demoOpenPdf = intent.getBooleanExtra("pdf", false); vm.showDemo() }
     }
 
@@ -85,7 +85,7 @@ class MainActivity : ComponentActivity() {
         if (!demo) window.setFlags(WindowManager.LayoutParams.FLAG_SECURE, WindowManager.LayoutParams.FLAG_SECURE)
 
         // A USB reader being plugged in launches the app (see device_filter) and reads straight away.
-        if (intent?.action == UsbManager.ACTION_USB_DEVICE_ATTACHED) vm.startUsb(this)
+        if (intent?.action == UsbManager.ACTION_USB_DEVICE_ATTACHED) vm.onReaderAttached(this)
         if (demo) { vm.demoOpenPdf = intent?.getBooleanExtra("pdf", false) == true; vm.showDemo() }
 
         setContent {

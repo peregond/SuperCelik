@@ -317,6 +317,7 @@ public partial class MainWindow : Window
         {
             FillReaders(_pc.ListReaders());
             _cardPresent = _readers.Count > 0 && _pc.Atr(Reader) != null;
+            _lastTokenAtr = null;                  // another reader or card: the remembered ATR may not be this card's
             UpdateCardLabel();
             HideProblem();
             if (_cardPresent) _ = OfferBrowserAsync();
@@ -468,7 +469,7 @@ public partial class MainWindow : Window
     /// The ATR of the card in the reader when it has the token applet (null: no card or another kind of card).
     private async Task<byte[]> TokenAtrAsync()
     {
-        if (_lastTokenAtr != null) return _lastTokenAtr;
+        _lastTokenAtr = null;                      // always look at the card that is in the reader now
         if (!_cardPresent || _readers.Count == 0) return null;
         var reader = Reader;
         var (atr, hasToken) = await Compat.Run(() => SerbianCard.ProbeToken(_pc, reader));
@@ -578,10 +579,10 @@ public partial class MainWindow : Window
         try
         {
             var readers = _pc.ListReaders();
-            if (!readers.SequenceEqual(_readers)) { FillReaders(readers); UpdateCardLabel(); }
+            if (!readers.SequenceEqual(_readers)) { FillReaders(readers); _lastTokenAtr = null; UpdateCardLabel(); }
             bool present = _readers.Count > 0 && _pc.Atr(Reader) != null;
             if (present == _cardPresent) return;
-            _cardPresent = present;
+            _cardPresent = present; _lastTokenAtr = null;
             UpdateCardLabel();
             if (present)
             {
