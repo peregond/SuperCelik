@@ -25,7 +25,7 @@ struct SidebarRow: View {
     var body: some View {
         Button(action: action) {
             Label(title, systemImage: icon)
-                .fontWeight(selected ? .semibold : .regular)
+                .font(.body.weight(selected ? .semibold : .regular))      // View.fontWeight is macOS 13+
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 10).padding(.vertical, 7)
                 .foregroundStyle(selected ? Color.white : Color.primary)
@@ -442,7 +442,7 @@ struct PersonalView: View {
             }
             if model.cardPresent && !model.busy {
                 Button { Task { await model.readCard() } } label: {
-                    Label(loc.t(.readCard), systemImage: "person.text.rectangle").fontWeight(.semibold)
+                    Label(loc.t(.readCard), systemImage: "person.text.rectangle").font(.body.weight(.semibold))
                 }
                 .buttonStyle(.borderedProminent).controlSize(.large).padding(.top, 6)
                 .transition(.scale(scale: 0.9).combined(with: .opacity))
@@ -902,7 +902,7 @@ struct PreviewSheet: View {
                     Label(loc.t(.savePdf), systemImage: "square.and.arrow.down")
                 }
                 Button { if let p = model.personal { Printer.print(p, loc: loc, includeJmbg: prefs.printJmbg) } } label: {
-                    Label(loc.t(.printCard), systemImage: "printer").fontWeight(.semibold)
+                    Label(loc.t(.printCard), systemImage: "printer").font(.body.weight(.semibold))
                 }
                 .buttonStyle(.borderedProminent).keyboardShortcut(.defaultAction)
             }
