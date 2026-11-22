@@ -485,6 +485,12 @@ fun SettingsScreen(vm: CardViewModel) {
                 trailingContent = { Switch(mask, { vm.setMask(it) }) })
         }
         item {
+            val autoRead by vm.autoRead.collectAsStateWithLifecycle()
+            ListItem(headlineContent = { Text(stringResource(R.string.settings_auto_read)) },
+                supportingContent = { Text(stringResource(R.string.settings_auto_read_hint)) },
+                trailingContent = { Switch(autoRead, { vm.setAutoRead(it) }) })
+        }
+        item {
             val printJmbg by vm.printJmbg.collectAsStateWithLifecycle()
             ListItem(headlineContent = { Text(stringResource(R.string.settings_print_jmbg)) },
                 supportingContent = { Text(stringResource(R.string.settings_print_jmbg_hint)) },

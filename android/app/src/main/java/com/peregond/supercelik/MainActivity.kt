@@ -59,6 +59,12 @@ class MainActivity : ComponentActivity() {
     override fun onStart() {
         super.onStart()
         vm.autoStart(this)
+        vm.watchCard(this)
+    }
+
+    override fun onStop() {
+        vm.stopWatching()
+        super.onStop()
     }
 
     override fun onNewIntent(intent: Intent) {

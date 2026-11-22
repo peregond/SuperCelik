@@ -21,12 +21,12 @@ release, or the cell says why it cannot.
 | Report a bug / leave feedback | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Demo data | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Language (ru / en / sr Latin / sr Cyrillic), theme | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Auto-read when the card is inserted | ✅ | ✅ | ✅ | ✅ | – |
-| Hide the data after idle time | ✅ | ✅ | ✅ | – | – |
+| Auto-read when the card is inserted | ✅ | ✅ | ✅ | ✅ | ✅ (reader already connected) |
+| Hide the data after idle time | ✅ | ✅ | ✅ | – (not needed) | ✅ |
 | Check for updates inside the app | ✅ | ✅ | ✅ (not the App Store build) | – (App Store) | – (store / APK page) |
 
 "–" is not a gap to fill: a phone has no browser to set up, and apps from a store are updated by the store.
-Where a cell is "–" for another reason (auto-read and idle hide on Android, idle hide on iOS), it is an open item.
+Idle hide is not wanted on iOS (the data leaves with the app); every other cell is filled.
 
 Where the code lives:
 

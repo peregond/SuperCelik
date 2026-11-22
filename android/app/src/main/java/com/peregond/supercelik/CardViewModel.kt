@@ -60,6 +60,10 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
     val printJmbg: StateFlow<Boolean> = _printJmbg.asStateFlow()
     fun setPrintJmbg(v: Boolean) { _printJmbg.value = v; prefs.edit().putBoolean("printJmbg", v).apply() }
 
+    private val _autoRead = MutableStateFlow(prefs.getBoolean("autoRead", true))
+    val autoRead: StateFlow<Boolean> = _autoRead.asStateFlow()
+    fun setAutoRead(v: Boolean) { _autoRead.value = v; prefs.edit().putBoolean("autoRead", v).apply() }
+
     fun setTheme(v: Int) { _theme.value = v; prefs.edit().putInt("theme", v).apply() }
     fun setDynamic(v: Boolean) { _dynamic.value = v; prefs.edit().putBoolean("wallpaper", v).apply() }
     fun setMask(v: Boolean) { _mask.value = v; prefs.edit().putBoolean("mask", v).apply() }
@@ -129,6 +133,36 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
         val usb = usbManager(context) ?: return         // no USB service on this device: nothing to look for (the card screen says so)
         if (UsbCcidTransport.findReader(usb) != null) startUsb(context)
     }
+
+    private var watchJob: Job? = null
+
+    /** While the app is in front: when a card is put into an already connected reader, read it (the same as the desktop apps).
+     *  A card that is already in when the app opens is read by autoStart; after any read the card has to be taken out first,
+     *  so a card that cannot be read does not make the app retry in a loop. Needs the USB permission to be granted already. */
+    fun watchCard(context: Context) {
+        if (watchJob?.isActive == true) return
+        val app = context.applicationContext
+        watchJob = viewModelScope.launch {
+            var removed = false                   // saw the slot empty since the last read
+            while (true) {
+                delay(1200)
+                if (!_autoRead.value || _phase.value != Phase.Idle || _personal.value != null || _token.value != null) { removed = false; continue }
+                val usb = usbManager(app) ?: return@launch
+                val device = UsbCcidTransport.findReader(usb)
+                if (device == null || !usb.hasPermission(device)) { removed = false; continue }
+                val present = withContext(Dispatchers.IO) {
+                    try {
+                        val t = UsbCcidTransport.open(app, device) ?: return@withContext null
+                        try { t.cardPresent() } finally { t.release() }
+                    } catch (_: Exception) { null }
+                } ?: continue
+                if (!present) removed = true
+                else if (removed && _phase.value == Phase.Idle) { removed = false; readCard(app) }
+            }
+        }
+    }
+
+    fun stopWatching() { watchJob?.cancel(); watchJob = null }
 
     fun startUsb(context: Context) {
         val usb = usbManager(context)

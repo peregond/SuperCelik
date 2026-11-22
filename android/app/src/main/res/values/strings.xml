@@ -90,6 +90,8 @@
     <string name="settings_dynamic_hint">Take colours from your wallpaper (Material You)</string>
     <string name="settings_mask">Hide sensitive fields</string>
     <string name="settings_mask_hint">JMBG, document number and address are shown as dots until you tap the eye</string>
+    <string name="settings_auto_read">Read the card automatically when inserted</string>
+    <string name="settings_auto_read_hint">Reading starts as soon as a card is put into the connected reader</string>
     <string name="settings_autoclear">Clear data automatically after</string>
     <string name="minutes_off">Never</string>
     <string name="minutes_n">%d min</string>

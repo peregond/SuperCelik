@@ -90,6 +90,8 @@
     <string name="settings_dynamic_hint">Узми боје са позадине (Material You)</string>
     <string name="settings_mask">Сакриј осетљива поља</string>
     <string name="settings_mask_hint">ЈМБГ, број документа и адреса су сакривени док не додирнете око</string>
+    <string name="settings_auto_read">Аутоматски прочитај картицу при уметању</string>
+    <string name="settings_auto_read_hint">Читање почиње чим се картица стави у повезани читач</string>
     <string name="settings_autoclear">Аутоматски обриши податке после</string>
     <string name="minutes_off">Никад</string>
     <string name="minutes_n">%d мин</string>
