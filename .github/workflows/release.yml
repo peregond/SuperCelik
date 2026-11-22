@@ -1,0 +1,61 @@
+name: Release (create the tag)
+
+# Creates the release tag vX.Y.Z on a commit of main and starts the build of that release (build.yml builds the installers
+# and attaches them to the GitHub release). Start it by hand: Actions > "Release (create the tag)" > Run workflow.
+#
+# Why a workflow: the tag is made with the repository's own token, so nobody has to push a tag from a computer.
+# A tag pushed by a workflow does not start other workflows, so this one starts build.yml on the new tag itself
+# (a manual start of build.yml on a tag ref behaves like a tag push: the version and the release come from the tag).
+#
+# Before it tags it checks: the version looks like X.Y.Z and is higher than the latest release, the changelog
+# (site/changelog/index.html) has a block for this version, and the commit is on main. "dry_run" only checks.
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: "Release version X.Y.Z (the same number goes to the App Store); must be higher than the latest release"
+        required: true
+      commit:
+        description: "Commit of main to tag; empty = the head of main"
+        required: false
+      dry_run:
+        description: "true = only check, do not tag"
+        required: false
+        default: "false"
+
+permissions:
+  contents: write   # create the tag
+  actions: write    # start the build on the tag
+
+jobs:
+  tag:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: main
+          fetch-depth: 0
+      - name: Check, tag, start the build
+        env:
+          VERSION: ${{ github.event.inputs.version }}
+          COMMIT: ${{ github.event.inputs.commit }}
+          DRY_RUN: ${{ github.event.inputs.dry_run }}
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          [[ "$VERSION" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::The version must look like 1.4.5"; exit 1; }
+          sha="${COMMIT:-$(git rev-parse HEAD)}"
+          git cat-file -e "$sha^{commit}" || { echo "::error::No such commit: $sha"; exit 1; }
+          git merge-base --is-ancestor "$sha" origin/main || { echo "::error::$sha is not on main"; exit 1; }
+          last=$(git tag --list 'v*' | sed 's/^v//' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1 || true)
+          if [ -n "$last" ]; then
+            top=$(printf '%s\n%s\n' "$last" "$VERSION" | sort -V | tail -1)
+            { [ "$top" = "$VERSION" ] && [ "$last" != "$VERSION" ]; } || { echo "::error::$VERSION is not higher than the latest release $last"; exit 1; }
+          fi
+          git show "$sha:site/changelog/index.html" | grep -q "^\[\"$VERSION\"," || { echo "::error::The changelog has no block for $VERSION (site/changelog/index.html)"; exit 1; }
+          echo "Checks passed: v$VERSION on $sha (the latest release is v${last:-none})."
+          if [ "$DRY_RUN" = "true" ]; then echo "Dry run: nothing was tagged."; exit 0; fi
+          git tag "v$VERSION" "$sha"
+          git push origin "v$VERSION"
+          gh workflow run build.yml --ref "v$VERSION"
+          echo "Tagged v$VERSION on $sha and started the build."
