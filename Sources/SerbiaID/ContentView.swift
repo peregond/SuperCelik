@@ -25,7 +25,7 @@ struct SidebarRow: View {
     var body: some View {
         Button(action: action) {
             Label(title, systemImage: icon)
-                .fontWeight(selected ? .semibold : .regular)
+                .font(.body.weight(selected ? .semibold : .regular))      // View.fontWeight is macOS 13+
                 .frame(maxWidth: .infinity, alignment: .leading)
                 .padding(.horizontal, 10).padding(.vertical, 7)
                 .foregroundStyle(selected ? Color.white : Color.primary)
@@ -164,7 +164,32 @@ struct CopyButton: View {
     }
 }
 
+/// A row with a title on the left and a control on the right: LabeledContent on macOS 13+, a plain row on macOS 12 (Monterey).
+struct LabeledRow<Content: View>: View {
+    private let title: String
+    private let content: Content
+    init(_ title: String, @ViewBuilder content: () -> Content) { self.title = title; self.content = content() }
+
+    var body: some View {
+        if #available(macOS 13.0, *) {
+            LabeledContent(title) { content }
+        } else {
+            HStack { Text(title); Spacer(minLength: 8); content }
+        }
+    }
+}
+
 extension View {
+    /// Text that changes cross-fades on macOS 13+; on macOS 12 (Monterey) it simply switches.
+    @ViewBuilder func textFade() -> some View {
+        if #available(macOS 13.0, *) { self.contentTransition(.opacity) } else { self }
+    }
+
+    /// The grouped look of a Form (macOS 13+); the plain Form on macOS 12.
+    @ViewBuilder func groupedForm() -> some View {
+        if #available(macOS 13.0, *) { self.formStyle(.grouped) } else { self }
+    }
+
     /// SF Symbol swaps (copy -> check, eye -> crossed eye) morph on macOS 14+, and simply switch before.
     @ViewBuilder func symbolReplace() -> some View {
         if #available(macOS 14.0, *) { self.contentTransition(.symbolEffect(.replace)) } else { self }
@@ -228,32 +253,49 @@ struct ContentView: View {
     }
 
     var body: some View {
-        NavigationSplitView {
-            sidebar
-                .navigationSplitViewColumnWidth(min: 200, ideal: 225, max: 280)
-        } detail: {
-            VStack(spacing: 0) {
-                updateBanner
-                problemBanner
-                    .animation(.easeInOut(duration: 0.22), value: model.problem == nil)
-                Group {
-                    switch page {
-                    case .personal: PersonalView()
-                    case .token: TokenView()
-                    case .settings: SettingsView()
-                    }
-                }
-                .frame(maxWidth: .infinity, maxHeight: .infinity)
-            }
-            .navigationTitle(pageTitle)
-            .toolbar { readerToolbar }
-        }
+        window
         .tint(brandTint)
         .sheet(isPresented: $model.showPreview) { PreviewSheet() }
         .task { await model.startMonitoring() }
         #if !APPSTORE
         .task { if prefs.autoUpdate && !model.isDemoUI { await model.checkUpdates(manual: false) } }
         #endif
+    }
+
+    /// Sidebar and page. NavigationSplitView exists on macOS 13+; macOS 12 (Monterey) gets the same layout from NavigationView.
+    @ViewBuilder private var window: some View {
+        if #available(macOS 13.0, *) {
+            NavigationSplitView {
+                sidebar
+                    .navigationSplitViewColumnWidth(min: 200, ideal: 225, max: 280)
+            } detail: {
+                detailPage
+            }
+        } else {
+            NavigationView {
+                sidebar
+                    .frame(minWidth: 200, idealWidth: 225, maxWidth: 280)
+                detailPage
+            }
+        }
+    }
+
+    private var detailPage: some View {
+        VStack(spacing: 0) {
+            updateBanner
+            problemBanner
+                .animation(.easeInOut(duration: 0.22), value: model.problem == nil)
+            Group {
+                switch page {
+                case .personal: PersonalView()
+                case .token: TokenView()
+                case .settings: SettingsView()
+                }
+            }
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+        }
+        .navigationTitle(pageTitle)
+        .toolbar { readerToolbar }
     }
 
     /// Own sidebar rows instead of a List: the system draws a selected List row in the user's accent colour
@@ -386,7 +428,7 @@ struct PersonalView: View {
         return VStack(spacing: 14) {
             MascotArt(character: .reader, mood: mood, size: 170)
             Text(loc.t(title)).font(.title2.weight(.semibold)).multilineTextAlignment(.center)
-                .contentTransition(.opacity)
+                .textFade()
             if mood == .noReader {
                 // a thin strip: which reader to get (opens the reader page inside the app)
                 Button { showReaderHelp = true } label: {
@@ -396,11 +438,11 @@ struct PersonalView: View {
             }
             if let hint {
                 Text(loc.t(hint)).foregroundStyle(.secondary).multilineTextAlignment(.center).frame(maxWidth: 420)
-                    .contentTransition(.opacity)
+                    .textFade()
             }
             if model.cardPresent && !model.busy {
                 Button { Task { await model.readCard() } } label: {
-                    Label(loc.t(.readCard), systemImage: "person.text.rectangle").fontWeight(.semibold)
+                    Label(loc.t(.readCard), systemImage: "person.text.rectangle").font(.body.weight(.semibold))
                 }
                 .buttonStyle(.borderedProminent).controlSize(.large).padding(.top, 6)
                 .transition(.scale(scale: 0.9).combined(with: .opacity))
@@ -560,7 +602,7 @@ struct FieldCell: View {
                     .font(.body.weight(.medium))
                     .textSelection(.enabled)
                     .fixedSize(horizontal: false, vertical: true)
-                    .contentTransition(.opacity)
+                    .textFade()
                     .animation(.easeInOut(duration: 0.2), value: hidden)
             }
             Spacer(minLength: 4)
@@ -778,7 +820,7 @@ struct SettingsView: View {
             Section(loc.t(.setPrivacy)) {
                 Toggle(loc.t(.setMask), isOn: $prefs.maskSensitive)
                 Toggle(loc.t(.setPrintJmbg), isOn: $prefs.printJmbg)
-                LabeledContent(loc.t(.setAutoHide)) {
+                LabeledRow(loc.t(.setAutoHide)) {
                     HStack(spacing: 6) {
                         Text("\(prefs.autoHideMinutes)").monospacedDigit()
                         Stepper(loc.t(.setAutoHide), value: $prefs.autoHideMinutes, in: 0...240).labelsHidden()
@@ -798,7 +840,7 @@ struct SettingsView: View {
             } footer: { Text(loc.t(.demoHint)) }
             Section(loc.t(.tabAbout)) { AboutView() }
         }
-        .formStyle(.grouped)
+        .groupedForm()
         .frame(maxWidth: 680)
         .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .top)
     }
@@ -860,7 +902,7 @@ struct PreviewSheet: View {
                     Label(loc.t(.savePdf), systemImage: "square.and.arrow.down")
                 }
                 Button { if let p = model.personal { Printer.print(p, loc: loc, includeJmbg: prefs.printJmbg) } } label: {
-                    Label(loc.t(.printCard), systemImage: "printer").fontWeight(.semibold)
+                    Label(loc.t(.printCard), systemImage: "printer").font(.body.weight(.semibold))
                 }
                 .buttonStyle(.borderedProminent).keyboardShortcut(.defaultAction)
             }

@@ -3,7 +3,7 @@ import PackageDescription
 
 let package = Package(
     name: "SerbiaID",
-    platforms: [.macOS(.v13)],
+    platforms: [.macOS(.v12)],
     targets: [
         .target(
             name: "CPCSC",

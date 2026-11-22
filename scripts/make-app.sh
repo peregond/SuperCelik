@@ -15,8 +15,8 @@ case "$ARCH" in
 esac
 
 APP="dist/SuperCelik.app"
-swift build -c release "${ARCHFLAGS[@]}" -Xlinker -platform_version -Xlinker macos -Xlinker 13.0 -Xlinker 27.2
-BIN_DIR="$(swift build -c release "${ARCHFLAGS[@]}" -Xlinker -platform_version -Xlinker macos -Xlinker 13.0 -Xlinker 27.2 --show-bin-path)"
+swift build -c release "${ARCHFLAGS[@]}" -Xlinker -platform_version -Xlinker macos -Xlinker 12.0 -Xlinker 27.2
+BIN_DIR="$(swift build -c release "${ARCHFLAGS[@]}" -Xlinker -platform_version -Xlinker macos -Xlinker 12.0 -Xlinker 27.2 --show-bin-path)"
 
 rm -rf dist && mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
 # Executable name matches CFBundleExecutable in Info.plist
@@ -34,7 +34,7 @@ mkdir -p "$APPEX/Contents/MacOS" dist/token
 SLICES=()
 for a in "${ARCHS[@]}"; do
   xcrun --sdk macosx swiftc -O -parse-as-library -module-name SuperCelikToken \
-    -target "$a-apple-macos13.0" \
+    -target "$a-apple-macos12.0" \
     -framework CryptoTokenKit -framework Security -framework Foundation \
     -Xlinker -e -Xlinker _NSExtensionMain \
     TokenExtension/*.swift -o "dist/token/SuperCelikToken-$a"

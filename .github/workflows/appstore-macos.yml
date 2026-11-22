@@ -13,9 +13,8 @@ on:
   workflow_dispatch:
     inputs:
       version:
-        description: "Marketing version (e.g. 1.0.0)"
-        required: true
-        default: "1.0.0"
+        description: "Marketing version; empty = the number of the latest GitHub release (its git tag vX.Y.Z), the same on every platform"
+        required: false
       build:
         description: "Build number (must grow with every upload); empty = run number"
         required: false
@@ -25,6 +24,16 @@ jobs:
     runs-on: xcode-27
     steps:
       - uses: actions/checkout@v4
+      - name: Version (the latest release tag unless one is given)
+        id: ver
+        run: |
+          v="${{ github.event.inputs.version }}"
+          if [ -z "$v" ]; then
+            v=$(git ls-remote --tags --refs origin 'refs/tags/v*' | sed 's#.*refs/tags/v##' | grep -E '^[0-9]+\.[0-9]+\.[0-9]+$' | sort -V | tail -1)
+          fi
+          [[ "$v" =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]] || { echo "::error::No version: give one, or create a release tag vX.Y.Z first"; exit 1; }
+          echo "App Store version: $v"
+          echo "v=$v" >> "$GITHUB_OUTPUT"
       - name: Check secrets
         env:
           S1: ${{ secrets.APPLE_TEAM_ID }}
@@ -64,7 +73,7 @@ jobs:
         run: |
           BUILD="${{ github.event.inputs.build }}"; BUILD="${BUILD:-${{ github.run_number }}}"
           APP_PROFILE="$RUNNER_TEMP/app.provisionprofile" EXT_PROFILE="$RUNNER_TEMP/ext.provisionprofile" \
-            bash scripts/make-appstore-mac.sh "${{ github.event.inputs.version }}" "$BUILD"
+            bash scripts/make-appstore-mac.sh "${{ steps.ver.outputs.v }}" "$BUILD"
       - name: Upload to App Store Connect
         env:
           KEY_ID: ${{ secrets.ASC_KEY_ID }}

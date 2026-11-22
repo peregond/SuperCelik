@@ -19,7 +19,7 @@ APP="dist/SuperCelik.app"
 PB=/usr/libexec/PlistBuddy
 
 # Same code as the direct-download build, compiled with the APPSTORE flag (no updater, no helper processes).
-swift build -c release --arch arm64 --arch x86_64 -Xswiftc -DAPPSTORE -Xlinker -platform_version -Xlinker macos -Xlinker 13.0 -Xlinker 27.2
+swift build -c release --arch arm64 --arch x86_64 -Xswiftc -DAPPSTORE -Xlinker -platform_version -Xlinker macos -Xlinker 12.0 -Xlinker 27.2
 BIN_DIR="$(swift build -c release --arch arm64 --arch x86_64 -Xswiftc -DAPPSTORE --show-bin-path)"
 
 rm -rf dist && mkdir -p "$APP/Contents/MacOS" "$APP/Contents/Resources"
@@ -46,7 +46,7 @@ mkdir -p "$APPEX/Contents/MacOS" dist/token
 SLICES=()
 for a in arm64 x86_64; do
   xcrun --sdk macosx swiftc -O -parse-as-library -module-name SuperCelikToken \
-    -target "$a-apple-macos13.0" \
+    -target "$a-apple-macos12.0" \
     -framework CryptoTokenKit -framework Security -framework Foundation \
     -Xlinker -e -Xlinker _NSExtensionMain \
     TokenExtension/*.swift -o "dist/token/SuperCelikToken-$a"
