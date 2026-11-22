@@ -13,7 +13,7 @@ permissions:
 jobs:
   macos:
     # macOS 26 image: building against the current SDK is what gives the app the current system
-    # look (glass toolbar and sidebar) on macOS 26 and later. The app still runs on macOS 13+.
+    # look (glass toolbar and sidebar) on macOS 26 and later. The app still runs on macOS 12+.
     runs-on: xcode-27
     strategy:
       matrix:
