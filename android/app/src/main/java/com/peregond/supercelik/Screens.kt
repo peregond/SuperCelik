@@ -122,7 +122,8 @@ fun CardScreen(vm: CardViewModel, reveal: Boolean) {
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             val noHost = remember { usbManager(ctx) == null }
-            Mascot(if (noHost) R.drawable.mascot_reader_sad else R.drawable.mascot_reader_present)
+            val failed by vm.failed.collectAsStateWithLifecycle()
+            Mascot(if (noHost || failed) R.drawable.mascot_reader_sad else R.drawable.mascot_reader_present)
             Text(stringResource(R.string.hint_ready), textAlign = TextAlign.Center, style = MaterialTheme.typography.titleMedium)
             Text(stringResource(R.string.hint_idle), textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -329,7 +330,14 @@ fun TokenScreen(vm: CardViewModel) {
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item {
             Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
-                Mascot(if (token == null) R.drawable.mascot_key_present else R.drawable.mascot_key_thumbs, 144.dp)
+                val failed by vm.failed.collectAsStateWithLifecycle()
+                val phase by vm.phase.collectAsStateWithLifecycle()
+                Mascot(when {
+                    phase != Phase.Idle -> R.drawable.mascot_key_look
+                    failed -> R.drawable.mascot_key_worry
+                    token != null -> R.drawable.mascot_key_thumbs
+                    else -> R.drawable.mascot_key_present
+                }, 144.dp)
             }
         }
         item {

@@ -58,6 +58,12 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
     val printJmbg: StateFlow<Boolean> = _printJmbg.asStateFlow()
     fun setPrintJmbg(v: Boolean) { _printJmbg.value = v; prefs.edit().putBoolean("printJmbg", v).apply() }
 
+    private val _failed = MutableStateFlow(false)
+    /** The last card operation (or the reader search) failed and nothing has been tried since: the mascots look worried. */
+    val failed: StateFlow<Boolean> = _failed.asStateFlow()
+
+    private fun report(m: Msg) { _message.value = m; if (m.error) _failed.value = true }
+
     private val _demo = MutableStateFlow(false)
     val demo: StateFlow<Boolean> = _demo.asStateFlow()      // fictional data on screen (Settings switch), no card involved
 
@@ -85,7 +91,7 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     private fun begin(op: (EidCard) -> Unit, context: Context) {
-        _message.value = null
+        _message.value = null; _failed.value = false
         pending = op
         startUsb(context)
     }
@@ -172,13 +178,13 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
 
     fun startUsb(context: Context) {
         val usb = usbManager(context)
-        if (usb == null) { pending = null; _phase.value = Phase.Idle; _message.value = Msg(R.string.err_no_usb_host); return }
+        if (usb == null) { pending = null; _phase.value = Phase.Idle; report(Msg(R.string.err_no_usb_host)); return }
         val device = UsbCcidTransport.findReader(usb)
-        if (device == null) { pending = null; _phase.value = Phase.Idle; _message.value = Msg(R.string.err_no_usb); return }
+        if (device == null) { pending = null; _phase.value = Phase.Idle; report(Msg(R.string.err_no_usb)); return }
         _phase.value = Phase.WaitingUsb
         job = viewModelScope.launch {
             val transport = UsbCcidTransport.open(context, device)
-            if (transport == null) { pending = null; _phase.value = Phase.Idle; _message.value = Msg(R.string.err_usb_denied); return@launch }
+            if (transport == null) { pending = null; _phase.value = Phase.Idle; report(Msg(R.string.err_usb_denied)); return@launch }
             _phase.value = Phase.Reading
             withContext(Dispatchers.IO) {
                 try {
@@ -206,10 +212,10 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
         DiagLog.error(e)
         pending = null
         _phase.value = Phase.Idle
-        _message.value = cardError(e)
+        report(cardError(e))
     }
 
-    fun notify(m: Msg) { _message.value = m }
+    fun notify(m: Msg) = report(m)
 
     fun consumeMessage() { _message.value = null }
 
@@ -224,7 +230,7 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
     /** Drops all personal data from memory. */
     fun clear() {
         cancel()
-        _demo.value = false
+        _demo.value = false; _failed.value = false
         _personal.value = null; _sig.value = null; _token.value = null
     }
 
