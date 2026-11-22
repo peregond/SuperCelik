@@ -106,17 +106,15 @@
             <!-- Token -->
             <TabItem x:Name="TabToken">
                 <DockPanel Margin="24,18,24,20">
-                    <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,16">
-                        <Button x:Name="BtnReadToken" Style="{StaticResource PrimaryButton}" Click="ReadToken_Click" Margin="0,0,10,0"/>
-                        <Button x:Name="BtnChangePin" Style="{StaticResource SecondaryButton}" Click="ChangePin_Click" Margin="0,0,10,0"/>
-                        <Button x:Name="BtnUnblockPin" Style="{StaticResource SecondaryButton}" Click="UnblockPin_Click" Margin="0,0,10,0"/>
-                        <Button x:Name="BtnSignFile" Style="{StaticResource SecondaryButton}" Click="SignFile_Click" Margin="0,0,10,0"/>
-                        <Button x:Name="BtnLoginEu" Style="{StaticResource SecondaryButton}" Click="LoginEu_Click" Margin="0,0,10,0"/>
-                        <Button x:Name="BtnSetupBrowser" Style="{StaticResource SecondaryButton}" Click="SetupBrowser_Click" Margin="0,0,10,0"/>
-                        <Button x:Name="BtnCheckBrowser" Style="{StaticResource SecondaryButton}" Click="CheckBrowser_Click" Margin="0,0,10,0"/>
+                    <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,6">
+                        <Button x:Name="BtnReadToken" Style="{StaticResource PrimaryButton}" Click="ReadToken_Click" Margin="0,0,10,10"/>
+                        <Button x:Name="BtnChangePin" Style="{StaticResource SecondaryButton}" Click="ChangePin_Click" Margin="0,0,10,10"/>
+                        <Button x:Name="BtnUnblockPin" Style="{StaticResource SecondaryButton}" Click="UnblockPin_Click" Margin="0,0,10,10"/>
+                        <Button x:Name="BtnSignFile" Style="{StaticResource SecondaryButton}" Click="SignFile_Click" Margin="0,0,10,10"/>
+                        <Button x:Name="BtnLoginEu" Style="{StaticResource SecondaryButton}" Click="LoginEu_Click" Margin="0,0,10,10"/>
+                        <Button x:Name="BtnSetupBrowser" Style="{StaticResource SecondaryButton}" Click="SetupBrowser_Click" Margin="0,0,10,10"/>
                     </WrapPanel>
-                    <TextBlock x:Name="LblTokenInfo" DockPanel.Dock="Top" Foreground="{DynamicResource MutedBrush}" Margin="2,-8,0,12"/>
-                    <TextBlock x:Name="LblPinNote" DockPanel.Dock="Bottom" Foreground="{DynamicResource MutedBrush}" TextWrapping="Wrap" Margin="2,14,0,0"/>
+                    <TextBlock x:Name="LblTokenInfo" DockPanel.Dock="Top" Foreground="{DynamicResource MutedBrush}" Margin="2,0,0,14"/>
                     <Border Style="{StaticResource Card}">
                         <DockPanel>
                             <TextBlock x:Name="LblCerts" Foreground="{DynamicResource TextBrush}" DockPanel.Dock="Top" FontSize="15" FontWeight="Bold" Margin="0,0,0,10"/>

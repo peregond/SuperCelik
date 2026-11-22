@@ -151,7 +151,6 @@ public partial class MainWindow : Window
         SetBtn(BtnSignFile, "\uE70F", Loc.T("signFile"));
         SetBtn(BtnLoginEu, "\uE77B", Loc.T("loginEuprava"));
         SetBtn(BtnSetupBrowser, "\uE72E", Loc.T("setupBrowser"));
-        SetBtn(BtnCheckBrowser, "\uE73E", Loc.T("checkBrowser"));
         SetBtn(BtnFeedback, "\uE70F", Loc.T("betaReport"));
         SetBtn(BtnCopyLogs, "\uE8C8", Loc.T("copyLogs")); LblCopyLogsHint.Text = Loc.T("copyLogsHint");
         LblCheckTitle.Text = Loc.T("chkTitle");
@@ -167,7 +166,6 @@ public partial class MainWindow : Window
         TabSettings.Header = Loc.T("tabSettings");
         TabAbout.Header = Loc.T("tabAbout");
         LblCerts.Text = Loc.T("certificates");
-        LblPinNote.Text = Loc.T("pinNote");
         LblAboutTitle.Text = Loc.T("appTitle");
         LblAboutText.Text = Loc.T("aboutText");
         LblVersion.Text = $"{Loc.T("version")} {Updater.CurrentText}";
@@ -480,21 +478,20 @@ public partial class MainWindow : Window
     /// "Set up browser sign-in": the card driver (Chrome, Edge) and the Firefox setting, whatever is missing.
     private async void SetupBrowser_Click(object s, RoutedEventArgs e)
     {
-        if (_demo) return;
+        if (_demo) { await RunBrowserCheck(); return; }
         try
         {
-            bool changed = false;
             if (DriverSetup.Available)
             {
                 var atr = await TokenAtrAsync();
-                if (atr == null) { ShowInfo(Loc.T("driverNoCard")); return; }
-                if (!DriverSetup.IsRegistered(atr) && !DriverSetup.HandledByOtherDriver(atr)) { await InstallDriverAsync(atr); changed = true; }
+                if (atr == null) { await RunBrowserCheck(); return; }
+                if (!DriverSetup.IsRegistered(atr) && !DriverSetup.HandledByOtherDriver(atr)) await InstallDriverAsync(atr);
             }
             var st = await Compat.Run(() => FirefoxSetup.Check());
-            if (st.Disabled.Count > 0) { EnableFirefox(st); changed = true; }
-            if (!changed) ShowInfo(Loc.T("setupWinDone"));
+            if (st.Disabled.Count > 0) EnableFirefox(st);
         }
         catch { ShowInfo(Loc.T("driverFail")); }
+        await RunBrowserCheck();                   // the panel under the buttons is the answer: what is fine, what is not, what to do next
     }
 
     private void CheckClose_Click(object s, RoutedEventArgs e) => PnlCheck.Visibility = Visibility.Collapsed;
@@ -510,7 +507,7 @@ public partial class MainWindow : Window
     }
 
     /// "Check browser sign-in": is a card in the reader, is the driver there, does Firefox use the Windows certificates; then what to do next.
-    private async void CheckBrowser_Click(object s, RoutedEventArgs e)
+    private async Task RunBrowserCheck()
     {
         LstCheck.Children.Clear();
         string step = null;
