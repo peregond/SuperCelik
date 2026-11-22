@@ -35,11 +35,13 @@ import androidx.compose.ui.graphics.asImageBitmap
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -58,17 +60,12 @@ fun Pill(text: String, color: Color, container: Color) {
     }
 }
 
+/** The illustrated mascot (the card reader or the key, as on the other systems) with a slow, small "breathing" motion. */
 @Composable
-private fun PulsingReader() {
-    val t = rememberInfiniteTransition(label = "pulse")
-    val scale by t.animateFloat(1f, 1.25f, infiniteRepeatable(tween(1400, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "scale")
-    val alpha by t.animateFloat(0.25f, 0.05f, infiniteRepeatable(tween(1400, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "alpha")
-    Box(Modifier.size(144.dp), contentAlignment = Alignment.Center) {
-        Box(Modifier.size(112.dp).scale(scale).background(MaterialTheme.colorScheme.primary.copy(alpha = alpha), CircleShape))
-        Box(Modifier.size(96.dp).background(MaterialTheme.colorScheme.primaryContainer, CircleShape), contentAlignment = Alignment.Center) {
-            Icon(Icons.Filled.Usb, null, Modifier.size(48.dp), tint = MaterialTheme.colorScheme.onPrimaryContainer)
-        }
-    }
+private fun Mascot(@androidx.annotation.DrawableRes id: Int, size: Dp = 168.dp) {
+    val t = rememberInfiniteTransition(label = "mascot")
+    val scale by t.animateFloat(1f, 1.04f, infiniteRepeatable(tween(1800, easing = FastOutSlowInEasing), RepeatMode.Reverse), label = "scale")
+    Image(painterResource(id), null, Modifier.size(size).scale(scale), contentScale = ContentScale.Fit)
 }
 
 /** Full-screen "looking for the reader / reading" overlay for a card operation. */
@@ -77,6 +74,8 @@ fun WaitingOverlay(phase: Phase, onCancel: () -> Unit) {
     val text = if (phase == Phase.Reading) R.string.reading else R.string.hint_usb_wait
     Surface(Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.surface.copy(alpha = 0.97f)) {
         Column(Modifier.fillMaxSize().padding(24.dp), Arrangement.Center, Alignment.CenterHorizontally) {
+            Mascot(if (phase == Phase.Reading) R.drawable.mascot_reader_card else R.drawable.mascot_reader_present, 144.dp)
+            Spacer(Modifier.height(16.dp))
             CircularProgressIndicator()
             Spacer(Modifier.height(24.dp))
             Text(stringResource(text), textAlign = TextAlign.Center, style = MaterialTheme.typography.titleMedium)
@@ -122,12 +121,13 @@ fun CardScreen(vm: CardViewModel, reveal: Boolean) {
             verticalArrangement = Arrangement.spacedBy(16.dp, Alignment.CenterVertically),
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
-            PulsingReader()
+            val noHost = remember { usbManager(ctx) == null }
+            Mascot(if (noHost) R.drawable.mascot_reader_sad else R.drawable.mascot_reader_present)
             Text(stringResource(R.string.hint_ready), textAlign = TextAlign.Center, style = MaterialTheme.typography.titleMedium)
             Text(stringResource(R.string.hint_idle), textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant)
             // a device without USB host support (some emulators, cloud phones): a reader cannot be connected here
-            if (remember { usbManager(ctx) == null }) {
+            if (noHost) {
                 Text(stringResource(R.string.err_no_usb_host), textAlign = TextAlign.Center, style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.error)
             }
@@ -328,13 +328,18 @@ fun TokenScreen(vm: CardViewModel) {
 
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item {
+            Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
+                Mascot(if (token == null) R.drawable.mascot_key_present else R.drawable.mascot_key_thumbs, 144.dp)
+            }
+        }
+        item {
             Button(onClick = { vm.readToken(ctx) }, Modifier.fillMaxWidth().height(56.dp)) {
                 Icon(Icons.Filled.Key, null); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.read_token))
             }
         }
         val t = token
         if (t == null) {
-            item { Text(stringResource(R.string.token_hint), color = MaterialTheme.colorScheme.onSurfaceVariant) }
+            item { Text(stringResource(R.string.token_hint), color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) }
         } else {
             item {
                 Row(verticalAlignment = Alignment.CenterVertically) {
@@ -455,70 +460,97 @@ fun SettingsScreen(vm: CardViewModel) {
     val theme by vm.theme.collectAsStateWithLifecycle()
     val dynamic by vm.dynamic.collectAsStateWithLifecycle()
     val mask by vm.mask.collectAsStateWithLifecycle()
+    val autoRead by vm.autoRead.collectAsStateWithLifecycle()
+    val printJmbg by vm.printJmbg.collectAsStateWithLifecycle()
+    val demo by vm.demo.collectAsStateWithLifecycle()
     val ctx = LocalContext.current
     val version = remember { runCatching { ctx.packageManager.getPackageInfo(ctx.packageName, 0).versionName }.getOrNull() ?: "" }
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+    val transparent = ListItemDefaults.colors(containerColor = Color.Transparent)
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 24.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
         item {
-            Text(stringResource(R.string.settings_theme), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
-            Spacer(Modifier.height(8.dp))
-            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                listOf(R.string.theme_system, R.string.theme_light, R.string.theme_dark).forEachIndexed { i, r ->
-                    SegmentedButton(selected = theme == i, onClick = { vm.setTheme(i) },
-                        shape = SegmentedButtonDefaults.itemShape(i, 3)) { Text(stringResource(r)) }
+            SettingsGroup(R.string.group_appearance) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
+                    Text(stringResource(R.string.settings_theme), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                        listOf(R.string.theme_system, R.string.theme_light, R.string.theme_dark).forEachIndexed { i, r ->
+                            SegmentedButton(selected = theme == i, onClick = { vm.setTheme(i) },
+                                shape = SegmentedButtonDefaults.itemShape(i, 3)) { Text(stringResource(r), maxLines = 1) }
+                        }
+                    }
+                    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
+                        Text(stringResource(R.string.settings_palette), style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
+                            listOf(R.string.palette_flag, R.string.palette_wallpaper).forEachIndexed { i, r ->
+                                SegmentedButton(selected = dynamic == (i == 1), onClick = { vm.setDynamic(i == 1) },
+                                    shape = SegmentedButtonDefaults.itemShape(i, 2)) { Text(stringResource(r), maxLines = 1) }
+                            }
+                        }
+                    }
+                }
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+                    HorizontalDivider(Modifier.padding(horizontal = 16.dp))
+                    ListItem(modifier = Modifier.clickable {
+                        ctx.startActivity(Intent(android.provider.Settings.ACTION_APP_LOCALE_SETTINGS, Uri.parse("package:${ctx.packageName}")))
+                    }, colors = transparent, leadingContent = { Icon(Icons.Filled.Language, null) },
+                        headlineContent = { Text(stringResource(R.string.settings_language)) },
+                        supportingContent = { Text(stringResource(R.string.settings_language_hint)) })
                 }
             }
         }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) item {
-            Text(stringResource(R.string.settings_palette), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
-            Spacer(Modifier.height(8.dp))
-            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
-                listOf(R.string.palette_flag, R.string.palette_wallpaper).forEachIndexed { i, r ->
-                    SegmentedButton(selected = dynamic == (i == 1), onClick = { vm.setDynamic(i == 1) },
-                        shape = SegmentedButtonDefaults.itemShape(i, 2)) { Text(stringResource(r)) }
-                }
+        item {
+            SettingsGroup(R.string.group_privacy) {
+                ListItem(colors = transparent, headlineContent = { Text(stringResource(R.string.settings_mask)) },
+                    supportingContent = { Text(stringResource(R.string.settings_mask_hint)) },
+                    trailingContent = { Switch(mask, { vm.setMask(it) }) })
+                HorizontalDivider(Modifier.padding(horizontal = 16.dp))
+                ListItem(colors = transparent, headlineContent = { Text(stringResource(R.string.settings_print_jmbg)) },
+                    supportingContent = { Text(stringResource(R.string.settings_print_jmbg_hint)) },
+                    trailingContent = { Switch(printJmbg, { vm.setPrintJmbg(it) }) })
             }
         }
         item {
-            ListItem(headlineContent = { Text(stringResource(R.string.settings_mask)) },
-                supportingContent = { Text(stringResource(R.string.settings_mask_hint)) },
-                trailingContent = { Switch(mask, { vm.setMask(it) }) })
-        }
-        item {
-            val autoRead by vm.autoRead.collectAsStateWithLifecycle()
-            ListItem(headlineContent = { Text(stringResource(R.string.settings_auto_read)) },
-                supportingContent = { Text(stringResource(R.string.settings_auto_read_hint)) },
-                trailingContent = { Switch(autoRead, { vm.setAutoRead(it) }) })
-        }
-        item {
-            val printJmbg by vm.printJmbg.collectAsStateWithLifecycle()
-            ListItem(headlineContent = { Text(stringResource(R.string.settings_print_jmbg)) },
-                supportingContent = { Text(stringResource(R.string.settings_print_jmbg_hint)) },
-                trailingContent = { Switch(printJmbg, { vm.setPrintJmbg(it) }) })
-        }
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) item {
-            ListItem(modifier = Modifier.clickable {
-                ctx.startActivity(Intent(android.provider.Settings.ACTION_APP_LOCALE_SETTINGS, Uri.parse("package:${ctx.packageName}")))
-            }, headlineContent = { Text(stringResource(R.string.settings_language)) },
-                supportingContent = { Text(stringResource(R.string.settings_language_hint)) })
-        }
-        item {
-            ListItem(modifier = Modifier.clickable {
-                val cm = ctx.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
-                cm.setPrimaryClip(android.content.ClipData.newPlainText("Super Čelik", DiagLog.report(version, "")))
-                android.widget.Toast.makeText(ctx, ctx.getString(R.string.logs_copied), android.widget.Toast.LENGTH_SHORT).show()
-            }, headlineContent = { Text(stringResource(R.string.copy_logs)) },
-                supportingContent = { Text(stringResource(R.string.copy_logs_hint)) })
-        }
-        item {
-            HorizontalDivider()
-            Spacer(Modifier.height(12.dp))
-            Text("${stringResource(R.string.app_name)} $version", style = MaterialTheme.typography.titleMedium)
-            Spacer(Modifier.height(4.dp))
-            Text(stringResource(R.string.about_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Column {
-                TextButton(onClick = { openUrl(ctx, changelogUrl(ctx)) }) { Text(stringResource(R.string.whats_new)) }
-                TextButton(onClick = { openUrl(ctx, FEEDBACK_URL) }) { Text(stringResource(R.string.report_bug)) }
+            SettingsGroup(R.string.group_reading) {
+                ListItem(colors = transparent, headlineContent = { Text(stringResource(R.string.settings_auto_read)) },
+                    supportingContent = { Text(stringResource(R.string.settings_auto_read_hint)) },
+                    trailingContent = { Switch(autoRead, { vm.setAutoRead(it) }) })
+                HorizontalDivider(Modifier.padding(horizontal = 16.dp))
+                ListItem(colors = transparent, headlineContent = { Text(stringResource(R.string.demo_data)) },
+                    supportingContent = { Text(stringResource(R.string.demo_hint)) },
+                    trailingContent = { Switch(demo, { vm.setDemo(it) }) })
             }
         }
+        item {
+            SettingsGroup(R.string.group_help) {
+                ListItem(modifier = Modifier.clickable { openUrl(ctx, changelogUrl(ctx)) }, colors = transparent,
+                    leadingContent = { Icon(Icons.Filled.NewReleases, null) }, headlineContent = { Text(stringResource(R.string.whats_new)) })
+                HorizontalDivider(Modifier.padding(horizontal = 16.dp))
+                ListItem(modifier = Modifier.clickable { openUrl(ctx, FEEDBACK_URL) }, colors = transparent,
+                    leadingContent = { Icon(Icons.Filled.BugReport, null) }, headlineContent = { Text(stringResource(R.string.report_bug)) })
+                HorizontalDivider(Modifier.padding(horizontal = 16.dp))
+                ListItem(modifier = Modifier.clickable {
+                    val cm = ctx.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                    cm.setPrimaryClip(android.content.ClipData.newPlainText("Super Čelik", DiagLog.report(version, "")))
+                    android.widget.Toast.makeText(ctx, ctx.getString(R.string.logs_copied), android.widget.Toast.LENGTH_SHORT).show()
+                }, colors = transparent, leadingContent = { Icon(Icons.Filled.ContentCopy, null) },
+                    headlineContent = { Text(stringResource(R.string.copy_logs)) },
+                    supportingContent = { Text(stringResource(R.string.copy_logs_hint)) })
+            }
+        }
+        item {
+            Column(Modifier.fillMaxWidth().padding(horizontal = 8.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                Text("${stringResource(R.string.app_name)} $version", style = MaterialTheme.typography.titleMedium)
+                Text(stringResource(R.string.about_note), style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant)
+            }
+        }
+    }
+}
+
+/** A titled group of settings in one card, the same look as the cards of the other screens. */
+@Composable
+private fun SettingsGroup(@androidx.annotation.StringRes title: Int, content: @Composable ColumnScope.() -> Unit) {
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(stringResource(title), Modifier.padding(start = 8.dp), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+        ElevatedCard(Modifier.fillMaxWidth(), shape = RoundedCornerShape(24.dp)) { Column(content = content) }
     }
 }

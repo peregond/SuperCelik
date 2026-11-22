@@ -58,6 +58,12 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
     val printJmbg: StateFlow<Boolean> = _printJmbg.asStateFlow()
     fun setPrintJmbg(v: Boolean) { _printJmbg.value = v; prefs.edit().putBoolean("printJmbg", v).apply() }
 
+    private val _demo = MutableStateFlow(false)
+    val demo: StateFlow<Boolean> = _demo.asStateFlow()      // fictional data on screen (Settings switch), no card involved
+
+    /** Settings switch: shows fictional card data to look at the app, or goes back to the real reader. */
+    fun setDemo(on: Boolean) { if (on) { cancel(); showDemo() } else { clear() } }
+
     private val _autoRead = MutableStateFlow(prefs.getBoolean("autoRead", true))
     val autoRead: StateFlow<Boolean> = _autoRead.asStateFlow()
     fun setAutoRead(v: Boolean) { _autoRead.value = v; prefs.edit().putBoolean("autoRead", v).apply() }
@@ -143,7 +149,7 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
             while (true) {
                 delay(1200)
                 // keeps watching while a result is shown: taking the card out and putting another in reads the new one
-                if (!_autoRead.value || _phase.value != Phase.Idle) { removed = false; continue }
+                if (!_autoRead.value || _demo.value || _phase.value != Phase.Idle) { removed = false; continue }
                 val usb = usbManager(app) ?: return@launch
                 val device = UsbCcidTransport.findReader(usb)
                 if (device == null || !usb.hasPermission(device)) { removed = false; continue }
@@ -218,6 +224,7 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
     /** Drops all personal data from memory. */
     fun clear() {
         cancel()
+        _demo.value = false
         _personal.value = null; _sig.value = null; _token.value = null
     }
 
@@ -226,6 +233,7 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
 
     /** Fictional data for screenshots (launch intent extra "demo"); never touches a card. */
     fun showDemo() {
+        _demo.value = true
         _personal.value = PersonalData(
             cardType = CardType.RP2024, docRegNo = "001234567", documentType = "RP",
             issuingDate = "01.01.2024", expiryDate = "01.01.2030", issuingAuthority = "MUP RS", docSerial = "RS1234567",

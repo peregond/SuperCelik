@@ -6,6 +6,12 @@
     <string name="hint_idle">Вставьте карту в USB-ридер смарт-карт и подключите его к телефону (USB-C или через OTG-переходник). Чтение начнётся автоматически.</string>
     <string name="reader_help">Нет считывателя?</string>
     <string name="whats_new">Что нового?</string>
+    <string name="demo_data">Показать демо-данные</string>
+    <string name="demo_hint">Вымышленные данные без карты, чтобы посмотреть, как выглядит приложение. Пока включено, настоящее чтение не работает.</string>
+    <string name="group_appearance">Оформление</string>
+    <string name="group_privacy">Приватность</string>
+    <string name="group_reading">Чтение карты</string>
+    <string name="group_help">Помощь</string>
     <string name="copy_logs">Скопировать логи и ошибки</string>
     <string name="copy_logs_hint">Копирует технические сведения об ошибках (без ваших данных с карты), чтобы вставить их в сообщение об ошибке.</string>
     <string name="logs_copied">Логи скопированы</string>

@@ -19,7 +19,7 @@ release, or the cell says why it cannot.
 | "No reader yet?" page | ✅ | ✅ | ✅ | ✅ | ✅ |
 | "What's new?" page | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Report a bug / leave feedback | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Demo data | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Demo data (Settings switch) | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Copy logs and errors (Settings) | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Language (ru / en / sr Latin / sr Cyrillic), theme | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Auto-read when the card is inserted | ✅ | ✅ | ✅ | ✅ | ✅ (reader already connected) |
