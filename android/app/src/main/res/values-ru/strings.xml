@@ -5,6 +5,8 @@
     <string name="read_usb">Читать через USB-ридер</string>
     <string name="hint_idle">Вставьте карту в USB-ридер смарт-карт и подключите его к телефону (USB-C или через OTG-переходник). Чтение начнётся автоматически.</string>
     <string name="reader_help">Нет считывателя?</string>
+    <string name="whats_new">Что нового?</string>
+    <string name="report_bug">Сообщить об ошибке или оставить отзыв</string>
     <string name="hint_usb_wait">Ищу USB-ридер…</string>
     <string name="reading">Читаю карту…</string>
     <string name="cancel">Отмена</string>

@@ -94,14 +94,21 @@ fun msgText(m: Msg): String = if (m.arg != null) stringResource(m.id, m.arg) els
 // ---------------------------------------------------------------- card tab
 
 /** The reader page of the site, in the language of the app (Cyrillic or Latin Serbian by the script of the locale). */
-private fun readerUrl(ctx: Context): String {
+private fun siteLang(ctx: Context): String {
     val loc = ctx.resources.configuration.locales[0]
-    val code = when (loc.language) {
+    return when (loc.language) {
         "ru" -> "ru"
         "sr" -> if (loc.script == "Latn") "sr" else "sc"
         else -> "en"
     }
-    return "https://celik.peregon.cc/reader/?lang=$code"
+}
+
+private fun readerUrl(ctx: Context): String = "https://celik.peregon.cc/reader/?lang=${siteLang(ctx)}"
+private fun changelogUrl(ctx: Context): String = "https://celik.peregon.cc/changelog/?lang=${siteLang(ctx)}&app=android"
+private const val FEEDBACK_URL = "https://github.com/peregond/SuperCelik/issues/new"
+
+private fun openUrl(ctx: Context, url: String) {
+    try { ctx.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url))) } catch (_: ActivityNotFoundException) { }
 }
 
 @Composable
@@ -505,6 +512,10 @@ fun SettingsScreen(vm: CardViewModel) {
             Text("${stringResource(R.string.app_name)} $version", style = MaterialTheme.typography.titleMedium)
             Spacer(Modifier.height(4.dp))
             Text(stringResource(R.string.about_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Column {
+                TextButton(onClick = { openUrl(ctx, changelogUrl(ctx)) }) { Text(stringResource(R.string.whats_new)) }
+                TextButton(onClick = { openUrl(ctx, FEEDBACK_URL) }) { Text(stringResource(R.string.report_bug)) }
+            }
         }
     }
 }

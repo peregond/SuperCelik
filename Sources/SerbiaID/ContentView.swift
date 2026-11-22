@@ -859,11 +859,21 @@ struct AboutView: View {
             Text("\(loc.t(.version)) \(Updater.currentVersion)").foregroundStyle(.secondary)
             Text(loc.t(.aboutText)).multilineTextAlignment(.center).foregroundStyle(.secondary)
                 .font(.callout).frame(maxWidth: 400).padding(.top, 2)
-            #if !APPSTORE
-            Button { Task { await model.checkUpdates(manual: true) } } label: {
-                Label(loc.t(.checkUpdates), systemImage: "arrow.triangle.2.circlepath")
+            HStack(spacing: 10) {
+                #if !APPSTORE
+                Button { Task { await model.checkUpdates(manual: true) } } label: {
+                    Label(loc.t(.checkUpdates), systemImage: "arrow.triangle.2.circlepath")
+                }
+                #endif
+                Button { NSWorkspace.shared.open(loc.changelogURL) } label: {
+                    Label(loc.t(.whatsNew), systemImage: "sparkles")
+                }
             }
             .padding(.top, 6)
+            Button { NSWorkspace.shared.open(Loc.feedbackURL) } label: {
+                Label(loc.t(.betaReport), systemImage: "ladybug")
+            }
+            #if !APPSTORE
             if let s = model.updateStatus {
                 Text(s).font(.caption).foregroundStyle(.secondary).multilineTextAlignment(.center).frame(maxWidth: 400)
             }

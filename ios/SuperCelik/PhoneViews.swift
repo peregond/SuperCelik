@@ -818,6 +818,8 @@ struct SettingsTab: View {
                 Section(loc.t(.tabAbout)) {
                     Text(loc.t(.aboutTextIOS)).font(.subheadline)
                     LabeledContent(loc.t(.version), value: version)
+                    Link(loc.t(.whatsNew), destination: loc.changelogURL)
+                    Link(loc.t(.betaReport), destination: Loc.feedbackURL)
                 }
                 .listRowBackground(Rectangle().fill(.regularMaterial))
             }
