@@ -559,7 +559,12 @@ public sealed class MainWindow : Window
     private async Task SetupAndCheckBrowser()
     {
         _btnSetupBrowser.IsEnabled = false;
-        try { if (!_demo) await SetupBrowser(quiet: true); }
+        try
+        {
+            // a stuck pcscd or modutil must not keep the check from appearing: give the setup a while, then show what the check finds
+            // (the setup goes on in the background and announces itself if it connects something)
+            if (!_demo) await Task.WhenAny(SetupBrowser(quiet: true), Task.Delay(TimeSpan.FromSeconds(25)));
+        }
         finally { _btnSetupBrowser.IsEnabled = true; }
         await CheckBrowser();
     }
