@@ -47,7 +47,7 @@ public sealed class MainWindow : Window
     private const string EuLoginUrl = "https://euprava.gov.rs/prijava";
     private const string FeedbackUrl = "https://github.com/peregond/SuperCelik/issues/new";
     // the site pages open in the language of the app (?lang=), the changelog in this app's own section (?app=)
-    private static string LangCode => Loc.Current switch { Lang.ru => "ru", Lang.en => "en", Lang.sr => "sr", _ => "sc" };
+    private static string LangCode => Loc.SiteCode;
     private static string ReaderPageUrl => "https://celik.peregon.cc/reader/?lang=" + LangCode;
     private static string ChangelogUrl => "https://celik.peregon.cc/changelog/?lang=" + LangCode + "&app=linux";
     private Button _btnReadToken, _btnChangePin, _btnUnblockPin, _btnSignFile, _btnCheckUpdates, _btnUpdate, _btnWhatsNew, _btnReaderHelp;
@@ -144,7 +144,8 @@ public sealed class MainWindow : Window
             s = s.Split(':')[0].ToLowerInvariant();
             if (s.StartsWith("ru")) return Lang.ru;
             if (s.StartsWith("sr")) return s.Contains("latin") ? Lang.sr : Lang.srCyrl;
-            if (s.StartsWith("hr") || s.StartsWith("bs")) return Lang.sr;
+            if (s.StartsWith("bs")) return Lang.sr;
+            if (s.Length >= 2 && Loc.FromCode(s.Substring(0, 2)) is Lang extra) return extra;
             if (s.StartsWith("c") && (s == "c" || s.StartsWith("c.") || s.StartsWith("c@"))) continue;
             return Lang.en;
         }
@@ -329,7 +330,7 @@ public sealed class MainWindow : Window
         _lblSetAppearance = Ui.Label("", 15, true); _lblSetAppearance.FontWeight = FontWeight.Bold; _lblSetAppearance.Margin = new Thickness(0, 0, 0, 10);
         _lblSetLang = Ui.Label(""); _lblSetTheme = Ui.Label("");
         _cmbLang = new ComboBox { Width = 190 };
-        foreach (var lang in Enum.GetValues<Lang>()) _cmbLang.Items.Add(lang switch { Lang.ru => "Русский", Lang.en => "English", Lang.sr => "Srpski (latinica)", _ => "Српски (ћирилица)" });
+        foreach (var lang in Enum.GetValues<Lang>()) _cmbLang.Items.Add(Loc.NativeName(lang));
         _cmbLang.SelectionChanged += (_, _) =>
         {
             if (_loading || _cmbLang.SelectedIndex < 0) return;

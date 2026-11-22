@@ -4,4 +4,11 @@
     <locale android:name="ru" />
     <locale android:name="sr-Latn" />
     <locale android:name="sr-Cyrl" />
+    <locale android:name="hu" />
+    <locale android:name="sq" />
+    <locale android:name="sk" />
+    <locale android:name="ro" />
+    <locale android:name="hr" />
+    <locale android:name="uk" />
+    <locale android:name="be" />
 </locale-config>

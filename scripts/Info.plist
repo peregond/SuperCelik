@@ -13,6 +13,6 @@
     <key>LSMinimumSystemVersion</key><string>12.0</string>
     <key>NSHighResolutionCapable</key><true/>
     <key>CFBundleLocalizations</key>
-    <array><string>ru</string><string>en</string><string>sr</string></array>
+    <array><string>ru</string><string>en</string><string>sr</string><string>hu</string><string>sq</string><string>sk</string><string>ro</string><string>hr</string><string>uk</string><string>be</string></array>
 </dict>
 </plist>

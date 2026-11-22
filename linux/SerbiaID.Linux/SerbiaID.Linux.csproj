@@ -31,6 +31,7 @@
     <Compile Include="..\..\windows\SerbiaID.Windows\Models.cs" Link="Shared\Models.cs" />
     <Compile Include="..\..\windows\SerbiaID.Windows\DiagLog.cs" Link="Shared\DiagLog.cs" />
     <Compile Include="..\..\windows\SerbiaID.Windows\Loc.cs" Link="Shared\Loc.cs" />
+    <Compile Include="..\..\windows\SerbiaID.Windows\LocExtra.cs" Link="Shared\LocExtra.cs" />
     <Compile Include="..\..\windows\SerbiaID.Windows\SerbianScript.cs" Link="Shared\SerbianScript.cs" />
     <Compile Include="..\..\windows\SerbiaID.Windows\SelfTest.cs" Link="Shared\SelfTest.cs" />
     <Compile Include="..\..\windows\SerbiaID.Windows\FirefoxProfiles.cs" Link="Shared\FirefoxProfiles.cs" />

@@ -20,7 +20,7 @@ release, or the cell says why it cannot.
 | Report a bug / leave feedback | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Demo data (Settings switch) | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Copy logs and errors (Settings) | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Language (ru / en / sr Latin / sr Cyrillic), theme | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Language: ru, en, sr (Latin, Cyrillic), hu, sq, sk, ro, hr, uk, be; theme | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Auto-read when the card is inserted | ✅ | ✅ | ✅ | ✅ | ✅ (reader already connected) |
 | Hide the data after idle time | ✅ | ✅ | ✅ | – (not wanted) | – (not wanted) |
 | Check for updates inside the app | ✅ | ✅ | ✅ (not the App Store build) | – (App Store) | – (store / APK page) |

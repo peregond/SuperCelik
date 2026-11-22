@@ -2,9 +2,10 @@
 
 namespace SerbiaID;
 
-public enum Lang { ru = 0, en = 1, sr = 2, srCyrl = 3 }
+public enum Lang { ru = 0, en = 1, sr = 2, srCyrl = 3, hu = 4, sq = 5, sk = 6, ro = 7, hr = 8, uk = 9, be = 10 }
 
-/// Runtime-switchable RU / EN / SR (Latin and Cyrillic) strings (same texts as the macOS app).
+/// Runtime-switchable strings: RU / EN / SR (Latin and Cyrillic) below, and HU / SQ / SK / RO / HR / UK / BE in LocExtra.cs
+/// (a text a language does not have yet is shown in English).
 public static class Loc
 {
     public static Lang Current { get; set; } = Detect();
@@ -13,15 +14,39 @@ public static class Loc
     {
         "ru" => Lang.ru,
         "sr" => CultureInfo.CurrentUICulture.Name.IndexOf("Cyrl", StringComparison.OrdinalIgnoreCase) >= 0 ? Lang.srCyrl : Lang.sr,
-        "hr" or "bs" => Lang.sr,
-        _ => Lang.en,
+        "bs" => Lang.sr,
+        var code => FromCode(code) ?? Lang.en,
+    };
+
+    /// The extra languages by their two-letter code (null = not one of them).
+    public static Lang? FromCode(string code) => code switch
+    {
+        "hu" => Lang.hu, "sq" => Lang.sq, "sk" => Lang.sk, "ro" => Lang.ro, "hr" => Lang.hr, "uk" => Lang.uk, "be" => Lang.be,
+        _ => null,
+    };
+
+    /// The name of a language as its speakers write it (language picker).
+    public static string NativeName(Lang l) => l switch
+    {
+        Lang.ru => "Русский", Lang.en => "English", Lang.sr => "Srpski (latinica)", Lang.srCyrl => "Српски (ћирилица)",
+        Lang.hu => "Magyar", Lang.sq => "Shqip", Lang.sk => "Slovenčina", Lang.ro => "Română", Lang.hr => "Hrvatski",
+        Lang.uk => "Українська", Lang.be => "Беларуская", _ => l.ToString(),
+    };
+
+    /// The language code the site pages (reader help, what's new) take.
+    public static string SiteCode => Current switch
+    {
+        Lang.ru => "ru", Lang.en => "en", Lang.sr => "sr", Lang.srCyrl => "sc",
+        var l => l.ToString(),
     };
 
     public static string T(string key)
     {
         if (!Table.TryGetValue(key, out var v)) return key;
         // Serbian Cyrillic = the Serbian (Latin) text run through SerbianScript
-        return Current == Lang.srCyrl ? SerbianScript.Cyrillic(v[(int)Lang.sr]) : v[(int)Current];
+        if (Current == Lang.srCyrl) return SerbianScript.Cyrillic(v[(int)Lang.sr]);
+        if ((int)Current > (int)Lang.srCyrl) return LocExtra.Get(Current, key) ?? v[(int)Lang.en];
+        return v[(int)Current];
     }
 
     private static readonly Dictionary<string, string[]> Table = new()
@@ -166,7 +191,7 @@ public static class Loc
         ["updInstalling"] = new[] { "Устанавливаю (может потребоваться пароль администратора)…", "Installing (the administrator password may be needed)…", "Instaliram (može biti potrebna administratorska lozinka)…" },
         ["openReleasePage"] = new[] { "Открыть страницу релиза", "Open the release page", "Otvori stranicu izdanja" },
         ["loginEuprava"] = new[] { "Войти на eUprava", "Sign in to eUprava", "Prijava na eUpravu" },
-        ["loginEupravaNote"] = new[] { "«Войти на eUprava» открывает страницу входа в браузере по умолчанию. Если браузер не предлагает карту: закройте его полностью и откройте страницу заново или выньте карту из ридера и вставьте снова. Не помогло — «Проверить вход в браузере» покажет, где сбой.", "“Sign in to eUprava” opens the sign-in page in your default browser. If the browser does not offer the card: quit it completely and open the page again, or take the card out of the reader and put it back in. If that does not help, “Check browser sign-in” shows what is wrong.", "„Prijava na eUpravu“ otvara stranicu za prijavu u podrazumevanom pregledaču. Ako pregledač ne nudi karticu: potpuno ga zatvorite i ponovo otvorite stranicu, ili izvadite karticu iz čitača i ponovo je umetnite. Ako ne pomogne, „Proveri prijavu u pregledaču“ pokazuje šta nije u redu." },
+        ["loginEupravaNote"] = new[] { "«Войти на eUprava» открывает страницу входа в браузере по умолчанию. Если браузер не предлагает карту: закройте его полностью и откройте страницу заново или выньте карту из ридера и вставьте снова. Не помогло — «Настроить вход в браузере» покажет, где сбой.", "“Sign in to eUprava” opens the sign-in page in your default browser. If the browser does not offer the card: quit it completely and open the page again, or take the card out of the reader and put it back in. If that does not help, “Set up browser sign-in” shows what is wrong.", "„Prijava na eUpravu“ otvara stranicu za prijavu u podrazumevanom pregledaču. Ako pregledač ne nudi karticu: potpuno ga zatvorite i ponovo otvorite stranicu, ili izvadite karticu iz čitača i ponovo je umetnite. Ako ne pomogne, „Podesi prijavu u pregledaču“ pokazuje šta nije u redu." },
         ["loginEupravaNoteManual"] = new[] { "«Войти на eUprava» открывает страницу входа в браузере по умолчанию. Чтобы браузер предложил сертификат карты, в нём должен быть подключён модуль PKCS#11 (OpenSC или srb-id-pkcs11). Если браузер не предлагает карту: закройте его полностью и откройте страницу заново или выньте карту из ридера и вставьте снова.", "“Sign in to eUprava” opens the sign-in page in your default browser. For the browser to offer the card certificate, a PKCS#11 module (OpenSC or srb-id-pkcs11) must be set up in it. If the browser does not offer the card: quit it completely and open the page again, or take the card out of the reader and put it back in.", "„Prijava na eUpravu“ otvara stranicu za prijavu u podrazumevanom pregledaču. Da bi pregledač ponudio sertifikat sa kartice, u njemu mora biti podešen PKCS#11 modul (OpenSC ili srb-id-pkcs11). Ako pregledač ne nudi karticu: potpuno ga zatvorite i ponovo otvorite stranicu, ili izvadite karticu iz čitača i ponovo je umetnite." },
         ["setupBrowser"] = new[] { "Настроить вход в браузере", "Set up browser sign-in", "Podesi prijavu u pregledaču" },
         ["setupAsk"] = new[] { "Подключить карту к браузерам (Firefox, Chrome, Edge, Chromium), чтобы можно было входить на государственные порталы? Программа добавит в них свой модуль карты (srb-id-pkcs11, входит в программу). Потом браузер нужно полностью закрыть и открыть снова.", "Connect the card to your browsers (Firefox, Chrome, Edge, Chromium) so that you can sign in to government portals? The app adds its card module (srb-id-pkcs11, included in the app) to them. Afterwards quit the browser completely and open it again.", "Povezati karticu sa pregledačima (Firefox, Chrome, Edge, Chromium) da biste mogli da se prijavljujete na državne portale? Aplikacija u njih dodaje svoj modul za karticu (srb-id-pkcs11, sastavni deo aplikacije). Posle toga potpuno zatvorite pregledač i ponovo ga otvorite." },
