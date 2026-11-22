@@ -149,6 +149,14 @@ public partial class MainWindow : Window
         SetBtn(BtnChangePin, "\uE72E", Loc.T("changePin"));
         SetBtn(BtnUnblockPin, "\uE785", Loc.T("unblockPin"));
         SetBtn(BtnSignFile, "\uE70F", Loc.T("signFile"));
+        SetBtn(BtnLoginEu, "\uE77B", Loc.T("loginEuprava"));
+        SetBtn(BtnSetupBrowser, "\uE72E", Loc.T("setupBrowser"));
+        SetBtn(BtnCheckBrowser, "\uE73E", Loc.T("checkBrowser"));
+        SetBtn(BtnFeedback, "\uE70F", Loc.T("betaReport"));
+        LblCheckTitle.Text = Loc.T("chkTitle");
+        BtnCheckClose.Content = Glyph("\uE711", 12);
+        ChkDemo.Content = Loc.T("demoData"); LblDemoHint.Text = Loc.T("demoHint");
+        PnlCheck.Visibility = Visibility.Collapsed;
         SetBtn(BtnCheckUpdates, "", Loc.T("checkUpdates"));
         BtnWhatsNew.Content = Loc.T("whatsNew"); BtnReaderHelp.Content = Loc.T("readerHelp");
         SetBtn(BtnUpdate, "", Loc.T("updateNow"));
@@ -430,6 +438,124 @@ public partial class MainWindow : Window
     }
 
     private void FirefoxFix_Click(object s, RoutedEventArgs e) => EnableFirefox(FirefoxSetup.Check());
+
+    // ---- the same actions as the Linux build: sign in to eUprava, set up and check the browser sign-in ----
+
+    private const string EuLoginUrl = "https://euprava.gov.rs/prijava";
+    private const string FeedbackUrl = "https://github.com/peregond/SuperCelik/issues/new";
+
+    private void Feedback_Click(object s, RoutedEventArgs e) => OpenUrl(FeedbackUrl);
+
+    /// "Sign in to eUprava": offers the driver and the Firefox setting first (once, as when the card is inserted), then opens the page.
+    private async void LoginEu_Click(object s, RoutedEventArgs e)
+    {
+        try { if (!_demo && _cardPresent) await OfferBrowserAsync(); }
+        catch { }
+        OpenUrl(EuLoginUrl);
+    }
+
+    /// The ATR of the card in the reader when it has the token applet (null: no card or another kind of card).
+    private async Task<byte[]> TokenAtrAsync()
+    {
+        if (_lastTokenAtr != null) return _lastTokenAtr;
+        if (!_cardPresent || _readers.Count == 0) return null;
+        var reader = Reader;
+        var (atr, hasToken) = await Compat.Run(() => SerbianCard.ProbeToken(_pc, reader));
+        if (hasToken && atr != null) _lastTokenAtr = atr;
+        return _lastTokenAtr;
+    }
+
+    /// "Set up browser sign-in": the card driver (Chrome, Edge) and the Firefox setting, whatever is missing.
+    private async void SetupBrowser_Click(object s, RoutedEventArgs e)
+    {
+        if (_demo) return;
+        try
+        {
+            bool changed = false;
+            if (DriverSetup.Available)
+            {
+                var atr = await TokenAtrAsync();
+                if (atr == null) { ShowInfo(Loc.T("driverNoCard")); return; }
+                if (!DriverSetup.IsRegistered(atr) && !DriverSetup.HandledByOtherDriver(atr)) { await InstallDriverAsync(atr); changed = true; }
+            }
+            var st = await Compat.Run(() => FirefoxSetup.Check());
+            if (st.Disabled.Count > 0) { EnableFirefox(st); changed = true; }
+            if (!changed) ShowInfo(Loc.T("setupWinDone"));
+        }
+        catch { ShowInfo(Loc.T("driverFail")); }
+    }
+
+    private void CheckClose_Click(object s, RoutedEventArgs e) => PnlCheck.Visibility = Visibility.Collapsed;
+
+    private void AddCheckLine(bool ok, string text)
+    {
+        var row = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(0, 3, 0, 3) };
+        var g = Glyph(ok ? "\uE73E" : "\uE711", 13);
+        g.Foreground = ok ? Brushes.SeaGreen : Brushes.Firebrick; g.Width = 22;
+        row.Children.Add(g);
+        row.Children.Add(new TextBlock { Text = text, TextWrapping = TextWrapping.Wrap, MaxWidth = 460, Foreground = B("TextBrush"), VerticalAlignment = VerticalAlignment.Center });
+        LstCheck.Children.Add(row);
+    }
+
+    /// "Check browser sign-in": is a card in the reader, is the driver there, does Firefox use the Windows certificates; then what to do next.
+    private async void CheckBrowser_Click(object s, RoutedEventArgs e)
+    {
+        LstCheck.Children.Clear();
+        string step = null;
+        try
+        {
+            if (_demo)
+            {
+                AddCheckLine(true, Loc.T("chkCardOk")); AddCheckLine(true, Loc.T("chkDriverOn")); AddCheckLine(true, Loc.T("chkFirefoxOn"));
+                step = Loc.T("stepOk");
+            }
+            else if (_readers.Count == 0) { AddCheckLine(false, Loc.T("chkNoReader")); step = Loc.T("stepNoReader"); }
+            else if (!_cardPresent) { AddCheckLine(false, Loc.T("chkNoCard")); step = Loc.T("stepNoCard"); }
+            else
+            {
+                AddCheckLine(true, Loc.T("chkCardOk"));
+                bool fine = true;
+                if (!DriverSetup.Available) { AddCheckLine(false, Loc.T("chkDriverNone")); step = Loc.T("stepDriverNone"); fine = false; }
+                else
+                {
+                    var atr = await TokenAtrAsync();
+                    if (atr == null) { AddCheckLine(false, Loc.T("driverNoCard")); step = Loc.T("stepReinsert"); fine = false; }
+                    else if (DriverSetup.IsRegistered(atr)) AddCheckLine(true, Loc.T("chkDriverOn"));
+                    else if (DriverSetup.HandledByOtherDriver(atr)) AddCheckLine(true, Loc.T("chkDriverOther"));
+                    else { AddCheckLine(false, Loc.T("chkDriverOff")); step = Loc.T("stepConnect"); fine = false; }
+                }
+                var st = await Compat.Run(() => FirefoxSetup.Check());
+                if (st.Profiles > 0)
+                {
+                    if (st.Disabled.Count > 0) { AddCheckLine(false, Loc.T("chkFirefoxOff")); step ??= Loc.T("stepConnect"); fine = false; }
+                    else if (st.OldMajor > 0) { AddCheckLine(false, string.Format(Loc.T("chkFirefoxOld"), st.OldMajor)); step ??= Loc.T("stepFirefoxOld"); fine = false; }
+                    else AddCheckLine(true, Loc.T("chkFirefoxOn"));
+                }
+                if (fine) step = Loc.T("stepOk");
+            }
+        }
+        catch { AddCheckLine(false, Loc.T("driverFail")); }
+        LblCheckStep.Text = step ?? "";
+        PnlCheck.Visibility = Visibility.Visible;
+    }
+
+    private void Demo_Click(object s, RoutedEventArgs e)
+    {
+        if (ChkDemo.IsChecked == true)
+        {
+            if (_busy) { ChkDemo.IsChecked = false; return; }              // a card operation is running: it would put real data over the demo data
+            LoadDemo(Tabs.SelectedIndex);
+            ChkDemo.IsChecked = true;
+        }
+        else
+        {
+            _demo = false; Fx.Enabled = true;
+            _personal = null; _token = null; _sig = null; _revealAll = false; _cardPresent = false; _readers = new(); _lastTokenAtr = null;
+            FillReaders(_readers); ApplyLanguage();
+            _poll.Start(); _idle.Start();
+            Refresh();
+        }
+    }
 
     private void Refresh_Click(object s, RoutedEventArgs e) => Refresh();
     private void CmbReader_Changed(object s, SelectionChangedEventArgs e) { if (!_loading) Refresh(); }
