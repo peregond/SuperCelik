@@ -36,7 +36,7 @@ public partial class MainWindow : Window
         Theme.Apply(_cfg.Theme);
         RestoreWindow();
 
-        foreach (var lang in (Lang[])Enum.GetValues(typeof(Lang))) CmbLang.Items.Add(lang switch { Lang.ru => "Русский", Lang.en => "English", Lang.sr => "Srpski (latinica)", _ => "Српски (ћирилица)" });
+        foreach (var lang in (Lang[])Enum.GetValues(typeof(Lang))) CmbLang.Items.Add(Loc.NativeName(lang));
         CmbLang.SelectedIndex = (int)Loc.Current;
         for (int i = 0; i < 3; i++) CmbTheme.Items.Add("");
         CmbTheme.SelectedIndex = _cfg.Theme switch { "light" => 1, "dark" => 2, _ => 0 };
@@ -994,7 +994,7 @@ public partial class MainWindow : Window
     }
 
     // the site pages open in the language of the app (?lang=), the changelog in this app's own section (?app=)
-    private static string LangCode => Loc.Current switch { Lang.ru => "ru", Lang.en => "en", Lang.sr => "sr", _ => "sc" };
+    private static string LangCode => Loc.SiteCode;
     private static string ReaderPageUrl => "https://celik.peregon.cc/reader/?lang=" + LangCode;
     private static string ChangelogUrl => "https://celik.peregon.cc/changelog/?lang=" + LangCode + "&app=windows";
 

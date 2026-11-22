@@ -1,7 +1,9 @@
 import SwiftUI
 
 enum AppLanguage: String, CaseIterable, Identifiable {
-    case ru, en, sr, srCyrl
+    case ru, en, sr, srCyrl, hu, sq, sk, ro, hr, uk, be
+    /// The languages whose texts live in LocalizationExtra.swift (everything missing there falls back to English).
+    var isExtra: Bool { switch self { case .hu, .sq, .sk, .ro, .hr, .uk, .be: return true; default: return false } }
     var id: String { rawValue }
     var title: String {
         switch self {
@@ -9,6 +11,13 @@ enum AppLanguage: String, CaseIterable, Identifiable {
         case .en: return "English"
         case .sr: return "Srpski (latinica)"
         case .srCyrl: return "Српски (ћирилица)"
+        case .hu: return "Magyar"
+        case .sq: return "Shqip"
+        case .sk: return "Slovenčina"
+        case .ro: return "Română"
+        case .hr: return "Hrvatski"
+        case .uk: return "Українська"
+        case .be: return "Беларуская"
         }
     }
 }
@@ -31,14 +40,21 @@ final class Loc: ObservableObject {
         switch code {
         case "ru": return .ru
         case "sr": return tag.contains("Cyrl") ? .srCyrl : .sr      // plain "sr" -> Latin, as most people in Serbia use it
-        case "hr", "bs": return .sr
+        case "bs": return .sr
+        case "hu": return .hu
+        case "sq": return .sq
+        case "sk": return .sk
+        case "ro": return .ro
+        case "hr": return .hr
+        case "uk": return .uk
+        case "be": return .be
         default: return .en
         }
     }
 
     /// The language code the site pages (reader help, what's new) take.
     var siteLang: String {
-        switch language { case .ru: return "ru"; case .en: return "en"; case .sr: return "sr"; case .srCyrl: return "sc" }
+        switch language { case .srCyrl: return "sc"; default: return language.rawValue }
     }
     var changelogURL: URL {
         #if os(iOS)
@@ -58,6 +74,7 @@ final class Loc: ObservableObject {
             Self.cyrillicCache[key] = c
             return c
         }
+        if language.isExtra, let x = LocExtra.table(language)["\(key)"] { return x }
         return Self.table[key]?[language] ?? Self.table[key]?[.en] ?? "\(key)"
     }
 

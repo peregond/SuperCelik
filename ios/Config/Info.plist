@@ -9,6 +9,13 @@
 		<string>en</string>
 		<string>ru</string>
 		<string>sr</string>
+		<string>hu</string>
+		<string>sq</string>
+		<string>sk</string>
+		<string>ro</string>
+		<string>hr</string>
+		<string>uk</string>
+		<string>be</string>
 	</array>
 	<key>CFBundleDisplayName</key>
 	<string>Super Čelik</string>

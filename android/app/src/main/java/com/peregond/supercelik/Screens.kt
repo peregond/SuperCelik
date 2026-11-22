@@ -98,6 +98,7 @@ private fun siteLang(ctx: Context): String {
     return when (loc.language) {
         "ru" -> "ru"
         "sr" -> if (loc.script == "Latn") "sr" else "sc"
+        "hu", "sq", "sk", "ro", "hr", "uk", "be" -> loc.language
         else -> "en"
     }
 }
