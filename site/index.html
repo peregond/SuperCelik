@@ -252,20 +252,19 @@ section{padding:110px 0}
 .lb[hidden]{display:none}
 .lb.on{background:rgba(4,14,32,.9);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px)}
 .lb-stage{display:grid;place-items:center;width:100%;height:100%;min-height:0}
-.lb-stage img{max-width:min(96vw,1500px);max-height:calc(100vh - 215px);width:auto;height:auto;border-radius:16px;box-shadow:0 50px 120px -30px rgba(0,0,0,.8);background:#0a1220}
+.lb-stage img{max-width:min(96vw,1500px);max-height:calc(100vh - 150px);width:auto;height:auto;border-radius:16px;box-shadow:0 50px 120px -30px rgba(0,0,0,.8);background:#0a1220}
 .lb-stage img.ph{border:9px solid #0a1220;border-radius:46px}
 .lb-stage img.ph.ios{border:6px solid #0a0b0f;border-radius:15% / 6.9%;box-shadow:0 0 0 2px #b3b7bf,0 0 0 3.5px #3d4047,0 50px 120px -30px rgba(0,0,0,.8)}
-@supports (height:100dvh){.lb-stage img{max-height:calc(100dvh - 215px)}}
+@supports (height:100dvh){.lb-stage img{max-height:calc(100dvh - 150px)}}
 .lb-cap{max-width:680px;padding:18px 70px 0;text-align:center;color:#fff;opacity:0;transform:translateY(8px);transition:opacity .35s .15s,transform .35s .15s}
 .lb.on .lb-cap{opacity:1;transform:none}
-.lb-cap h3{margin:0 0 4px;font-size:21px;letter-spacing:-.01em}
-.lb-cap p{margin:0;font-size:15.5px;line-height:1.45;color:#c3d6f1}
+.lb-cap h3{margin:0;font-size:21px;letter-spacing:-.01em}
 .lb-x,.lb-nav{position:absolute;display:grid;place-items:center;width:46px;height:46px;border:0;border-radius:50%;background:rgba(255,255,255,.14);color:#fff;cursor:pointer;transition:background .2s,transform .2s;z-index:2}
 .lb-x:hover,.lb-nav:hover{background:rgba(255,255,255,.28)}
 .lb-x{top:18px;right:18px}
 .lb-nav{top:50%;margin-top:-23px}.lb-nav.prev{left:18px}.lb-nav.next{right:18px}
 .lb-x svg,.lb-nav svg{width:22px;height:22px}
-@media(max-width:620px){.lb-stage img{max-height:calc(100vh - 270px)}@supports (height:100dvh){.lb-stage img{max-height:calc(100dvh - 270px)}}.lb{padding:70px 14px 20px}.lb-cap{padding:14px 8px 0}.lb-nav{top:auto;bottom:18px;margin:0}.lb-nav.prev{left:calc(50% - 60px)}.lb-nav.next{right:calc(50% - 60px)}.lb-cap{padding-bottom:62px}.lb-stage img.ph{border-width:7px;border-radius:36px}.lb-stage img.ph.ios{border-width:5px;border-radius:15% / 6.9%}}
+@media(max-width:620px){.lb-stage img{max-height:calc(100vh - 215px)}@supports (height:100dvh){.lb-stage img{max-height:calc(100dvh - 215px)}}.lb{padding:70px 14px 20px}.lb-cap{padding:14px 8px 0}.lb-nav{top:auto;bottom:18px;margin:0}.lb-nav.prev{left:calc(50% - 60px)}.lb-nav.next{right:calc(50% - 60px)}.lb-cap{padding-bottom:62px}.lb-stage img.ph{border-width:7px;border-radius:36px}.lb-stage img.ph.ios{border-width:5px;border-radius:15% / 6.9%}}
 /* iPhone: round corners of one radius, a thin bezel, a titanium rim and the side buttons */
 .phone.ios,.shot .phone.ios{position:relative;overflow:visible;border:5px solid #0a0b0f;border-radius:15% / 6.9%;background:#0a0b0f;box-shadow:0 0 0 1.5px #b3b7bf,0 0 0 2.6px #3d4047,0 40px 70px -20px rgba(0,0,0,.65),0 0 80px -20px rgba(255,110,120,.3)}
 .phone.ios img{border-radius:12.6% / 5.8%}
@@ -379,7 +378,7 @@ footer a{color:#a9c3e6}
   <button class="lb-nav prev" id="lbPrev" type="button" aria-label="←"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
   <button class="lb-nav next" id="lbNext" type="button" aria-label="→"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
   <div class="lb-stage" id="lbStage"><img id="lbImg" alt=""></div>
-  <div class="lb-cap"><h3 id="lbT"></h3><p id="lbD"></p></div>
+  <div class="lb-cap"><h3 id="lbT"></h3></div>
 </div>
 
 <section id="faq" class="faq"><div class="wrap">
@@ -576,7 +575,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")setAppMenu(false)});
 document.querySelectorAll("#appmenu button").forEach(b=>b.onclick=()=>selectDev(b.dataset.d));
 selectDev(OS&&document.getElementById("d-"+OS)?OS:"mac");
 // full-screen view of a screenshot (zooms out of the card it came from; arrows / swipe / Esc)
-const lb=document.getElementById("lb"),lbImg=document.getElementById("lbImg"),lbT=document.getElementById("lbT"),lbD=document.getElementById("lbD");
+const lb=document.getElementById("lb"),lbImg=document.getElementById("lbImg"),lbT=document.getElementById("lbT");
 const calm=matchMedia("(prefers-reduced-motion: reduce)").matches;
 let lbItems=[],lbIdx=0,lbOpen=false;
 function lbRect(btn){const i=btn.querySelector("img");return i.getBoundingClientRect()}
@@ -588,7 +587,7 @@ function flipFrom(btn,opening){
  return lbImg.animate(opening?[from,to]:[to,{...from,opacity:0}],{duration:opening?520:360,easing:"cubic-bezier(.2,.8,.2,1)",fill:"both"}).finished.catch(()=>{})}
 async function lbShow(i,first){
  lbIdx=(i+lbItems.length)%lbItems.length;const b=lbItems[lbIdx],card=b.closest(".sc");
- lbT.textContent=card.querySelector("h3").textContent;lbD.textContent=card.querySelector("p").textContent;
+ lbT.textContent=card.querySelector("h3").textContent;
  lbImg.alt=b.querySelector("img").alt;lbImg.classList.toggle("ph",b.classList.contains("ph"));lbImg.classList.toggle("ios",!!b.querySelector(".phone.ios"));
  lbImg.src=b.dataset.full;try{await lbImg.decode()}catch(e){}
  if(first){lb.hidden=false;document.documentElement.style.overflow="hidden";lbOpen=true;
