@@ -13,7 +13,7 @@ Nezavisna implementacija, nije povezana sa MUP RS niti sa NetSeT/Veridos.
 
 ## Instalacija
 - **iPhone i iPad**: [App Store](https://apps.apple.com/app/id6835244146).
-- **macOS 13+**: ista aplikacija u [Mac App Store](https://apps.apple.com/app/id6835244146). Za gradnju bez prodavnice vidi „Gradnja iz izvornog koda“.
+- **macOS 12+**: ista aplikacija u [Mac App Store](https://apps.apple.com/app/id6835244146). Za gradnju bez prodavnice vidi „Gradnja iz izvornog koda“.
 - **Android 8+**: `SuperCelik-<verzija>-android.apk` iz odeljka [Releases](https://github.com/peregond/SuperCelik/releases) (za ručnu instalaciju dozvolite instalaciju iz nepoznatih izvora). Čita karticu preko USB čitača pametnih kartica (USB-C ili OTG): podaci, provera MUP potpisa, token, promena PIN-a, potpisivanje fajla, prijava na eUprava.
 - **Windows 10/11 x64**: `SuperCelik-<verzija>-windows-x64-setup.exe`. Instalater nije potpisan sertifikatom izdavača, pa SmartScreen može da prikaže upozorenje („More info“ → „Run anyway“).
 - **Windows XP SP3 / Vista / 7 i 32-bitni Windows**: `SuperCelik-<verzija>-windows-x86-legacy-setup.exe` (posebna verzija na .NET Framework 4.0; instalater traži da ga instalirate ako ga nema). Sve radi isto, osim: drajver za prijavu u pregledaču zahteva Windows Vista ili noviji (na XP-u ga nema), a automatsko ažuriranje zahteva TLS 1.2 (Windows 7 sa ažuriranjima; na XP-u ne). Pravi se u CI-ju, na pravom XP-u još nije probana.
@@ -72,7 +72,7 @@ Microsoft Edge je izgrađen na Chromium-u i prijavljuje se isto kao Chrome:
 Potpuno zatvorite pregledač (sve prozore; na Mac-u ⌘Q) i ponovo otvorite stranicu za prijavu. Ako ne pomogne, izvadite karticu iz čitača i ponovo je umetnite. U **macOS-u** i **Linux-u** dugme „Proveri prijavu u pregledaču“ uz „Prijava na eUpravu“ pokazuje šta nije u redu (čitač i kartica, drajver kartice na Mac-u ili modul na Linux-u, Firefox) i kaže šta dalje; u **Windows-u** stanje drajvera i Firefox-a vidi se na kartici „Podešavanja“.
 
 ## Jedan broj verzije
-Sve platforme imaju istu verziju: git tag `vX.Y.Z` izdanja. Gradnje za Windows, Linux, macOS i Android i probna gradnja za iOS uzimaju je iz taga, a dva App Store workflow-a (iOS i macOS) podrazumevano uzimaju poslednji tag izdanja, pa je broj u prodavnicama isti kao na GitHub-u. Svako ažuriranje dobija novi tag. Za izdavanje: preimenujte blok „Sledeće izdanje“ u `site/changelog/index.html` u novi broj sa datumom, pa napravite tag. Broj gradnje za Android računa se iz verzije (1.3.2 daje 10302), a broj gradnje za App Store je broj pokretanja workflow-a.
+Sve platforme imaju istu verziju: git tag `vX.Y.Z` izdanja. Gradnje za Windows, Linux, macOS i Android i probna gradnja za iOS uzimaju je iz taga, a dva App Store workflow-a (iOS i macOS) podrazumevano uzimaju poslednji tag izdanja, pa je broj u prodavnicama isti kao na GitHub-u. Svako ažuriranje dobija novi tag. Za izdavanje: upišite izmene izdanja u blok `site/changelog/index.html` sa novim brojem i datumom (blok „Sledeće izdanje“ se preimenuje), spojite to, pa napravite tag. Broj gradnje za Android računa se iz verzije (1.3.2 daje 10302), a broj gradnje za App Store je broj pokretanja workflow-a.
 
 ## Bezbednost
 Ne komitujte dumpove kartice ni bilo kakve lične podatke (vidi `.gitignore`).

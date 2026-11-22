@@ -13,7 +13,7 @@ An independent implementation, not affiliated with MUP RS or NetSeT/Veridos.
 
 ## Install
 - **iPhone and iPad**: [App Store](https://apps.apple.com/app/id6835244146).
-- **macOS 13+**: the same app in the [Mac App Store](https://apps.apple.com/app/id6835244146). To build without the store, see “Build from source”.
+- **macOS 12+**: the same app in the [Mac App Store](https://apps.apple.com/app/id6835244146). To build without the store, see “Build from source”.
 - **Android 8+**: `SuperCelik-<version>-android.apk` from [Releases](https://github.com/peregond/SuperCelik/releases) (to install it by hand, allow installation from unknown sources). Reads the card through a USB smart-card reader (USB-C or OTG): data, MUP signature check, token, PIN change, file signing, eUprava sign-in.
 - **Windows 10/11 x64**: `SuperCelik-<version>-windows-x64-setup.exe`. The installer is not signed with a publisher certificate, so SmartScreen may warn you (“More info” → “Run anyway”).
 - **Windows XP SP3 / Vista / 7 and 32-bit Windows**: `SuperCelik-<version>-windows-x86-legacy-setup.exe` (a separate build on .NET Framework 4.0, which the installer asks for if it is missing). Everything works the same except: browser-login driver needs Windows Vista or newer (not on XP), and automatic updates need TLS 1.2 (Windows 7 with updates; not on XP). Built in CI, not yet tried on a real XP.
@@ -72,7 +72,7 @@ Microsoft Edge is built on Chromium and signs in the same way as Chrome:
 Quit the browser completely (all windows; on a Mac ⌘Q) and open the sign-in page again. If that does not help, take the card out of the reader and put it back in. On **macOS** and **Linux** the “Check browser sign-in” button next to “Sign in to eUprava” shows what is wrong (reader and card, the card driver on a Mac or the module on Linux, Firefox) and says what to do next; on **Windows** the Settings tab shows the state of the driver and of Firefox.
 
 ## One version number
-Every platform has the same version: the git tag `vX.Y.Z` of a release. The Windows, Linux, macOS and Android builds and the iOS test build take it from the tag, and the two App Store workflows (iOS and macOS) take the latest release tag by default, so the number in the stores is the number on GitHub. Every update gets a new tag. To release: rename the “Next release” block of `site/changelog/index.html` to the new number and date, then create the tag. The Android build number is computed from the version (1.3.2 gives 10302), the App Store build number is the workflow run number.
+Every platform has the same version: the git tag `vX.Y.Z` of a release. The Windows, Linux, macOS and Android builds and the iOS test build take it from the tag, and the two App Store workflows (iOS and macOS) take the latest release tag by default, so the number in the stores is the number on GitHub. Every update gets a new tag. To release: put the changes of the release into a block of `site/changelog/index.html` named with the new number and date (a “Next release” block is renamed), merge it, then create the tag. The Android build number is computed from the version (1.3.2 gives 10302), the App Store build number is the workflow run number.
 
 ## Security
 Do not commit card dumps or any personal data (see `.gitignore`).
