@@ -502,6 +502,14 @@ fun SettingsScreen(vm: CardViewModel) {
                 supportingContent = { Text(stringResource(R.string.settings_language_hint)) })
         }
         item {
+            ListItem(modifier = Modifier.clickable {
+                val cm = ctx.getSystemService(Context.CLIPBOARD_SERVICE) as android.content.ClipboardManager
+                cm.setPrimaryClip(android.content.ClipData.newPlainText("Super Čelik", DiagLog.report(version, "")))
+                android.widget.Toast.makeText(ctx, ctx.getString(R.string.logs_copied), android.widget.Toast.LENGTH_SHORT).show()
+            }, headlineContent = { Text(stringResource(R.string.copy_logs)) },
+                supportingContent = { Text(stringResource(R.string.copy_logs_hint)) })
+        }
+        item {
             HorizontalDivider()
             Spacer(Modifier.height(12.dp))
             Text("${stringResource(R.string.app_name)} $version", style = MaterialTheme.typography.titleMedium)

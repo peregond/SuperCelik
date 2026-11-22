@@ -20,6 +20,7 @@ release, or the cell says why it cannot.
 | "What's new?" page | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Report a bug / leave feedback | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Demo data | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Copy logs and errors (Settings) | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Language (ru / en / sr Latin / sr Cyrillic), theme | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Auto-read when the card is inserted | ✅ | ✅ | ✅ | ✅ | ✅ (reader already connected) |
 | Hide the data after idle time | ✅ | ✅ | ✅ | – (not wanted) | – (not wanted) |

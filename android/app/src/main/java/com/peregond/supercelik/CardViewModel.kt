@@ -192,6 +192,7 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
     }
 
     private fun fail(e: Exception) {
+        DiagLog.error(e)
         pending = null
         _phase.value = Phase.Idle
         _message.value = cardError(e)

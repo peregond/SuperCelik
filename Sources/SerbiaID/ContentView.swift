@@ -834,6 +834,14 @@ struct SettingsView: View {
                     get: { model.demoActive },
                     set: { $0 ? model.showDemoData() : model.hideDemoData() }))
             } footer: { Text(loc.t(.demoHint)) }
+            Section {
+                Button {
+                    let state = "Readers: \(model.readers.isEmpty ? "none" : model.readers.joined(separator: ", ")); card in the reader: \(model.cardPresent ? "yes" : "no")"
+                    NSPasteboard.general.clearContents()
+                    NSPasteboard.general.setString(DiagLog.report(version: Updater.currentVersion, language: loc.language.rawValue, state: state), forType: .string)
+                    model.problem = Problem(raw: loc.t(.copyLogsDone), isInfo: true)
+                } label: { Label(loc.t(.copyLogs), systemImage: "doc.on.doc") }
+            } footer: { Text(loc.t(.copyLogsHint)) }
             Section(loc.t(.tabAbout)) { AboutView() }
         }
         .groupedForm()

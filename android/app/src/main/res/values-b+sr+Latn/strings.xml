@@ -6,6 +6,9 @@
     <string name="hint_idle">Ubacite karticu u USB čitač pametnih kartica i povežite ga sa telefonom (USB-C ili preko OTG adaptera). Čitanje počinje automatski.</string>
     <string name="reader_help">Nemate čitač?</string>
     <string name="whats_new">Šta je novo?</string>
+    <string name="copy_logs">Kopiraj logove i greške</string>
+    <string name="copy_logs_hint">Kopira tehničke podatke o greškama (bez vaših podataka sa kartice) da ih nalepite u prijavu greške.</string>
+    <string name="logs_copied">Logovi su kopirani</string>
     <string name="report_bug">Prijavi grešku ili ostavi povratnu informaciju</string>
     <string name="hint_usb_wait">Tražim USB čitač…</string>
     <string name="reading">Čitam karticu…</string>

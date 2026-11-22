@@ -153,6 +153,7 @@ public partial class MainWindow : Window
         SetBtn(BtnSetupBrowser, "\uE72E", Loc.T("setupBrowser"));
         SetBtn(BtnCheckBrowser, "\uE73E", Loc.T("checkBrowser"));
         SetBtn(BtnFeedback, "\uE70F", Loc.T("betaReport"));
+        SetBtn(BtnCopyLogs, "\uE8C8", Loc.T("copyLogs")); LblCopyLogsHint.Text = Loc.T("copyLogsHint");
         LblCheckTitle.Text = Loc.T("chkTitle");
         BtnCheckClose.Content = Glyph("\uE711", 12);
         ChkDemo.Content = Loc.T("demoData"); LblDemoHint.Text = Loc.T("demoHint");
@@ -218,6 +219,7 @@ public partial class MainWindow : Window
 
     private void ShowProblem(Exception ex)
     {
+        DiagLog.Error(ex);
         string t = "errGenericT", h = "errGenericH";
         if (ex is CardException ce)
         {
@@ -351,6 +353,7 @@ public partial class MainWindow : Window
         var hex = DriverSetup.Hex(atr);
         bool ok = await Compat.Run(() => DriverSetup.RunElevated("--register-driver " + hex));
         if (ok) { _cfg.DriverDeclined = _cfg.DriverDeclined.Replace(hex + ";", ""); _cfg.Save(); }
+        DiagLog.Add("Card driver install " + (ok ? "done" : "FAILED") + " (ATR " + hex + ")");
         ShowInfo(Loc.T(ok ? "driverDone" : "driverFail"));
         UpdateDriverStatus();
     }
@@ -444,6 +447,15 @@ public partial class MainWindow : Window
     private const string FeedbackUrl = "https://github.com/peregond/SuperCelik/issues/new";
 
     private void Feedback_Click(object s, RoutedEventArgs e) => OpenUrl(FeedbackUrl);
+
+    private void CopyLogs_Click(object s, RoutedEventArgs e)
+    {
+        string state = "Readers: " + (_readers.Count == 0 ? "none" : string.Join(", ", _readers)) + "; card in the reader: " + (_cardPresent ? "yes" : "no")
+            + "; card driver: " + (DriverSetup.Available ? (DriverSetup.AnyRegistered() ? "installed" : "not installed") : "not in this build")
+            + (_lastTokenAtr != null ? "; ATR: " + DriverSetup.Hex(_lastTokenAtr) : "");
+        try { Clipboard.SetText(DiagLog.Report(Updater.CurrentText, state)); ShowInfo(Loc.T("copyLogsDone")); }
+        catch (Exception ex) { ShowProblem(ex); }
+    }
 
     /// "Sign in to eUprava": offers the driver and the Firefox setting first (once, as when the card is inserted), then opens the page.
     private async void LoginEu_Click(object s, RoutedEventArgs e)

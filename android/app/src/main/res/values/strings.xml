@@ -6,6 +6,9 @@
     <string name="hint_idle">Insert the card into a USB smart card reader and connect it to the phone (USB-C or an OTG adapter). Reading starts automatically.</string>
     <string name="reader_help">No reader yet?</string>
     <string name="whats_new">What’s new?</string>
+    <string name="copy_logs">Copy logs and errors</string>
+    <string name="copy_logs_hint">Copies the technical details of the errors (without your card data) so you can paste them into a bug report.</string>
+    <string name="logs_copied">Logs copied</string>
     <string name="report_bug">Report a bug or leave feedback</string>
     <string name="hint_usb_wait">Looking for a USB reader…</string>
     <string name="reading">Reading the card…</string>

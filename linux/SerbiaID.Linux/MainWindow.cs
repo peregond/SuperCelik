@@ -39,7 +39,7 @@ public sealed class MainWindow : Window
     private TextBlock _lblAboutTitle, _lblAboutText, _lblVersion, _lblUpdateStatus;
     private ComboBox _cmbReader, _cmbLang, _cmbTheme;
     private CheckBox _chkMask, _chkPrintJmbg, _chkAutoRead, _chkAutoUpdate, _chkDemo;
-    private TextBlock _lblDemoHint;
+    private TextBlock _lblDemoHint, _lblCopyLogsHint; private Button _btnCopyLogs;
     private TextBox _txtAutoHide;
     private ProgressBar _busyBar;
     private Button _btnRefresh, _btnRead, _btnReadBig, _btnPrint, _btnPdf, _btnVerify, _btnEye, _btnMore, _btnProblemClose;
@@ -380,10 +380,15 @@ public sealed class MainWindow : Window
         var demo = Ui.Card(new StackPanel { Children = { _chkDemo, _lblDemoHint } });
         demo.Margin = new Thickness(0, 16, 0, 0);
 
+        _btnCopyLogs = Ui.Btn(""); _btnCopyLogs.HorizontalAlignment = HorizontalAlignment.Left; _btnCopyLogs.Click += async (_, _) => await CopyLogs();
+        _lblCopyLogsHint = Ui.Label("", 12, false, "MutedBrush", true); _lblCopyLogsHint.Margin = new Thickness(0, 8, 0, 0);
+        var logs = Ui.Card(new StackPanel { Children = { _btnCopyLogs, _lblCopyLogsHint } });
+        logs.Margin = new Thickness(0, 16, 0, 0);
+
         return new ScrollViewer
         {
             VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-            Content = new StackPanel { Margin = new Thickness(24, 18, 24, 20), Width = 560, HorizontalAlignment = HorizontalAlignment.Left, Children = { appearance, privacy, behavior, demo } },
+            Content = new StackPanel { Margin = new Thickness(24, 18, 24, 20), Width = 560, HorizontalAlignment = HorizontalAlignment.Left, Children = { appearance, privacy, behavior, demo, logs } },
         };
     }
 
@@ -427,6 +432,7 @@ public sealed class MainWindow : Window
         _chkMask.Content = Loc.T("setMask"); _chkPrintJmbg.Content = Loc.T("setPrintJmbg");
         _chkAutoRead.Content = Loc.T("setAutoRead"); _chkAutoUpdate.Content = Loc.T("setAutoUpdate");
         _chkDemo.Content = Loc.T("demoData"); _lblDemoHint.Text = Loc.T("demoHint");
+        Ui.SetBtn(_btnCopyLogs, "copy", Loc.T("copyLogs")); _lblCopyLogsHint.Text = Loc.T("copyLogsHint");
         _lblAutoHide.Text = Loc.T("setAutoHide");
         _loading = true;
         var ti = _cmbTheme.SelectedIndex;
@@ -467,6 +473,7 @@ public sealed class MainWindow : Window
 
     private void ShowProblem(Exception ex)
     {
+        DiagLog.Error(ex);
         string t = "errGenericT", h = "errGenericH";
         if (ex is CardException ce)
         {
@@ -771,6 +778,15 @@ public sealed class MainWindow : Window
         if (days < 0) Ui.SetPill(pill, "✘  " + Loc.T("expiredOn"), "BadBrush", "BadBgBrush");
         else if (days <= 90) Ui.SetPill(pill, "⚠  " + string.Format(Loc.T("expiresIn"), days), "WarnBrush", "WarnBgBrush");
         else Ui.SetPill(pill, "✔  " + string.Format(Loc.T("expiresIn"), days), "OkBrush", "OkBgBrush");
+    }
+
+    private async Task CopyLogs()
+    {
+        string module = BrowserSetup.HasModule ? "card module present" : "no card module in this build";
+        string state = "Readers: " + (_readers.Count == 0 ? "none" : string.Join(", ", _readers)) + "; card in the reader: " + (_cardPresent ? "yes" : "no")
+            + "; " + module + (Packaging.IsFlatpak ? "; Flatpak" : "");
+        try { await CopyText(DiagLog.Report(Updater.CurrentText, state)); ShowInfo(Loc.T("copyLogsDone")); }
+        catch (Exception ex) { ShowProblem(ex); }
     }
 
     private async Task CopyText(string text)

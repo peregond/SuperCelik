@@ -192,6 +192,12 @@
                                 <TextBlock x:Name="LblDemoHint" Foreground="{DynamicResource MutedBrush}" TextWrapping="Wrap" Margin="24,4,0,0"/>
                             </StackPanel>
                         </Border>
+                        <Border Style="{StaticResource Card}" Margin="0,16,0,0">
+                            <StackPanel>
+                                <Button x:Name="BtnCopyLogs" Style="{StaticResource SecondaryButton}" Click="CopyLogs_Click" HorizontalAlignment="Left"/>
+                                <TextBlock x:Name="LblCopyLogsHint" Foreground="{DynamicResource MutedBrush}" TextWrapping="Wrap" Margin="0,8,0,0"/>
+                            </StackPanel>
+                        </Border>
                     </StackPanel>
                 </ScrollViewer>
             </TabItem>

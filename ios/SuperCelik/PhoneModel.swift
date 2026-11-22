@@ -253,6 +253,7 @@ final class PhoneModel: ObservableObject {
     }
 
     private func show(_ error: Error) {
+        DiagLog.error(error)
         switch error {
         case NFCProblem.cancelled:
             return                                   // user closed the sheet: nothing to report
