@@ -14,8 +14,7 @@ release, or the cell says why it cannot.
 | Change PIN, unblock with PUK | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Sign a file (`.p7s`) | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Sign in to eUprava | ✅ | ✅ | ✅ | ✅ | ✅ (in the app) |
-| Set up browser sign-in | ✅ driver + Firefox | ✅ module | ✅ driver (automatic) | – | – |
-| Check browser sign-in | ✅ | ✅ | ✅ | – | – |
+| Set up and check browser sign-in (one button) | ✅ driver + Firefox | ✅ module | ✅ driver (automatic) | – | – |
 | "No reader yet?" page | ✅ | ✅ | ✅ | ✅ | ✅ |
 | "What's new?" page | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Report a bug / leave feedback | ✅ | ✅ | ✅ | ✅ | ✅ |

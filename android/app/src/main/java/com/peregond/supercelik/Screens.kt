@@ -376,7 +376,6 @@ fun TokenScreen(vm: CardViewModel) {
                 Text(stringResource(R.string.eu_login_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
         }
-        item { Text(stringResource(R.string.pin_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
     }
 
     when (dialog) {
