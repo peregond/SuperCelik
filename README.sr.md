@@ -71,5 +71,8 @@ Microsoft Edge je izgrađen na Chromium-u i prijavljuje se isto kao Chrome:
 ## Ako pregledač ne nudi karticu
 Potpuno zatvorite pregledač (sve prozore; na Mac-u ⌘Q) i ponovo otvorite stranicu za prijavu. Ako ne pomogne, izvadite karticu iz čitača i ponovo je umetnite. U **macOS-u** i **Linux-u** dugme „Proveri prijavu u pregledaču“ uz „Prijava na eUpravu“ pokazuje šta nije u redu (čitač i kartica, drajver kartice na Mac-u ili modul na Linux-u, Firefox) i kaže šta dalje; u **Windows-u** stanje drajvera i Firefox-a vidi se na kartici „Podešavanja“.
 
+## Jedan broj verzije
+Sve platforme imaju istu verziju: git tag `vX.Y.Z` izdanja. Gradnje za Windows, Linux, macOS i Android i probna gradnja za iOS uzimaju je iz taga, a dva App Store workflow-a (iOS i macOS) podrazumevano uzimaju poslednji tag izdanja, pa je broj u prodavnicama isti kao na GitHub-u. Svako ažuriranje dobija novi tag. Za izdavanje: preimenujte blok „Sledeće izdanje“ u `site/changelog/index.html` u novi broj sa datumom, pa napravite tag. Broj gradnje za Android računa se iz verzije (1.3.2 daje 10302), a broj gradnje za App Store je broj pokretanja workflow-a.
+
 ## Bezbednost
 Ne komitujte dumpove kartice ni bilo kakve lične podatke (vidi `.gitignore`).

@@ -71,5 +71,8 @@ Microsoft Edge is built on Chromium and signs in the same way as Chrome:
 ## If the browser does not offer the card
 Quit the browser completely (all windows; on a Mac ⌘Q) and open the sign-in page again. If that does not help, take the card out of the reader and put it back in. On **macOS** and **Linux** the “Check browser sign-in” button next to “Sign in to eUprava” shows what is wrong (reader and card, the card driver on a Mac or the module on Linux, Firefox) and says what to do next; on **Windows** the Settings tab shows the state of the driver and of Firefox.
 
+## One version number
+Every platform has the same version: the git tag `vX.Y.Z` of a release. The Windows, Linux, macOS and Android builds and the iOS test build take it from the tag, and the two App Store workflows (iOS and macOS) take the latest release tag by default, so the number in the stores is the number on GitHub. Every update gets a new tag. To release: rename the “Next release” block of `site/changelog/index.html` to the new number and date, then create the tag. The Android build number is computed from the version (1.3.2 gives 10302), the App Store build number is the workflow run number.
+
 ## Security
 Do not commit card dumps or any personal data (see `.gitignore`).
