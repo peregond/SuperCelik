@@ -52,7 +52,8 @@ jobs:
             top=$(printf '%s\n%s\n' "$last" "$VERSION" | sort -V | tail -1)
             { [ "$top" = "$VERSION" ] && [ "$last" != "$VERSION" ]; } || { echo "::error::$VERSION is not higher than the latest release $last"; exit 1; }
           fi
-          git show "$sha:site/changelog/index.html" | grep -q "^\[\"$VERSION\"," || { echo "::error::The changelog has no block for $VERSION (site/changelog/index.html)"; exit 1; }
+          log=$(git show "$sha:site/changelog/index.html")   # read it whole first: grep -q exits early and would SIGPIPE git show under pipefail
+          grep -q "^\[\"$VERSION\"," <<<"$log" || { echo "::error::The changelog has no block for $VERSION (site/changelog/index.html)"; exit 1; }
           echo "Checks passed: v$VERSION on $sha (the latest release is v${last:-none})."
           if [ "$DRY_RUN" = "true" ]; then echo "Dry run: nothing was tagged."; exit 0; fi
           git tag "v$VERSION" "$sha"
