@@ -455,7 +455,6 @@ fun SettingsScreen(vm: CardViewModel) {
     val theme by vm.theme.collectAsStateWithLifecycle()
     val dynamic by vm.dynamic.collectAsStateWithLifecycle()
     val mask by vm.mask.collectAsStateWithLifecycle()
-    val autoClear by vm.autoClear.collectAsStateWithLifecycle()
     val ctx = LocalContext.current
     val version = remember { runCatching { ctx.packageManager.getPackageInfo(ctx.packageName, 0).versionName }.getOrNull() ?: "" }
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
@@ -495,16 +494,6 @@ fun SettingsScreen(vm: CardViewModel) {
             ListItem(headlineContent = { Text(stringResource(R.string.settings_print_jmbg)) },
                 supportingContent = { Text(stringResource(R.string.settings_print_jmbg_hint)) },
                 trailingContent = { Switch(printJmbg, { vm.setPrintJmbg(it) }) })
-        }
-        item {
-            Text(stringResource(R.string.settings_autoclear), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
-            Spacer(Modifier.height(8.dp))
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                listOf(0, 1, 5, 15).forEach { m ->
-                    FilterChip(selected = autoClear == m, onClick = { vm.setAutoClear(m) },
-                        label = { Text(if (m == 0) stringResource(R.string.minutes_off) else stringResource(R.string.minutes_n, m)) })
-                }
-            }
         }
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) item {
             ListItem(modifier = Modifier.clickable {

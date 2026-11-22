@@ -22,11 +22,11 @@ release, or the cell says why it cannot.
 | Demo data | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Language (ru / en / sr Latin / sr Cyrillic), theme | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Auto-read when the card is inserted | ✅ | ✅ | ✅ | ✅ | ✅ (reader already connected) |
-| Hide the data after idle time | ✅ | ✅ | ✅ | – (not needed) | ✅ |
+| Hide the data after idle time | ✅ | ✅ | ✅ | – (not wanted) | – (not wanted) |
 | Check for updates inside the app | ✅ | ✅ | ✅ (not the App Store build) | – (App Store) | – (store / APK page) |
 
 "–" is not a gap to fill: a phone has no browser to set up, and apps from a store are updated by the store.
-Idle hide is not wanted on iOS (the data leaves with the app); every other cell is filled.
+Idle hide is not wanted on iOS and Android (the data goes with the app); every other cell is filled.
 
 Where the code lives:
 

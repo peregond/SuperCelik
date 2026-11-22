@@ -53,8 +53,6 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
     val dynamic: StateFlow<Boolean> = _dynamic.asStateFlow()      // true = wallpaper (Material You) palette
     private val _mask = MutableStateFlow(prefs.getBoolean("mask", true))
     val mask: StateFlow<Boolean> = _mask.asStateFlow()
-    private val _autoClear = MutableStateFlow(prefs.getInt("autoClear", 5))     // minutes, 0 = off
-    val autoClear: StateFlow<Int> = _autoClear.asStateFlow()
 
     private val _printJmbg = MutableStateFlow(prefs.getBoolean("printJmbg", true))
     val printJmbg: StateFlow<Boolean> = _printJmbg.asStateFlow()
@@ -67,20 +65,17 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
     fun setTheme(v: Int) { _theme.value = v; prefs.edit().putInt("theme", v).apply() }
     fun setDynamic(v: Boolean) { _dynamic.value = v; prefs.edit().putBoolean("wallpaper", v).apply() }
     fun setMask(v: Boolean) { _mask.value = v; prefs.edit().putBoolean("mask", v).apply() }
-    fun setAutoClear(v: Int) { _autoClear.value = v; prefs.edit().putInt("autoClear", v).apply(); scheduleClear() }
 
     // ---- card operations ----
 
     /** The operation that runs when a card shows up. Null = read the card (the default, started by plugging in a reader). */
     private var pending: ((EidCard) -> Unit)? = null
     private var job: Job? = null
-    private var clearJob: Job? = null
 
     private val readOp: (EidCard) -> Unit = { card ->
         val p = card.readPersonalData()
         val s = card.verifySignatures()
         _personal.value = p; _sig.value = s
-        scheduleClear()
     }
 
     private fun begin(op: (EidCard) -> Unit, context: Context) {
@@ -217,19 +212,7 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
     /** Drops all personal data from memory. */
     fun clear() {
         cancel()
-        clearJob?.cancel()
         _personal.value = null; _sig.value = null; _token.value = null
-    }
-
-    private fun scheduleClear() {
-        clearJob?.cancel()
-        val minutes = _autoClear.value
-        if (minutes <= 0 || _personal.value == null) return
-        clearJob = viewModelScope.launch {
-            delay(minutes * 60_000L)
-            _personal.value = null; _sig.value = null; _token.value = null
-            _message.value = Msg(R.string.auto_cleared, error = false)
-        }
     }
 
     /** Demo/screenshots only: open the PDF viewer as soon as the result is shown. */

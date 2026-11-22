@@ -81,7 +81,6 @@
     <string name="signed_saved">Signature saved</string>
     <string name="pin_note">Reading the token does not use the PIN. Signing creates a detached CMS .p7s file that any CMS-capable tool can verify.</string>
     <string name="ok">OK</string>
-    <string name="auto_cleared">Data cleared automatically</string>
     <string name="settings_theme">Theme</string>
     <string name="theme_system">System</string>
     <string name="theme_light">Light</string>
@@ -92,9 +91,6 @@
     <string name="settings_mask_hint">JMBG, document number and address are shown as dots until you tap the eye</string>
     <string name="settings_auto_read">Read the card automatically when inserted</string>
     <string name="settings_auto_read_hint">Reading starts as soon as a card is put into the connected reader</string>
-    <string name="settings_autoclear">Clear data automatically after</string>
-    <string name="minutes_off">Never</string>
-    <string name="minutes_n">%d min</string>
     <string name="settings_language">Language</string>
     <string name="settings_language_hint">Choose the app language in system settings</string>
     <string name="photo">Photo</string>

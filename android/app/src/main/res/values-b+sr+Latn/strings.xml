@@ -81,7 +81,6 @@
     <string name="signed_saved">Potpis je sačuvan</string>
     <string name="pin_note">Čitanje tokena ne koristi PIN. Potpis pravi odvojeni CMS .p7s fajl koji može da proveri svaki alat sa CMS podrškom.</string>
     <string name="ok">U redu</string>
-    <string name="auto_cleared">Podaci su automatski obrisani</string>
     <string name="settings_theme">Tema</string>
     <string name="theme_system">Sistemska</string>
     <string name="theme_light">Svetla</string>
@@ -92,9 +91,6 @@
     <string name="settings_mask_hint">JMBG, broj dokumenta i adresa su sakriveni dok ne dodirnete oko</string>
     <string name="settings_auto_read">Automatski pročitaj karticu pri umetanju</string>
     <string name="settings_auto_read_hint">Čitanje počinje čim se kartica stavi u povezani čitač</string>
-    <string name="settings_autoclear">Automatski obriši podatke posle</string>
-    <string name="minutes_off">Nikad</string>
-    <string name="minutes_n">%d min</string>
     <string name="settings_language">Jezik</string>
     <string name="settings_language_hint">Jezik aplikacije se bira u podešavanjima sistema</string>
     <string name="photo">Fotografija</string>
