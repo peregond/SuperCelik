@@ -270,7 +270,8 @@ object VehicleRows {
         mass = "790"; maxLadenMass = "1215"; seats = "5"; standingPlaces = "0"; axles = "2"
         typeApprovalNumber = "e1*00/00*0000"
         ownerSurname = "PETROVIĆ"; ownerName = "MARKO"; ownerAddress = "Knez Mihailova 1, Beograd"; ownerPersonalNo = "0101990710000"
-        unambiguousNumber = "000000001"; serialNumber = "SD0000001"; authorityIssuing = "MUP RS"
+        unambiguousNumber = "000000001"; serialNumber = "SD0000001"; authorityIssuing = "PU ZA GRAD BEOGRAD, MINISTARSTVO UNUTRASNJIH POSLOVA REPUBLIKE SRBIJE"
+        stateIssuing = "REPUBLIKA SRBIJA"; load = "0"; powerWeightRatio = "0"
     }
 }
 

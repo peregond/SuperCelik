@@ -188,4 +188,17 @@ public class VehicleRowsAndTextTests
         Assert.Equal("Регистарски број", Loc.T("vRegNo"));
         Loc.Current = Lang.en;
     }
+
+    [Fact]
+    public void PrintoutFollowsTheMupReader()
+    {
+        var v = VehicleRows.Demo(); v.Type = "";
+        var all = VehiclePrintSpec.Build(v, true).Select(x => x.Text).ToList();
+        Assert.Contains("Registarska oznaka: BG 123-AB", all);
+        Assert.Contains(all, t => t.StartsWith("Tip: -   Homologacijska oznaka:"));      // an empty type is printed as "-"
+        Assert.Contains(all, t => t.StartsWith("Jmbg vlasnika: 0101990710000"));
+        var noJmbg = VehiclePrintSpec.Build(v, false).Select(x => x.Text).ToList();
+        Assert.DoesNotContain(noJmbg, t => t.Contains("0101990710000"));
+        Assert.Contains("Jmbg vlasnika: ", noJmbg);
+    }
 }

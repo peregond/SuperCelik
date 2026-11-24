@@ -260,7 +260,8 @@ enum VehicleRows {
         v.mass = "790"; v.maxLadenMass = "1215"; v.seats = "5"; v.standingPlaces = "0"; v.axles = "2"
         v.typeApprovalNumber = "e1*00/00*0000"
         v.ownerSurname = "PETROVIĆ"; v.ownerName = "MARKO"; v.ownerAddress = "Knez Mihailova 1, Beograd"; v.ownerPersonalNo = "0101990710000"
-        v.unambiguousNumber = "000000001"; v.serialNumber = "SD0000001"; v.authorityIssuing = "MUP RS"
+        v.unambiguousNumber = "000000001"; v.serialNumber = "SD0000001"; v.authorityIssuing = "PU ZA GRAD BEOGRAD, MINISTARSTVO UNUTRASNJIH POSLOVA REPUBLIKE SRBIJE"
+        v.stateIssuing = "REPUBLIKA SRBIJA"; v.load = "0"; v.powerWeightRatio = "0"
         return v
     }
 }

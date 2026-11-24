@@ -306,6 +306,79 @@ public static class VehicleRows
         FuelType = "BENZIN", EngineCapacity = "1116", MaxNetPower = "41", EngineNumber = "0000001", Mass = "790", MaxLadenMass = "1215",
         Seats = "5", StandingPlaces = "0", Axles = "2", TypeApprovalNumber = "e1*00/00*0000",
         OwnerSurname = "PETROVIĆ", OwnerName = "MARKO", OwnerAddress = "Knez Mihailova 1, Beograd", OwnerPersonalNo = "0101990710000",
-        UnambiguousNumber = "000000001", SerialNumber = "SD0000001", AuthorityIssuing = "MUP RS",
+        UnambiguousNumber = "000000001", SerialNumber = "SD0000001", StateIssuing = "REPUBLIKA SRBIJA", Load = "0", PowerWeightRatio = "0",
+        AuthorityIssuing = "PU ZA GRAD BEOGRAD, MINISTARSTVO UNUTRASNJIH POSLOVA REPUBLIKE SRBIJE",
     };
+}
+
+/// One drawn item of the vehicle printout: text (or a rule) at a position in points on an A4 page (595.28 x 841.89),
+/// Y is the vertical centre of the line.
+public sealed class PrintItem
+{
+    public string Text = ""; public double X, Y, Size = 10.5, Width = 0, Thickness = 0;
+    public bool Bold = true, Underline;
+    public bool IsRule => Thickness > 0;
+}
+
+/// The printout of the vehicle registration card, laid out after the printout of MUP's own reader "Čitač saobraćajne
+/// dozvole" (a standard document: its title, order of the fields, labels in Serbian Latin and positions are kept; the
+/// typeface is the nearest one available). Shared by the Windows and Linux apps; the Swift and Kotlin ports use the same numbers.
+public static class VehiclePrintSpec
+{
+    public const double PageW = 595.28, PageH = 841.89;
+    private const double Left = 41.5, Right = 350;
+
+    public static List<PrintItem> Build(VehicleData v, bool includeJmbg)
+    {
+        var r = new List<PrintItem>();
+        void T(string s, double x, double y, double size = 10.5, bool bold = true, bool ul = false, double w = 0)
+            => r.Add(new PrintItem { Text = s, X = x, Y = y, Size = size, Bold = bold, Underline = ul, Width = w });
+        string Dash(string s) => string.IsNullOrEmpty(s) ? "-" : s;
+
+        T("Čitač saobraćajne dozvole", 45, 64, 22);
+        r.Add(new PrintItem { X = 39, Y = 84, Width = 507, Thickness = 3 });
+        T("Registarska oznaka: " + v.RegistrationNumber, 42.5, 119, 18);
+
+        T("Datum izdavanja: " + Text.Date(v.IssuingDate), Left, 171);
+        T("Važi do: " + Text.Date(v.ExpiryDate), Right, 171, bold: false, ul: true);
+        T("Saobraćajnu izdao: " + v.StateIssuing, Left, 190);
+        T("Zabrana otuđenja: " + Text.Date(v.SaleBan), Right, 190);
+        T(v.AuthorityIssuing, Left, 213, w: 470);
+        T("Broj saobraćajne: " + v.UnambiguousNumber, Left, 252);
+        T("Serijski broj: " + v.SerialNumber, Left, 272);
+
+        T("Podaci o vlasniku", Left, 303, 16.5, false, true);
+        string[] owner =
+        {
+            "Vlasnik: " + v.OwnerSurname, "Ime vlasnika: " + v.OwnerName, "Adresa vlasnika: " + v.OwnerAddress,
+            "Jmbg vlasnika: " + (includeJmbg ? v.OwnerPersonalNo : ""),
+            "Korisnik: " + v.UserSurname, "Ime korisnika: " + v.UserName, "Adresa korisnika: " + v.UserAddress,
+            "Jmbg korisnika: " + (includeJmbg ? v.UserPersonalNo : ""),
+        };
+        for (int i = 0; i < owner.Length; i++) T(owner[i], Left, 327.6 + 19.2 * i, w: 500);
+
+        T("Podaci o vozilu", Left, 495.4, 16.5, false, true);
+        string[] car =
+        {
+            "Datum prve registracije: " + Text.Date(v.FirstRegistrationDate),
+            "Marka: " + v.Make + "   Model: " + v.CommercialDescription,
+            "Tip: " + Dash(v.Type) + "   Homologacijska oznaka: " + Dash(v.TypeApprovalNumber),
+            "Boja: " + v.Colour, "Broj šasije: " + v.Vin, "Broj motora: " + v.EngineNumber,
+            "Snaga motora: " + v.MaxNetPower, "Odnos snaga/masa: " + v.PowerWeightRatio,
+            "Kategorija: " + v.Category, "Pogonsko gorivo: " + v.FuelType, "Broj mesta za sedenje: " + v.Seats,
+        };
+        for (int i = 0; i < car.Length; i++) T(car[i], Left, 516.6 + 19.1 * i);
+        T("Godina proizvodnje: " + v.YearOfProduction, Right, 516.6);
+        string[] right =
+        {
+            "Broj osovina: " + v.Axles, "Zapremina motora: " + v.EngineCapacity, "Masa: " + v.Mass,
+            "Nosivost: " + v.Load, "Najveća dozvoljena",
+        };
+        for (int i = 0; i < right.Length; i++) T(right[i], Right, 573.8 + 19.9 * i);
+        T("masa: " + v.MaxLadenMass, Right, 573.8 + 19.9 * 4 + 17);
+        T("Broj mesta za stajanje: " + v.StandingPlaces, Right, 707.6);
+
+        T(Loc.T("vehNote") + "   " + DateTime.Now.ToString("dd.MM.yyyy"), 41.5, 810, 7.5, false, w: 512);
+        return r;
+    }
 }

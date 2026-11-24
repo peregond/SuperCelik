@@ -41,31 +41,61 @@ object Pdf {
         return f
     }
 
+    /** Layout after the printout of MUP's own reader "Čitač saobraćajne dozvole"; same numbers as VehiclePrintSpec (C#) and VehiclePrintLayout (Swift). */
     private fun drawVehicle(context: Context, c: Canvas, v: VehicleData, includeJmbg: Boolean) {
-        val rows = VehicleRows.build(v, includeJmbg)
         c.drawColor(Color.WHITE)
-        fun paint(size: Float, bold: Boolean, color: Int) = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
-            typeface = if (bold) Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD) else Typeface.SANS_SERIF
-            textSize = size; this.color = color
-        }
-        fun text(s: String, p: TextPaint, x: Float, y: Float, width: Int): Float {
+        val d = CardText::date
+        fun dash(s: String) = s.ifEmpty { "-" }
+        /** y is the vertical centre of the first line. */
+        fun text(s: String, x: Float, y: Float, size: Float = 10.5f, bold: Boolean = true, underline: Boolean = false, width: Int = 520, color: Int = Color.BLACK) {
+            if (s.isEmpty()) return
+            val p = TextPaint(Paint.ANTI_ALIAS_FLAG).apply {
+                typeface = if (bold) Typeface.create(Typeface.SANS_SERIF, Typeface.BOLD) else Typeface.SANS_SERIF
+                textSize = size; this.color = color; isUnderlineText = underline
+            }
             val l = StaticLayout.Builder.obtain(s, 0, s.length, p, width).setAlignment(Layout.Alignment.ALIGN_NORMAL).build()
-            c.save(); c.translate(x, y); l.draw(c); c.restore()
-            return l.height.toFloat()
+            c.save(); c.translate(x, y - size * 0.6f - 1f); l.draw(c); c.restore()
         }
-        var y = 52f
-        y += text(context.getString(R.string.veh_title), paint(20f, true, Color.BLACK), 50f, y, 495) + 8f
-        y += text(v.registrationNumber, paint(14f, true, Color.BLACK), 50f, y, 495) + 8f
-        c.drawRect(50f, y, 545f, y + 1.2f, Paint().apply { color = Color.BLACK })
-        y += 12f
-        val step = minOf(20f, (842f - y - 70f) / maxOf(1, rows.size))
-        val size = if (step >= 18f) 11f else 9.5f
-        for ((key, value) in rows) {
-            text(context.getString(vehicleLabel(key)), paint(size, false, Color.DKGRAY), 50f, y, 190)
-            text(value, paint(size, true, Color.BLACK), 245f, y, 300)
-            y += step
-        }
+        val left = 41.5f; val right = 350f
+        text("Čitač saobraćajne dozvole", 45f, 64f, 22f)
+        c.drawRect(39f, 84f - 1.5f, 546f, 84f + 1.5f, Paint().apply { color = Color.BLACK })
+        text("Registarska oznaka: " + v.registrationNumber, 42.5f, 119f, 18f)
+
+        text("Datum izdavanja: " + d(v.issuingDate), left, 171f)
+        text("Važi do: " + d(v.expiryDate), right, 171f, bold = false, underline = true)
+        text("Saobraćajnu izdao: " + v.stateIssuing, left, 190f)
+        text("Zabrana otuđenja: " + d(v.saleBan), right, 190f)
+        text(v.authorityIssuing, left, 213f, width = 470)
+        text("Broj saobraćajne: " + v.unambiguousNumber, left, 252f)
+        text("Serijski broj: " + v.serialNumber, left, 272f)
+
+        text("Podaci o vlasniku", left, 303f, 16.5f, bold = false, underline = true)
+        val owner = listOf(
+            "Vlasnik: " + v.ownerSurname, "Ime vlasnika: " + v.ownerName, "Adresa vlasnika: " + v.ownerAddress,
+            "Jmbg vlasnika: " + (if (includeJmbg) v.ownerPersonalNo else ""),
+            "Korisnik: " + v.userSurname, "Ime korisnika: " + v.userName, "Adresa korisnika: " + v.userAddress,
+            "Jmbg korisnika: " + (if (includeJmbg) v.userPersonalNo else ""),
+        )
+        owner.forEachIndexed { i, s -> text(s, left, 327.6f + 19.2f * i, width = 500) }
+
+        text("Podaci o vozilu", left, 495.4f, 16.5f, bold = false, underline = true)
+        val car = listOf(
+            "Datum prve registracije: " + d(v.firstRegistrationDate),
+            "Marka: " + v.make + "   Model: " + v.commercialDescription,
+            "Tip: " + dash(v.type) + "   Homologacijska oznaka: " + dash(v.typeApprovalNumber),
+            "Boja: " + v.colour, "Broj šasije: " + v.vin, "Broj motora: " + v.engineNumber,
+            "Snaga motora: " + v.maxNetPower, "Odnos snaga/masa: " + v.powerWeightRatio,
+            "Kategorija: " + v.category, "Pogonsko gorivo: " + v.fuelType, "Broj mesta za sedenje: " + v.seats,
+        )
+        car.forEachIndexed { i, s -> text(s, left, 516.6f + 19.1f * i) }
+        text("Godina proizvodnje: " + v.yearOfProduction, right, 516.6f)
+        val rightCol = listOf("Broj osovina: " + v.axles, "Zapremina motora: " + v.engineCapacity, "Masa: " + v.mass,
+            "Nosivost: " + v.load, "Najveća dozvoljena")
+        rightCol.forEachIndexed { i, s -> text(s, right, 573.8f + 19.9f * i) }
+        text("masa: " + v.maxLadenMass, right, 573.8f + 19.9f * 4 + 17f)
+        text("Broj mesta za stajanje: " + v.standingPlaces, right, 707.6f)
+
         val date = SimpleDateFormat("dd.MM.yyyy", Locale.US).format(Date())
-        text(context.getString(R.string.veh_note) + "   " + date, paint(8f, false, Color.GRAY), 50f, 842f - 44f, 495)
+        text(context.getString(R.string.veh_note) + "   " + date, 41.5f, 810f, 7.5f, bold = false, width = 512, color = Color.GRAY)
     }
 }
