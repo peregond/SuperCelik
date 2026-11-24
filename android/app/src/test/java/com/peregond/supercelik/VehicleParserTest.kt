@@ -139,7 +139,7 @@ class VehicleParserTest {
                 return if (off >= f.size) Resp(ByteArray(0), 0x6B00) else Resp(f.copyOfRange(off, f.size), 0x9000)
             }
         }
-        val log = CardDiag.run(transport, "1.5.1", "test")
+        val log = CardDiag.run(transport, "1.6.0", "test")
         assertFalse(log.contains(secret)); assertTrue(log.contains("len=${secret.length}"))
     }
 }

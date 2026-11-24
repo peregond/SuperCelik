@@ -85,7 +85,7 @@ What the sources say, and do not say:
 3. Health card: does a SELECT of the known ID-card and PKCS#15 AIDs succeed? What does the card expose without PIN?
 4. For both: status word of every command, so we can see where a PIN or authentication is demanded.
 
-## Implementation status (version 1.5.1)
+## Implementation status (version 1.6.0)
 - **Vehicle registration card:** parser, reader and tests exist in C# (`windows/SerbiaID.Windows/Cards.cs`, `VehicleCard.cs`; Windows, Windows XP / 7, Linux), Swift (`Sources/SerbiaID/VehicleCard.swift`; macOS, iOS) and Kotlin (`android/.../VehicleCard.kt`). They show on the first tab, renamed "Card": one Read button recognises an eID card first, then tries the registration application. Tested on synthetic data only. **Not checked on a real card.** The issuer signature is not verified. iOS reads it over a USB reader only (the NFC application list in Info.plist would need the confirmed application name).
 - **Diagnostic mode** (`Diag.cs`, `CardDiag` in Swift and Kotlin): hidden in Settings (tap the version 5 times), `--diag [file]` on Windows and Linux. It selects the candidate applications and files, logs identifiers, sizes and status words and the structure (tags, lengths, kind of value) of what it can read, never a value, and sends no PIN command. A test checks that a planted value does not appear in the log.
 - **Health insurance card:** nothing is implemented beyond the diagnostics. No official document describes the chip, and the sources do not show that its data is readable without a service card. It is added only after a real log shows that.
@@ -96,4 +96,4 @@ What the sources say, and do not say:
 ## Differences between the task description and the repository
 - A first look at an old checkout found no `docs/features.md`, changelog or `DiagLog`; they all exist on current `main` (this work is based on it). The log-copy button "Copy logs and errors" (`DiagLog`) is separate from the card diagnostics above.
 - Languages: ru, en, sr (Latin and Cyrillic), hu, sq, sk, ro, hr, uk, be. The new texts are in `LocCards.cs` (all languages in one table), `LocalizationCards.swift` and the `strings.xml` files. The hu, sq, sk, ro, hr, uk and be texts were written without native speakers, like the existing ones.
-- The release workflow needs a block `["X.Y.Z",` in `site/changelog/index.html`; the block for 1.5.1 is there. The changelog has a text for ru, en and sr only; the other languages show the English text (as for 1.5.0).
+- The release workflow needs a block `["X.Y.Z",` in `site/changelog/index.html`; the block for 1.6.0 is there. The changelog has a text for ru, en and sr only; the other languages show the English text (as for 1.5.0).
