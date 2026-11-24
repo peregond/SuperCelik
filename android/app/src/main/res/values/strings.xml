@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Super Čelik</string>
-    <string name="title_personal">Card data</string>
+    <string name="title_personal">Card</string>
     <string name="read_usb">Read via USB reader</string>
     <string name="hint_idle">Insert the card into a USB smart card reader and connect it to the phone (USB-C or an OTG adapter). Reading starts automatically.</string>
     <string name="reader_help">No reader yet?</string>

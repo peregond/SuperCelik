@@ -128,7 +128,7 @@ certSign|Aláírási tanúsítvány
 certSigFixed|Állandó adatok aláírója
 certSigVariable|Változó adatok aláírója
 appTitle|Super Čelik
-tabPersonal|Kártyaadatok
+tabPersonal|Kártya
 tabToken|Token és tanúsítványok
 tabAbout|Névjegy
 reader|Olvasó
@@ -323,7 +323,7 @@ certSign|Certifikata e nënshkrimit
 certSigFixed|Nënshkruesi i të dhënave të pandryshueshme
 certSigVariable|Nënshkruesi i të dhënave të ndryshueshme
 appTitle|Super Čelik
-tabPersonal|Të dhënat e kartës
+tabPersonal|Karta
 tabToken|Token dhe certifikata
 tabAbout|Rreth programit
 reader|Lexuesi
@@ -518,7 +518,7 @@ certSign|Certifikát na podpisovanie
 certSigFixed|Podpisovateľ stálych údajov
 certSigVariable|Podpisovateľ premenných údajov
 appTitle|Super Čelik
-tabPersonal|Údaje z karty
+tabPersonal|Karta
 tabToken|Token a certifikáty
 tabAbout|O aplikácii
 reader|Čítačka
@@ -713,7 +713,7 @@ certSign|Certificat de semnare
 certSigFixed|Semnatar al datelor fixe
 certSigVariable|Semnatar al datelor variabile
 appTitle|Super Čelik
-tabPersonal|Datele cardului
+tabPersonal|Card
 tabToken|Token și certificate
 tabAbout|Despre
 reader|Cititor
@@ -908,7 +908,7 @@ certSign|Certifikat za potpisivanje
 certSigFixed|Potpisnik nepromjenjivih podataka
 certSigVariable|Potpisnik promjenjivih podataka
 appTitle|Super Čelik
-tabPersonal|Podaci s kartice
+tabPersonal|Kartica
 tabToken|Token i certifikati
 tabAbout|O programu
 reader|Čitač
@@ -1103,7 +1103,7 @@ certSign|Сертифікат для підписання
 certSigFixed|Підписувач незмінних даних
 certSigVariable|Підписувач змінних даних
 appTitle|Super Čelik
-tabPersonal|Дані з картки
+tabPersonal|Картка
 tabToken|Токен і сертифікати
 tabAbout|Про програму
 reader|Зчитувач
@@ -1298,7 +1298,7 @@ certSign|Сертыфікат для падпісання
 certSigFixed|Падпісант нязменных даных
 certSigVariable|Падпісант зменных даных
 appTitle|Super Čelik
-tabPersonal|Даныя з карты
+tabPersonal|Карта
 tabToken|Токен і сертыфікаты
 tabAbout|Пра праграму
 reader|Счытвальнік

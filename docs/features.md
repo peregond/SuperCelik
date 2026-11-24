@@ -8,7 +8,7 @@ release, or the cell says why it cannot.
 |---|---|---|---|---|---|
 | Read the ID card (data, photo) | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Verify the card signature | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Read a vehicle registration card (saobraćajna dozvola) on the "Card data" tab; one Read button for every card. **Parsed from the EU / MUP specifications, not yet checked on a real card**; the issuer signature is not verified | ✅ | ✅ | ✅ | ✅ USB reader only (the NFC application name is not confirmed) | ✅ |
+| Read a vehicle registration card (saobraćajna dozvola) on the "Card" tab; one Read button for every card. **Parsed from the EU / MUP specifications, not yet checked on a real card**; the issuer signature is not verified | ✅ | ✅ | ✅ | ✅ USB reader only (the NFC application name is not confirmed) | ✅ |
 | Card diagnostics: structure of any card, no personal data, no PIN (hidden: tap the version 5 times in Settings; `--diag` on Windows and Linux). Its log is copied with a button | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Read the health insurance card (KZO) | – not yet | – not yet | – not yet | – not yet | – not yet |
 | Print / save the PDF | ✅ | ✅ | ✅ | ✅ | ✅ |

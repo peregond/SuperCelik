@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Super Čelik</string>
-    <string name="title_personal">Kártyaadatok</string>
+    <string name="title_personal">Kártya</string>
     <string name="read_usb">Olvasás USB-olvasóval</string>
     <string name="hint_idle">Helyezze be a kártyát egy USB-s intelligenskártya-olvasóba, és csatlakoztassa a telefonhoz (USB-C vagy OTG-adapter). Az olvasás automatikusan elindul.</string>
     <string name="reader_help">Még nincs olvasója?</string>

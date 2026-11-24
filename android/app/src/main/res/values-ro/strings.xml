@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Super Čelik</string>
-    <string name="title_personal">Datele cardului</string>
+    <string name="title_personal">Card</string>
     <string name="read_usb">Citește prin cititor USB</string>
     <string name="hint_idle">Introduceți cardul într-un cititor USB de carduri inteligente și conectați-l la telefon (USB-C sau adaptor OTG). Citirea începe automat.</string>
     <string name="reader_help">Nu aveți cititor?</string>

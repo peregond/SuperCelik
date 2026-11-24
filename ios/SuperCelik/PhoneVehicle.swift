@@ -1,7 +1,7 @@
 import SwiftUI
 import UIKit
 
-/// A vehicle registration card on the "Card data" tab (wired reader only: the NFC application name is not confirmed, so it
+/// A vehicle registration card on the "Card" tab (wired reader only: the NFC application name is not confirmed, so it
 /// is not listed in Info.plist). STATUS: parsed per the specification, not yet checked on a real card.
 struct VehicleCardView: View {
     @EnvironmentObject var loc: Loc

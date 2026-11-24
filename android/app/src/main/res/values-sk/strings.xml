@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Super Čelik</string>
-    <string name="title_personal">Údaje z karty</string>
+    <string name="title_personal">Karta</string>
     <string name="read_usb">Čítať cez USB čítačku</string>
     <string name="hint_idle">Vložte kartu do USB čítačky čipových kariet a pripojte ju k telefónu (USB-C alebo OTG adaptér). Čítanie sa spustí automaticky.</string>
     <string name="reader_help">Nemáte čítačku?</string>

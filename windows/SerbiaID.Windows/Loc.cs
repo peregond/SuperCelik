@@ -71,7 +71,7 @@ public static class Loc
     {
         // ru, en, sr
         ["appTitle"] = new[] { "Super Čelik", "Super Čelik", "Super Čelik" },
-        ["tabPersonal"] = new[] { "Данные с карты", "Card data", "Podaci sa kartice" },
+        ["tabPersonal"] = new[] { "Карта", "Card", "Kartica" },
         ["tabToken"] = new[] { "Токен и сертификаты", "Token & certificates", "Token i sertifikati" },
         ["tabAbout"] = new[] { "О программе", "About", "O programu" },
         ["reader"] = new[] { "Считыватель", "Reader", "Čitač" },

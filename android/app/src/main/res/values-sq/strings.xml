@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Super Čelik</string>
-    <string name="title_personal">Të dhënat e kartës</string>
+    <string name="title_personal">Karta</string>
     <string name="read_usb">Lexo me lexues USB</string>
     <string name="hint_idle">Futeni kartën në një lexues USB kartash inteligjente dhe lidheni me telefonin (USB-C ose përshtatës OTG). Leximi fillon automatikisht.</string>
     <string name="reader_help">Nuk keni lexues?</string>
