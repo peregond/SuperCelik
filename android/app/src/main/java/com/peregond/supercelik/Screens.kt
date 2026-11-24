@@ -57,6 +57,12 @@ import java.util.Locale
 
 // ---------------------------------------------------------------- shared pieces
 
+/** One corner radius for every card on every tab, and one container colour for the groups of fields. */
+private val CardShape = RoundedCornerShape(28.dp)
+
+@Composable
+private fun groupCardColors() = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.surfaceContainerLow)
+
 @Composable
 fun Pill(text: String, color: Color, container: Color) {
     Surface(color = container, shape = RoundedCornerShape(50)) {
@@ -170,12 +176,14 @@ private fun VehicleResult(vm: CardViewModel, v: VehicleData, revealAll: Boolean)
     val sections = VehicleRows.sections(v).map { (title, rows) ->
         vehicleLabel(title) to rows.filter { it.first != "vRegNo" }.map { (k, s) -> Triple(vehicleLabel(k), s, k in VehicleRows.sensitive) }
     }
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         item {
-            Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = heroBg), shape = RoundedCornerShape(28.dp)) {
-                Column(Modifier.padding(16.dp).fillMaxWidth()) {
-                    Text(stringResource(R.string.veh_title), style = MaterialTheme.typography.labelLarge, color = heroFg.copy(alpha = 0.85f))
-                    Text(v.registrationNumber, style = MaterialTheme.typography.titleLarge, color = heroFg)
+            Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = heroBg), shape = CardShape) {
+                Column(Modifier.padding(20.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text(stringResource(R.string.veh_title), style = MaterialTheme.typography.labelLarge, color = heroFg.copy(alpha = 0.85f))
+                        Text(v.registrationNumber, style = MaterialTheme.typography.titleLarge, color = heroFg)
+                    }
                     ExpiryPill(v.expiryDate, onHero = flagPalette)
                 }
             }
@@ -223,27 +231,29 @@ private fun PersonalResult(vm: CardViewModel, p: PersonalData, revealAll: Boolea
     LazyColumn(
         Modifier.fillMaxSize(),
         contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 24.dp),
-        verticalArrangement = Arrangement.spacedBy(12.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp),
     ) {
         item {
-            Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = heroBg),
-                shape = RoundedCornerShape(28.dp)) {
-                Row(Modifier.padding(16.dp).fillMaxWidth(), verticalAlignment = Alignment.CenterVertically) {
+            Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = heroBg), shape = CardShape) {
+                Row(Modifier.padding(20.dp).fillMaxWidth(), verticalAlignment = Alignment.Top) {
                     if (bitmap != null) {
                         Image(bitmap, stringResource(R.string.photo),
                             Modifier.size(96.dp, 124.dp).clip(RoundedCornerShape(16.dp)).clickable { photoOpen = true },
                             contentScale = ContentScale.Crop)
                         Spacer(Modifier.width(16.dp))
                     }
-                    Column(Modifier.weight(1f)) {
-                        Text(stringResource(docName(p.cardType)), style = MaterialTheme.typography.labelLarge, color = heroFg.copy(alpha = 0.85f))
-                        Text("${p.givenName} ${p.surname}", style = MaterialTheme.typography.titleLarge, color = heroFg)
+                    // document, name, expiry and the signature check: one column inside the card, left-aligned (as on iOS)
+                    Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                            Text(stringResource(docName(p.cardType)), style = MaterialTheme.typography.labelLarge, color = heroFg.copy(alpha = 0.85f))
+                            Text("${p.givenName} ${p.surname}", style = MaterialTheme.typography.titleLarge, color = heroFg, maxLines = 2)
+                        }
                         ExpiryPill(p.expiryDate, onHero = flagPalette)
+                        SigLine(sig, onHero = flagPalette, fg = heroFg)
                     }
                 }
             }
         }
-        item { SigCard(sig) }
         item { Section(R.string.person_section, rows, show) }
         item { Section(R.string.doc_section, docRows, show) }
         item { Section(R.string.address_section, listOf(Triple(R.string.address, p.address, true)), show) }
@@ -287,7 +297,6 @@ private fun ExpiryPill(expiry: String, onHero: Boolean) {
         days < 90 -> stringResource(R.string.expires_in_days, days) to true
         else -> stringResource(R.string.valid_until, expiry) to false
     }
-    Spacer(Modifier.height(6.dp))
     if (onHero) {
         Pill(text, if (bad) Color(0xFFFFB3B0) else Color.White, Color.White.copy(alpha = 0.16f))
     } else {
@@ -296,45 +305,50 @@ private fun ExpiryPill(expiry: String, onHero: Boolean) {
     }
 }
 
+/** The result of the signature check as a line inside the card (icon + text, wraps under the icon, no box of its own). */
 @Composable
-private fun SigCard(sig: SigResult?) {
-    val (icon, text, detail, bad) = when (sig) {
-        SigResult.Ok -> listOf(Icons.Filled.Verified, stringResource(R.string.sig_ok), null, false)
-        is SigResult.ChainNotTrusted -> listOf(Icons.Filled.Warning, stringResource(R.string.sig_chain), sig.detail, false)
-        is SigResult.Invalid -> listOf(Icons.Filled.Error, stringResource(R.string.sig_bad), sig.detail, true)
+private fun SigLine(sig: SigResult?, onHero: Boolean, fg: Color) {
+    val (icon, text, detail, tone) = when (sig) {
+        SigResult.Ok -> listOf(Icons.Filled.Verified, stringResource(R.string.sig_ok), null, 0)
+        is SigResult.ChainNotTrusted -> listOf(Icons.Filled.Warning, stringResource(R.string.sig_chain), sig.detail, 1)
+        is SigResult.Invalid -> listOf(Icons.Filled.Error, stringResource(R.string.sig_bad), sig.detail, 2)
         null -> return
     }
-    val container = if (bad == true) MaterialTheme.colorScheme.errorContainer else MaterialTheme.colorScheme.secondaryContainer
-    val content = if (bad == true) MaterialTheme.colorScheme.onErrorContainer else MaterialTheme.colorScheme.onSecondaryContainer
-    Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = container), shape = RoundedCornerShape(20.dp)) {
-        Row(Modifier.padding(16.dp), verticalAlignment = Alignment.CenterVertically) {
-            Icon(icon as androidx.compose.ui.graphics.vector.ImageVector, null, tint = content)
-            Spacer(Modifier.width(12.dp))
-            Column {
-                Text(text as String, color = content, style = MaterialTheme.typography.titleSmall)
-                if (detail != null) Text(detail as String, color = content, style = MaterialTheme.typography.bodySmall)
-            }
+    // on the flag-blue card: light green / amber / light red; on a wallpaper-coloured card: the card's own text colour, error colour for a bad signature
+    val color = when (tone as Int) {
+        0 -> if (onHero) Color(0xFFA6E3B4) else fg
+        1 -> if (onHero) Color(0xFFFFD27A) else fg
+        else -> if (onHero) Color(0xFFFFB3B0) else MaterialTheme.colorScheme.error
+    }
+    Row(verticalAlignment = Alignment.Top) {
+        Icon(icon as androidx.compose.ui.graphics.vector.ImageVector, null, Modifier.size(20.dp), tint = color)
+        Spacer(Modifier.width(8.dp))
+        Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(text as String, color = color, style = MaterialTheme.typography.labelLarge)
+            if (detail != null) Text(detail as String, color = fg.copy(alpha = 0.8f), style = MaterialTheme.typography.bodySmall)
         }
     }
 }
 
+/** A titled group of fields: label above, value below (as on iOS and the site), tap = copy. */
 @Composable
 private fun Section(title: Int, rows: List<Triple<Int, String, Boolean>>, show: Boolean) {
     val shown = rows.filter { it.second.isNotBlank() }
     if (shown.isEmpty()) return
     val clipboard = LocalClipboardManager.current
-    Column {
-        Text(stringResource(title), Modifier.padding(start = 16.dp, bottom = 4.dp),
+    Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+        Text(stringResource(title), Modifier.padding(start = 20.dp),
             style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
-        ElevatedCard(Modifier.fillMaxWidth(), shape = RoundedCornerShape(24.dp)) {
-            shown.forEachIndexed { i, (label, value, sensitive) ->
-                ListItem(
-                    modifier = Modifier.clickable { clipboard.setText(AnnotatedString(value)) },
-                    headlineContent = { Text(if (sensitive && !show) "••••••••••" else value) },
-                    supportingContent = { Text(stringResource(label)) },
-                    colors = ListItemDefaults.colors(containerColor = Color.Transparent),
-                )
-                if (i < shown.lastIndex) HorizontalDivider(Modifier.padding(horizontal = 16.dp))
+        Card(Modifier.fillMaxWidth(), shape = CardShape, colors = groupCardColors()) {
+            Column(Modifier.padding(vertical = 8.dp)) {
+                shown.forEachIndexed { i, (label, value, sensitive) ->
+                    Column(Modifier.fillMaxWidth().clickable { clipboard.setText(AnnotatedString(value)) }
+                        .padding(horizontal = 20.dp, vertical = 10.dp), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text(stringResource(label), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                        Text(if (sensitive && !show) "••••••••••" else value, style = MaterialTheme.typography.bodyLarge)
+                    }
+                    if (i < shown.lastIndex) HorizontalDivider(Modifier.padding(horizontal = 20.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
+                }
             }
         }
     }
@@ -448,8 +462,8 @@ private fun CertCard(cert: TokenCert, onExport: (TokenCert) -> Unit) {
             }.getOrNull()
         }
     }
-    ElevatedCard(Modifier.fillMaxWidth(), shape = RoundedCornerShape(24.dp)) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
+    Card(Modifier.fillMaxWidth(), shape = CardShape, colors = groupCardColors()) {
+        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
             Text(cert.label.ifBlank { info?.first ?: "" }, style = MaterialTheme.typography.titleMedium)
             info?.let { (subject, issuer, rest) ->
                 Text("${stringResource(R.string.cert_issuer)}: $issuer", color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -529,7 +543,7 @@ fun SettingsScreen(vm: CardViewModel) {
                     SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
                         listOf(R.string.theme_system, R.string.theme_light, R.string.theme_dark).forEachIndexed { i, r ->
                             SegmentedButton(selected = theme == i, onClick = { vm.setTheme(i) },
-                                shape = SegmentedButtonDefaults.itemShape(i, 3)) { Text(stringResource(r), maxLines = 1) }
+                                shape = SegmentedButtonDefaults.itemShape(i, 3)) { Text(stringResource(r), maxLines = 2, textAlign = TextAlign.Center) }
                         }
                     }
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
@@ -537,7 +551,7 @@ fun SettingsScreen(vm: CardViewModel) {
                         SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
                             listOf(R.string.palette_flag, R.string.palette_wallpaper).forEachIndexed { i, r ->
                                 SegmentedButton(selected = dynamic == (i == 1), onClick = { vm.setDynamic(i == 1) },
-                                    shape = SegmentedButtonDefaults.itemShape(i, 2)) { Text(stringResource(r), maxLines = 1) }
+                                    shape = SegmentedButtonDefaults.itemShape(i, 2)) { Text(stringResource(r), maxLines = 2, textAlign = TextAlign.Center) }
                             }
                         }
                     }
@@ -649,7 +663,7 @@ private fun LanguageDialog(current: String?, onDismiss: () -> Unit, onPick: (Str
 @Composable
 private fun SettingsGroup(@androidx.annotation.StringRes title: Int, content: @Composable ColumnScope.() -> Unit) {
     Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Text(stringResource(title), Modifier.padding(start = 8.dp), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
-        ElevatedCard(Modifier.fillMaxWidth(), shape = RoundedCornerShape(24.dp)) { Column(content = content) }
+        Text(stringResource(title), Modifier.padding(start = 16.dp), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.primary)
+        Card(Modifier.fillMaxWidth(), shape = CardShape, colors = groupCardColors()) { Column(content = content) }
     }
 }
