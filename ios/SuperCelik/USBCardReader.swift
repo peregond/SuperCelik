@@ -36,6 +36,21 @@ final class USBCardReader {
         }.value
     }
 
+    /// Same, for the vehicle registration card: hands the code an APDU channel and the card's ATR.
+    func runRegistration<T>(_ body: @escaping @Sendable (RegistrationCard, [UInt8]?) throws -> T) async throws -> T {
+        guard let manager = TKSmartCardSlotManager.default, let name = manager.slotNames.first else { throw NFCProblem.noReader }
+        guard let slot = await manager.getSlot(withName: name) else { throw NFCProblem.noReader }
+        guard slot.state == .validCard, let card = slot.makeSmartCard() else { throw NFCProblem.noCard }
+        card.cla = 0x00
+        let atr: [UInt8]? = slot.atr.map { Array($0.bytes) }
+        return try await Task.detached(priority: .userInitiated) { () throws -> T in
+            try Self.session(card) {
+                let reg = RegistrationCard { apdu in try Self.transmit(card, apdu) }
+                return try body(reg, atr)
+            }
+        }.value
+    }
+
     /// Exclusive card session: beginSession ... endSession. Blocking (runs off the main thread).
     private static func session<T>(_ card: TKSmartCard, _ work: () throws -> T) throws -> T {
         let done = DispatchSemaphore(value: 0)

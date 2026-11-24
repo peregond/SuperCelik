@@ -11,12 +11,11 @@ namespace SerbiaID;
 /// temporary file and opens it in the default viewer (which has the printer dialog); "Save PDF" saves it where you choose.
 internal sealed class PreviewWindow : Window
 {
-    private readonly PersonalData _p;
-    private readonly bool _jmbg;
+    private readonly Func<double, double, Control> _build;
 
-    public PreviewWindow(PersonalData p, bool includeJmbg)
+    public PreviewWindow(Func<double, double, Control> build)
     {
-        _p = p; _jmbg = includeJmbg;
+        _build = build;
         Title = $"{Loc.T("preview")} — {Loc.T("appTitle")}";
         Width = 760; Height = 860; MinWidth = 520; MinHeight = 500;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
@@ -31,7 +30,7 @@ internal sealed class PreviewWindow : Window
         DockPanel.SetDock(bar, Dock.Bottom);
         dock.Children.Add(bar);
 
-        var page = PrintSheet.Build(p, 793.7, 1122.5, includeJmbg);
+        var page = build(793.7, 1122.5);
         dock.Children.Add(new Border
         {
             Margin = new Thickness(24), Background = Brushes.White,
@@ -46,7 +45,7 @@ internal sealed class PreviewWindow : Window
         try
         {
             var path = Path.Combine(Path.GetTempPath(), $"SuperCelik-{Environment.UserName}-{Guid.NewGuid():N}.pdf");
-            PdfWriter.SaveSheet(PrintSheet.Build(_p, 793.7, 1122.5, _jmbg), path);
+            PdfWriter.SaveSheet(_build(793.7, 1122.5), path);
             Process.Start(new ProcessStartInfo("xdg-open", new[] { path }) { UseShellExecute = false });
         }
         catch { }
@@ -59,6 +58,6 @@ internal sealed class PreviewWindow : Window
             SuggestedFileName = "SuperCelik.pdf", DefaultExtension = "pdf",
             FileTypeChoices = new[] { new FilePickerFileType("PDF") { Patterns = new[] { "*.pdf" } } },
         });
-        if (f?.TryGetLocalPath() is { } path) PdfWriter.SaveSheet(PrintSheet.Build(_p, 793.7, 1122.5, _jmbg), path);
+        if (f?.TryGetLocalPath() is { } path) PdfWriter.SaveSheet(_build(793.7, 1122.5), path);
     }
 }

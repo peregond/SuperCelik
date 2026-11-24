@@ -4,6 +4,7 @@ namespace SerbiaID;
 
 /// Command line (for testing; the app itself needs no arguments):
 ///   --selftest                 PII-free report of a real card to selftest.txt, no window
+///   --diag [file]              card structure (applications, files, sizes; no personal data, no PIN) to diag.txt, no window
 ///   --demo [tab] [--dark] [--state noreader|nocard|ready|busy|error] [--problem]   fictional data, no reader needed
 ///   --shot file.png            with --demo: save the window as a PNG and quit
 ///   --pdf file.pdf             with --demo: save the printout as PDF and quit
@@ -34,6 +35,18 @@ internal static class Program
             }
             SelfTest.Run(report);
             Console.WriteLine("Report: " + report);
+            return 0;
+        }
+        if (args.Contains("--diag"))
+        {
+            // card diagnostics (structure only, no personal data, no PIN) to a file, no window; see docs/cards-research.md
+            var gi = Array.IndexOf(args, "--diag");
+            var path = gi + 1 < args.Length && !args[gi + 1].StartsWith("--") ? args[gi + 1] : Path.Combine(Directory.GetCurrentDirectory(), "diag.txt");
+            string text;
+            try { using var pc = new PcscService(); var rs = pc.ListReaders(); text = rs.Count == 0 ? "no reader" : CardDiag.Run(pc, rs[0], Updater.CurrentText); }
+            catch (Exception ex) { text = "ERROR " + ex.Message; }
+            File.WriteAllText(path, text);
+            Console.WriteLine("Report: " + path);
             return 0;
         }
         string Arg(string name) { var i = Array.IndexOf(args, name); return i >= 0 && i + 1 < args.Length ? args[i + 1] : null; }

@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- unit tests of the shared C# card layer (windows/SerbiaID.Windows, compiled by Windows and Linux alike) -->
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <RootNamespace>SerbiaID</RootNamespace>
+    <IsPackable>false</IsPackable>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="17.*" />
+    <PackageReference Include="xunit" Version="2.*" />
+    <PackageReference Include="xunit.runner.visualstudio" Version="2.*" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="..\..\windows\SerbiaID.Windows\Cards.cs" Link="Shared\Cards.cs" />
+    <Compile Include="..\..\windows\SerbiaID.Windows\Compat.cs" Link="Shared\Compat.cs" />
+    <Compile Include="..\..\windows\SerbiaID.Windows\SerbianScript.cs" Link="Shared\SerbianScript.cs" />
+    <Compile Include="..\..\windows\SerbiaID.Windows\Loc.cs" Link="Shared\Loc.cs" />
+    <Compile Include="..\..\windows\SerbiaID.Windows\LocExtra.cs" Link="Shared\LocExtra.cs" />
+    <Compile Include="..\..\windows\SerbiaID.Windows\LocCards.cs" Link="Shared\LocCards.cs" />
+  </ItemGroup>
+</Project>

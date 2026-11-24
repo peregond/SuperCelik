@@ -67,4 +67,21 @@ enum Printer {
             alert.runModal()
         }
     }
+
+    // MARK: vehicle registration card (same pipeline, other page)
+
+    @MainActor static func print(_ v: VehicleData, loc: Loc, includeJmbg: Bool = true) {
+        let op = NSPrintOperation(view: VehiclePrintView(v, loc: loc, includeJmbg: includeJmbg), printInfo: baseInfo())
+        op.showsPrintPanel = true
+        op.run()
+    }
+
+    @MainActor static func savePDF(_ v: VehicleData, loc: Loc, includeJmbg: Bool = true) {
+        let panel = NSSavePanel()
+        panel.allowedContentTypes = [.pdf]
+        panel.nameFieldStringValue = "SuperCelik.pdf"
+        guard panel.runModal() == .OK, let url = panel.url else { return }
+        let view = VehiclePrintView(v, loc: loc, includeJmbg: includeJmbg)
+        do { try view.dataWithPDF(inside: view.bounds).write(to: url, options: .atomic) } catch { NSAlert(error: error).runModal() }
+    }
 }

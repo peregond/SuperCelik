@@ -15,6 +15,11 @@ let package = Package(
             dependencies: ["CPCSC"],
             path: "Sources/SerbiaID",
             resources: [.copy("Resources")]
+        ),
+        .testTarget(
+            name: "SerbiaIDTests",
+            dependencies: ["SerbiaID"],
+            path: "tests/SerbiaIDTests"
         )
     ]
 )

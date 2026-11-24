@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Super Čelik</string>
-    <string name="title_personal">Personal data</string>
+    <string name="title_personal">Card</string>
     <string name="read_usb">Read via USB reader</string>
     <string name="hint_idle">Insert the card into a USB smart card reader and connect it to the phone (USB-C or an OTG adapter). Reading starts automatically.</string>
     <string name="reader_help">No reader yet?</string>
@@ -125,4 +125,52 @@
     <string name="eu_pin_warn">A wrong PIN uses up one try; the token locks when none are left.</string>
     <string name="eu_choose_cert">Choose a certificate</string>
     <string name="eu_cancelled">PIN entry cancelled.</string>
+
+    <!-- vehicle registration card and card diagnostics (same texts as LocCards.cs / LocalizationCards.swift) -->
+    <string name="veh_title">Vehicle registration card</string>
+    <string name="veh_note">Parsed according to the EU and MUP specifications; not yet verified on a real card. The issuer signature is not checked.</string>
+    <string name="card_unknown">The card was not recognised: it is neither an ID card nor a vehicle registration card (or the application name on its chip is not known to us yet). Run the diagnostics (hidden item in Settings: tap the version number in About 5 times) and send the log.</string>
+    <string name="v_reg_no">Registration number</string>
+    <string name="v_first_reg">Date of first registration</string>
+    <string name="v_valid_until">Registration valid until</string>
+    <string name="v_issued">Issue date</string>
+    <string name="v_make">Make</string>
+    <string name="v_type">Type</string>
+    <string name="v_model">Model (commercial name)</string>
+    <string name="v_vin">VIN (chassis number)</string>
+    <string name="v_year">Year of production</string>
+    <string name="v_colour">Colour</string>
+    <string name="v_category">Category</string>
+    <string name="v_fuel">Fuel</string>
+    <string name="v_capacity">Engine capacity, cm³</string>
+    <string name="v_power">Power, kW</string>
+    <string name="v_power_weight">Power / weight, kW/kg</string>
+    <string name="v_engine_no">Engine number</string>
+    <string name="v_mass">Mass, kg</string>
+    <string name="v_max_mass">Max permissible laden mass, kg</string>
+    <string name="v_load">Load capacity, kg</string>
+    <string name="v_seats">Seats</string>
+    <string name="v_standing">Standing places</string>
+    <string name="v_axles">Number of axles</string>
+    <string name="v_approval">Type approval number</string>
+    <string name="v_owner">Owner</string>
+    <string name="v_owner_addr">Owner\'s address</string>
+    <string name="v_owner_jmbg">Owner\'s personal number</string>
+    <string name="v_user">User</string>
+    <string name="v_user_addr">User\'s address</string>
+    <string name="v_user_jmbg">User\'s personal number</string>
+    <string name="v_state">Issuing state</string>
+    <string name="v_sec_doc">Document</string>
+    <string name="v_sec_owner">Owner and user</string>
+    <string name="v_sec_vehicle">Vehicle data</string>
+    <string name="v_sale_ban">Sale ban until</string>
+    <string name="v_doc_serial">Document serial number</string>
+    <string name="v_doc_no">Registry document number</string>
+    <string name="v_authority">Issuing authority</string>
+    <string name="diag_title">Card diagnostics</string>
+    <string name="diag_text">Reads the card structure (applications, files, sizes) without personal data and without a PIN. You can copy the log and send it to the developer.</string>
+    <string name="diag_run">Run diagnostics</string>
+    <string name="diag_copy">Copy the log</string>
+    <string name="diag_copied">Log copied</string>
+    <string name="diag_unlocked">Diagnostics enabled (Settings)</string>
 </resources>

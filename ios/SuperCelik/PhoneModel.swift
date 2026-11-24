@@ -25,6 +25,9 @@ final class PhoneModel: ObservableObject {
     @Published var token: TokenInfo?
     @Published var tokenRows: [PhoneCertRow] = []
     @Published var revealAll = false
+    @Published var vehicle: VehicleData?
+    @Published var diagUnlocked = false      // hidden: 5 taps on the version in Settings
+    @Published var diagLog: String?
     @Published var busy = false
     @Published private(set) var demoActive = false     // fictional data on screen (Settings toggle)
     @Published var problem: PhoneProblem?
@@ -68,6 +71,8 @@ final class PhoneModel: ObservableObject {
         }
         personal = p
         signatureStatus = .ok
+        // `--vehicle` with the demo: a vehicle registration card instead of the ID card
+        if CommandLine.arguments.contains("--vehicle") { personal = nil; vehicle = VehicleRows.demo(); signatureStatus = nil }
         // the Token tab gets fictional certificates too
         token = TokenInfo(tokenLabel: "NetSeT's CardEdge Token", tokenSerial: "RP000000000", certificates: [])
         func cert(_ label: String, from: Double, to: Double) -> PhoneCertRow {
@@ -151,6 +156,12 @@ final class PhoneModel: ObservableObject {
         busy = true
         defer { busy = false }
         do {
+            // one button for every card: with the wired reader a card without an eID applet is tried as a vehicle registration card
+            if source == .usb, try await !usbReader.run({ card in (try? card.selectApplet()) != nil }) {
+                vehicle = try await usbReader.runRegistration { card, _ in try card.read() }
+                personal = nil; signatureStatus = nil; revealAll = false; problem = nil; demoActive = false
+                return true
+            }
             let (p, status) = try await run(source) { card -> (PersonalData, SigStatus) in
                 let p = try card.readPersonalData()
                 let status: SigStatus
@@ -164,9 +175,21 @@ final class PhoneModel: ObservableObject {
                 catch { status = .invalid(error.localizedDescription) }
                 return (p, status)
             }
-            personal = p; signatureStatus = status; revealAll = false; problem = nil; demoActive = false
+            personal = p; vehicle = nil; signatureStatus = status; revealAll = false; problem = nil; demoActive = false
             return true
         } catch { show(error); return false }
+    }
+
+    func runDiagnostics() async {
+        guard !busy else { return }
+        busy = true
+        defer { busy = false }
+        let version = Bundle.main.object(forInfoDictionaryKey: "CFBundleShortVersionString") as? String ?? "0.0.0"
+        do {
+            diagLog = try await usbReader.runRegistration { card, atr in
+                CardDiag.run(atr: atr, appVersion: version, reader: "USB reader") { try card.rawTransmit($0) }
+            }
+        } catch { show(error) }
     }
 
     func scanToken(_ source: ReadSource = .usb) async {
@@ -250,6 +273,7 @@ final class PhoneModel: ObservableObject {
 
     func clear() {
         personal = nil; signatureStatus = nil; token = nil; tokenRows = []; revealAll = false; problem = nil; demoActive = false
+        vehicle = nil
     }
 
     private func show(_ error: Error) {
@@ -278,6 +302,13 @@ final class PhoneModel: ObservableObject {
 
     /// The MUP printout as a one-page A4 PDF (same layout code as the macOS print).
     func pdfData(includeJmbg: Bool) -> Data? {
+        if let v = vehicle {
+            let renderer = UIGraphicsPDFRenderer(bounds: CGRect(origin: .zero, size: VehiclePrintLayout.pageSize))
+            return renderer.pdfData { ctx in
+                ctx.beginPage()
+                VehiclePrintLayout(v, loc: Loc.shared, includeJmbg: includeJmbg).draw()
+            }
+        }
         guard let p = personal else { return nil }
         let size = MupPrintLayout.pageSize
         let renderer = UIGraphicsPDFRenderer(bounds: CGRect(origin: .zero, size: size))

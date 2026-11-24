@@ -14,6 +14,18 @@ public partial class App : Application
             Shutdown();
             return;
         }
+        // `--diag [file]` writes the card diagnostics (structure only, no personal data, no PIN) to diag.txt and exits.
+        var dgi = Array.IndexOf(e.Args, "--diag");
+        if (dgi >= 0)
+        {
+            var path = dgi + 1 < e.Args.Length && !e.Args[dgi + 1].StartsWith("--") ? e.Args[dgi + 1] : Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "diag.txt");
+            string text;
+            try { using var pc = new PcscService(); var rs = pc.ListReaders(); text = rs.Count == 0 ? "no reader" : CardDiag.Run(pc, rs[0], Updater.CurrentText); }
+            catch (Exception ex) { text = "ERROR " + ex.Message; }
+            File.WriteAllText(path, text);
+            Shutdown();
+            return;
+        }
         // `--register-driver <ATR hex>` / `--unregister-driver`: browser-login driver (needs administrator rights;
         // started by the app itself with a UAC prompt, or by the uninstaller). No window.
         var rd = Array.IndexOf(e.Args, "--register-driver");

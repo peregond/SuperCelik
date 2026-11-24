@@ -193,6 +193,7 @@ public partial class MainWindow : Window
         BtnProblemClose.Content = Glyph("", 12); AutomationProperties.SetName(BtnProblemClose, Loc.T("close"));
         TabPersonal.Header = Loc.T("tabPersonal");
         TabToken.Header = Loc.T("tabToken");
+        ApplyVehicleLanguage();
         TabSettings.Header = Loc.T("tabSettings");
         TabAbout.Header = Loc.T("tabAbout");
         LblCerts.Text = Loc.T("certificates");
@@ -231,8 +232,9 @@ public partial class MainWindow : Window
         BtnRead.IsEnabled = BtnReadBig.IsEnabled = _cardPresent && !_busy;
         BtnReadToken.IsEnabled = _cardPresent && !_busy;
         BtnChangePin.IsEnabled = BtnUnblockPin.IsEnabled = BtnSignFile.IsEnabled = _cardPresent && !_busy;
-        BtnVerify.IsEnabled = _cardPresent && !_busy;
-        bool has = _personal != null && !_busy;
+        BtnVerify.IsEnabled = _cardPresent && !_busy && _vehicle == null;
+        if (_diagRun != null) _diagRun.IsEnabled = _cardPresent && !_busy;
+        bool has = (_personal != null || _vehicle != null) && !_busy;
         BtnPrint.IsEnabled = has; BtnPdf.IsEnabled = has; BtnMore.IsEnabled = has;
     }
 
@@ -629,7 +631,7 @@ public partial class MainWindow : Window
     {
         if (_demo || _cfg.AutoHideMinutes <= 0 || (_personal == null && _token == null)) return;
         if ((DateTime.Now - _lastActivity).TotalMinutes < _cfg.AutoHideMinutes) return;
-        _personal = null; _token = null; _sig = null; _revealAll = false;
+        _personal = null; _token = null; _sig = null; _vehicle = null; _revealAll = false;
         RenderAll();
         ShowInfo(Loc.T("autoHidden"));
     }
@@ -638,8 +640,18 @@ public partial class MainWindow : Window
     private async Task ReadCardAsync()
     {
         var reader = Reader;
-        var p = await Compat.Run(() => SerbianCard.ReadPersonalData(_pc, reader));
-        _personal = p; _sig = null; _revealAll = false; HideProblem();
+        // one button for every card: an ID card, a foreigner card, a residence permit or a vehicle registration card
+        if (await Compat.Run(() => SerbianCard.HasEidApplet(_pc, reader)))
+        {
+            var p = await Compat.Run(() => SerbianCard.ReadPersonalData(_pc, reader));
+            _personal = p; _vehicle = null; _sig = null; _revealAll = false; HideProblem();
+        }
+        else
+        {
+            var v = await Compat.Run(() => VehicleCard.Read(_pc, reader));
+            _vehicle = v; _personal = null; _sig = null; _revealAll = false; HideProblem();
+            ShowInfo(Loc.T("vehNote"));
+        }
         RenderAll();
     }
 
@@ -677,7 +689,7 @@ public partial class MainWindow : Window
 
     private void UpdateEye()
     {
-        BtnEye.Visibility = _personal != null && _cfg.MaskSensitive ? Visibility.Visible : Visibility.Collapsed;
+        BtnEye.Visibility = (_personal != null || _vehicle != null) && _cfg.MaskSensitive ? Visibility.Visible : Visibility.Collapsed;
         // eye = data is hidden (click to show); crossed eye = data is shown (click to hide)
         SetBtn(BtnEye, _revealAll ? "\uED1A" : "\uE7B3", _revealAll ? Loc.T("hideValue") : Loc.T("reveal"));
     }
@@ -689,7 +701,7 @@ public partial class MainWindow : Window
         UpdateEye();
         FieldsPanel.Children.Clear();
         ImgPortrait.Source = null;
-        bool has = _personal != null;
+        bool has = _personal != null || _vehicle != null;
         bool appeared = has && PersonalContent.Visibility != Visibility.Visible;
         bool emptied = !has && EmptyState.Visibility != Visibility.Visible;
         PersonalContent.Visibility = has ? Visibility.Visible : Visibility.Collapsed;
@@ -698,15 +710,25 @@ public partial class MainWindow : Window
         if (emptied) Fx.FadeIn(EmptyState, 0);
         if (!has) return;
 
-        LblName.Text = $"{_personal.Fixed.GivenName} {_personal.Fixed.Surname}".Trim();
-        LblDocType.Text = DocTypeName(_personal.CardType);
-        ImgPortrait.Source = LoadImage(_personal.Portrait);
-        if (TryDate(_personal.Document.ExpiryDate, out var until)) SetExpiry(PillExpiry, LblExpiry, until);
+        bool veh = _vehicle != null;
+        ((UIElement)ImgPortrait.Parent).Visibility = veh ? Visibility.Collapsed : Visibility.Visible;   // a vehicle has no photo
+        LblName.Text = veh ? _vehicle.RegistrationNumber : $"{_personal.Fixed.GivenName} {_personal.Fixed.Surname}".Trim();
+        LblDocType.Text = veh ? Loc.T("vehTitle") : DocTypeName(_personal.CardType);
+        ImgPortrait.Source = veh ? null : LoadImage(_personal.Portrait);
+        if (TryDate(veh ? _vehicle.ExpiryDate : _personal.Document.ExpiryDate, out var until)) SetExpiry(PillExpiry, LblExpiry, until);
         else PillExpiry.Visibility = Visibility.Collapsed;
 
-        foreach (var (key, value) in Rows(_personal))
+        var entries = veh ? VehicleRows.Entries(_vehicle) : Rows(_personal).ConvertAll(x => ((string)null, x.Item1, x.Item2));
+        foreach (var (heading, key, value) in entries)
         {
-            bool sensitive = Sensitive.Contains(key);
+            if (heading != null)
+            {
+                // a group title takes a line of its own, like the section headings of MUP's printout
+                FieldsPanel.Children.Add(new TextBlock { Text = Loc.T(heading), Width = 4000, FontSize = 13, FontWeight = FontWeights.SemiBold,
+                    Foreground = B("TextBrush"), Margin = new Thickness(0, 4, 0, 10) });
+                continue;
+            }
+            bool sensitive = Sensitive.Contains(key) || Array.IndexOf(VehicleRows.Sensitive, key) >= 0;
             bool hidden = sensitive && _cfg.MaskSensitive && !_revealAll;
 
             var cell = new DockPanel { Width = 290, Margin = new Thickness(0, 0, 14, 14) };
@@ -968,19 +990,22 @@ public partial class MainWindow : Window
     // ---------- print (with preview) / PDF ----------
     private void Print_Click(object s, RoutedEventArgs e)
     {
+        if (_vehicle != null) { var vv = _vehicle; new PreviewWindow((w, h) => VehicleSheet.Build(vv, w, h, _cfg.PrintJmbg)) { Owner = this }.ShowDialog(); return; }
         if (_personal == null) return;
-        new PreviewWindow(_personal, _cfg.PrintJmbg) { Owner = this }.ShowDialog();
+        var pp = _personal;
+        new PreviewWindow((w, h) => PrintSheet.Build(pp, w, h, _cfg.PrintJmbg)) { Owner = this }.ShowDialog();
     }
 
     private void Pdf_Click(object s, RoutedEventArgs e)
     {
-        if (_personal == null) return;
+        if (_personal == null && _vehicle == null) return;
         var dlg = new SaveFileDialog { Filter = "PDF (*.pdf)|*.pdf", FileName = "SuperCelik.pdf", DefaultExt = ".pdf" };
         if (dlg.ShowDialog(this) != true) return;
         try
         {
             Mouse.OverrideCursor = Cursors.Wait;
-            PdfWriter.SaveSheet(PrintSheet.Build(_personal, 793.7, 1122.5, _cfg.PrintJmbg), dlg.FileName);   // A4 @ 96 dpi
+            PdfWriter.SaveSheet(_vehicle != null ? VehicleSheet.Build(_vehicle, 793.7, 1122.5, _cfg.PrintJmbg)
+                                                 : PrintSheet.Build(_personal, 793.7, 1122.5, _cfg.PrintJmbg), dlg.FileName);   // A4 @ 96 dpi
             ShowInfo($"{Loc.T("pdfSaved")}: {dlg.FileName}");
         }
         catch (Exception ex) { ShowProblem(ex); }
@@ -1088,6 +1113,8 @@ public partial class MainWindow : Window
             Variable = new VariablePersonalData { Place = "Beograd", Community = "Stari Grad", Street = "Knez Mihailova", HouseNumber = "1" },
         };
         _sig = new SigStatus { Result = SigResult.Ok };
+        // `--vehicle` with the demo: a vehicle registration card instead of the ID card
+        if (Environment.GetCommandLineArgs().Contains("--vehicle")) { _vehicle = VehicleRows.Demo(); _personal = null; _sig = null; }
         _token = new TokenInfo { Label = "NetSeT's CardEdge Token", Serial = "RP000000000" };
         _token.Certificates.Add(new TokenCertificate
         {
@@ -1096,7 +1123,7 @@ public partial class MainWindow : Window
         });
         if (state != null)
         {
-            _personal = null; _sig = null; _token = null;
+            _personal = null; _sig = null; _token = null; _vehicle = null;
             if (state == "noreader") { _readers = new(); FillReaders(_readers); _cardPresent = false; }
             if (state == "nocard") _cardPresent = false;
             if (state == "busy") _busy = true;
@@ -1126,7 +1153,8 @@ public partial class MainWindow : Window
         using var fs = File.Create(path); enc.Save(fs);
     }
 
-    internal void ExportDemoPdf(string path) => PdfWriter.SaveSheet(PrintSheet.Build(_personal, 793.7, 1122.5, true), path);
+    internal void ExportDemoPdf(string path) => PdfWriter.SaveSheet(_vehicle != null ? VehicleSheet.Build(_vehicle, 793.7, 1122.5, true)
+                                                                    : PrintSheet.Build(_personal, 793.7, 1122.5, true), path);
 
     internal void SaveScreenshot(string path)
     {
@@ -1437,12 +1465,11 @@ internal static class PrintSheet
 /// In-app print preview with Print / Save PDF buttons.
 internal sealed class PreviewWindow : Window
 {
-    private readonly PersonalData _p;
-    private readonly bool _jmbg;
+    private readonly Func<double, double, FrameworkElement> _build;
 
-    public PreviewWindow(PersonalData p, bool includeJmbg)
+    public PreviewWindow(Func<double, double, FrameworkElement> build)
     {
-        _p = p; _jmbg = includeJmbg;
+        _build = build;
         Title = $"{Loc.T("preview")} — {Loc.T("appTitle")}";
         Width = 760; Height = 860; MinWidth = 520; MinHeight = 500;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
@@ -1458,7 +1485,7 @@ internal sealed class PreviewWindow : Window
         foreach (var b in new[] { close, pdf, print }) { b.Margin = new Thickness(8, 0, 0, 0); bar.Children.Add(b); }
         dock.Children.Add(bar);
 
-        var page = PrintSheet.Build(p, 793.7, 1122.5, includeJmbg);
+        var page = build(793.7, 1122.5);
         var shadow = new Border { Child = new Viewbox { Child = page, Stretch = Stretch.Uniform }, Margin = new Thickness(24), Background = Brushes.White,
                                   Effect = new System.Windows.Media.Effects.DropShadowEffect { BlurRadius = 18, ShadowDepth = 2, Opacity = 0.25 } };
         dock.Children.Add(shadow);
@@ -1479,12 +1506,12 @@ internal sealed class PreviewWindow : Window
     {
         var dlg = new PrintDialog();
         if (dlg.ShowDialog() != true) return;
-        dlg.PrintVisual(PrintSheet.Build(_p, dlg.PrintableAreaWidth, dlg.PrintableAreaHeight, _jmbg), "Super Čelik");
+        dlg.PrintVisual(_build(dlg.PrintableAreaWidth, dlg.PrintableAreaHeight), "Super Čelik");
     }
 
     private void DoPdf()
     {
         var dlg = new SaveFileDialog { Filter = "PDF (*.pdf)|*.pdf", FileName = "SuperCelik.pdf", DefaultExt = ".pdf" };
-        if (dlg.ShowDialog(this) == true) PdfWriter.SaveSheet(PrintSheet.Build(_p, 793.7, 1122.5, _jmbg), dlg.FileName);
+        if (dlg.ShowDialog(this) == true) PdfWriter.SaveSheet(_build(793.7, 1122.5), dlg.FileName);
     }
 }

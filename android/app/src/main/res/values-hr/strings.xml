@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Super Čelik</string>
-    <string name="title_personal">Osobni podaci</string>
+    <string name="title_personal">Kartica</string>
     <string name="read_usb">Čitaj preko USB čitača</string>
     <string name="hint_idle">Umetnite karticu u USB čitač pametnih kartica i spojite ga na telefon (USB-C ili OTG adapter). Čitanje počinje automatski.</string>
     <string name="reader_help">Nemate čitač?</string>
@@ -124,4 +124,52 @@
     <string name="eu_pin_warn">Pogrešan PIN troši jedan pokušaj; token se zaključava kad pokušaja više nema.</string>
     <string name="eu_choose_cert">Odaberite certifikat</string>
     <string name="eu_cancelled">Unos PIN-a otkazan.</string>
+
+    <!-- vehicle registration card and card diagnostics (same texts as LocCards.cs / LocalizationCards.swift) -->
+    <string name="veh_title">Prometna dozvola (čip kartica)</string>
+    <string name="veh_note">Podaci su obrađeni prema specifikacijama EU-a i MUP-a; još nisu provjereni na stvarnoj kartici. Potpis izdavatelja se ne provjerava.</string>
+    <string name="card_unknown">Kartica nije prepoznata: nije ni osobna iskaznica ni prometna dozvola (ili nam naziv aplikacije na njezinu čipu još nije poznat). Pokrenite dijagnostiku (skrivena stavka u Postavkama: dodirnite 5 puta broj verzije u O aplikaciji) i pošaljite zapis.</string>
+    <string name="v_reg_no">Registarska oznaka</string>
+    <string name="v_first_reg">Datum prve registracije</string>
+    <string name="v_valid_until">Valjanost registracije do</string>
+    <string name="v_issued">Datum izdavanja</string>
+    <string name="v_make">Marka</string>
+    <string name="v_type">Tip</string>
+    <string name="v_model">Model (komercijalna oznaka)</string>
+    <string name="v_vin">Broj šasije (VIN)</string>
+    <string name="v_year">Godina proizvodnje</string>
+    <string name="v_colour">Boja</string>
+    <string name="v_category">Kategorija vozila</string>
+    <string name="v_fuel">Gorivo</string>
+    <string name="v_capacity">Radni obujam, cm³</string>
+    <string name="v_power">Snaga, kW</string>
+    <string name="v_power_weight">Odnos snaga / masa, kW/kg</string>
+    <string name="v_engine_no">Broj motora</string>
+    <string name="v_mass">Masa, kg</string>
+    <string name="v_max_mass">Najveća dopuštena masa, kg</string>
+    <string name="v_load">Nosivost, kg</string>
+    <string name="v_seats">Mjesta za sjedenje</string>
+    <string name="v_standing">Mjesta za stajanje</string>
+    <string name="v_axles">Broj osovina</string>
+    <string name="v_approval">Homologacijska oznaka</string>
+    <string name="v_owner">Vlasnik</string>
+    <string name="v_owner_addr">Adresa vlasnika</string>
+    <string name="v_owner_jmbg">JMBG vlasnika</string>
+    <string name="v_user">Korisnik</string>
+    <string name="v_user_addr">Adresa korisnika</string>
+    <string name="v_user_jmbg">JMBG korisnika</string>
+    <string name="v_state">Izdala država</string>
+    <string name="v_sec_doc">Dokument</string>
+    <string name="v_sec_owner">Podaci o vlasniku</string>
+    <string name="v_sec_vehicle">Podaci o vozilu</string>
+    <string name="v_sale_ban">Zabrana otuđenja do</string>
+    <string name="v_doc_serial">Serijski broj dokumenta</string>
+    <string name="v_doc_no">Jedinstveni broj dokumenta</string>
+    <string name="v_authority">Tijelo izdavanja</string>
+    <string name="diag_title">Dijagnostika kartice</string>
+    <string name="diag_text">Čita strukturu kartice (aplikacije, datoteke, veličine) bez osobnih podataka i bez PIN-a. Zapis možete kopirati i poslati programeru.</string>
+    <string name="diag_run">Pokreni dijagnostiku</string>
+    <string name="diag_copy">Kopiraj zapis</string>
+    <string name="diag_copied">Zapis je kopiran</string>
+    <string name="diag_unlocked">Dijagnostika je uključena (Postavke)</string>
 </resources>

@@ -26,11 +26,9 @@ struct SerbiaIDApp: App {
                     .disabled(!model.cardPresent || model.busy)
                 Divider()
                 Button(loc.t(.printCard)) { model.showPreview = true }
-                    .keyboardShortcut("p").disabled(model.personal == nil)
-                Button(loc.t(.savePdf)) {
-                    if let p = model.personal { Printer.savePDF(p, loc: loc, includeJmbg: prefs.printJmbg) }
-                }
-                .keyboardShortcut("s").disabled(model.personal == nil)
+                    .keyboardShortcut("p").disabled(model.personal == nil && model.vehicle == nil)
+                Button(loc.t(.savePdf)) { model.savePDF(loc: loc, includeJmbg: prefs.printJmbg) }
+                .keyboardShortcut("s").disabled(model.personal == nil && model.vehicle == nil)
             }
             CommandMenu(loc.t(.language)) {
                 ForEach(AppLanguage.allCases) { lang in

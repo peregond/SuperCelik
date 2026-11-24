@@ -67,11 +67,24 @@ final class AppModel: ObservableObject {
     @Published var cardPresent = false { didSet { if cardPresent != oldValue { loginReport = nil } } }      // what "Check browser sign-in" found was about the card that was in the reader
     @Published var personal: PersonalData?
     @Published var token: TokenInfo?
+    @Published var vehicle: VehicleData?
+    @Published var diagUnlocked = false      // hidden: 5 taps on the version in Settings
+    @Published var diagLog: String?
     @Published var tokenRows: [TokenCertRow] = []
     @Published var revealAll = false          // one global eye: show / hide all sensitive fields
     @Published var busy = false
     @Published var problem: Problem?
     @Published var showPreview = false
+
+    /// Save PDF / print for whatever card is shown (an ID-type card or the vehicle registration card).
+    @MainActor func savePDF(loc: Loc, includeJmbg: Bool) {
+        if let v = vehicle { Printer.savePDF(v, loc: loc, includeJmbg: includeJmbg) }
+        else if let p = personal { Printer.savePDF(p, loc: loc, includeJmbg: includeJmbg) }
+    }
+    @MainActor func printCard(loc: Loc, includeJmbg: Bool) {
+        if let v = vehicle { Printer.print(v, loc: loc, includeJmbg: includeJmbg) }
+        else if let p = personal { Printer.print(p, loc: loc, includeJmbg: includeJmbg) }
+    }
 
     /// Whether the system has attached our card driver to the inserted card (what browser sign-in needs).
     enum DriverState { case unknown, ok, missing }
@@ -224,7 +237,7 @@ final class AppModel: ObservableObject {
     private func checkIdle() {
         guard !demoActive else { return }
         let m = prefs.autoHideMinutes
-        guard m > 0, personal != nil || token != nil else { return }
+        guard m > 0, personal != nil || token != nil || vehicle != nil else { return }
         if Date().timeIntervalSince(activity.last) >= Double(m) * 60 {
             clearData()
             problem = Problem(titleKey: .autoHidden, isInfo: true)
@@ -233,6 +246,7 @@ final class AppModel: ObservableObject {
 
     private func clearData() {
         personal = nil; token = nil; tokenRows = []; signatureStatus = nil; revealAll = false
+        vehicle = nil
     }
 
     // MARK: - Operations (card I/O runs off the main thread)
@@ -251,8 +265,15 @@ final class AppModel: ObservableObject {
     func readCard() async {
         await run {
             let svc = service, reader = selectedReader
-            let p = try await perform { try svc.readPersonalData(reader: reader) }
-            personal = p; signatureStatus = nil; revealAll = false; problem = nil
+            // one button for every card: an ID card, a foreigner card, a residence permit or a vehicle registration card
+            if try await perform({ try svc.hasEidApplet(reader: reader) }) {
+                let p = try await perform { try svc.readPersonalData(reader: reader) }
+                personal = p; vehicle = nil; signatureStatus = nil; revealAll = false; problem = nil
+            } else {
+                let v = try await perform { try svc.readVehicle(reader: reader) }
+                vehicle = v; personal = nil; signatureStatus = nil; revealAll = false
+                problem = Problem(raw: Loc.shared.x("vehNote"), isInfo: true)
+            }
         }
     }
 
@@ -270,6 +291,13 @@ final class AppModel: ObservableObject {
                 catch { return .invalid(error.localizedDescription) }
             }.value
             signatureStatus = status; problem = nil
+        }
+    }
+
+    func runDiagnostics() async {
+        await run {
+            let svc = service, reader = selectedReader
+            diagLog = try await perform { try svc.diagnose(reader: reader) }
         }
     }
 
@@ -579,6 +607,8 @@ final class AppModel: ObservableObject {
         p.variable = VariablePersonalData(community: "Stari Grad", place: "Beograd", street: "Knez Mihailova", houseNumber: "1")
         personal = p
         signatureStatus = .ok
+        // `--vehicle` with the demo: a vehicle registration card instead of the ID card
+        if CommandLine.arguments.contains("--vehicle") { personal = nil; vehicle = VehicleRows.demo(); signatureStatus = nil }
         token = TokenInfo(tokenLabel: "NetSeT's CardEdge Token", tokenSerial: "RP000000000", certificates: [])
         tokenRows = [TokenCertRow(label: "MARKO PETROVIC 000000000 Auth",
                                   summary: TokenCodec.CertSummary(subject: "MARKO PETROVIC", issuer: "MUP Stranci CA 4",

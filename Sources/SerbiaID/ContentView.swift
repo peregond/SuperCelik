@@ -400,11 +400,19 @@ struct PersonalView: View {
                     .frame(maxWidth: .infinity)
                 }
                 .transition(.opacity.combined(with: .scale(scale: 0.985)))
+            } else if let v = model.vehicle {
+                ScrollView {
+                    vehicleSummary(v)
+                    .padding(20)
+                    .frame(maxWidth: 920)
+                    .frame(maxWidth: .infinity)
+                }
+                .transition(.opacity.combined(with: .scale(scale: 0.985)))
             } else {
                 emptyState.transition(.opacity)
             }
         }
-        .animation(.easeInOut(duration: 0.25), value: model.personal != nil)
+        .animation(.easeInOut(duration: 0.25), value: model.personal != nil || model.vehicle != nil)
         .toolbar { actions }
         .sheet(isPresented: $showReaderHelp) { ReaderHelpSheet() }
     }
@@ -455,15 +463,15 @@ struct PersonalView: View {
     @ToolbarContentBuilder private var actions: some ToolbarContent {
         ToolbarItemGroup {
             Button { model.showPreview = true } label: { Label(loc.t(.printCard), systemImage: "printer") }
-                .disabled(model.personal == nil).help(loc.t(.printCard))
-            Button { if let p = model.personal { Printer.savePDF(p, loc: loc, includeJmbg: prefs.printJmbg) } } label: {
+                .disabled(model.personal == nil && model.vehicle == nil).help(loc.t(.printCard))
+            Button { model.savePDF(loc: loc, includeJmbg: prefs.printJmbg) } label: {
                 Label(loc.t(.savePdf), systemImage: "square.and.arrow.down")
             }
-            .disabled(model.personal == nil).help(loc.t(.savePdf))
+            .disabled(model.personal == nil && model.vehicle == nil).help(loc.t(.savePdf))
             Button { Task { await model.verifySignatures() } } label: {
                 Label(loc.t(.verifySignature), systemImage: "checkmark.seal")
             }
-            .disabled(!model.cardPresent || model.busy).help(loc.t(.verifySignature))
+            .disabled(!model.cardPresent || model.busy || model.vehicle != nil).help(loc.t(.verifySignature))
             if prefs.maskSensitive {
                 // one eye for all sensitive fields: eye = hidden (click to show), crossed eye = shown (click to hide)
                 Button { model.revealAll.toggle() } label: {
@@ -471,7 +479,7 @@ struct PersonalView: View {
                           systemImage: model.revealAll ? "eye.slash" : "eye")
                         .symbolReplace()
                 }
-                .disabled(model.personal == nil)
+                .disabled(model.personal == nil && model.vehicle == nil)
                 .help(model.revealAll ? loc.t(.hideValue) : loc.t(.reveal))
             }
             Menu {
@@ -483,7 +491,7 @@ struct PersonalView: View {
         }
         ToolbarItem(placement: .primaryAction) {
             // while nothing is read, the empty state has the one Read button
-            if model.personal != nil {
+            if model.personal != nil || model.vehicle != nil {
                 Button { Task { await model.readCard() } } label: {
                     Label(loc.t(.readCard), systemImage: "person.text.rectangle")
                 }
@@ -498,6 +506,33 @@ struct PersonalView: View {
     private func summary(_ p: PersonalData) -> some View {
         summaryCard(p)
     }
+
+    /// A vehicle registration card: no photo; plate, type of document and validity on the left, the fields on the right.
+    private func vehicleSummary(_ v: VehicleData) -> some View {
+        GlassCard {
+            VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(loc.x("vehTitle")).foregroundStyle(.secondary)
+                    Text(v.registrationNumber).font(.system(size: 22, weight: .bold)).textSelection(.enabled)
+                    if let d = Self.dateFormatter.date(from: v.expiryDate) { ExpiryPill(date: d) }
+                }
+                Divider()
+                // three groups in the order of the printout of MUP's reader: document, owner and user, vehicle
+                ForEach(VehicleRows.sections(v).filter { !$0.rows.filter { $0.key != "vRegNo" }.isEmpty }, id: \.title) { sec in
+                    Text(loc.x(sec.title)).font(.headline).padding(.top, 4)
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 170), spacing: 16, alignment: .topLeading)], alignment: .leading, spacing: 12) {
+                        ForEach(sec.rows.filter { $0.key != "vRegNo" }, id: \.key) { VehicleCell(key: $0.key, value: $0.value) }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    private static let dateFormatter: DateFormatter = {
+        let f = DateFormatter(); f.locale = Locale(identifier: "en_US_POSIX"); f.dateFormat = "dd.MM.yyyy"; return f
+    }()
 
     private func summaryCard(_ p: PersonalData) -> some View {
         GlassCard {
@@ -842,6 +877,7 @@ struct SettingsView: View {
                     model.problem = Problem(raw: loc.t(.copyLogsDone), isInfo: true)
                 } label: { Label(loc.t(.copyLogs), systemImage: "doc.on.doc") }
             } footer: { Text(loc.t(.copyLogsHint)) }
+            if model.diagUnlocked { DiagnosticsSection() }
             Section(loc.t(.tabAbout)) { AboutView() }
         }
         .groupedForm()
@@ -855,12 +891,14 @@ struct SettingsView: View {
 struct AboutView: View {
     @EnvironmentObject var loc: Loc
     @EnvironmentObject var model: AppModel
+    @State private var versionTaps = 0
 
     var body: some View {
         VStack(spacing: 8) {
             Image(nsImage: NSApp.applicationIconImage).resizable().frame(width: 72, height: 72)
             Text(loc.t(.appTitle)).font(.title2.weight(.bold))
             Text("\(loc.t(.version)) \(Updater.currentVersion)").foregroundStyle(.secondary)
+                .onTapGesture { versionTaps += 1; if versionTaps >= 5 { model.diagUnlocked = true } }
             Text(loc.t(.aboutText)).multilineTextAlignment(.center).foregroundStyle(.secondary)
                 .font(.callout).frame(maxWidth: 400).padding(.top, 2)
             HStack(spacing: 10) {
@@ -898,7 +936,16 @@ struct PreviewSheet: View {
     var body: some View {
         VStack(spacing: 14) {
             Text("\(loc.t(.preview)) — \(loc.t(.appTitle))").font(.headline)
-            if let p = model.personal {
+            if let v = model.vehicle {
+                ScrollView {
+                    VehiclePrintSheet(v: v, loc: loc, includeJmbg: prefs.printJmbg)
+                        .frame(width: 595, height: 842)
+                        .scaleEffect(0.8, anchor: .topLeading)
+                        .frame(width: 595 * 0.8, height: 842 * 0.8, alignment: .topLeading)
+                        .shadow(color: .black.opacity(0.25), radius: 10, y: 2)
+                        .padding(8)
+                }
+            } else if let p = model.personal {
                 ScrollView {
                     PrintSheet(p: p, loc: loc, includeJmbg: prefs.printJmbg)
                         .frame(width: 595, height: 842)
@@ -912,10 +959,10 @@ struct PreviewSheet: View {
                 Spacer()
                 Button { model.showPreview = false } label: { Label(loc.t(.close), systemImage: "xmark") }
                     .keyboardShortcut(.cancelAction)
-                Button { if let p = model.personal { Printer.savePDF(p, loc: loc, includeJmbg: prefs.printJmbg) } } label: {
+                Button { model.savePDF(loc: loc, includeJmbg: prefs.printJmbg) } label: {
                     Label(loc.t(.savePdf), systemImage: "square.and.arrow.down")
                 }
-                Button { if let p = model.personal { Printer.print(p, loc: loc, includeJmbg: prefs.printJmbg) } } label: {
+                Button { model.printCard(loc: loc, includeJmbg: prefs.printJmbg) } label: {
                     Label(loc.t(.printCard), systemImage: "printer").font(.body.weight(.semibold))
                 }
                 .buttonStyle(.borderedProminent).keyboardShortcut(.defaultAction)

@@ -27,7 +27,7 @@ fun cardError(e: Exception): Msg = when {
     e is PinException -> Msg(R.string.pin_wrong, e.triesLeft.toString())
     e is IllegalArgumentException -> Msg(R.string.pin_invalid)
     e is CardException && e.kind == CardException.Kind.NoCard -> Msg(R.string.err_no_card)
-    e is CardException && e.kind == CardException.Kind.Unsupported -> Msg(R.string.err_unsupported)
+    e is CardException && e.kind == CardException.Kind.Unsupported -> Msg(R.string.card_unknown)
     e is CardException && e.kind == CardException.Kind.Lost -> Msg(R.string.err_lost)
     else -> Msg(R.string.err_generic, e.message)
 }
@@ -39,6 +39,13 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
     val phase: StateFlow<Phase> = _phase.asStateFlow()
     private val _personal = MutableStateFlow<PersonalData?>(null)
     val personal: StateFlow<PersonalData?> = _personal.asStateFlow()
+    private val _vehicle = MutableStateFlow<VehicleData?>(null)
+    val vehicle: StateFlow<VehicleData?> = _vehicle.asStateFlow()
+    private val _diagLog = MutableStateFlow<String?>(null)
+    val diagLog: StateFlow<String?> = _diagLog.asStateFlow()
+    private val _diagUnlocked = MutableStateFlow(false)
+    val diagUnlocked: StateFlow<Boolean> = _diagUnlocked.asStateFlow()      // hidden: 5 taps on the version in Settings
+    fun unlockDiag() { _diagUnlocked.value = true }
     private val _sig = MutableStateFlow<SigResult?>(null)
     val sig: StateFlow<SigResult?> = _sig.asStateFlow()
     private val _token = MutableStateFlow<TokenData?>(null)
@@ -82,6 +89,8 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
 
     /** The operation that runs when a card shows up. Null = read the card (the default, started by plugging in a reader). */
     private var pending: ((EidCard) -> Unit)? = null
+    /** A diagnostics run: gets the raw APDU channel instead of the eID protocol. */
+    private var pendingRaw: ((CardTransport) -> Unit)? = null
     private var job: Job? = null
 
     private val readOp: (EidCard) -> Unit = { card ->
@@ -92,11 +101,38 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
 
     private fun begin(op: (EidCard) -> Unit, context: Context) {
         _message.value = null; _failed.value = false
+        pendingRaw = null
         pending = op
         startUsb(context)
     }
 
-    fun readCard(context: Context) = begin(readOp, context)
+    /** One read for every card: an eID card (ID, foreigner card, residence permit) or a vehicle registration card. */
+    fun readCard(context: Context) {
+        _message.value = null; _failed.value = false
+        pending = null; pendingRaw = null
+        startUsb(context)
+    }
+
+    /** Hidden card diagnostics: structure of the card, no personal data, no PIN. */
+    fun runDiagnostics(context: Context) {
+        _message.value = null; _failed.value = false
+        pending = null
+        pendingRaw = { t ->
+            val app = getApplication<Application>()
+            val v = runCatching { app.packageManager.getPackageInfo(app.packageName, 0).versionName }.getOrNull() ?: ""
+            _diagLog.value = CardDiag.run(t, v, "USB reader")
+        }
+        startUsb(context)
+    }
+
+    private fun readAny(t: CardTransport) {
+        val eid = EidCard(t)
+        val isEid = try { eid.selectApplet(); true } catch (e: CardException) { if (e.kind == CardException.Kind.Unsupported) false else throw e }
+        if (isEid) { _vehicle.value = null; readOp(eid); return }
+        _vehicle.value = RegistrationCard(t).read()
+        _personal.value = null; _sig.value = null
+        _message.value = Msg(R.string.veh_note, error = false)
+    }
 
     fun readToken(context: Context) = begin({ card ->
         _token.value = card.readToken()
@@ -137,7 +173,7 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
         // coming back from the eUprava sign-in screen: the user is on the Token tab, do not read the card by itself
         if (EuLogin.skipAutoStart) { EuLogin.skipAutoStart = false; return }
         if (!_autoRead.value) return                    // the user turned automatic reading off: only the buttons read
-        if (_phase.value != Phase.Idle || _personal.value != null) return
+        if (_phase.value != Phase.Idle || _personal.value != null || _vehicle.value != null) return
         val usb = usbManager(context) ?: return         // no USB service on this device: nothing to look for (the card screen says so)
         if (UsbCcidTransport.findReader(usb) != null) startUsb(context)
     }
@@ -178,13 +214,13 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
 
     fun startUsb(context: Context) {
         val usb = usbManager(context)
-        if (usb == null) { pending = null; _phase.value = Phase.Idle; report(Msg(R.string.err_no_usb_host)); return }
+        if (usb == null) { pending = null; pendingRaw = null; _phase.value = Phase.Idle; report(Msg(R.string.err_no_usb_host)); return }
         val device = UsbCcidTransport.findReader(usb)
-        if (device == null) { pending = null; _phase.value = Phase.Idle; report(Msg(R.string.err_no_usb)); return }
+        if (device == null) { pending = null; pendingRaw = null; _phase.value = Phase.Idle; report(Msg(R.string.err_no_usb)); return }
         _phase.value = Phase.WaitingUsb
         job = viewModelScope.launch {
             val transport = UsbCcidTransport.open(context, device)
-            if (transport == null) { pending = null; _phase.value = Phase.Idle; report(Msg(R.string.err_usb_denied)); return@launch }
+            if (transport == null) { pending = null; pendingRaw = null; _phase.value = Phase.Idle; report(Msg(R.string.err_usb_denied)); return@launch }
             _phase.value = Phase.Reading
             withContext(Dispatchers.IO) {
                 try {
@@ -198,10 +234,16 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
 
     /** Runs the pending operation (or the default read) over a connected card. */
     private fun run(transport: CardTransport) {
-        val op = pending ?: readOp
+        val t = FollowingTransport(transport)
+        val raw = pendingRaw
+        val op = pending
         try {
-            op(EidCard(FollowingTransport(transport)))
-            pending = null
+            when {
+                raw != null -> raw(t)
+                op != null -> op(EidCard(t))
+                else -> readAny(t)
+            }
+            pending = null; pendingRaw = null
             _phase.value = Phase.Idle
         } catch (e: Exception) {
             fail(e)
@@ -210,7 +252,7 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
 
     private fun fail(e: Exception) {
         DiagLog.error(e)
-        pending = null
+        pending = null; pendingRaw = null
         _phase.value = Phase.Idle
         report(cardError(e))
     }
@@ -223,7 +265,7 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
     fun cancel() {
         _euReady.value = false
         job?.cancel()
-        pending = null
+        pending = null; pendingRaw = null
         _phase.value = Phase.Idle
     }
 
@@ -231,14 +273,14 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
     fun clear() {
         cancel()
         _demo.value = false; _failed.value = false
-        _personal.value = null; _sig.value = null; _token.value = null
+        _personal.value = null; _sig.value = null; _token.value = null; _vehicle.value = null
     }
 
     /** Demo/screenshots only: open the PDF viewer as soon as the result is shown. */
     var demoOpenPdf = false
 
     /** Fictional data for screenshots (launch intent extra "demo"); never touches a card. */
-    fun showDemo() {
+    fun showDemo(vehicle: Boolean = false) {
         _demo.value = true
         _personal.value = PersonalData(
             cardType = CardType.RP2024, docRegNo = "001234567", documentType = "RP",
@@ -252,6 +294,8 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
             addressDate = "01.01.2024")
         _sig.value = SigResult.Ok
         _token.value = TokenData("NetSeT's CardEdge Token", "RP000000000", listOf(TokenCert("MARKO PETROVIC 000000000 Auth", ByteArray(0))))
+        // launch extra "vehicle" with the demo: a vehicle registration card instead of the ID card
+        if (vehicle) { _personal.value = null; _sig.value = null; _vehicle.value = VehicleRows.demo() }
     }
 
     /** A drawn silhouette so screenshots show the photo layout (demo mode only). */

@@ -222,7 +222,7 @@ final class Loc: ObservableObject {
         .certSigFixed: [.ru: "Подписант неизменяемых данных", .en: "Fixed-data signer", .sr: "Potpisnik nepromenljivih podataka"],
         .certSigVariable: [.ru: "Подписант изменяемых данных", .en: "Variable-data signer", .sr: "Potpisnik promenljivih podataka"],
         .appTitle: [.ru: "Super Čelik", .en: "Super Čelik", .sr: "Super Čelik"],
-        .tabPersonal: [.ru: "Личные данные", .en: "Personal data", .sr: "Lični podaci"],
+        .tabPersonal: [.ru: "Карта", .en: "Card", .sr: "Kartica"],
         .tabToken: [.ru: "Токен и сертификаты", .en: "Token & certificates", .sr: "Token i sertifikati"],
         .tabAbout: [.ru: "О программе", .en: "About", .sr: "O programu"],
         .reader: [.ru: "Считыватель", .en: "Reader", .sr: "Čitač"],
