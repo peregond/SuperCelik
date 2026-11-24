@@ -30,6 +30,7 @@ a{color:inherit}img{max-width:100%}
 .langmenu{position:absolute;right:0;top:100%;padding-top:8px;opacity:0;visibility:hidden;transform:translateY(-6px) scale(.96);transform-origin:top right;transition:opacity .18s,transform .18s,visibility .18s}
 .langmenu .in{display:flex;flex-direction:column;min-width:216px;padding:8px;border-radius:18px;background:rgba(9,30,60,.88);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border:1px solid rgba(255,255,255,.16);box-shadow:0 24px 50px -16px rgba(0,0,0,.6)}
 .langmenu button{display:flex;align-items:center;gap:14px;text-align:left;border:0;background:none;color:#c9dcf5;padding:12px 14px;border-radius:12px;font:600 17px inherit;font-family:inherit;cursor:pointer;transition:background .15s,color .15s}
+.langmenu .in{max-height:calc(100vh - 96px);overflow-y:auto}
 .langmenu .fl{width:28px;height:19px;border-radius:4px;flex:none;box-shadow:0 0 0 1px rgba(255,255,255,.28)}
 .langmenu button:hover{background:rgba(255,255,255,.12);color:#fff}
 .langmenu button[aria-pressed=true]{color:#fff}
@@ -70,10 +71,17 @@ footer a{color:#a9c3e6}
 <div class="langbox" id="langbox">
   <button class="globe" id="globe" type="button" data-aria="lang" aria-label="Language" aria-haspopup="true" aria-expanded="false"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9.2"/><path d="M2.8 12h18.4M12 2.8c3.1 3.4 3.1 14 0 18.4M12 2.8c-3.1 3.4-3.1 14 0 18.4"/></svg></button>
   <div class="langmenu" role="menu"><div class="in">
-    <button type="button" role="menuitem" data-l="ru" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#fff"/><rect y="5.33" width="24" height="5.34" fill="#0039A6"/><rect y="10.67" width="24" height="5.33" fill="#D52B1E"/></svg><span>Русский</span></button>
-    <button type="button" role="menuitem" data-l="en" aria-pressed="false"><svg class="fl" viewBox="0 0 60 40" preserveAspectRatio="none" aria-hidden="true"><rect width="60" height="40" fill="#012169"/><path d="M0 0L60 40M60 0L0 40" stroke="#fff" stroke-width="8"/><path d="M0 0L60 40M60 0L0 40" stroke="#C8102E" stroke-width="3"/><path d="M30 0V40M0 20H60" stroke="#fff" stroke-width="13"/><path d="M30 0V40M0 20H60" stroke="#C8102E" stroke-width="8"/></svg><span>English</span></button>
     <button type="button" role="menuitem" data-l="sr" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#fff"/><rect width="24" height="5.33" fill="#C6363C"/><rect y="5.33" width="24" height="5.34" fill="#0C4076"/></svg><span>Srpski</span></button>
     <button type="button" role="menuitem" data-l="sc" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#fff"/><rect width="24" height="5.33" fill="#C6363C"/><rect y="5.33" width="24" height="5.34" fill="#0C4076"/></svg><span>Српски</span></button>
+    <button type="button" role="menuitem" data-l="en" aria-pressed="false"><svg class="fl" viewBox="0 0 60 40" preserveAspectRatio="none" aria-hidden="true"><rect width="60" height="40" fill="#012169"/><path d="M0 0L60 40M60 0L0 40" stroke="#fff" stroke-width="8"/><path d="M0 0L60 40M60 0L0 40" stroke="#C8102E" stroke-width="3"/><path d="M30 0V40M0 20H60" stroke="#fff" stroke-width="13"/><path d="M30 0V40M0 20H60" stroke="#C8102E" stroke-width="8"/></svg><span>English</span></button>
+    <button type="button" role="menuitem" data-l="ru" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#fff"/><rect y="5.33" width="24" height="5.34" fill="#0039A6"/><rect y="10.67" width="24" height="5.33" fill="#D52B1E"/></svg><span>Русский</span></button>
+    <button type="button" role="menuitem" data-l="sq" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#E41E20"/><path d="M12 3.2c-.9 0-1.6.5-1.9 1.2L8 4.6l1.4 1.1L8.6 8l1.6-.5.5 2.2h2.6l.5-2.2 1.6.5-.8-2.3L15.6 4.6l-2.1-.2c-.3-.7-1-1.2-1.5-1.2zM9.5 10.4h5l.5 2.4h-6z" fill="#000"/></svg><span>Shqip</span></button>
+    <button type="button" role="menuitem" data-l="be" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#007C30"/><rect width="24" height="10.67" fill="#CF101A"/><rect width="4" height="16" fill="#fff"/><path d="M2 1.2l1.2 1.2L2 3.6.8 2.4zM2 5.2l1.2 1.2L2 7.6.8 6.4zM2 9.2l1.2 1.2L2 11.6.8 10.4zM2 13.2l1.2 1.2L2 15.6.8 14.4z" fill="#CF101A"/></svg><span>Беларуская</span></button>
+    <button type="button" role="menuitem" data-l="hr" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#fff"/><rect width="24" height="5.33" fill="#FF0000"/><rect y="10.67" width="24" height="5.33" fill="#171796"/><path d="M9.6 4.2h4.8v4.4c0 1.8-2.4 2.8-2.4 2.8s-2.4-1-2.4-2.8z" fill="#fff" stroke="#FF0000" stroke-width=".5"/><path d="M10.4 4.6h1.6v1.6h-1.6zM13.6 4.6h-1.6v1.6h1.6zM10.4 7.8h1.6V6.2h-1.6zM12 7.8h1.6V6.2H12z" fill="#FF0000"/></svg><span>Hrvatski</span></button>
+    <button type="button" role="menuitem" data-l="hu" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#fff"/><rect width="24" height="5.33" fill="#CE2939"/><rect y="10.67" width="24" height="5.33" fill="#477050"/></svg><span>Magyar</span></button>
+    <button type="button" role="menuitem" data-l="ro" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#FCD116"/><rect width="8" height="16" fill="#002B7F"/><rect x="16" width="8" height="16" fill="#CE1126"/></svg><span>Română</span></button>
+    <button type="button" role="menuitem" data-l="sk" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#fff"/><rect y="5.33" width="24" height="5.34" fill="#0B4EA2"/><rect y="10.67" width="24" height="5.33" fill="#EE1C25"/><path d="M4.6 3h5v5.4c0 2-2.5 3.2-2.5 3.2s-2.5-1.2-2.5-3.2z" fill="#EE1C25" stroke="#fff" stroke-width=".6"/><path d="M7.1 4.4v5M5.6 6h3M5.9 7.6h2.4" stroke="#fff" stroke-width=".8" fill="none"/></svg><span>Slovenčina</span></button>
+    <button type="button" role="menuitem" data-l="uk" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#FFD700"/><rect width="24" height="8" fill="#0057B7"/></svg><span>Українська</span></button>
   </div></div>
 </div>
 
@@ -147,6 +155,153 @@ Aplikacija sama ništa ne šalje; sertifikat kartice i PIN obrađuje sistem (PIN
 
 <div lang="sr-Cyrl" data-l="sc" id="sc" hidden></div>
 
+<div lang="hr" data-l="hr" hidden>
+<p><strong>Super Čelik</strong> čita podatke srpske elektroničke osobne iskaznice, iskaznice za strance ili dozvole boravka s vaše vlastite kartice,
+na vašem vlastitom uređaju, te vam ih prikazuje, ispisuje ili izvozi.</p>
+<ul>
+<li><strong>Nijedan podatak ne napušta vaš uređaj.</strong> Aplikacija nema račune, analitiku, oglase, praćenje ni naš poslužitelj.
+Podaci kartice (ime, osobni broj, adresa, fotografija, certifikati) čitaju se u memoriju, prikazuju na zaslonu i brišu kad
+zatvorite aplikaciju ili nakon vremena koje postavite.</li>
+<li><strong>Mreža.</strong> Čitanje kartice ne koristi mrežu. Aplikacija iz App Storea spaja se na internet samo kad dodirnete
+„Prijava na eUpravu”: stranica za prijavu eUprave / eID Vlade Srbije otvara se u prikazu preglednika unutar aplikacije.
+Aplikacija sama ništa ne šalje; certifikat kartice i PIN obrađuje sustav (PIN ide na karticu).
+(Windows verzije i Mac verzije s izravnim preuzimanjem mogu provjeriti i GitHub radi nove verzije.)</li>
+<li><strong>Datoteke koje stvarate</strong> (PDF ispis, potpis <code>.p7s</code>, izvezeni certifikat) spremaju se samo ondje gdje odaberete ili
+dijele s aplikacijom koju odaberete.</li>
+<li><strong>Dozvole</strong>: pristup čitaču pametnih kartica (USB) koristi se samo za čitanje vaše kartice kad to zatražite.
+Android koristi USB pristup samo za čitač koji spojite.</li>
+<li><strong>PIN/PUK</strong> upisani u aplikaciji šalju se samo na vašu karticu i nikad se ne spremaju ni bilježe.</li>
+<li>Aplikacija je neovisna izvedba i nije povezana s Ministarstvom unutarnjih poslova Republike Srbije (MUP RS) ni s NetSeT/Veridos.</li>
+</ul>
+<p class="contact">Kontakt: otvorite zahtjev na <a href="https://github.com/peregond/SuperCelik/issues">https://github.com/peregond/SuperCelik/issues</a></p>
+</div>
+
+<div lang="hu" data-l="hu" hidden>
+<p>A <strong>Super Čelik</strong> a szerb elektronikus személyi igazolvány, a külföldiek személyi igazolványa vagy a tartózkodási engedély adatait olvassa be az Ön saját kártyájáról,
+az Ön saját eszközén, és megjeleníti, kinyomtatja vagy exportálja Önnek.</p>
+<ul>
+<li><strong>Semmilyen adat nem hagyja el az eszközét.</strong> Az alkalmazásnak nincs fiókja, analitikája, hirdetése, követése és saját szervere.
+A kártya adatait (név, személyi szám, cím, fénykép, tanúsítványok) a memóriába olvassa, megjeleníti a képernyőn, és törli, amikor
+bezárja az alkalmazást, vagy az Ön által beállított idő után.</li>
+<li><strong>Hálózat.</strong> A kártya olvasása nem használ hálózatot. Az App Store-os alkalmazás csak akkor csatlakozik az internetre, amikor az
+„Bejelentkezés az eUprávába” gombra koppint: a Szerb Kormány eUpráva / eID bejelentkezési oldala az alkalmazáson belüli böngészőnézetben nyílik meg.
+Az alkalmazás magától semmit nem küld; a kártya tanúsítványát és a PIN-kódot a rendszer kezeli (a PIN a kártyához kerül).
+(A Windowsos és a közvetlenül letöltött Mac-es változatok a GitHubon új verziót is kereshetnek.)</li>
+<li><strong>Az Ön által létrehozott fájlok</strong> (PDF-nyomtatvány, <code>.p7s</code> aláírás, exportált tanúsítvány) csak oda kerülnek, ahová Ön kéri, vagy
+az Ön által választott alkalmazással lesznek megosztva.</li>
+<li><strong>Engedélyek</strong>: az intelligenskártya-olvasó (USB) elérését csak a kártya beolvasására használja, amikor Ön kéri.
+Az Android az USB-hozzáférést csak az Ön által csatlakoztatott olvasóhoz használja.</li>
+<li>Az alkalmazásban beírt <strong>PIN/PUK</strong> csak a kártyához kerül, és soha nem tárolódik és nem naplózódik.</li>
+<li>Az alkalmazás független megvalósítás, és nem áll kapcsolatban a Szerb Köztársaság Belügyminisztériumával (MUP RS) és a NetSeT/Veridosszal.</li>
+</ul>
+<p class="contact">Kapcsolat: nyisson hibajegyet itt: <a href="https://github.com/peregond/SuperCelik/issues">https://github.com/peregond/SuperCelik/issues</a></p>
+</div>
+
+<div lang="sq" data-l="sq" hidden>
+<p><strong>Super Čelik</strong> lexon të dhënat e letërnjoftimit elektronik serb, letërnjoftimit për të huajt ose lejes së qëndrimit nga karta juaj,
+në pajisjen tuaj, dhe jua shfaq, jua printon ose jua eksporton.</p>
+<ul>
+<li><strong>Asnjë e dhënë nuk e lë pajisjen tuaj.</strong> Aplikacioni nuk ka llogari, analitikë, reklama, gjurmim dhe as server të vetin.
+Të dhënat e kartës (emri, numri personal, adresa, fotografia, certifikatat) lexohen në memorie, shfaqen në ekran dhe fshihen kur
+mbyllni aplikacionin ose pas kohës që caktoni.</li>
+<li><strong>Rrjeti.</strong> Leximi i kartës nuk përdor rrjet. Aplikacioni nga App Store lidhet me internetin vetëm kur preket
+„Hyr në eUprava”: faqja e hyrjes eUprava / eID e Qeverisë së Serbisë hapet në një pamje shfletuesi brenda aplikacionit.
+Aplikacioni vetë nuk dërgon asgjë; certifikatën e kartës dhe PIN-in i trajton sistemi (PIN-i shkon te karta).
+(Versionet për Windows dhe për Mac të shkarkuara drejtpërdrejt mund të kontrollojnë edhe GitHub për version të ri.)</li>
+<li><strong>Skedarët që krijoni</strong> (një printim PDF, një nënshkrim <code>.p7s</code>, një certifikatë e eksportuar) ruhen vetëm ku zgjidhni ose
+ndahen me aplikacionin që zgjidhni.</li>
+<li><strong>Lejet</strong>: qasja te lexuesi i kartave inteligjente (USB) përdoret vetëm për të lexuar kartën tuaj kur e kërkoni.
+Android përdor qasjen USB vetëm për lexuesin që lidhni.</li>
+<li><strong>PIN/PUK</strong> i shkruar në aplikacion dërgohet vetëm te karta juaj dhe nuk ruhet e nuk regjistrohet kurrë.</li>
+<li>Aplikacioni është një zbatim i pavarur dhe nuk ka lidhje me Ministrinë e Brendshme të Republikës së Serbisë (MUP RS) ose me NetSeT/Veridos.</li>
+</ul>
+<p class="contact">Kontakti: hapni një kërkesë te <a href="https://github.com/peregond/SuperCelik/issues">https://github.com/peregond/SuperCelik/issues</a></p>
+</div>
+
+<div lang="sk" data-l="sk" hidden>
+<p><strong>Super Čelik</strong> číta údaje srbského elektronického občianskeho preukazu, preukazu pre cudzincov alebo povolenia na pobyt z vašej vlastnej karty,
+vo vašom vlastnom zariadení, a zobrazuje, tlačí alebo exportuje ich pre vás.</p>
+<ul>
+<li><strong>Žiadne údaje neopúšťajú vaše zariadenie.</strong> Aplikácia nemá účty, analytiku, reklamu, sledovanie ani náš server.
+Údaje karty (meno, osobné číslo, adresa, fotografia, certifikáty) sa načítajú do pamäte, zobrazia na obrazovke a vymažú, keď
+zatvoríte aplikáciu alebo po čase, ktorý nastavíte.</li>
+<li><strong>Sieť.</strong> Čítanie karty nepoužíva sieť. Aplikácia z App Store sa pripája na internet len vtedy, keď ťuknete na
+„Prihlásiť sa do eUprava“: prihlasovacia stránka eUprava / eID vlády Srbska sa otvorí v zobrazení prehliadača vnútri aplikácie.
+Aplikácia sama nič neposiela; certifikát karty a PIN spracúva systém (PIN ide na kartu).
+(Verzie pre Windows a priamo stiahnuté verzie pre Mac môžu na GitHube kontrolovať aj novú verziu.)</li>
+<li><strong>Súbory, ktoré vytvoríte</strong> (PDF výtlačok, podpis <code>.p7s</code>, exportovaný certifikát), sa ukladajú len tam, kam určíte, alebo
+sa zdieľajú s aplikáciou, ktorú vyberiete.</li>
+<li><strong>Oprávnenia</strong>: prístup k čítačke čipových kariet (USB) sa používa len na prečítanie vašej karty, keď o to požiadate.
+Android používa prístup USB len pre čítačku, ktorú pripojíte.</li>
+<li><strong>PIN/PUK</strong> zadané v aplikácii sa posielajú len na vašu kartu a nikdy sa neukladajú ani nezaznamenávajú.</li>
+<li>Aplikácia je nezávislá implementácia a nie je spojená s Ministerstvom vnútra Srbskej republiky (MUP RS) ani s NetSeT/Veridos.</li>
+</ul>
+<p class="contact">Kontakt: otvorte hlásenie na <a href="https://github.com/peregond/SuperCelik/issues">https://github.com/peregond/SuperCelik/issues</a></p>
+</div>
+
+<div lang="ro" data-l="ro" hidden>
+<p><strong>Super Čelik</strong> citește datele unei cărți electronice de identitate sârbe, ale unei cărți de identitate pentru străini sau ale unui permis de ședere de pe cardul dvs.,
+pe propriul dvs. dispozitiv, și vi le afișează, tipărește sau exportă.</p>
+<ul>
+<li><strong>Nicio dată nu părăsește dispozitivul dvs.</strong> Aplicația nu are conturi, analiză, publicitate, urmărire și niciun server al nostru.
+Datele cardului (nume, număr personal, adresă, fotografie, certificate) sunt citite în memorie, afișate pe ecran și șterse când
+închideți aplicația sau după timpul pe care îl setați.</li>
+<li><strong>Rețeaua.</strong> Citirea cardului nu folosește rețeaua. Singura dată când aplicația din App Store se conectează la internet este când atingeți
+„Autentificare la eUprava”: pagina de autentificare eUprava / eID a Guvernului Serbiei se deschide într-o vedere de browser în interiorul aplicației.
+Aplicația nu trimite nimic de la sine; certificatul cardului și PIN-ul sunt gestionate de sistem (PIN-ul merge la card).
+(Versiunile pentru Windows și cele pentru Mac descărcate direct pot verifica și GitHub pentru o versiune nouă.)</li>
+<li><strong>Fișierele pe care le creați</strong> (o tipăritură PDF, o semnătură <code>.p7s</code>, un certificat exportat) sunt salvate doar unde alegeți sau
+partajate cu aplicația pe care o alegeți.</li>
+<li><strong>Permisiuni</strong>: accesul la cititorul de carduri inteligente (USB) este folosit doar pentru a citi cardul dvs. când cereți.
+Android folosește accesul USB doar pentru cititorul pe care îl conectați.</li>
+<li><strong>PIN/PUK</strong> introduse în aplicație sunt trimise doar cardului dvs. și nu sunt niciodată stocate sau înregistrate.</li>
+<li>Aplicația este o implementare independentă și nu are legătură cu Ministerul Afacerilor Interne al Republicii Serbia (MUP RS) sau cu NetSeT/Veridos.</li>
+</ul>
+<p class="contact">Contact: deschideți o solicitare la <a href="https://github.com/peregond/SuperCelik/issues">https://github.com/peregond/SuperCelik/issues</a></p>
+</div>
+
+<div lang="uk" data-l="uk" hidden>
+<p><strong>Super Čelik</strong> читає дані сербської електронної ID-картки, посвідчення для іноземців або посвідки на проживання з вашої власної картки,
+на вашому власному пристрої, і показує, друкує чи експортує їх для вас.</p>
+<ul>
+<li><strong>Жодні дані не залишають ваш пристрій.</strong> У програмі немає облікових записів, аналітики, реклами, стеження і нашого сервера.
+Дані картки (ім’я, особистий номер, адреса, фото, сертифікати) зчитуються в пам’ять, показуються на екрані й стираються, коли
+ви закриваєте програму або після заданого вами часу.</li>
+<li><strong>Мережа.</strong> Читання картки не використовує мережу. Програма з App Store підключається до інтернету лише тоді, коли ви торкаєтеся
+«Увійти на eUprava»: сторінка входу eUprava / eID Уряду Сербії відкривається в перегляді браузера всередині програми.
+Програма сама нічого не надсилає; сертифікат картки та PIN обробляє система (PIN іде на картку).
+(Збірки для Windows і Mac, завантажені напряму, можуть також перевіряти GitHub на нову версію.)</li>
+<li><strong>Файли, які ви створюєте</strong> (PDF-роздрук, підпис <code>.p7s</code>, експортований сертифікат), зберігаються лише там, куди ви вкажете, або
+передаються програмі, яку ви виберете.</li>
+<li><strong>Дозволи</strong>: доступ до зчитувача смарт-карток (USB) використовується лише для читання вашої картки, коли ви цього просите.
+Android використовує доступ до USB лише для зчитувача, який ви підключаєте.</li>
+<li><strong>PIN/PUK</strong>, введені в програмі, надсилаються лише на вашу картку і ніколи не зберігаються й не записуються в журнал.</li>
+<li>Програма є незалежною реалізацією і не пов’язана з Міністерством внутрішніх справ Республіки Сербія (MUP RS) чи NetSeT/Veridos.</li>
+</ul>
+<p class="contact">Контакт: створіть звернення на <a href="https://github.com/peregond/SuperCelik/issues">https://github.com/peregond/SuperCelik/issues</a></p>
+</div>
+
+<div lang="be" data-l="be" hidden>
+<p><strong>Super Čelik</strong> чытае даныя сербскай электроннай ID-карты, пасведчання для іншаземцаў або віду на жыхарства з вашай уласнай карты,
+на вашай уласнай прыладзе, і паказвае, друкуе ці экспартуе іх для вас.</p>
+<ul>
+<li><strong>Ніякія даныя не пакідаюць вашу прыладу.</strong> У праграме няма акаўнтаў, аналітыкі, рэкламы, сачэння і нашага сервера.
+Даныя карты (імя, асабісты нумар, адрас, фота, сертыфікаты) счытваюцца ў памяць, паказваюцца на экране і сціраюцца, калі
+вы закрываеце праграму або пасля зададзенага вамі часу.</li>
+<li><strong>Сетка.</strong> Чытанне карты не выкарыстоўвае сетку. Праграма з App Store падключаецца да інтэрнэту толькі тады, калі вы націскаеце
+«Увайсці ў eUprava»: старонка ўваходу eUprava / eID Урада Сербіі адкрываецца ў праглядзе браўзера ўнутры праграмы.
+Праграма сама нічога не адпраўляе; сертыфікат карты і PIN апрацоўвае сістэма (PIN ідзе на карту).
+(Зборкі для Windows і Mac, спампаваныя наўпрост, могуць таксама правяраць GitHub на новую версію.)</li>
+<li><strong>Файлы, якія вы ствараеце</strong> (PDF-раздрук, подпіс <code>.p7s</code>, экспартаваны сертыфікат), захоўваюцца толькі там, куды вы ўкажаце, або
+перадаюцца праграме, якую вы выберыце.</li>
+<li><strong>Дазволы</strong>: доступ да счытвальніка смарт-карт (USB) выкарыстоўваецца толькі для чытання вашай карты, калі вы гэтага просіце.
+Android выкарыстоўвае доступ да USB толькі для счытвальніка, які вы падключаеце.</li>
+<li><strong>PIN/PUK</strong>, уведзеныя ў праграме, адпраўляюцца толькі на вашу карту і ніколі не захоўваюцца і не запісваюцца ў журнал.</li>
+<li>Праграма з’яўляецца незалежнай рэалізацыяй і не звязана з Міністэрствам унутраных спраў Рэспублікі Сербія (MUP RS) або NetSeT/Veridos.</li>
+</ul>
+<p class="contact">Кантакт: стварыце зварот на <a href="https://github.com/peregond/SuperCelik/issues">https://github.com/peregond/SuperCelik/issues</a></p>
+</div>
+
 </article></div></main>
 
 <footer><div class="wrap">
@@ -155,14 +310,17 @@ Aplikacija sama ništa ne šalje; sertifikat kartice i PIN obrađuje sistem (PIN
 </div></footer>
 
 <script>
-const LANGS=["ru","en","sr","sc"];
+const LANGS=["ru","en","sr","sc","hu","sq","sk","ro","hr","uk","be"];
+const NEWL=["hu","sq","sk","ro","hr","uk","be"];
 const TITLE={ru:["Политика конфиденциальности","Обновлено: 2026-11-18"],en:["Privacy Policy","Last updated: 2026-11-18"],sr:["Politika privatnosti","Ažurirano: 2026-11-18"],sc:["Политика приватности","Ажурирано: 2026-11-18"]};
+Object.assign(TITLE,{hr:["Pravila privatnosti","Ažurirano: 2026-11-18"],hu:["Adatvédelmi szabályzat","Frissítve: 2026-11-18"],sq:["Politika e privatësisë","Përditësuar: 2026-11-18"],sk:["Zásady ochrany súkromia","Aktualizované: 2026-11-18"],ro:["Politica de confidențialitate","Actualizat: 2026-11-18"],uk:["Політика конфіденційності","Оновлено: 2026-11-18"],be:["Палітыка прыватнасці","Абноўлена: 2026-11-18"]});
 function detectLang(){
  const list=(navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language||""]).map(x=>String(x).toLowerCase());
  for(const l of list){
   if(l.startsWith("sr")) return /cyrl/.test(l)?"sc":"sr";
-  if(/^(bs|hr|me)\b/.test(l)) return "sr";
-  if(/^(ru|uk|be|kk)\b/.test(l)) return "ru";
+  if(/^(bs|me)\b/.test(l)) return "sr";
+  {const m=/^(hu|sq|sk|ro|hr|uk|be)\b/.exec(l);if(m)return m[1]}
+  if(/^(ru|kk)\b/.test(l)) return "ru";
   if(l.startsWith("en")) return "en";
  }
  return "en";
@@ -189,14 +347,16 @@ function buildCyr(){const sc=document.getElementById("sc");if(sc.firstChild)retu
  nodes.forEach(n=>{if(!n.parentNode.closest("a"))n.nodeValue=translitText(n.nodeValue)});
  while(c.firstChild)sc.appendChild(c.firstChild)}
 const ARIA={ru:{lang:"Язык",cpu:"Процессор",shot:"Скриншот"},en:{lang:"Language",cpu:"CPU",shot:"Screenshot"},sr:{lang:"Jezik",cpu:"Procesor",shot:"Snimak ekrana"},sc:{lang:"Језик",cpu:"Процесор",shot:"Снимак екрана"}};
+Object.assign(ARIA,{hr:{lang:"Jezik",cpu:"Procesor",shot:"Snimka zaslona"},hu:{lang:"Nyelv",cpu:"Processzor",shot:"Képernyőkép"},sq:{lang:"Gjuha",cpu:"Procesori",shot:"Pamje ekrani"},sk:{lang:"Jazyk",cpu:"Procesor",shot:"Snímka obrazovky"},ro:{lang:"Limba",cpu:"Procesor",shot:"Captură de ecran"},uk:{lang:"Мова",cpu:"Процесор",shot:"Знімок екрана"},be:{lang:"Мова",cpu:"Працэсар",shot:"Здымак экрана"}});
 const FOOT={ru:{disc:"Super Čelik – независимое приложение, не связано с МУП РС и NetSeT/Veridos.",rel:"Все версии",d:"Super Čelik: без аккаунтов, аналитики и отслеживания, без сервера. Данные карты никогда не покидают устройство."},en:{disc:"Super Čelik – independent app, not affiliated with MUP RS or NetSeT/Veridos.",rel:"All versions",d:"Super Čelik: no accounts, no analytics, no tracking, no server. Card data never leaves your device."},sr:{disc:"Super Čelik – nezavisna aplikacija, nije povezana sa MUP RS niti NetSeT/Veridos.",rel:"Sve verzije",d:"Super Čelik: bez naloga, analitike i praćenja, bez servera. Podaci kartice nikada ne napuštaju uređaj."},sc:{disc:"Super Čelik – независна апликација, није повезана са МУП РС нити NetSeT/Veridos.",rel:"Све верзије",d:"Super Čelik: без налога, аналитике и праћења, без сервера. Подаци картице никада не напуштају уређај."}};
+Object.assign(FOOT,{hr:{disc:"Super Čelik – neovisna aplikacija, nije povezana s MUP-om RS ni NetSeT/Veridos.",rel:"Sve verzije",d:"Super Čelik: bez računa, analitike i praćenja, bez poslužitelja. Podaci kartice nikad ne napuštaju vaš uređaj."},hu:{disc:"A Super Čelik független alkalmazás, nem áll kapcsolatban a MUP RS-sel és a NetSeT/Veridosszal.",rel:"Minden verzió",d:"Super Čelik: fiók, analitika és követés nélkül, szerver nélkül. A kártya adatai soha nem hagyják el az eszközét."},sq:{disc:"Super Čelik – aplikacion i pavarur, pa lidhje me MUP RS ose NetSeT/Veridos.",rel:"Të gjitha versionet",d:"Super Čelik: pa llogari, analitikë e gjurmim, pa server. Të dhënat e kartës nuk e lënë kurrë pajisjen tuaj."},sk:{disc:"Super Čelik – nezávislá aplikácia, nie je spojená s MUP RS ani NetSeT/Veridos.",rel:"Všetky verzie",d:"Super Čelik: bez účtov, analytiky a sledovania, bez servera. Údaje karty nikdy neopustia vaše zariadenie."},ro:{disc:"Super Čelik – aplicație independentă, fără legătură cu MUP RS sau NetSeT/Veridos.",rel:"Toate versiunile",d:"Super Čelik: fără conturi, analiză și urmărire, fără server. Datele cardului nu părăsesc niciodată dispozitivul dvs."},uk:{disc:"Super Čelik – незалежна програма, не пов’язана з MUP RS чи NetSeT/Veridos.",rel:"Усі версії",d:"Super Čelik: без облікових записів, аналітики й стеження, без сервера. Дані картки ніколи не залишають ваш пристрій."},be:{disc:"Super Čelik – незалежная праграма, не звязаная з MUP RS або NetSeT/Veridos.",rel:"Усе версіі",d:"Super Čelik: без акаўнтаў, аналітыкі і сачэння, без сервера. Даныя карты ніколі не пакідаюць вашу прыладу."}});
 function localizeMisc(l){
  document.querySelectorAll("[data-aria]").forEach(e=>e.setAttribute("aria-label",ARIA[l][e.dataset.aria]));
  const f=FOOT[l];document.getElementById("disc").textContent=f.disc;document.getElementById("frel").textContent=f.rel;
  const d=document.querySelector('meta[name="description"]');if(d)d.setAttribute("content",f.d);
  const o=document.querySelector('meta[property="og:title"]');if(o)o.setAttribute("content","Super Čelik – "+TITLE[l][0])}
 function setLang(l){lang=l;localStorage.setItem("sc-lang",l);
- document.documentElement.lang={ru:"ru",en:"en",sr:"sr-Latn",sc:"sr-Cyrl"}[l];
+ document.documentElement.lang={ru:"ru",en:"en",sr:"sr-Latn",sc:"sr-Cyrl"}[l]||l;
  if(l==="sc")buildCyr();
  document.querySelectorAll(".doc>div").forEach(d=>d.hidden=d.dataset.l!==l);
  document.getElementById("h1").textContent=TITLE[l][0];document.getElementById("upd").textContent=TITLE[l][1];

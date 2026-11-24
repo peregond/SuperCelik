@@ -12,6 +12,7 @@
     <string name="group_privacy">Adatvédelem</string>
     <string name="group_reading">Kártyaolvasás</string>
     <string name="group_help">Súgó</string>
+    <string name="language_system">A rendszer nyelve</string>
     <string name="copy_logs">Naplók és hibák másolása</string>
     <string name="copy_logs_hint">Lemásolja a hibák technikai részleteit (a kártyán lévő adatai nélkül), hogy beilleszthesse őket egy hibajelentésbe.</string>
     <string name="logs_copied">Naplók lemásolva</string>

@@ -12,6 +12,7 @@
     <string name="group_privacy">Приватність</string>
     <string name="group_reading">Читання картки</string>
     <string name="group_help">Довідка</string>
+    <string name="language_system">Як у системі</string>
     <string name="copy_logs">Копіювати журнали та помилки</string>
     <string name="copy_logs_hint">Копіює технічні подробиці помилок (без даних з вашої картки), щоб вставити їх у звіт про помилку.</string>
     <string name="logs_copied">Журнали скопійовано</string>

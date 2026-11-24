@@ -19,6 +19,7 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
@@ -495,13 +496,16 @@ fun SettingsScreen(vm: CardViewModel) {
                         }
                     }
                 }
-                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
-                    HorizontalDivider(Modifier.padding(horizontal = 16.dp))
-                    ListItem(modifier = Modifier.clickable {
-                        ctx.startActivity(Intent(android.provider.Settings.ACTION_APP_LOCALE_SETTINGS, Uri.parse("package:${ctx.packageName}")))
-                    }, colors = transparent, leadingContent = { Icon(Icons.Filled.Language, null) },
-                        headlineContent = { Text(stringResource(R.string.settings_language)) },
-                        supportingContent = { Text(stringResource(R.string.settings_language_hint)) })
+                HorizontalDivider(Modifier.padding(horizontal = 16.dp))
+                var pickLanguage by remember { mutableStateOf(false) }
+                val chosen = remember { AppLocale.saved(ctx) }
+                ListItem(modifier = Modifier.clickable { pickLanguage = true }, colors = transparent,
+                    leadingContent = { Icon(Icons.Filled.Language, null) },
+                    headlineContent = { Text(stringResource(R.string.settings_language)) },
+                    supportingContent = { Text(if (chosen == null) stringResource(R.string.language_system) else AppLocale.label(chosen)) })
+                if (pickLanguage) LanguageDialog(chosen, onDismiss = { pickLanguage = false }) { tag ->
+                    pickLanguage = false
+                    if (tag != chosen) { AppLocale.save(ctx, tag); ctx.findActivity()?.recreate() }
                 }
             }
         }
@@ -552,6 +556,27 @@ fun SettingsScreen(vm: CardViewModel) {
             }
         }
     }
+}
+
+/** The language of the app: the system language or one of ours, each with its flag. The change applies at once (the activity restarts). */
+@Composable
+private fun LanguageDialog(current: String?, onDismiss: () -> Unit, onPick: (String?) -> Unit) {
+    AlertDialog(
+        onDismissRequest = onDismiss,
+        title = { Text(stringResource(R.string.settings_language)) },
+        text = {
+            LazyColumn {
+                items((listOf<String?>(null) + AppLocale.order)) { tag ->
+                    Row(Modifier.fillMaxWidth().clickable { onPick(tag) }.padding(vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
+                        RadioButton(selected = tag == current, onClick = { onPick(tag) })
+                        Spacer(Modifier.width(8.dp))
+                        Text(if (tag == null) stringResource(R.string.language_system) else AppLocale.label(tag))
+                    }
+                }
+            }
+        },
+        confirmButton = { TextButton(onClick = onDismiss) { Text(stringResource(R.string.cancel)) } },
+    )
 }
 
 /** A titled group of settings in one card, the same look as the cards of the other screens. */

@@ -48,6 +48,8 @@ import java.security.cert.X509Certificate
 class EuLoginActivity : ComponentActivity() {
     private var web: WebView? = null
 
+    override fun attachBaseContext(newBase: android.content.Context) = super.attachBaseContext(AppLocale.wrap(newBase))
+
     /** Several certificates fit the request: the user picks one (or cancels). */
     private val choice = mutableStateOf<Pair<ClientCertRequest, List<TokenKeyPair>>?>(null)
     /** Further certificate requests that arrive while the choice dialog is open: they get the same answer. */

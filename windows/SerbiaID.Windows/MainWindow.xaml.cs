@@ -36,8 +36,8 @@ public partial class MainWindow : Window
         Theme.Apply(_cfg.Theme);
         RestoreWindow();
 
-        foreach (var lang in (Lang[])Enum.GetValues(typeof(Lang))) CmbLang.Items.Add(Loc.NativeName(lang));
-        CmbLang.SelectedIndex = (int)Loc.Current;
+        BuildLanguagePicker();
+        CmbLang.SelectedIndex = Array.IndexOf(Loc.PickerOrder, Loc.Current);
         for (int i = 0; i < 3; i++) CmbTheme.Items.Add("");
         CmbTheme.SelectedIndex = _cfg.Theme switch { "light" => 1, "dark" => 2, _ => 0 };
         ChkMask.IsChecked = _cfg.MaskSensitive; ChkPrintJmbg.IsChecked = _cfg.PrintJmbg;
@@ -54,6 +54,36 @@ public partial class MainWindow : Window
         PreviewKeyDown += (_, _) => _lastActivity = DateTime.Now;
         PreviewMouseDown += (_, _) => _lastActivity = DateTime.Now;
         Loaded += async (_, _) => { if (_cfg.AutoUpdate && !_demo) await AutoCheckUpdateAsync(); };
+    }
+
+    /// A language in the picker: its flag (a picture: Windows has no flag emoji) and its name.
+    private sealed class LangEntry
+    {
+        public string Name { get; set; }
+        public ImageSource Flag { get; set; }
+    }
+
+    private void BuildLanguagePicker()
+    {
+        foreach (var lang in Loc.PickerOrder)
+        {
+            ImageSource flag = null;
+            try { flag = new BitmapImage(new Uri("pack://application:,,,/Flags/" + Loc.FlagFile(lang) + ".png", UriKind.Absolute)); } catch { }
+            CmbLang.Items.Add(new LangEntry { Name = Loc.NativeName(lang), Flag = flag });
+        }
+        var row = new FrameworkElementFactory(typeof(StackPanel));
+        row.SetValue(StackPanel.OrientationProperty, Orientation.Horizontal);
+        var img = new FrameworkElementFactory(typeof(Image));
+        img.SetBinding(Image.SourceProperty, new System.Windows.Data.Binding("Flag"));
+        img.SetValue(FrameworkElement.WidthProperty, 24.0);
+        img.SetValue(FrameworkElement.HeightProperty, 16.0);
+        img.SetValue(FrameworkElement.MarginProperty, new Thickness(0, 0, 10, 0));
+        img.SetValue(RenderOptions.BitmapScalingModeProperty, BitmapScalingMode.HighQuality);
+        var txt = new FrameworkElementFactory(typeof(TextBlock));
+        txt.SetBinding(TextBlock.TextProperty, new System.Windows.Data.Binding("Name"));
+        txt.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
+        row.AppendChild(img); row.AppendChild(txt);
+        CmbLang.ItemTemplate = new DataTemplate { VisualTree = row };
     }
 
     protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
@@ -129,7 +159,7 @@ public partial class MainWindow : Window
     private void Lang_Changed(object s, SelectionChangedEventArgs e)
     {
         if (_loading || CmbLang.SelectedIndex < 0) return;
-        Loc.Current = (Lang)CmbLang.SelectedIndex;
+        Loc.Current = Loc.PickerOrder[CmbLang.SelectedIndex];
         _cfg.Lang = Loc.Current.ToString(); _cfg.Save();
         ApplyLanguage();
     }

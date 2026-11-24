@@ -12,6 +12,7 @@
     <string name="group_privacy">Confidențialitate</string>
     <string name="group_reading">Citirea cardului</string>
     <string name="group_help">Ajutor</string>
+    <string name="language_system">Ca în sistem</string>
     <string name="copy_logs">Copiază jurnalele și erorile</string>
     <string name="copy_logs_hint">Copiază detaliile tehnice ale erorilor (fără datele de pe cardul dvs.) ca să le puteți lipi într-un raport de eroare.</string>
     <string name="logs_copied">Jurnalele au fost copiate</string>

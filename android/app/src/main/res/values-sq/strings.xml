@@ -12,6 +12,7 @@
     <string name="group_privacy">Privatësia</string>
     <string name="group_reading">Leximi i kartës</string>
     <string name="group_help">Ndihmë</string>
+    <string name="language_system">Parazgjedhja e sistemit</string>
     <string name="copy_logs">Kopjo regjistrat dhe gabimet</string>
     <string name="copy_logs_hint">Kopjon detajet teknike të gabimeve (pa të dhënat e kartës suaj) që t’i ngjitni në një raport gabimi.</string>
     <string name="logs_copied">Regjistrat u kopjuan</string>

@@ -12,6 +12,7 @@
     <string name="group_privacy">Прыватнасць</string>
     <string name="group_reading">Чытанне карты</string>
     <string name="group_help">Даведка</string>
+    <string name="language_system">Як у сістэме</string>
     <string name="copy_logs">Капіяваць журналы і памылкі</string>
     <string name="copy_logs_hint">Капіюе тэхнічныя падрабязнасці памылак (без даных з вашай карты), каб уставіць іх у справаздачу пра памылку.</string>
     <string name="logs_copied">Журналы скапіраваны</string>

@@ -12,6 +12,7 @@
     <string name="group_privacy">Súkromie</string>
     <string name="group_reading">Čítanie karty</string>
     <string name="group_help">Pomocník</string>
+    <string name="language_system">Podľa systému</string>
     <string name="copy_logs">Kopírovať protokoly a chyby</string>
     <string name="copy_logs_hint">Skopíruje technické podrobnosti o chybách (bez údajov z vašej karty), aby ste ich mohli vložiť do hlásenia chyby.</string>
     <string name="logs_copied">Protokoly skopírované</string>
