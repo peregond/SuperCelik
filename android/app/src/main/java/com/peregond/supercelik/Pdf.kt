@@ -64,33 +64,33 @@ object Pdf {
                 c.drawRect(x, top, x + p.measureText(s), top + 0.75f, Paint().apply { color = col })
             }
         }
-        val L = 39.4f; val R = 348.9f
+        val colL = 39.4f; val colR = 348.9f
 
         text("Čitač saobraćajne dozvole", 43.9f, 76.36f, 25.85f)
         c.drawRect(39.2f, 90.13f, 39.2f + 506.7f, 90.13f + 4.39f, Paint().apply { color = Color.BLACK })
         text("Registarska oznaka: " + v.registrationNumber, 42.5f, 126.66f, 19.92f)
 
-        text("Datum izdavanja: " + d(v.issuingDate), L, 175.17f)
-        text("Važi do: " + d(v.expiryDate), R, 175.17f, 11.98f, bold = false, underline = true)
-        text("Saobraćajnu izdao: " + v.stateIssuing, L, 195.04f)
-        text("Zabrana otuđenja: " + d(v.saleBan), R, 195.04f)
+        text("Datum izdavanja: " + d(v.issuingDate), colL, 175.17f)
+        text("Važi do: " + d(v.expiryDate), colR, 175.17f, 11.98f, bold = false, underline = true)
+        text("Saobraćajnu izdao: " + v.stateIssuing, colL, 195.04f)
+        text("Zabrana otuđenja: " + d(v.saleBan), colR, 195.04f)
         // the issuing authority wraps after the first comma
         val auth = v.authorityIssuing.trim()
         val cut = if (auth.length > 40) auth.indexOf(", ") else -1
-        if (cut > 0) { text(auth.substring(0, cut + 1), L, 215.40f); text(auth.substring(cut + 2), L, 229.07f) } else text(auth, L, 229.07f)
-        text("Broj saobraćajne: " + v.unambiguousNumber, L, 249.24f)
-        text("Serijski broj: " + v.serialNumber, L, 269.30f)
+        if (cut > 0) { text(auth.substring(0, cut + 1), colL, 215.40f); text(auth.substring(cut + 2), colL, 229.07f) } else text(auth, colL, 229.07f)
+        text("Broj saobraćajne: " + v.unambiguousNumber, colL, 249.24f)
+        text("Serijski broj: " + v.serialNumber, colL, 269.30f)
 
-        text("Podaci o vlasniku", L, 312.02f, 20.3f, bold = false, underline = true)
+        text("Podaci o vlasniku", colL, 312.02f, 20.3f, bold = false, underline = true)
         val owner = listOf(
             "Vlasnik: " + v.ownerSurname, "Ime vlasnika: " + v.ownerName, "Adresa vlasnika: " + v.ownerAddress,
             "Jmbg vlasnika: " + (if (includeJmbg) v.ownerPersonalNo else ""),
             "Korisnik: " + v.userSurname, "Ime korisnika: " + v.userName, "Adresa korisnika: " + v.userAddress,
             "Jmbg korisnika: " + (if (includeJmbg) v.userPersonalNo else ""),
         )
-        owner.forEachIndexed { i, s -> text(s, L, 331.78f + 19.863f * i) }
+        owner.forEachIndexed { i, s -> text(s, colL, 331.78f + 19.863f * i) }
 
-        text("Podaci o vozilu", L, 502.07f, 20.3f, bold = false, underline = true)
+        text("Podaci o vozilu", colL, 502.07f, 20.3f, bold = false, underline = true)
         val left = listOf(
             "Datum prve registracije: " + d(v.firstRegistrationDate),
             "Marka: " + v.make + "   Model: " + v.commercialDescription,
@@ -106,8 +106,8 @@ object Pdf {
         )
         for (i in left.indices) {
             val b = 521.53f + 19.793f * i
-            text(left[i], L, b)
-            text(right[i], R, b)
+            text(left[i], colL, b)
+            text(right[i], colR, b)
         }
         text("Homologacijska oznaka: " + dash(v.typeApprovalNumber), 90.6f + maxOf(0, ("Tip: " + dash(v.type)).length - 6) * 8f, 521.53f + 19.793f * 2)
 
