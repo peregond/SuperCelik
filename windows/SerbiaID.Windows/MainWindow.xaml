@@ -139,7 +139,7 @@
             <!-- Settings -->
             <TabItem x:Name="TabSettings">
                 <ScrollViewer VerticalScrollBarVisibility="Auto">
-                    <StackPanel Margin="24,18,24,20" Width="560" HorizontalAlignment="Left">
+                    <StackPanel x:Name="SettingsStack" Margin="24,18,24,20" Width="560" HorizontalAlignment="Left">
                         <Border Style="{StaticResource Card}" Margin="0,0,0,16">
                             <StackPanel>
                                 <TextBlock x:Name="LblSetAppearance" Foreground="{DynamicResource TextBrush}" FontSize="15" FontWeight="Bold" Margin="0,0,0,10"/>
@@ -207,7 +207,7 @@
                         <local:Logo Width="112" Height="112" HorizontalAlignment="Center"/>
                         <TextBlock x:Name="LblAboutTitle" Foreground="{DynamicResource TextBrush}" FontSize="26" FontWeight="Bold" HorizontalAlignment="Center" Margin="0,12,0,8"/>
                         <TextBlock x:Name="LblAboutText" TextWrapping="Wrap" TextAlignment="Center" Foreground="{DynamicResource MutedBrush}"/>
-                        <TextBlock x:Name="LblVersion" Foreground="{DynamicResource TextBrush}" HorizontalAlignment="Center" Margin="0,18,0,8" FontWeight="SemiBold"/>
+                        <TextBlock x:Name="LblVersion" Foreground="{DynamicResource TextBrush}" HorizontalAlignment="Center" Margin="0,18,0,8" FontWeight="SemiBold" MouseLeftButtonUp="Version_Click"/>
                         <WrapPanel HorizontalAlignment="Center">
                             <Button x:Name="BtnCheckUpdates" Style="{StaticResource SecondaryButton}" Click="CheckUpdates_Click" Margin="0,0,10,0"/>
                             <Button x:Name="BtnWhatsNew" Style="{StaticResource SecondaryButton}" Click="WhatsNew_Click"/>

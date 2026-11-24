@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Super Čelik</string>
-    <string name="title_personal">Të dhënat personale</string>
+    <string name="title_personal">Të dhënat e kartës</string>
     <string name="read_usb">Lexo me lexues USB</string>
     <string name="hint_idle">Futeni kartën në një lexues USB kartash inteligjente dhe lidheni me telefonin (USB-C ose përshtatës OTG). Leximi fillon automatikisht.</string>
     <string name="reader_help">Nuk keni lexues?</string>
@@ -124,4 +124,48 @@
     <string name="eu_pin_warn">Një PIN i gabuar harxhon një provë; tokeni bllokohet kur nuk mbetet asnjë.</string>
     <string name="eu_choose_cert">Zgjidhni një certifikatë</string>
     <string name="eu_cancelled">Futja e PIN-it u anulua.</string>
+
+    <!-- vehicle registration card and card diagnostics (same texts as LocCards.cs / LocalizationCards.swift) -->
+    <string name="veh_title">Libreza e automjetit (karta me çip)</string>
+    <string name="veh_note">Të dhënat janë lexuar sipas specifikimeve të BE-së dhe MUP-it; ende nuk janë verifikuar në një kartë të vërtetë. Nënshkrimi i lëshuesit nuk kontrollohet.</string>
+    <string name="card_unknown">Karta nuk u njoh: nuk është as letërnjoftim, as librezë e automjetit (ose emri i aplikacionit në çipin e saj nuk na është ende i njohur). Ekzekutoni diagnostikimin (zëri i fshehur te Cilësimet: prekni 5 herë numrin e versionit te Rreth aplikacionit) dhe dërgoni regjistrin.</string>
+    <string name="v_reg_no">Targa</string>
+    <string name="v_first_reg">Data e regjistrimit të parë</string>
+    <string name="v_valid_until">Regjistrimi vlen deri më</string>
+    <string name="v_issued">Data e lëshimit</string>
+    <string name="v_make">Marka</string>
+    <string name="v_type">Tipi</string>
+    <string name="v_model">Modeli (emërtimi tregtar)</string>
+    <string name="v_vin">Numri i shasisë (VIN)</string>
+    <string name="v_year">Viti i prodhimit</string>
+    <string name="v_colour">Ngjyra</string>
+    <string name="v_category">Kategoria</string>
+    <string name="v_fuel">Karburanti</string>
+    <string name="v_capacity">Vëllimi i motorit, cm³</string>
+    <string name="v_power">Fuqia, kW</string>
+    <string name="v_power_weight">Fuqia / pesha, kW/kg</string>
+    <string name="v_engine_no">Numri i motorit</string>
+    <string name="v_mass">Masa, kg</string>
+    <string name="v_max_mass">Pesha maksimale e lejuar, kg</string>
+    <string name="v_load">Aftësia mbajtëse, kg</string>
+    <string name="v_seats">Vende ulëse</string>
+    <string name="v_standing">Vende në këmbë</string>
+    <string name="v_axles">Numri i akseve</string>
+    <string name="v_approval">Numri i miratimit të tipit</string>
+    <string name="v_owner">Pronari</string>
+    <string name="v_owner_addr">Adresa e pronarit</string>
+    <string name="v_owner_jmbg">Numri personal i pronarit</string>
+    <string name="v_user">Përdoruesi</string>
+    <string name="v_user_addr">Adresa e përdoruesit</string>
+    <string name="v_user_jmbg">Numri personal i përdoruesit</string>
+    <string name="v_sale_ban">Ndalimi i tjetërsimit deri më</string>
+    <string name="v_doc_serial">Numri serik i dokumentit</string>
+    <string name="v_doc_no">Numri i dokumentit në regjistër</string>
+    <string name="v_authority">Organi lëshues</string>
+    <string name="diag_title">Diagnostikimi i kartës</string>
+    <string name="diag_text">Lexon strukturën e kartës (aplikacionet, skedarët, madhësitë) pa të dhëna personale dhe pa PIN. Mund ta kopjoni regjistrin dhe t\'ia dërgoni zhvilluesit.</string>
+    <string name="diag_run">Nis diagnostikimin</string>
+    <string name="diag_copy">Kopjo regjistrin</string>
+    <string name="diag_copied">Regjistri u kopjua</string>
+    <string name="diag_unlocked">Diagnostikimi u aktivizua (Cilësimet)</string>
 </resources>

@@ -193,6 +193,7 @@ public partial class MainWindow : Window
         BtnProblemClose.Content = Glyph("", 12); AutomationProperties.SetName(BtnProblemClose, Loc.T("close"));
         TabPersonal.Header = Loc.T("tabPersonal");
         TabToken.Header = Loc.T("tabToken");
+        ApplyVehicleLanguage();
         TabSettings.Header = Loc.T("tabSettings");
         TabAbout.Header = Loc.T("tabAbout");
         LblCerts.Text = Loc.T("certificates");
@@ -231,7 +232,8 @@ public partial class MainWindow : Window
         BtnRead.IsEnabled = BtnReadBig.IsEnabled = _cardPresent && !_busy;
         BtnReadToken.IsEnabled = _cardPresent && !_busy;
         BtnChangePin.IsEnabled = BtnUnblockPin.IsEnabled = BtnSignFile.IsEnabled = _cardPresent && !_busy;
-        BtnVerify.IsEnabled = _cardPresent && !_busy;
+        BtnVerify.IsEnabled = _cardPresent && !_busy && _vehicle == null;
+        if (_diagRun != null) _diagRun.IsEnabled = _cardPresent && !_busy;
         bool has = _personal != null && !_busy;
         BtnPrint.IsEnabled = has; BtnPdf.IsEnabled = has; BtnMore.IsEnabled = has;
     }
@@ -629,7 +631,7 @@ public partial class MainWindow : Window
     {
         if (_demo || _cfg.AutoHideMinutes <= 0 || (_personal == null && _token == null)) return;
         if ((DateTime.Now - _lastActivity).TotalMinutes < _cfg.AutoHideMinutes) return;
-        _personal = null; _token = null; _sig = null; _revealAll = false;
+        _personal = null; _token = null; _sig = null; _vehicle = null; _revealAll = false;
         RenderAll();
         ShowInfo(Loc.T("autoHidden"));
     }
@@ -638,8 +640,18 @@ public partial class MainWindow : Window
     private async Task ReadCardAsync()
     {
         var reader = Reader;
-        var p = await Compat.Run(() => SerbianCard.ReadPersonalData(_pc, reader));
-        _personal = p; _sig = null; _revealAll = false; HideProblem();
+        // one button for every card: an ID card, a foreigner card, a residence permit or a vehicle registration card
+        if (await Compat.Run(() => SerbianCard.HasEidApplet(_pc, reader)))
+        {
+            var p = await Compat.Run(() => SerbianCard.ReadPersonalData(_pc, reader));
+            _personal = p; _vehicle = null; _sig = null; _revealAll = false; HideProblem();
+        }
+        else
+        {
+            var v = await Compat.Run(() => VehicleCard.Read(_pc, reader));
+            _vehicle = v; _personal = null; _sig = null; _revealAll = false; HideProblem();
+            ShowInfo(Loc.T("vehNote"));
+        }
         RenderAll();
     }
 
@@ -677,7 +689,7 @@ public partial class MainWindow : Window
 
     private void UpdateEye()
     {
-        BtnEye.Visibility = _personal != null && _cfg.MaskSensitive ? Visibility.Visible : Visibility.Collapsed;
+        BtnEye.Visibility = (_personal != null || _vehicle != null) && _cfg.MaskSensitive ? Visibility.Visible : Visibility.Collapsed;
         // eye = data is hidden (click to show); crossed eye = data is shown (click to hide)
         SetBtn(BtnEye, _revealAll ? "\uED1A" : "\uE7B3", _revealAll ? Loc.T("hideValue") : Loc.T("reveal"));
     }
@@ -689,7 +701,7 @@ public partial class MainWindow : Window
         UpdateEye();
         FieldsPanel.Children.Clear();
         ImgPortrait.Source = null;
-        bool has = _personal != null;
+        bool has = _personal != null || _vehicle != null;
         bool appeared = has && PersonalContent.Visibility != Visibility.Visible;
         bool emptied = !has && EmptyState.Visibility != Visibility.Visible;
         PersonalContent.Visibility = has ? Visibility.Visible : Visibility.Collapsed;
@@ -698,15 +710,17 @@ public partial class MainWindow : Window
         if (emptied) Fx.FadeIn(EmptyState, 0);
         if (!has) return;
 
-        LblName.Text = $"{_personal.Fixed.GivenName} {_personal.Fixed.Surname}".Trim();
-        LblDocType.Text = DocTypeName(_personal.CardType);
-        ImgPortrait.Source = LoadImage(_personal.Portrait);
-        if (TryDate(_personal.Document.ExpiryDate, out var until)) SetExpiry(PillExpiry, LblExpiry, until);
+        bool veh = _vehicle != null;
+        ((UIElement)ImgPortrait.Parent).Visibility = veh ? Visibility.Collapsed : Visibility.Visible;   // a vehicle has no photo
+        LblName.Text = veh ? _vehicle.RegistrationNumber : $"{_personal.Fixed.GivenName} {_personal.Fixed.Surname}".Trim();
+        LblDocType.Text = veh ? Loc.T("vehTitle") : DocTypeName(_personal.CardType);
+        ImgPortrait.Source = veh ? null : LoadImage(_personal.Portrait);
+        if (TryDate(veh ? _vehicle.ExpiryDate : _personal.Document.ExpiryDate, out var until)) SetExpiry(PillExpiry, LblExpiry, until);
         else PillExpiry.Visibility = Visibility.Collapsed;
 
-        foreach (var (key, value) in Rows(_personal))
+        foreach (var (key, value) in veh ? VehicleRows.Build(_vehicle) : Rows(_personal))
         {
-            bool sensitive = Sensitive.Contains(key);
+            bool sensitive = Sensitive.Contains(key) || Array.IndexOf(VehicleRows.Sensitive, key) >= 0;
             bool hidden = sensitive && _cfg.MaskSensitive && !_revealAll;
 
             var cell = new DockPanel { Width = 290, Margin = new Thickness(0, 0, 14, 14) };
@@ -1088,6 +1102,8 @@ public partial class MainWindow : Window
             Variable = new VariablePersonalData { Place = "Beograd", Community = "Stari Grad", Street = "Knez Mihailova", HouseNumber = "1" },
         };
         _sig = new SigStatus { Result = SigResult.Ok };
+        // `--vehicle` with the demo: a vehicle registration card instead of the ID card
+        if (Environment.GetCommandLineArgs().Contains("--vehicle")) { _vehicle = VehicleRows.Demo(); _personal = null; _sig = null; }
         _token = new TokenInfo { Label = "NetSeT's CardEdge Token", Serial = "RP000000000" };
         _token.Certificates.Add(new TokenCertificate
         {
@@ -1096,7 +1112,7 @@ public partial class MainWindow : Window
         });
         if (state != null)
         {
-            _personal = null; _sig = null; _token = null;
+            _personal = null; _sig = null; _token = null; _vehicle = null;
             if (state == "noreader") { _readers = new(); FillReaders(_readers); _cardPresent = false; }
             if (state == "nocard") _cardPresent = false;
             if (state == "busy") _busy = true;

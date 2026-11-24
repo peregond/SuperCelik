@@ -60,7 +60,7 @@ public static class Loc
 
     public static string T(string key)
     {
-        if (!Table.TryGetValue(key, out var v)) return key;
+        if (!Table.TryGetValue(key, out var v)) return LocCards.Get(Current, key);   // vehicle card and diagnostics texts
         // Serbian Cyrillic = the Serbian (Latin) text run through SerbianScript
         if (Current == Lang.srCyrl) return SerbianScript.Cyrillic(v[(int)Lang.sr]);
         if ((int)Current > (int)Lang.srCyrl) return LocExtra.Get(Current, key) ?? v[(int)Lang.en];
@@ -71,7 +71,7 @@ public static class Loc
     {
         // ru, en, sr
         ["appTitle"] = new[] { "Super Čelik", "Super Čelik", "Super Čelik" },
-        ["tabPersonal"] = new[] { "Личные данные", "Personal data", "Lični podaci" },
+        ["tabPersonal"] = new[] { "Данные с карты", "Card data", "Podaci sa kartice" },
         ["tabToken"] = new[] { "Токен и сертификаты", "Token & certificates", "Token i sertifikati" },
         ["tabAbout"] = new[] { "О программе", "About", "O programu" },
         ["reader"] = new[] { "Считыватель", "Reader", "Čitač" },

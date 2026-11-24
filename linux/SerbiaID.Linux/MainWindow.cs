@@ -14,7 +14,7 @@ using Avalonia.Threading;
 
 namespace SerbiaID;
 
-public sealed class MainWindow : Window
+public sealed partial class MainWindow : Window
 {
     private PcscService _pc = new();
     private readonly AppSettings _cfg = AppSettings.Load();
@@ -60,8 +60,9 @@ public sealed class MainWindow : Window
     private WrapPanel _fields;
     private Image _imgPortrait;
     private MascotArt _emptyMascot, _keyMascot;
-    private readonly Button[] _tabButtons = new Button[4];
-    private readonly Control[] _tabPages = new Control[4];
+    private const int TabCount = 4;   // card data, token, settings, about
+    private readonly Button[] _tabButtons = new Button[TabCount];
+    private readonly Control[] _tabPages = new Control[TabCount];
     private ContextMenu _moreMenu;
     private int _tab;
 
@@ -85,7 +86,7 @@ public sealed class MainWindow : Window
         _chkMask.IsChecked = _cfg.MaskSensitive; _chkPrintJmbg.IsChecked = _cfg.PrintJmbg;
         _chkAutoRead.IsChecked = _cfg.AutoRead; _chkAutoUpdate.IsChecked = _cfg.AutoUpdate;
         _txtAutoHide.Text = _cfg.AutoHideMinutes.ToString();
-        SelectTab(Math.Clamp(_cfg.Tab, 0, 3));
+        SelectTab(Math.Clamp(_cfg.Tab, 0, TabCount - 1));
         _loading = false;
 
         if (opts.Demo) { LoadDemo(); _loading = true; _chkDemo.IsChecked = true; _loading = false; return; }
@@ -208,7 +209,7 @@ public sealed class MainWindow : Window
 
         // tab strip
         var strip = new StackPanel { Orientation = Orientation.Horizontal, Margin = new Thickness(16, 0, 0, 0) };
-        for (int i = 0; i < 4; i++)
+        for (int i = 0; i < TabCount; i++)
         {
             int idx = i;
             var tb = new Button { Classes = { "tab" } };
@@ -228,7 +229,7 @@ public sealed class MainWindow : Window
     private void SelectTab(int i)
     {
         _tab = i;
-        for (int k = 0; k < 4; k++)
+        for (int k = 0; k < TabCount; k++)
         {
             _tabPages[k].IsVisible = k == i;
             if (k == i) _tabButtons[k].Classes.Add("active"); else _tabButtons[k].Classes.Remove("active");
@@ -388,7 +389,7 @@ public sealed class MainWindow : Window
         return new ScrollViewer
         {
             VerticalScrollBarVisibility = ScrollBarVisibility.Auto,
-            Content = new StackPanel { Margin = new Thickness(24, 18, 24, 20), Width = 560, HorizontalAlignment = HorizontalAlignment.Left, Children = { appearance, privacy, behavior, demo, logs } },
+            Content = new StackPanel { Margin = new Thickness(24, 18, 24, 20), Width = 560, HorizontalAlignment = HorizontalAlignment.Left, Children = { appearance, privacy, behavior, demo, logs, BuildDiagCard() } },
         };
     }
 
@@ -401,6 +402,7 @@ public sealed class MainWindow : Window
         _lblBeta = Ui.Label("", 13, true, "AccentBrush", true); _lblBeta.TextAlignment = TextAlignment.Center; _lblBeta.Margin = new Thickness(0, 14, 0, 0);
         _btnFeedback = Ui.Btn(""); _btnFeedback.HorizontalAlignment = HorizontalAlignment.Center; _btnFeedback.Margin = new Thickness(0, 10, 0, 0); _btnFeedback.Click += (_, _) => OpenUrl(FeedbackUrl);
         _lblVersion = Ui.Label("", 13, true); _lblVersion.HorizontalAlignment = HorizontalAlignment.Center; _lblVersion.Margin = new Thickness(0, 18, 0, 8);
+        _lblVersion.PointerReleased += (_, _) => VersionTapped();
         _btnCheckUpdates = Ui.Btn(""); _btnCheckUpdates.Click += async (_, _) => await CheckUpdates();
         _btnWhatsNew = Ui.Btn(""); _btnWhatsNew.Click += (_, _) => OpenUrl(ChangelogUrl);
         var updateButtons = new StackPanel { Orientation = Orientation.Horizontal, Spacing = 10, HorizontalAlignment = HorizontalAlignment.Center, Children = { _btnCheckUpdates, _btnWhatsNew } };
@@ -423,6 +425,7 @@ public sealed class MainWindow : Window
         Ui.SetBtn(_btnWhatsNew, "info", Loc.T("whatsNew")); Ui.SetBtn(_btnReaderHelp, "circle-help", Loc.T("readerHelp"));
         Ui.SetBtn(_btnCheckUpdates, "refresh-cw", Loc.T("checkUpdates")); Ui.SetBtn(_btnUpdate, "download", Loc.T("updateNow"));
         _tabButtons[0].Content = Loc.T("tabPersonal"); _tabButtons[1].Content = Loc.T("tabToken"); _tabButtons[2].Content = Loc.T("tabSettings"); _tabButtons[3].Content = Loc.T("tabAbout");
+        ApplyVehicleLanguage();
         _lblCerts.Text = Loc.T("certificates"); _lblPinNote.Text = Loc.T(BrowserSetup.HasModule ? "loginEupravaNote" : "loginEupravaNoteManual");
         Ui.SetBtn(_btnLoginEu, "log-in", Loc.T("loginEuprava")); Ui.SetBtn(_btnSetupBrowser, "plug", Loc.T("setupBrowser"));
         if (_checkPanel != null) RenderCheck();
@@ -453,7 +456,8 @@ public sealed class MainWindow : Window
         bool can = _cardPresent && !_busy;
         _btnRead.IsEnabled = _btnReadBig.IsEnabled = can;
         _btnReadToken.IsEnabled = _btnChangePin.IsEnabled = _btnUnblockPin.IsEnabled = _btnSignFile.IsEnabled = can;
-        _btnVerify.IsEnabled = can;
+        _btnVerify.IsEnabled = can && _vehicle == null;
+        if (_diagRun != null) _diagRun.IsEnabled = can;
         bool has = _personal != null && !_busy;
         _btnPrint.IsEnabled = _btnPdf.IsEnabled = _btnMore.IsEnabled = has;
     }
@@ -748,9 +752,9 @@ public sealed class MainWindow : Window
 
     private void CheckIdle()
     {
-        if (_demo || _cfg.AutoHideMinutes <= 0 || (_personal == null && _token == null)) return;
+        if (_demo || _cfg.AutoHideMinutes <= 0 || (_personal == null && _token == null && _vehicle == null)) return;
         if ((DateTime.Now - _lastActivity).TotalMinutes < _cfg.AutoHideMinutes) return;
-        _personal = null; _token = null; _sig = null; _revealAll = false;
+        _personal = null; _token = null; _sig = null; _vehicle = null; _revealAll = false;
         RenderAll();
         ShowInfo(Loc.T("autoHidden"));
     }
@@ -759,8 +763,18 @@ public sealed class MainWindow : Window
     private async Task ReadCardAsync()
     {
         var reader = Reader;
-        var p = await Task.Run(() => SerbianCard.ReadPersonalData(_pc, reader));
-        _personal = p; _sig = null; _revealAll = false; HideProblem();
+        // one button for every card: an ID card, a foreigner card, a residence permit or a vehicle registration card
+        if (await Task.Run(() => SerbianCard.HasEidApplet(_pc, reader)))
+        {
+            var p = await Task.Run(() => SerbianCard.ReadPersonalData(_pc, reader));
+            _personal = p; _vehicle = null; _sig = null; _revealAll = false; HideProblem();
+        }
+        else
+        {
+            var v = await Task.Run(() => VehicleCard.Read(_pc, reader));
+            _vehicle = v; _personal = null; _sig = null; _revealAll = false; HideProblem();
+            ShowInfo(Loc.T("vehNote"));
+        }
         RenderAll();
     }
 
@@ -809,23 +823,26 @@ public sealed class MainWindow : Window
 
     private void RenderPersonal()
     {
-        _btnEye.IsVisible = _personal != null && _cfg.MaskSensitive;
+        _btnEye.IsVisible = (_personal != null || _vehicle != null) && _cfg.MaskSensitive;
         Ui.SetBtn(_btnEye, _revealAll ? "eye-off" : "eye", _revealAll ? Loc.T("hideValue") : Loc.T("reveal"));
         _fields.Children.Clear();
         _imgPortrait.Source = null;
-        bool has = _personal != null;
+        bool has = _personal != null || _vehicle != null;
         _personalContent.IsVisible = has;
         _emptyState.IsVisible = !has;
         if (!has) return;
 
-        _lblName.Text = $"{_personal.Fixed.GivenName} {_personal.Fixed.Surname}".Trim();
-        _lblDocType.Text = DocTypeName(_personal.CardType);
-        _imgPortrait.Source = Ui.LoadImage(_personal.Portrait);
-        if (TryDate(_personal.Document.ExpiryDate, out var until)) SetExpiry(_pillExpiry, until); else _pillExpiry.IsVisible = false;
+        bool veh = _vehicle != null;
+        _portraitFrame.IsVisible = !veh;     // a vehicle has no photo
+        _lblName.Text = veh ? _vehicle.RegistrationNumber : $"{_personal.Fixed.GivenName} {_personal.Fixed.Surname}".Trim();
+        _lblDocType.Text = veh ? Loc.T("vehTitle") : DocTypeName(_personal.CardType);
+        _imgPortrait.Source = veh ? null : Ui.LoadImage(_personal.Portrait);
+        _pillExpiry.IsVisible = true;
+        if (TryDate(veh ? _vehicle.ExpiryDate : _personal.Document.ExpiryDate, out var until)) SetExpiry(_pillExpiry, until); else _pillExpiry.IsVisible = false;
 
-        foreach (var (key, value) in Rows(_personal))
+        foreach (var (key, value) in veh ? VehicleRows.Build(_vehicle) : Rows(_personal))
         {
-            bool hidden = Sensitive.Contains(key) && _cfg.MaskSensitive && !_revealAll;
+            bool hidden = (Sensitive.Contains(key) || Array.IndexOf(VehicleRows.Sensitive, key) >= 0) && _cfg.MaskSensitive && !_revealAll;
             var copy = Ui.Btn("", "icon"); Ui.SetBtn(copy, "copy", null); copy.Opacity = 0.55; copy.VerticalAlignment = VerticalAlignment.Bottom;
             ToolTip.SetTip(copy, Loc.T("copy"));
             var v = value;
@@ -1120,6 +1137,8 @@ public sealed class MainWindow : Window
             Variable = new VariablePersonalData { Place = "Beograd", Community = "Stari Grad", Street = "Knez Mihailova", HouseNumber = "1" },
         };
         _sig = new SigStatus { Result = SigResult.Ok };
+        // `--vehicle` with the demo: a vehicle registration card instead of the ID card
+        if (Environment.GetCommandLineArgs().Contains("--vehicle")) { _vehicle = VehicleRows.Demo(); _personal = null; _sig = null; }
         _token = new TokenInfo { Label = "NetSeT's CardEdge Token", Serial = "RP000000000" };
         _token.Certificates.Add(new TokenCertificate
         {
@@ -1142,7 +1161,7 @@ public sealed class MainWindow : Window
     private void HideDemoData()
     {
         _demo = false;
-        _personal = null; _token = null; _sig = null; _revealAll = false; _cardPresent = false; _readers = new();
+        _personal = null; _token = null; _sig = null; _vehicle = null; _revealAll = false; _cardPresent = false; _readers = new();
         FillReaders(_readers);
         ApplyLanguage();
         StartPolling();
@@ -1158,7 +1177,7 @@ public sealed class MainWindow : Window
         var state = _opts.State;
         if (state != null)
         {
-            _personal = null; _sig = null; _token = null;
+            _personal = null; _sig = null; _token = null; _vehicle = null;
             if (state == "noreader") { _readers = new(); FillReaders(_readers); _cardPresent = false; }
             if (state == "nocard") _cardPresent = false;
             if (state == "busy") _busy = true;

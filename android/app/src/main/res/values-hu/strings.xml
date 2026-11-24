@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Super Čelik</string>
-    <string name="title_personal">Személyes adatok</string>
+    <string name="title_personal">Kártyaadatok</string>
     <string name="read_usb">Olvasás USB-olvasóval</string>
     <string name="hint_idle">Helyezze be a kártyát egy USB-s intelligenskártya-olvasóba, és csatlakoztassa a telefonhoz (USB-C vagy OTG-adapter). Az olvasás automatikusan elindul.</string>
     <string name="reader_help">Még nincs olvasója?</string>
@@ -124,4 +124,48 @@
     <string name="eu_pin_warn">A hibás PIN egy próbálkozást használ el; ha elfogynak, a token zárolódik.</string>
     <string name="eu_choose_cert">Válasszon tanúsítványt</string>
     <string name="eu_cancelled">A PIN megadása megszakítva.</string>
+
+    <!-- vehicle registration card and card diagnostics (same texts as LocCards.cs / LocalizationCards.swift) -->
+    <string name="veh_title">Forgalmi engedély (chipkártya)</string>
+    <string name="veh_note">A szétbontás az EU és a MUP specifikációja szerint történt; valódi kártyán még nincs ellenőrizve. A kiállító aláírását nem ellenőrizzük.</string>
+    <string name="card_unknown">A kártya nem ismerhető fel: nem személyi igazolvány és nem forgalmi engedély (vagy a chipjén lévő alkalmazás neve még nem ismert). Futtassa a diagnosztikát (rejtett elem a Beállításokban: koppintson ötször a verziószámra a Névjegy oldalon), és küldje el a naplót.</string>
+    <string name="v_reg_no">Rendszám</string>
+    <string name="v_first_reg">Első forgalomba helyezés dátuma</string>
+    <string name="v_valid_until">A forgalmi engedély érvényes</string>
+    <string name="v_issued">Kiállítás dátuma</string>
+    <string name="v_make">Gyártmány</string>
+    <string name="v_type">Típus</string>
+    <string name="v_model">Modell (kereskedelmi név)</string>
+    <string name="v_vin">Alvázszám (VIN)</string>
+    <string name="v_year">Gyártási év</string>
+    <string name="v_colour">Szín</string>
+    <string name="v_category">Kategória</string>
+    <string name="v_fuel">Üzemanyag</string>
+    <string name="v_capacity">Hengerűrtartalom, cm³</string>
+    <string name="v_power">Teljesítmény, kW</string>
+    <string name="v_power_weight">Teljesítmény / tömeg, kW/kg</string>
+    <string name="v_engine_no">Motorszám</string>
+    <string name="v_mass">Tömeg, kg</string>
+    <string name="v_max_mass">Megengedett legnagyobb össztömeg, kg</string>
+    <string name="v_load">Teherbírás, kg</string>
+    <string name="v_seats">Ülőhelyek száma</string>
+    <string name="v_standing">Állóhelyek száma</string>
+    <string name="v_axles">Tengelyek száma</string>
+    <string name="v_approval">Típusjóváhagyási szám</string>
+    <string name="v_owner">Tulajdonos</string>
+    <string name="v_owner_addr">A tulajdonos címe</string>
+    <string name="v_owner_jmbg">A tulajdonos személyi száma</string>
+    <string name="v_user">Használó</string>
+    <string name="v_user_addr">A használó címe</string>
+    <string name="v_user_jmbg">A használó személyi száma</string>
+    <string name="v_sale_ban">Elidegenítési tilalom eddig</string>
+    <string name="v_doc_serial">Okmány sorozatszáma</string>
+    <string name="v_doc_no">Nyilvántartási okmányszám</string>
+    <string name="v_authority">Kiállító hatóság</string>
+    <string name="diag_title">Kártyadiagnosztika</string>
+    <string name="diag_text">Beolvassa a kártya szerkezetét (alkalmazások, fájlok, méretek) személyes adatok és PIN nélkül. A naplót kimásolhatja és elküldheti a fejlesztőnek.</string>
+    <string name="diag_run">Diagnosztika indítása</string>
+    <string name="diag_copy">Napló másolása</string>
+    <string name="diag_copied">A napló kimásolva</string>
+    <string name="diag_unlocked">A diagnosztika bekapcsolva (Beállítások)</string>
 </resources>

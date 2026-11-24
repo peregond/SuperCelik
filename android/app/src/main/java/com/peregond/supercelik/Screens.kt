@@ -18,6 +18,8 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
@@ -44,6 +46,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import kotlinx.coroutines.Dispatchers
@@ -115,8 +118,11 @@ private fun openUrl(ctx: Context, url: String) {
 @Composable
 fun CardScreen(vm: CardViewModel, reveal: Boolean) {
     val personal by vm.personal.collectAsStateWithLifecycle()
+    val vehicle by vm.vehicle.collectAsStateWithLifecycle()
     val ctx = LocalContext.current
     val p = personal
+    val v = vehicle
+    if (p == null && v != null) { VehicleResult(vm, v, reveal); return }
     if (p == null) {
         Column(
             Modifier.fillMaxSize().padding(24.dp),
@@ -147,6 +153,30 @@ fun CardScreen(vm: CardViewModel, reveal: Boolean) {
         return
     }
     PersonalResult(vm, p, reveal)
+}
+
+/** A vehicle registration card on the card-data tab. STATUS: parsed per the specification, not yet checked on a real card. */
+@Composable
+private fun VehicleResult(vm: CardViewModel, v: VehicleData, revealAll: Boolean) {
+    val mask by vm.mask.collectAsStateWithLifecycle()
+    val flagPalette = LocalFlagPalette.current
+    val heroBg = if (flagPalette) Flag.Blue else MaterialTheme.colorScheme.primaryContainer
+    val heroFg = if (flagPalette) Color.White else MaterialTheme.colorScheme.onPrimaryContainer
+    val show = revealAll || !mask
+    val rows = VehicleRows.build(v).map { (k, s) -> Triple(vehicleLabel(k), s, k in VehicleRows.sensitive) }
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+        item {
+            Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = heroBg), shape = RoundedCornerShape(28.dp)) {
+                Column(Modifier.padding(16.dp).fillMaxWidth()) {
+                    Text(stringResource(R.string.veh_title), style = MaterialTheme.typography.labelLarge, color = heroFg.copy(alpha = 0.85f))
+                    Text(v.registrationNumber, style = MaterialTheme.typography.titleLarge, color = heroFg)
+                    ExpiryPill(v.expiryDate, onHero = flagPalette)
+                }
+            }
+        }
+        item { Section(R.string.veh_title, rows, show) }
+        item { Text(stringResource(R.string.veh_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+    }
 }
 
 @Composable
@@ -474,6 +504,10 @@ fun SettingsScreen(vm: CardViewModel) {
     val demo by vm.demo.collectAsStateWithLifecycle()
     val ctx = LocalContext.current
     val version = remember { runCatching { ctx.packageManager.getPackageInfo(ctx.packageName, 0).versionName }.getOrNull() ?: "" }
+    val diagUnlocked by vm.diagUnlocked.collectAsStateWithLifecycle()
+    val diagLog by vm.diagLog.collectAsStateWithLifecycle()
+    val clipboard = LocalClipboardManager.current
+    var versionTaps by remember { mutableStateOf(0) }
     val transparent = ListItemDefaults.colors(containerColor = Color.Transparent)
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 24.dp), verticalArrangement = Arrangement.spacedBy(20.dp)) {
         item {
@@ -548,9 +582,29 @@ fun SettingsScreen(vm: CardViewModel) {
                     supportingContent = { Text(stringResource(R.string.copy_logs_hint)) })
             }
         }
+        if (diagUnlocked) item {
+            // hidden card diagnostics: structure of the card, no personal data, no PIN
+            SettingsGroup(R.string.diag_title) {
+                Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Text(stringResource(R.string.diag_text), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        FilledTonalButton(onClick = { vm.runDiagnostics(ctx) }) { Text(stringResource(R.string.diag_run)) }
+                        OutlinedButton(enabled = diagLog != null, onClick = {
+                            clipboard.setText(AnnotatedString(diagLog ?: ""))
+                            vm.notify(Msg(R.string.diag_copied, error = false))
+                        }) { Text(stringResource(R.string.diag_copy)) }
+                    }
+                    diagLog?.let {
+                        Text(it, style = MaterialTheme.typography.bodySmall.copy(fontFamily = androidx.compose.ui.text.font.FontFamily.Monospace, fontSize = 10.sp),
+                            modifier = Modifier.fillMaxWidth().heightIn(max = 320.dp).verticalScroll(rememberScrollState()))
+                    }
+                }
+            }
+        }
         item {
             Column(Modifier.fillMaxWidth().padding(horizontal = 8.dp), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text("${stringResource(R.string.app_name)} $version", style = MaterialTheme.typography.titleMedium)
+                Text("${stringResource(R.string.app_name)} $version", style = MaterialTheme.typography.titleMedium,
+                    modifier = Modifier.clickable { versionTaps++; if (versionTaps >= 5) vm.unlockDiag() })
                 Text(stringResource(R.string.about_note), style = MaterialTheme.typography.bodySmall, textAlign = TextAlign.Center,
                     color = MaterialTheme.colorScheme.onSurfaceVariant)
             }

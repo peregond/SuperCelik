@@ -123,6 +123,15 @@ public static class SerbianCard
         throw new CardException("Unsupported card (no known applet; old Apollo cards are not supported)");
     }
 
+    /// true if the card carries one of the eID applets (so it is an ID card / foreigner card / residence permit).
+    public static bool HasEidApplet(PcscService pc, string reader)
+    {
+        using var s = pc.Connect(reader);
+        foreach (var (_, aid) in Applets)
+            if (s.Tx(Apdu(0, 0xA4, 4, 0, Hex(aid))).Sw == 0x9000) return true;
+        return false;
+    }
+
     /// Whole file incl. 4-byte header: id LE16, length LE16.
     private static byte[] ReadRawFile(CardSession s, ushort fid)
     {

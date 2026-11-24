@@ -8,6 +8,9 @@ release, or the cell says why it cannot.
 |---|---|---|---|---|---|
 | Read the ID card (data, photo) | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Verify the card signature | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Read a vehicle registration card (saobraćajna dozvola) on the "Card data" tab; one Read button for every card. **Parsed from the EU / MUP specifications, not yet checked on a real card**; the issuer signature is not verified | ✅ | ✅ | ✅ | ✅ USB reader only (the NFC application name is not confirmed) | ✅ |
+| Card diagnostics: structure of any card, no personal data, no PIN (hidden: tap the version 5 times in Settings; `--diag` on Windows and Linux). Its log is copied with a button | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Read the health insurance card (KZO) | – not yet | – not yet | – not yet | – not yet | – not yet |
 | Print / save the PDF | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Hide sensitive fields (mask) | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Read the token (certificates), export `.cer` | ✅ | ✅ | ✅ | ✅ | ✅ |
@@ -24,6 +27,8 @@ release, or the cell says why it cannot.
 | Auto-read when the card is inserted | ✅ | ✅ | ✅ | ✅ | ✅ (reader already connected) |
 | Hide the data after idle time | ✅ | ✅ | ✅ | – (not wanted) | – (not wanted) |
 | Check for updates inside the app | ✅ | ✅ | ✅ (not the App Store build) | – (App Store) | – (store / APK page) |
+
+"– not yet" on the health card: no official description of its chip exists and its protocol is not known; the diagnostics above are there to find it out on a real card, and nothing is added until a log shows that the data is readable without a service card.
 
 "–" is not a gap to fill: a phone has no browser to set up, and apps from a store are updated by the store.
 Idle hide is not wanted on iOS and Android (the data goes with the app); every other cell is filled.

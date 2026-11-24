@@ -278,11 +278,13 @@ struct CardTab: View {
                     if let problem = model.problem {
                         ProblemBanner(problem: problem).padding(16).frame(maxWidth: .infinity, alignment: .leading).glassCard()
                     }
-                    if model.personal == nil {
+                    if model.personal == nil && model.vehicle == nil {
                         ReaderStatusBlock(character: .reader, onHelp: { showHelp = true }).padding(.top, model.problem == nil ? 40 : 8)
                     }
                     if let p = model.personal {
                         if sizeClass == .regular { regularLayout(p) } else { compactLayout(p) }
+                    } else if let v = model.vehicle {
+                        VehicleCardView(vehicle: v)
                     }
                 }
                 .padding(16)
@@ -293,10 +295,10 @@ struct CardTab: View {
             .background(GlassBackdrop())
             .navigationTitle(loc.t(.tabPersonal))
             .navigationBarTitleDisplayMode(.inline)
-            .animation(.easeInOut(duration: 0.25), value: model.personal == nil)
+            .animation(.easeInOut(duration: 0.25), value: model.personal == nil && model.vehicle == nil)
             .safeAreaInset(edge: .bottom) {
                 // after a read the button goes away; the "x" at the top left brings it back
-                if model.personal == nil {
+                if model.personal == nil && model.vehicle == nil {
                     ScanButton(title: .readCardAuto, collapsed: scanCollapsed) { await model.scanCardAuto() }
                         .padding(.horizontal, 20).padding(.bottom, 8)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -304,7 +306,7 @@ struct CardTab: View {
             }
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
-                    if model.personal != nil {
+                    if model.personal != nil || model.vehicle != nil {
                         Button { model.revealAll.toggle() } label: {
                             Image(systemName: model.revealAll ? "eye.slash" : "eye")
                         }
@@ -312,7 +314,7 @@ struct CardTab: View {
                     }
                 }
                 ToolbarItemGroup(placement: .navigationBarLeading) {
-                    if model.personal != nil {
+                    if model.personal != nil || model.vehicle != nil {
                         Button(role: .destructive) { model.clear() } label: { Image(systemName: "xmark").foregroundStyle(.red) }
                             .accessibilityLabel(loc.t(.close))
                     }
@@ -778,6 +780,7 @@ struct SettingsTab: View {
     @EnvironmentObject var model: PhoneModel
     @EnvironmentObject var loc: Loc
     @EnvironmentObject var prefs: Prefs
+    @State private var versionTaps = 0
 
     @State private var logsCopied = false
 
@@ -823,9 +826,12 @@ struct SettingsTab: View {
                     }
                 } footer: { Text(loc.t(.copyLogsHint)) }
                 .listRowBackground(Rectangle().fill(.regularMaterial))
+                if model.diagUnlocked { DiagnosticsSection() }
                 Section(loc.t(.tabAbout)) {
                     Text(loc.t(.aboutTextIOS)).font(.subheadline)
                     LabeledContent(loc.t(.version), value: version)
+                        .contentShape(Rectangle())
+                        .onTapGesture { versionTaps += 1; if versionTaps >= 5 { model.diagUnlocked = true } }
                     Link(loc.t(.whatsNew), destination: loc.changelogURL)
                     Link(loc.t(.betaReport), destination: Loc.feedbackURL)
                 }

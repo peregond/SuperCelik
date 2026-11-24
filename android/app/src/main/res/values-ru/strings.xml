@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Super Čelik</string>
-    <string name="title_personal">Личные данные</string>
+    <string name="title_personal">Данные с карты</string>
     <string name="read_usb">Читать через USB-ридер</string>
     <string name="hint_idle">Вставьте карту в USB-ридер смарт-карт и подключите его к телефону (USB-C или через OTG-переходник). Чтение начнётся автоматически.</string>
     <string name="reader_help">Нет считывателя?</string>
@@ -125,4 +125,48 @@
     <string name="eu_pin_warn">Неверный PIN тратит попытку; после исчерпания попыток токен блокируется.</string>
     <string name="eu_choose_cert">Выберите сертификат</string>
     <string name="eu_cancelled">Ввод PIN отменён.</string>
+
+    <!-- vehicle registration card and card diagnostics (same texts as LocCards.cs / LocalizationCards.swift) -->
+    <string name="veh_title">Саобраћајна дозвола</string>
+    <string name="veh_note">Разбор сделан по спецификации ЕС и МУП; на реальной карте ещё не проверен. Подпись издателя не проверяется.</string>
+    <string name="card_unknown">Карта не распознана: это не удостоверение личности и не саобраћајна дозвола (или имя приложения на её чипе нам ещё не известно). Запустите диагностику (скрытый пункт в Настройках: 5 нажатий на номер версии в «О программе») и пришлите журнал.</string>
+    <string name="v_reg_no">Регистрационный номер</string>
+    <string name="v_first_reg">Дата первой регистрации</string>
+    <string name="v_valid_until">Регистрация действительна до</string>
+    <string name="v_issued">Дата выдачи</string>
+    <string name="v_make">Марка</string>
+    <string name="v_type">Тип</string>
+    <string name="v_model">Модель (коммерческое название)</string>
+    <string name="v_vin">VIN (номер кузова)</string>
+    <string name="v_year">Год выпуска</string>
+    <string name="v_colour">Цвет</string>
+    <string name="v_category">Категория</string>
+    <string name="v_fuel">Топливо</string>
+    <string name="v_capacity">Объём двигателя, см³</string>
+    <string name="v_power">Мощность, кВт</string>
+    <string name="v_power_weight">Мощность / масса, кВт/кг</string>
+    <string name="v_engine_no">Номер двигателя</string>
+    <string name="v_mass">Масса, кг</string>
+    <string name="v_max_mass">Макс. разрешённая масса, кг</string>
+    <string name="v_load">Грузоподъёмность, кг</string>
+    <string name="v_seats">Мест для сидения</string>
+    <string name="v_standing">Мест для стояния</string>
+    <string name="v_axles">Число осей</string>
+    <string name="v_approval">Номер омологации</string>
+    <string name="v_owner">Владелец</string>
+    <string name="v_owner_addr">Адрес владельца</string>
+    <string name="v_owner_jmbg">ЕМБГ владельца</string>
+    <string name="v_user">Пользователь</string>
+    <string name="v_user_addr">Адрес пользователя</string>
+    <string name="v_user_jmbg">ЕМБГ пользователя</string>
+    <string name="v_sale_ban">Запрет отчуждения до</string>
+    <string name="v_doc_serial">Серийный номер документа</string>
+    <string name="v_doc_no">Номер документа в реестре</string>
+    <string name="v_authority">Орган выдачи</string>
+    <string name="diag_title">Диагностика карты</string>
+    <string name="diag_text">Читает структуру карты (приложения, файлы, размеры) без личных данных и без PIN. Журнал можно скопировать и прислать разработчику.</string>
+    <string name="diag_run">Запустить диагностику</string>
+    <string name="diag_copy">Скопировать журнал</string>
+    <string name="diag_copied">Журнал скопирован</string>
+    <string name="diag_unlocked">Диагностика включена (Настройки)</string>
 </resources>

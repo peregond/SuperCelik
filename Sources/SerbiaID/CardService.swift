@@ -11,6 +11,12 @@ protocol CardService {
     func readCertificates(reader: String, cardType: EidCardType) throws -> [CertificateInfo]
     func verify(reader: String, signature: EidSignature) throws -> Bool
     func readToken(reader: String) throws -> TokenInfo
+    /// Vehicle registration card (specification-level only, see docs/cards-research.md).
+    func readVehicle(reader: String) throws -> VehicleData
+    /// true if the card carries an eID applet (ID card, foreigner card, residence permit).
+    func hasEidApplet(reader: String) throws -> Bool
+    /// Card diagnostics: structure only, no personal data, no PIN commands.
+    func diagnose(reader: String) throws -> String
     /// Token PIN operations. PIN = 4...8 ASCII digits. WARNING: each wrong PIN uses up one of a
     /// few tries; the card blocks at zero. Callers must never retry automatically.
     func changeTokenPin(reader: String, old: String, new: String) throws
@@ -96,6 +102,27 @@ final class PCSCService: CardService {
         try withEid(reader: reader) { try $0.readToken() }
     }
 
+    func hasEidApplet(reader: String) throws -> Bool {
+        try withEid(reader: reader) { card in (try? card.selectApplet()) != nil }
+    }
+
+    func readVehicle(reader: String) throws -> VehicleData {
+        try withCard(reader: reader) { card, proto in
+            try RegistrationCard { apdu in try self.transmit(card: card, proto: proto, apdu: apdu) }.read()
+        }
+    }
+
+    func diagnose(reader: String) throws -> String {
+        try withCard(reader: reader) { card, proto in
+            var len = DWORD(64)
+            var buf = [UInt8](repeating: 0, count: 64)
+            let atr: [UInt8]? = SCardGetAttrib(card, DWORD(SCARD_ATTR_ATR_STRING), &buf, &len) == 0 ? Array(buf.prefix(Int(len))) : nil
+            return CardDiag.run(atr: atr, appVersion: Updater.currentVersion, reader: reader) { apdu in
+                try self.transmit(card: card, proto: proto, apdu: apdu)
+            }
+        }
+    }
+
     func changeTokenPin(reader: String, old: String, new: String) throws {
         try withEid(reader: reader) { try $0.changeTokenPin(old: old, new: new) }
     }
@@ -146,6 +173,9 @@ final class MockCardService: CardService {
     func readToken(reader: String) throws -> TokenInfo {
         TokenInfo(tokenLabel: "NetSeT's CardEdge Token", tokenSerial: "RP000000000", certificates: [])
     }
+    func readVehicle(reader: String) throws -> VehicleData { VehicleRows.demo() }
+    func hasEidApplet(reader: String) throws -> Bool { true }
+    func diagnose(reader: String) throws -> String { "demo: no card" }
     func changePin(reader: String, cardType: EidCardType, old: String, new: String) throws -> Int { 3 }
     func changeTokenPin(reader: String, old: String, new: String) throws {}
     func unblockTokenPin(reader: String, puk: String, new: String) throws {}

@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Super Čelik</string>
-    <string name="title_personal">Date personale</string>
+    <string name="title_personal">Datele cardului</string>
     <string name="read_usb">Citește prin cititor USB</string>
     <string name="hint_idle">Introduceți cardul într-un cititor USB de carduri inteligente și conectați-l la telefon (USB-C sau adaptor OTG). Citirea începe automat.</string>
     <string name="reader_help">Nu aveți cititor?</string>
@@ -124,4 +124,48 @@
     <string name="eu_pin_warn">Un PIN greșit consumă o încercare; tokenul se blochează când nu mai rămâne niciuna.</string>
     <string name="eu_choose_cert">Alegeți un certificat</string>
     <string name="eu_cancelled">Introducerea PIN-ului a fost anulată.</string>
+
+    <!-- vehicle registration card and card diagnostics (same texts as LocCards.cs / LocalizationCards.swift) -->
+    <string name="veh_title">Card de înmatriculare a vehiculului</string>
+    <string name="veh_note">Datele sunt interpretate conform specificațiilor UE și MUP; încă neverificate pe un card real. Semnătura emitentului nu este verificată.</string>
+    <string name="card_unknown">Cardul nu a fost recunoscut: nu este nici carte de identitate, nici card de înmatriculare a vehiculului (sau numele aplicației de pe cip nu ne este încă cunoscut). Rulați diagnosticarea (element ascuns în Setări: atingeți de 5 ori numărul versiunii din Despre) și trimiteți jurnalul.</string>
+    <string name="v_reg_no">Număr de înmatriculare</string>
+    <string name="v_first_reg">Data primei înmatriculări</string>
+    <string name="v_valid_until">Înmatricularea este valabilă până la</string>
+    <string name="v_issued">Data eliberării</string>
+    <string name="v_make">Marca</string>
+    <string name="v_type">Tip</string>
+    <string name="v_model">Model (denumire comercială)</string>
+    <string name="v_vin">Număr de șasiu (VIN)</string>
+    <string name="v_year">Anul fabricației</string>
+    <string name="v_colour">Culoare</string>
+    <string name="v_category">Categoria</string>
+    <string name="v_fuel">Combustibil</string>
+    <string name="v_capacity">Capacitate cilindrică, cm³</string>
+    <string name="v_power">Putere, kW</string>
+    <string name="v_power_weight">Putere / masă, kW/kg</string>
+    <string name="v_engine_no">Număr motor</string>
+    <string name="v_mass">Masă, kg</string>
+    <string name="v_max_mass">Masa maximă admisă, kg</string>
+    <string name="v_load">Capacitate de încărcare, kg</string>
+    <string name="v_seats">Locuri pe scaun</string>
+    <string name="v_standing">Locuri în picioare</string>
+    <string name="v_axles">Număr de axe</string>
+    <string name="v_approval">Număr de omologare</string>
+    <string name="v_owner">Proprietar</string>
+    <string name="v_owner_addr">Adresa proprietarului</string>
+    <string name="v_owner_jmbg">Numărul personal al proprietarului</string>
+    <string name="v_user">Utilizator</string>
+    <string name="v_user_addr">Adresa utilizatorului</string>
+    <string name="v_user_jmbg">Numărul personal al utilizatorului</string>
+    <string name="v_sale_ban">Interdicție de înstrăinare până la</string>
+    <string name="v_doc_serial">Număr de serie al documentului</string>
+    <string name="v_doc_no">Număr document în registru</string>
+    <string name="v_authority">Autoritatea emitentă</string>
+    <string name="diag_title">Diagnosticarea cardului</string>
+    <string name="diag_text">Citește structura cardului (aplicații, fișiere, dimensiuni) fără date personale și fără PIN. Puteți copia jurnalul și îl puteți trimite dezvoltatorului.</string>
+    <string name="diag_run">Rulează diagnosticarea</string>
+    <string name="diag_copy">Copiază jurnalul</string>
+    <string name="diag_copied">Jurnal copiat</string>
+    <string name="diag_unlocked">Diagnosticarea este activată (Setări)</string>
 </resources>

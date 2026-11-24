@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">Super Čelik</string>
-    <string name="title_personal">Osobné údaje</string>
+    <string name="title_personal">Údaje z karty</string>
     <string name="read_usb">Čítať cez USB čítačku</string>
     <string name="hint_idle">Vložte kartu do USB čítačky čipových kariet a pripojte ju k telefónu (USB-C alebo OTG adaptér). Čítanie sa spustí automaticky.</string>
     <string name="reader_help">Nemáte čítačku?</string>
@@ -124,4 +124,48 @@
     <string name="eu_pin_warn">Nesprávny PIN minie jeden pokus; token sa zablokuje, keď žiadny nezostane.</string>
     <string name="eu_choose_cert">Vyberte certifikát</string>
     <string name="eu_cancelled">Zadanie PIN bolo zrušené.</string>
+
+    <!-- vehicle registration card and card diagnostics (same texts as LocCards.cs / LocalizationCards.swift) -->
+    <string name="veh_title">Osvedčenie o evidencii vozidla (čipová karta)</string>
+    <string name="veh_note">Údaje sú spracované podľa špecifikácií EÚ a MUP; zatiaľ neoverené na skutočnej karte. Podpis vydavateľa sa nekontroluje.</string>
+    <string name="card_unknown">Karta nebola rozpoznaná: nie je to ani občiansky preukaz, ani osvedčenie o evidencii vozidla (alebo názov aplikácie na jej čipe zatiaľ nepoznáme). Spustite diagnostiku (skrytá položka v Nastaveniach: ťuknite 5-krát na číslo verzie v časti O aplikácii) a pošlite záznam.</string>
+    <string name="v_reg_no">Evidenčné číslo</string>
+    <string name="v_first_reg">Dátum prvej evidencie</string>
+    <string name="v_valid_until">Platnosť evidencie do</string>
+    <string name="v_issued">Dátum vydania</string>
+    <string name="v_make">Značka</string>
+    <string name="v_type">Typ</string>
+    <string name="v_model">Model (obchodný názov)</string>
+    <string name="v_vin">Číslo karosérie (VIN)</string>
+    <string name="v_year">Rok výroby</string>
+    <string name="v_colour">Farba</string>
+    <string name="v_category">Kategória</string>
+    <string name="v_fuel">Palivo</string>
+    <string name="v_capacity">Objem motora, cm³</string>
+    <string name="v_power">Výkon, kW</string>
+    <string name="v_power_weight">Výkon / hmotnosť, kW/kg</string>
+    <string name="v_engine_no">Číslo motora</string>
+    <string name="v_mass">Hmotnosť, kg</string>
+    <string name="v_max_mass">Najväčšia povolená hmotnosť, kg</string>
+    <string name="v_load">Nosnosť, kg</string>
+    <string name="v_seats">Miesta na sedenie</string>
+    <string name="v_standing">Miesta na státie</string>
+    <string name="v_axles">Počet náprav</string>
+    <string name="v_approval">Číslo typového schválenia</string>
+    <string name="v_owner">Vlastník</string>
+    <string name="v_owner_addr">Adresa vlastníka</string>
+    <string name="v_owner_jmbg">Osobné číslo vlastníka</string>
+    <string name="v_user">Užívateľ</string>
+    <string name="v_user_addr">Adresa užívateľa</string>
+    <string name="v_user_jmbg">Osobné číslo užívateľa</string>
+    <string name="v_sale_ban">Zákaz scudzenia do</string>
+    <string name="v_doc_serial">Sériové číslo dokladu</string>
+    <string name="v_doc_no">Číslo dokladu v registri</string>
+    <string name="v_authority">Vydávajúci orgán</string>
+    <string name="diag_title">Diagnostika karty</string>
+    <string name="diag_text">Číta štruktúru karty (aplikácie, súbory, veľkosti) bez osobných údajov a bez PIN. Záznam môžete skopírovať a poslať vývojárovi.</string>
+    <string name="diag_run">Spustiť diagnostiku</string>
+    <string name="diag_copy">Kopírovať záznam</string>
+    <string name="diag_copied">Záznam skopírovaný</string>
+    <string name="diag_unlocked">Diagnostika zapnutá (Nastavenia)</string>
 </resources>

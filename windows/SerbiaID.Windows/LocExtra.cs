@@ -23,7 +23,7 @@ internal static class LocExtra
     private static readonly Dictionary<string, string> Hu = new()
     {
         ["appTitle"] = "Super Čelik",
-        ["tabPersonal"] = "Személyes adatok",
+        ["tabPersonal"] = "Kártyaadatok",
         ["tabToken"] = "Token és tanúsítványok",
         ["tabAbout"] = "Névjegy",
         ["reader"] = "Olvasó",
@@ -225,7 +225,7 @@ internal static class LocExtra
     private static readonly Dictionary<string, string> Sq = new()
     {
         ["appTitle"] = "Super Čelik",
-        ["tabPersonal"] = "Të dhënat personale",
+        ["tabPersonal"] = "Të dhënat e kartës",
         ["tabToken"] = "Token dhe certifikata",
         ["tabAbout"] = "Rreth programit",
         ["reader"] = "Lexuesi",
@@ -427,7 +427,7 @@ internal static class LocExtra
     private static readonly Dictionary<string, string> Sk = new()
     {
         ["appTitle"] = "Super Čelik",
-        ["tabPersonal"] = "Osobné údaje",
+        ["tabPersonal"] = "Údaje z karty",
         ["tabToken"] = "Token a certifikáty",
         ["tabAbout"] = "O aplikácii",
         ["reader"] = "Čítačka",
@@ -629,7 +629,7 @@ internal static class LocExtra
     private static readonly Dictionary<string, string> Ro = new()
     {
         ["appTitle"] = "Super Čelik",
-        ["tabPersonal"] = "Date personale",
+        ["tabPersonal"] = "Datele cardului",
         ["tabToken"] = "Token și certificate",
         ["tabAbout"] = "Despre",
         ["reader"] = "Cititor",
@@ -831,7 +831,7 @@ internal static class LocExtra
     private static readonly Dictionary<string, string> Hr = new()
     {
         ["appTitle"] = "Super Čelik",
-        ["tabPersonal"] = "Osobni podaci",
+        ["tabPersonal"] = "Podaci s kartice",
         ["tabToken"] = "Token i certifikati",
         ["tabAbout"] = "O programu",
         ["reader"] = "Čitač",
@@ -1033,7 +1033,7 @@ internal static class LocExtra
     private static readonly Dictionary<string, string> Uk = new()
     {
         ["appTitle"] = "Super Čelik",
-        ["tabPersonal"] = "Особисті дані",
+        ["tabPersonal"] = "Дані з картки",
         ["tabToken"] = "Токен і сертифікати",
         ["tabAbout"] = "Про програму",
         ["reader"] = "Зчитувач",
@@ -1235,7 +1235,7 @@ internal static class LocExtra
     private static readonly Dictionary<string, string> Be = new()
     {
         ["appTitle"] = "Super Čelik",
-        ["tabPersonal"] = "Асабістыя даныя",
+        ["tabPersonal"] = "Даныя з карты",
         ["tabToken"] = "Токен і сертыфікаты",
         ["tabAbout"] = "Пра праграму",
         ["reader"] = "Счытвальнік",

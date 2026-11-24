@@ -72,7 +72,7 @@ class MainActivity : ComponentActivity() {
     override fun onNewIntent(intent: Intent) {
         super.onNewIntent(intent)
         if (intent.action == UsbManager.ACTION_USB_DEVICE_ATTACHED) vm.onReaderAttached(this)
-        if (demoAllowed && intent.getBooleanExtra("demo", false)) { vm.demoOpenPdf = intent.getBooleanExtra("pdf", false); vm.showDemo() }
+        if (demoAllowed && intent.getBooleanExtra("demo", false)) { vm.demoOpenPdf = intent.getBooleanExtra("pdf", false); vm.showDemo(intent.getBooleanExtra("vehicle", false)) }
     }
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -88,7 +88,7 @@ class MainActivity : ComponentActivity() {
 
         // A USB reader being plugged in launches the app (see device_filter) and reads straight away.
         if (intent?.action == UsbManager.ACTION_USB_DEVICE_ATTACHED) vm.onReaderAttached(this)
-        if (demo) { vm.demoOpenPdf = intent?.getBooleanExtra("pdf", false) == true; vm.showDemo() }
+        if (demo) { vm.demoOpenPdf = intent?.getBooleanExtra("pdf", false) == true; vm.showDemo(intent?.getBooleanExtra("vehicle", false) == true) }
 
         setContent {
             val theme by vm.theme.collectAsStateWithLifecycle()
@@ -106,6 +106,7 @@ private enum class Tab { Card, Token, Settings }
 private fun Root(vm: CardViewModel, initialTab: String?) {
     val phase by vm.phase.collectAsStateWithLifecycle()
     val personal by vm.personal.collectAsStateWithLifecycle()
+    val vehicle by vm.vehicle.collectAsStateWithLifecycle()
     val message by vm.message.collectAsStateWithLifecycle()
     var tab by rememberSaveable { mutableStateOf(when (initialTab) { "token" -> Tab.Token; "settings" -> Tab.Settings; else -> Tab.Card }) }
     var reveal by rememberSaveable { mutableStateOf(false) }
@@ -117,8 +118,8 @@ private fun Root(vm: CardViewModel, initialTab: String?) {
     LaunchedEffect(msg) {
         if (msg != null && text != null) { snackbar.showSnackbar(text); vm.consumeMessage() }
     }
-    LaunchedEffect(personal != null) {
-        if (personal != null) { haptic.performHapticFeedback(HapticFeedbackType.LongPress); reveal = false }
+    LaunchedEffect(personal != null || vehicle != null) {
+        if (personal != null || vehicle != null) { haptic.performHapticFeedback(HapticFeedbackType.LongPress); reveal = false }
     }
 
     Scaffold(
@@ -127,7 +128,7 @@ private fun Root(vm: CardViewModel, initialTab: String?) {
             CenterAlignedTopAppBar(
                 title = { Text(stringResource(R.string.app_name)) },
                 actions = {
-                    if (tab == Tab.Card && personal != null) {
+                    if (tab == Tab.Card && (personal != null || vehicle != null)) {
                         IconButton({ reveal = !reveal }) {
                             Icon(if (reveal) Icons.Filled.VisibilityOff else Icons.Filled.Visibility, stringResource(R.string.show_all))
                         }
