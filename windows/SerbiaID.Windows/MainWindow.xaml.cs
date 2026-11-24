@@ -234,7 +234,7 @@ public partial class MainWindow : Window
         BtnChangePin.IsEnabled = BtnUnblockPin.IsEnabled = BtnSignFile.IsEnabled = _cardPresent && !_busy;
         BtnVerify.IsEnabled = _cardPresent && !_busy && _vehicle == null;
         if (_diagRun != null) _diagRun.IsEnabled = _cardPresent && !_busy;
-        bool has = _personal != null && !_busy;
+        bool has = (_personal != null || _vehicle != null) && !_busy;
         BtnPrint.IsEnabled = has; BtnPdf.IsEnabled = has; BtnMore.IsEnabled = has;
     }
 
@@ -982,19 +982,22 @@ public partial class MainWindow : Window
     // ---------- print (with preview) / PDF ----------
     private void Print_Click(object s, RoutedEventArgs e)
     {
+        if (_vehicle != null) { var vv = _vehicle; new PreviewWindow((w, h) => VehicleSheet.Build(vv, w, h, _cfg.PrintJmbg)) { Owner = this }.ShowDialog(); return; }
         if (_personal == null) return;
-        new PreviewWindow(_personal, _cfg.PrintJmbg) { Owner = this }.ShowDialog();
+        var pp = _personal;
+        new PreviewWindow((w, h) => PrintSheet.Build(pp, w, h, _cfg.PrintJmbg)) { Owner = this }.ShowDialog();
     }
 
     private void Pdf_Click(object s, RoutedEventArgs e)
     {
-        if (_personal == null) return;
+        if (_personal == null && _vehicle == null) return;
         var dlg = new SaveFileDialog { Filter = "PDF (*.pdf)|*.pdf", FileName = "SuperCelik.pdf", DefaultExt = ".pdf" };
         if (dlg.ShowDialog(this) != true) return;
         try
         {
             Mouse.OverrideCursor = Cursors.Wait;
-            PdfWriter.SaveSheet(PrintSheet.Build(_personal, 793.7, 1122.5, _cfg.PrintJmbg), dlg.FileName);   // A4 @ 96 dpi
+            PdfWriter.SaveSheet(_vehicle != null ? VehicleSheet.Build(_vehicle, 793.7, 1122.5, _cfg.PrintJmbg)
+                                                 : PrintSheet.Build(_personal, 793.7, 1122.5, _cfg.PrintJmbg), dlg.FileName);   // A4 @ 96 dpi
             ShowInfo($"{Loc.T("pdfSaved")}: {dlg.FileName}");
         }
         catch (Exception ex) { ShowProblem(ex); }
@@ -1142,7 +1145,8 @@ public partial class MainWindow : Window
         using var fs = File.Create(path); enc.Save(fs);
     }
 
-    internal void ExportDemoPdf(string path) => PdfWriter.SaveSheet(PrintSheet.Build(_personal, 793.7, 1122.5, true), path);
+    internal void ExportDemoPdf(string path) => PdfWriter.SaveSheet(_vehicle != null ? VehicleSheet.Build(_vehicle, 793.7, 1122.5, true)
+                                                                    : PrintSheet.Build(_personal, 793.7, 1122.5, true), path);
 
     internal void SaveScreenshot(string path)
     {
@@ -1453,12 +1457,11 @@ internal static class PrintSheet
 /// In-app print preview with Print / Save PDF buttons.
 internal sealed class PreviewWindow : Window
 {
-    private readonly PersonalData _p;
-    private readonly bool _jmbg;
+    private readonly Func<double, double, FrameworkElement> _build;
 
-    public PreviewWindow(PersonalData p, bool includeJmbg)
+    public PreviewWindow(Func<double, double, FrameworkElement> build)
     {
-        _p = p; _jmbg = includeJmbg;
+        _build = build;
         Title = $"{Loc.T("preview")} — {Loc.T("appTitle")}";
         Width = 760; Height = 860; MinWidth = 520; MinHeight = 500;
         WindowStartupLocation = WindowStartupLocation.CenterOwner;
@@ -1474,7 +1477,7 @@ internal sealed class PreviewWindow : Window
         foreach (var b in new[] { close, pdf, print }) { b.Margin = new Thickness(8, 0, 0, 0); bar.Children.Add(b); }
         dock.Children.Add(bar);
 
-        var page = PrintSheet.Build(p, 793.7, 1122.5, includeJmbg);
+        var page = build(793.7, 1122.5);
         var shadow = new Border { Child = new Viewbox { Child = page, Stretch = Stretch.Uniform }, Margin = new Thickness(24), Background = Brushes.White,
                                   Effect = new System.Windows.Media.Effects.DropShadowEffect { BlurRadius = 18, ShadowDepth = 2, Opacity = 0.25 } };
         dock.Children.Add(shadow);
@@ -1495,12 +1498,12 @@ internal sealed class PreviewWindow : Window
     {
         var dlg = new PrintDialog();
         if (dlg.ShowDialog() != true) return;
-        dlg.PrintVisual(PrintSheet.Build(_p, dlg.PrintableAreaWidth, dlg.PrintableAreaHeight, _jmbg), "Super Čelik");
+        dlg.PrintVisual(_build(dlg.PrintableAreaWidth, dlg.PrintableAreaHeight), "Super Čelik");
     }
 
     private void DoPdf()
     {
         var dlg = new SaveFileDialog { Filter = "PDF (*.pdf)|*.pdf", FileName = "SuperCelik.pdf", DefaultExt = ".pdf" };
-        if (dlg.ShowDialog(this) == true) PdfWriter.SaveSheet(PrintSheet.Build(_p, 793.7, 1122.5, _jmbg), dlg.FileName);
+        if (dlg.ShowDialog(this) == true) PdfWriter.SaveSheet(_build(793.7, 1122.5), dlg.FileName);
     }
 }

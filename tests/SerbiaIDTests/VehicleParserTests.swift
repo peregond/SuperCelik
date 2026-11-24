@@ -105,3 +105,16 @@ final class VehicleParserTests: XCTestCase {
         loc.language = .en
     }
 }
+
+#if os(macOS)
+import AppKit
+final class VehiclePrintTests: XCTestCase {
+    func testPrintoutIsOnePagePdf() throws {
+        let view = VehiclePrintView(VehicleRows.demo(), loc: Loc.shared, includeJmbg: true)
+        let data = view.dataWithPDF(inside: view.bounds)
+        XCTAssertTrue(data.starts(with: Array("%PDF".utf8)))
+        XCTAssertGreaterThan(data.count, 1500)
+        if let path = ProcessInfo.processInfo.environment["VEHICLE_PDF_OUT"] { try data.write(to: URL(fileURLWithPath: path)) }
+    }
+}
+#endif

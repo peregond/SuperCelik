@@ -302,6 +302,13 @@ final class PhoneModel: ObservableObject {
 
     /// The MUP printout as a one-page A4 PDF (same layout code as the macOS print).
     func pdfData(includeJmbg: Bool) -> Data? {
+        if let v = vehicle {
+            let renderer = UIGraphicsPDFRenderer(bounds: CGRect(origin: .zero, size: VehiclePrintLayout.pageSize))
+            return renderer.pdfData { ctx in
+                ctx.beginPage()
+                VehiclePrintLayout(v, loc: Loc.shared, includeJmbg: includeJmbg).draw()
+            }
+        }
         guard let p = personal else { return nil }
         let size = MupPrintLayout.pageSize
         let renderer = UIGraphicsPDFRenderer(bounds: CGRect(origin: .zero, size: size))

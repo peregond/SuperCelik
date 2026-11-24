@@ -163,6 +163,9 @@ private fun VehicleResult(vm: CardViewModel, v: VehicleData, revealAll: Boolean)
     val heroBg = if (flagPalette) Flag.Blue else MaterialTheme.colorScheme.primaryContainer
     val heroFg = if (flagPalette) Color.White else MaterialTheme.colorScheme.onPrimaryContainer
     val show = revealAll || !mask
+    val ctx = LocalContext.current
+    val printJmbg by vm.printJmbg.collectAsStateWithLifecycle()
+    var pdfFile by remember { mutableStateOf<File?>(null) }
     val rows = VehicleRows.build(v).map { (k, s) -> Triple(vehicleLabel(k), s, k in VehicleRows.sensitive) }
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item {
@@ -176,7 +179,13 @@ private fun VehicleResult(vm: CardViewModel, v: VehicleData, revealAll: Boolean)
         }
         item { Section(R.string.veh_title, rows, show) }
         item { Text(stringResource(R.string.veh_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+        item {
+            FilledTonalButton(onClick = { pdfFile = Pdf.createVehicle(ctx, v, printJmbg) }, Modifier.fillMaxWidth()) {
+                Icon(Icons.Filled.PictureAsPdf, null); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.view_pdf))
+            }
+        }
     }
+    pdfFile?.let { PdfViewer(it) { pdfFile = null } }
 }
 
 @Composable

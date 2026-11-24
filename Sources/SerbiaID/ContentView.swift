@@ -463,11 +463,11 @@ struct PersonalView: View {
     @ToolbarContentBuilder private var actions: some ToolbarContent {
         ToolbarItemGroup {
             Button { model.showPreview = true } label: { Label(loc.t(.printCard), systemImage: "printer") }
-                .disabled(model.personal == nil).help(loc.t(.printCard))
-            Button { if let p = model.personal { Printer.savePDF(p, loc: loc, includeJmbg: prefs.printJmbg) } } label: {
+                .disabled(model.personal == nil && model.vehicle == nil).help(loc.t(.printCard))
+            Button { model.savePDF(loc: loc, includeJmbg: prefs.printJmbg) } label: {
                 Label(loc.t(.savePdf), systemImage: "square.and.arrow.down")
             }
-            .disabled(model.personal == nil).help(loc.t(.savePdf))
+            .disabled(model.personal == nil && model.vehicle == nil).help(loc.t(.savePdf))
             Button { Task { await model.verifySignatures() } } label: {
                 Label(loc.t(.verifySignature), systemImage: "checkmark.seal")
             }
@@ -932,7 +932,16 @@ struct PreviewSheet: View {
     var body: some View {
         VStack(spacing: 14) {
             Text("\(loc.t(.preview)) — \(loc.t(.appTitle))").font(.headline)
-            if let p = model.personal {
+            if let v = model.vehicle {
+                ScrollView {
+                    VehiclePrintSheet(v: v, loc: loc, includeJmbg: prefs.printJmbg)
+                        .frame(width: 595, height: 842)
+                        .scaleEffect(0.8, anchor: .topLeading)
+                        .frame(width: 595 * 0.8, height: 842 * 0.8, alignment: .topLeading)
+                        .shadow(color: .black.opacity(0.25), radius: 10, y: 2)
+                        .padding(8)
+                }
+            } else if let p = model.personal {
                 ScrollView {
                     PrintSheet(p: p, loc: loc, includeJmbg: prefs.printJmbg)
                         .frame(width: 595, height: 842)
@@ -946,10 +955,10 @@ struct PreviewSheet: View {
                 Spacer()
                 Button { model.showPreview = false } label: { Label(loc.t(.close), systemImage: "xmark") }
                     .keyboardShortcut(.cancelAction)
-                Button { if let p = model.personal { Printer.savePDF(p, loc: loc, includeJmbg: prefs.printJmbg) } } label: {
+                Button { model.savePDF(loc: loc, includeJmbg: prefs.printJmbg) } label: {
                     Label(loc.t(.savePdf), systemImage: "square.and.arrow.down")
                 }
-                Button { if let p = model.personal { Printer.print(p, loc: loc, includeJmbg: prefs.printJmbg) } } label: {
+                Button { model.printCard(loc: loc, includeJmbg: prefs.printJmbg) } label: {
                     Label(loc.t(.printCard), systemImage: "printer").font(.body.weight(.semibold))
                 }
                 .buttonStyle(.borderedProminent).keyboardShortcut(.defaultAction)

@@ -76,6 +76,16 @@ final class AppModel: ObservableObject {
     @Published var problem: Problem?
     @Published var showPreview = false
 
+    /// Save PDF / print for whatever card is shown (an ID-type card or the vehicle registration card).
+    @MainActor func savePDF(loc: Loc, includeJmbg: Bool) {
+        if let v = vehicle { Printer.savePDF(v, loc: loc, includeJmbg: includeJmbg) }
+        else if let p = personal { Printer.savePDF(p, loc: loc, includeJmbg: includeJmbg) }
+    }
+    @MainActor func printCard(loc: Loc, includeJmbg: Bool) {
+        if let v = vehicle { Printer.print(v, loc: loc, includeJmbg: includeJmbg) }
+        else if let p = personal { Printer.print(p, loc: loc, includeJmbg: includeJmbg) }
+    }
+
     /// Whether the system has attached our card driver to the inserted card (what browser sign-in needs).
     enum DriverState { case unknown, ok, missing }
     @Published var driverState: DriverState = .unknown

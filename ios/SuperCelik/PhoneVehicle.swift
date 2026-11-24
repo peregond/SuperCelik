@@ -5,7 +5,10 @@ import UIKit
 /// is not listed in Info.plist). STATUS: parsed per the specification, not yet checked on a real card.
 struct VehicleCardView: View {
     @EnvironmentObject var loc: Loc
+    @EnvironmentObject var prefs: Prefs
+    @EnvironmentObject var model: PhoneModel
     let vehicle: VehicleData
+    @State private var pdf: ShareItem?
 
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
@@ -17,7 +20,16 @@ struct VehicleCardView: View {
                 ForEach(VehicleRows.build(vehicle), id: \.key) { VehicleField(key: $0.key, value: $0.value) }
             }
             Text(loc.x("vehNote")).font(.caption).foregroundStyle(.secondary)
+            HStack(spacing: 10) {
+                Button { if let url = model.pdfFile(includeJmbg: prefs.printJmbg) { pdf = ShareItem(url: url) } } label: {
+                    Label(loc.t(.viewPdf), systemImage: "doc.richtext").frame(maxWidth: .infinity).padding(.vertical, 6)
+                }.glassButton(prominent: false)
+                Button { model.printPDF(includeJmbg: prefs.printJmbg) } label: {
+                    Label(loc.t(.printCard), systemImage: "printer").frame(maxWidth: .infinity).padding(.vertical, 6)
+                }.glassButton(prominent: false)
+            }
         }
+        .sheet(item: $pdf) { PDFPreview(url: $0.url) }
         .padding(16).frame(maxWidth: .infinity, alignment: .leading).glassCard()
     }
 }

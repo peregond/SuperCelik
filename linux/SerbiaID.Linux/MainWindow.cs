@@ -254,7 +254,11 @@ public sealed partial class MainWindow : Window
 
         // content
         _btnRead = Ui.Btn("", "primary"); _btnRead.Click += async (_, _) => await Run(ReadCardAsync);
-        _btnPrint = Ui.Btn(""); _btnPrint.Click += async (_, _) => { if (_personal != null) await new PreviewWindow(_personal, _cfg.PrintJmbg).ShowDialog(this); };
+        _btnPrint = Ui.Btn(""); _btnPrint.Click += async (_, _) =>
+        {
+            if (_vehicle != null) { var vv = _vehicle; await new PreviewWindow((w, h) => VehicleSheet.Build(vv, w, h, _cfg.PrintJmbg)).ShowDialog(this); }
+            else if (_personal != null) { var pp = _personal; await new PreviewWindow((w, h) => PrintSheet.Build(pp, w, h, _cfg.PrintJmbg)).ShowDialog(this); }
+        };
         _btnPdf = Ui.Btn(""); _btnPdf.Click += async (_, _) => await SavePdf();
         _btnVerify = Ui.Btn(""); _btnVerify.Click += async (_, _) => await Run(VerifyAsync);
         _btnEye = Ui.Btn(""); _btnEye.Click += (_, _) => { _revealAll = !_revealAll; RenderPersonal(); };
@@ -458,7 +462,7 @@ public sealed partial class MainWindow : Window
         _btnReadToken.IsEnabled = _btnChangePin.IsEnabled = _btnUnblockPin.IsEnabled = _btnSignFile.IsEnabled = can;
         _btnVerify.IsEnabled = can && _vehicle == null;
         if (_diagRun != null) _diagRun.IsEnabled = can;
-        bool has = _personal != null && !_busy;
+        bool has = (_personal != null || _vehicle != null) && !_busy;
         _btnPrint.IsEnabled = _btnPdf.IsEnabled = _btnMore.IsEnabled = has;
     }
 
@@ -908,10 +912,10 @@ public sealed partial class MainWindow : Window
 
     private async Task SavePdf()
     {
-        if (_personal == null) return;
+        if (_personal == null && _vehicle == null) return;
         var path = await PickSave("SuperCelik.pdf", "pdf", "PDF");
         if (path == null) return;
-        try { PdfWriter.SaveSheet(PrintSheet.Build(_personal, 793.7, 1122.5, _cfg.PrintJmbg), path); ShowInfo($"{Loc.T("pdfSaved")}: {path}"); }
+        try { PdfWriter.SaveSheet(_vehicle != null ? VehicleSheet.Build(_vehicle, 793.7, 1122.5, _cfg.PrintJmbg) : PrintSheet.Build(_personal, 793.7, 1122.5, _cfg.PrintJmbg), path); ShowInfo($"{Loc.T("pdfSaved")}: {path}"); }
         catch (Exception ex) { ShowProblem(ex); }
     }
 
@@ -1191,7 +1195,7 @@ public sealed partial class MainWindow : Window
 
         if (_opts.Pdf != null)
         {
-            Opened += (_, _) => Dispatcher.UIThread.Post(() => { PdfWriter.SaveSheet(PrintSheet.Build(_personal, 793.7, 1122.5, true), _opts.Pdf); Close(); });
+            Opened += (_, _) => Dispatcher.UIThread.Post(() => { PdfWriter.SaveSheet(_vehicle != null ? VehicleSheet.Build(_vehicle, 793.7, 1122.5, true) : PrintSheet.Build(_personal, 793.7, 1122.5, true), _opts.Pdf); Close(); });
         }
         else if (_opts.Shot != null)
         {
