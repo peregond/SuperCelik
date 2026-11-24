@@ -44,7 +44,7 @@ internal static class VehicleSheet
                 var brush = it.Size < 9 ? Brushes.Gray : Brushes.Black;
                 var ft = new FormattedText(it.Text, CultureInfo.InvariantCulture, FlowDirection.LeftToRight,
                     new Typeface(Face, FontStyles.Normal, it.Bold ? FontWeights.Bold : FontWeights.Normal, FontStretches.Normal),
-                    it.Size, brush, 1.0);
+                    it.Size, brush);
                 dc.DrawText(ft, new Point(it.X, it.B - ft.Baseline));
                 if (it.Underline)
                     dc.DrawRectangle(brush, null, new Rect(it.X, it.B + VehiclePrintSpec.UnderlineOffset(it.Size), ft.WidthIncludingTrailingWhitespace, VehiclePrintSpec.UnderlineThickness));
