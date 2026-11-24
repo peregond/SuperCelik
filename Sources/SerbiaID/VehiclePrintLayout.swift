@@ -6,9 +6,10 @@ import SwiftUI
 import UIKit
 #endif
 
-/// A4 printout of the vehicle registration card, laid out after the printout of MUP's own reader "Čitač saobraćajne
-/// dozvole" (a standard document: its title, order of the fields, labels in Serbian Latin and positions are kept; the
-/// typeface is the nearest one available). Same numbers as VehiclePrintSpec in Cards.cs (Windows, Linux) and Pdf.kt.
+/// A4 printout of the vehicle registration card, matched to the printout of MUP's own reader "Čitač saobraćajne dozvole"
+/// (a standard document, like the ID-card printout). The numbers were measured on a scan of that printout: Verdana
+/// (bold 11.9 pt for the fields, regular 20.3 pt for the section headings, 25.85 pt for the title), rows on a 19.85 pt
+/// grid, text widths within 0.5 pt of the scan. Same numbers as VehiclePrintSpec in Cards.cs (Windows, Linux) and Pdf.kt.
 /// Draws into the current graphics context in page coordinates (origin top-left), like MupPrintLayout:
 /// an NSView on macOS (VehiclePrintView), a UIGraphicsPDFRenderer page on iOS.
 final class VehiclePrintLayout {
@@ -26,67 +27,106 @@ final class VehiclePrintLayout {
         PFont(name: bold ? "Verdana-Bold" : "Verdana", size: size) ?? (bold ? PFont.boldSystemFont(ofSize: size) : PFont.systemFont(ofSize: size))
     }
 
-    /// `y` is the vertical centre of the first line.
-    private func text(_ s: String, x: CGFloat, y: CGFloat, size: CGFloat = 10.5, bold: Bool = true, underline: Bool = false,
-                      width: CGFloat = 0, color: PColor = .black) {
+    /// `b` is the baseline measured from the top of the page, `x` the left edge of the text.
+    private func text(_ s: String, x: CGFloat, b: CGFloat, size: CGFloat = 11.9, bold: Bool = true, underline: Bool = false) {
         guard !s.isEmpty else { return }
-        var attrs: [NSAttributedString.Key: Any] = [.font: font(size, bold: bold), .foregroundColor: color]
-        if underline { attrs[.underlineStyle] = NSUnderlineStyle.single.rawValue }
-        let str = NSAttributedString(string: s, attributes: attrs)
-        let w = width > 0 ? width : 520
-        let h = ceil(str.boundingRect(with: CGSize(width: w, height: 1000), options: [.usesLineFragmentOrigin], context: nil).height)
-        str.draw(in: CGRect(x: x, y: y - size * 0.6, width: w, height: h + 2))
+        let f = font(size, bold: bold)
+        let color: PColor = size < 9 ? .gray : .black
+        // CoreText puts the baseline exactly where asked (the page context is y-down on both macOS (flipped view) and iOS (PDF renderer))
+        let line = CTLineCreateWithAttributedString(NSAttributedString(string: s, attributes: [
+            NSAttributedString.Key(kCTFontAttributeName as String): f, NSAttributedString.Key(kCTForegroundColorAttributeName as String): color.cgColor,
+        ]))
+        guard let ctx = Self.context else { return }
+        ctx.saveGState()
+        ctx.textMatrix = CGAffineTransform(scaleX: 1, y: -1)
+        ctx.textPosition = CGPoint(x: x, y: b)
+        CTLineDraw(line, ctx)
+        ctx.restoreGState()
+        if underline {
+            color.setFill()
+            PBezierPath(rect: CGRect(x: x, y: b + 0.09 * size + 0.2, width: CGFloat(CTLineGetTypographicBounds(line, nil, nil, nil)), height: 0.75)).fill()
+        }
+    }
+
+    private static var context: CGContext? {
+        #if os(macOS)
+        NSGraphicsContext.current?.cgContext
+        #else
+        UIGraphicsGetCurrentContext()
+        #endif
     }
 
     func draw() {
         let size = Self.pageSize
         PColor.white.setFill()
         PBezierPath(rect: CGRect(origin: .zero, size: size)).fill()
-        let left: CGFloat = 41.5, right: CGFloat = 350
+        let L: CGFloat = 39.4, R: CGFloat = 348.9
         func dash(_ s: String) -> String { s.isEmpty ? "-" : s }
         let d = CardText.date
 
-        text("Čitač saobraćajne dozvole", x: 45, y: 64, size: 22)
+        text("Čitač saobraćajne dozvole", x: 43.9, b: 76.36, size: 25.85)
         PColor.black.setFill()
-        PBezierPath(rect: CGRect(x: 39, y: 84 - 1.5, width: 507, height: 3)).fill()
-        text("Registarska oznaka: " + v.registrationNumber, x: 42.5, y: 119, size: 18)
+        PBezierPath(rect: CGRect(x: 39.2, y: 90.13, width: 506.7, height: 4.39)).fill()
+        text("Registarska oznaka: " + v.registrationNumber, x: 42.5, b: 126.66, size: 19.92)
 
-        text("Datum izdavanja: " + d(v.issuingDate), x: left, y: 171)
-        text("Važi do: " + d(v.expiryDate), x: right, y: 171, bold: false, underline: true)
-        text("Saobraćajnu izdao: " + v.stateIssuing, x: left, y: 190)
-        text("Zabrana otuđenja: " + d(v.saleBan), x: right, y: 190)
-        text(v.authorityIssuing, x: left, y: 213, width: 470)
-        text("Broj saobraćajne: " + v.unambiguousNumber, x: left, y: 252)
-        text("Serijski broj: " + v.serialNumber, x: left, y: 272)
+        text("Datum izdavanja: " + d(v.issuingDate), x: L, b: 175.17)
+        text("Važi do: " + d(v.expiryDate), x: R, b: 175.17, size: 11.98, bold: false, underline: true)
+        text("Saobraćajnu izdao: " + v.stateIssuing, x: L, b: 195.04)
+        text("Zabrana otuđenja: " + d(v.saleBan), x: R, b: 195.04)
+        // the issuing authority wraps after the first comma ("PU U PANCEVU," / "MINISTARSTVO UNUTRASNJIH POSLOVA REPUBLIKE SRBIJE")
+        let auth = v.authorityIssuing.trimmingCharacters(in: .whitespaces)
+        if auth.count > 40, let r = auth.range(of: ", ") {
+            text(String(auth[..<r.lowerBound]) + ",", x: L, b: 215.40)
+            text(String(auth[r.upperBound...]), x: L, b: 229.07)
+        } else { text(auth, x: L, b: 229.07) }
+        text("Broj saobraćajne: " + v.unambiguousNumber, x: L, b: 249.24)
+        text("Serijski broj: " + v.serialNumber, x: L, b: 269.30)
 
-        text("Podaci o vlasniku", x: left, y: 303, size: 16.5, bold: false, underline: true)
+        text("Podaci o vlasniku", x: L, b: 312.02, size: 20.3, bold: false, underline: true)
         let owner = [
             "Vlasnik: " + v.ownerSurname, "Ime vlasnika: " + v.ownerName, "Adresa vlasnika: " + v.ownerAddress,
             "Jmbg vlasnika: " + (includeJmbg ? v.ownerPersonalNo : ""),
             "Korisnik: " + v.userSurname, "Ime korisnika: " + v.userName, "Adresa korisnika: " + v.userAddress,
             "Jmbg korisnika: " + (includeJmbg ? v.userPersonalNo : ""),
         ]
-        for (i, s) in owner.enumerated() { text(s, x: left, y: 327.6 + 19.2 * CGFloat(i), width: 500) }
+        for (i, s) in owner.enumerated() { text(s, x: L, b: 331.78 + 19.863 * CGFloat(i)) }
 
-        text("Podaci o vozilu", x: left, y: 495.4, size: 16.5, bold: false, underline: true)
-        let car = [
+        text("Podaci o vozilu", x: L, b: 502.07, size: 20.3, bold: false, underline: true)
+        let left = [
             "Datum prve registracije: " + d(v.firstRegistrationDate),
             "Marka: " + v.make + "   Model: " + v.commercialDescription,
-            "Tip: " + dash(v.type) + "   Homologacijska oznaka: " + dash(v.typeApprovalNumber),
+            "Tip: " + dash(v.type),
             "Boja: " + v.colour, "Broj šasije: " + v.vin, "Broj motora: " + v.engineNumber,
             "Snaga motora: " + v.maxNetPower, "Odnos snaga/masa: " + v.powerWeightRatio,
             "Kategorija: " + v.category, "Pogonsko gorivo: " + v.fuelType, "Broj mesta za sedenje: " + v.seats,
         ]
-        for (i, s) in car.enumerated() { text(s, x: left, y: 516.6 + 19.1 * CGFloat(i)) }
-        text("Godina proizvodnje: " + v.yearOfProduction, x: right, y: 516.6)
-        let rightCol = ["Broj osovina: " + v.axles, "Zapremina motora: " + v.engineCapacity, "Masa: " + v.mass,
-                        "Nosivost: " + v.load, "Najveća dozvoljena"]
-        for (i, s) in rightCol.enumerated() { text(s, x: right, y: 573.8 + 19.9 * CGFloat(i)) }
-        text("masa: " + v.maxLadenMass, x: right, y: 573.8 + 19.9 * 4 + 17)
-        text("Broj mesta za stajanje: " + v.standingPlaces, x: right, y: 707.6)
+        let right = [
+            "Godina proizvodnje: " + v.yearOfProduction, "", "",
+            "Broj osovina: " + v.axles, "Zapremina motora: " + v.engineCapacity, "Masa: " + v.mass,
+            "Nosivost: " + v.load, "Najveća dozvoljena", "masa: " + v.maxLadenMass, "", "Broj mesta za stajanje: " + v.standingPlaces,
+        ]
+        for i in 0..<left.count {
+            let b = 521.53 + 19.793 * CGFloat(i)
+            text(left[i], x: L, b: b)
+            text(right[i], x: R, b: b)
+        }
+        // second column of the "Tip" row at x = 90.6 as in the printout; a longer type pushes it right (about 8 pt per extra character)
+        text("Homologacijska oznaka: " + dash(v.typeApprovalNumber), x: 90.6 + CGFloat(max(0, ("Tip: " + dash(v.type)).count - 6)) * 8, b: 521.53 + 19.793 * 2)
 
+        // the note about the unverified parser, small and grey at the foot of the page (not part of MUP's printout), wrapped by hand
         let f = DateFormatter(); f.dateFormat = "dd.MM.yyyy"
-        text("\(loc.x("vehNote"))   \(f.string(from: printDate))", x: 41.5, y: 810, size: 7.5, bold: false, width: 512, color: .gray)
+        var note = "\(loc.x("vehNote"))   \(f.string(from: printDate))"
+        var nb: CGFloat = 806
+        while !note.isEmpty && nb < 835 {
+            var n = note.count
+            if n > 125 {
+                let head = note.prefix(125)
+                n = head.lastIndex(of: " ").map { head.distance(from: head.startIndex, to: $0) } ?? 125
+                if n <= 0 { n = 125 }
+            }
+            text(String(note.prefix(n)).trimmingCharacters(in: .whitespaces), x: 41.5, b: nb, size: 7.5, bold: false)
+            note = String(note.dropFirst(n)).trimmingCharacters(in: .whitespaces); nb += 9
+        }
     }
 }
 

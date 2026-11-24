@@ -311,43 +311,54 @@ public static class VehicleRows
     };
 }
 
-/// One drawn item of the vehicle printout: text (or a rule) at a position in points on an A4 page (595.28 x 841.89),
-/// Y is the vertical centre of the line.
+/// One drawn item of the vehicle printout: text (or a rule) at a position in points on an A4 page (595.28 x 841.89).
+/// X is the left edge of the text, B its baseline measured from the top of the page.
 public sealed class PrintItem
 {
-    public string Text = ""; public double X, Y, Size = 10.5, Width = 0, Thickness = 0;
+    public string Text = ""; public double X, B, Size = 11.9, Width = 0, Thickness = 0;
     public bool Bold = true, Underline;
     public bool IsRule => Thickness > 0;
 }
 
-/// The printout of the vehicle registration card, laid out after the printout of MUP's own reader "Čitač saobraćajne
-/// dozvole" (a standard document: its title, order of the fields, labels in Serbian Latin and positions are kept; the
-/// typeface is the nearest one available). Shared by the Windows and Linux apps; the Swift and Kotlin ports use the same numbers.
+/// The printout of the vehicle registration card, matched to the printout of MUP's own reader "Čitač saobraćajne dozvole"
+/// (a standard document, like the ID-card printout). The numbers were measured on a scan of that printout: the typeface
+/// is Verdana (bold 11.9 pt for the fields, regular 20.3 pt for the section headings, 25.85 pt for the title), the rows
+/// sit on a 19.85 pt grid, and the text widths agree with the scan to within 0.5 pt. Shared by the Windows and Linux apps;
+/// the Swift (VehiclePrintLayout) and Kotlin (Pdf.kt) ports use the same numbers.
 public static class VehiclePrintSpec
 {
     public const double PageW = 595.28, PageH = 841.89;
-    private const double Left = 41.5, Right = 350;
+    public const string Font = "Verdana";
+    /// Underline: top edge this far below the baseline (0.09 * size + 0.2), 0.75 pt thick.
+    public static double UnderlineOffset(double size) => 0.09 * size + 0.2;
+    public const double UnderlineThickness = 0.75;
+    private const double L = 39.4, R = 348.9;
 
     public static List<PrintItem> Build(VehicleData v, bool includeJmbg)
     {
         var r = new List<PrintItem>();
-        void T(string s, double x, double y, double size = 10.5, bool bold = true, bool ul = false, double w = 0)
-            => r.Add(new PrintItem { Text = s, X = x, Y = y, Size = size, Bold = bold, Underline = ul, Width = w });
+        void T(string s, double x, double b, double size = 11.9, bool bold = true, bool ul = false)
+        { if (!string.IsNullOrEmpty(s)) r.Add(new PrintItem { Text = s, X = x, B = b, Size = size, Bold = bold, Underline = ul }); }
         string Dash(string s) => string.IsNullOrEmpty(s) ? "-" : s;
+        string D(string s) => Text.Date(s);
 
-        T("Čitač saobraćajne dozvole", 45, 64, 22);
-        r.Add(new PrintItem { X = 39, Y = 84, Width = 507, Thickness = 3 });
-        T("Registarska oznaka: " + v.RegistrationNumber, 42.5, 119, 18);
+        T("Čitač saobraćajne dozvole", 43.9, 76.36, 25.85);
+        r.Add(new PrintItem { X = 39.2, B = 90.13, Width = 506.7, Thickness = 4.39 });
+        T("Registarska oznaka: " + v.RegistrationNumber, 42.5, 126.66, 19.92);
 
-        T("Datum izdavanja: " + Text.Date(v.IssuingDate), Left, 171);
-        T("Važi do: " + Text.Date(v.ExpiryDate), Right, 171, bold: false, ul: true);
-        T("Saobraćajnu izdao: " + v.StateIssuing, Left, 190);
-        T("Zabrana otuđenja: " + Text.Date(v.SaleBan), Right, 190);
-        T(v.AuthorityIssuing, Left, 213, w: 470);
-        T("Broj saobraćajne: " + v.UnambiguousNumber, Left, 252);
-        T("Serijski broj: " + v.SerialNumber, Left, 272);
+        T("Datum izdavanja: " + D(v.IssuingDate), L, 175.17);
+        T("Važi do: " + D(v.ExpiryDate), R, 175.17, 11.98, false, true);
+        T("Saobraćajnu izdao: " + v.StateIssuing, L, 195.04);
+        T("Zabrana otuđenja: " + D(v.SaleBan), R, 195.04);
+        // the issuing authority wraps after the first comma ("PU U PANCEVU," / "MINISTARSTVO UNUTRASNJIH POSLOVA REPUBLIKE SRBIJE")
+        string auth = (v.AuthorityIssuing ?? "").Trim();
+        int cut = auth.Length > 40 ? auth.IndexOf(", ", StringComparison.Ordinal) : -1;
+        if (cut > 0) { T(auth.Substring(0, cut + 1), L, 215.40); T(auth.Substring(cut + 2), L, 229.07); }
+        else T(auth, L, 229.07);
+        T("Broj saobraćajne: " + v.UnambiguousNumber, L, 249.24);
+        T("Serijski broj: " + v.SerialNumber, L, 269.30);
 
-        T("Podaci o vlasniku", Left, 303, 16.5, false, true);
+        T("Podaci o vlasniku", L, 312.02, 20.3, false, true);
         string[] owner =
         {
             "Vlasnik: " + v.OwnerSurname, "Ime vlasnika: " + v.OwnerName, "Adresa vlasnika: " + v.OwnerAddress,
@@ -355,30 +366,43 @@ public static class VehiclePrintSpec
             "Korisnik: " + v.UserSurname, "Ime korisnika: " + v.UserName, "Adresa korisnika: " + v.UserAddress,
             "Jmbg korisnika: " + (includeJmbg ? v.UserPersonalNo : ""),
         };
-        for (int i = 0; i < owner.Length; i++) T(owner[i], Left, 327.6 + 19.2 * i, w: 500);
+        for (int i = 0; i < owner.Length; i++) T(owner[i], L, 331.78 + 19.863 * i);
 
-        T("Podaci o vozilu", Left, 495.4, 16.5, false, true);
-        string[] car =
+        T("Podaci o vozilu", L, 502.07, 20.3, false, true);
+        string[] left =
         {
-            "Datum prve registracije: " + Text.Date(v.FirstRegistrationDate),
+            "Datum prve registracije: " + D(v.FirstRegistrationDate),
             "Marka: " + v.Make + "   Model: " + v.CommercialDescription,
-            "Tip: " + Dash(v.Type) + "   Homologacijska oznaka: " + Dash(v.TypeApprovalNumber),
+            "Tip: " + Dash(v.Type),
             "Boja: " + v.Colour, "Broj šasije: " + v.Vin, "Broj motora: " + v.EngineNumber,
             "Snaga motora: " + v.MaxNetPower, "Odnos snaga/masa: " + v.PowerWeightRatio,
             "Kategorija: " + v.Category, "Pogonsko gorivo: " + v.FuelType, "Broj mesta za sedenje: " + v.Seats,
         };
-        for (int i = 0; i < car.Length; i++) T(car[i], Left, 516.6 + 19.1 * i);
-        T("Godina proizvodnje: " + v.YearOfProduction, Right, 516.6);
         string[] right =
         {
+            "Godina proizvodnje: " + v.YearOfProduction, null, null,
             "Broj osovina: " + v.Axles, "Zapremina motora: " + v.EngineCapacity, "Masa: " + v.Mass,
-            "Nosivost: " + v.Load, "Najveća dozvoljena",
+            "Nosivost: " + v.Load, "Najveća dozvoljena", "masa: " + v.MaxLadenMass, null, "Broj mesta za stajanje: " + v.StandingPlaces,
         };
-        for (int i = 0; i < right.Length; i++) T(right[i], Right, 573.8 + 19.9 * i);
-        T("masa: " + v.MaxLadenMass, Right, 573.8 + 19.9 * 4 + 17);
-        T("Broj mesta za stajanje: " + v.StandingPlaces, Right, 707.6);
+        for (int i = 0; i < left.Length; i++)
+        {
+            double b = 521.53 + 19.793 * i;
+            T(left[i], L, b);
+            T(right[i], R, b);
+        }
+        // second column of the "Tip" row at x = 90.6 as in the printout; a longer type pushes it right (about 8 pt per extra character)
+        T("Homologacijska oznaka: " + Dash(v.TypeApprovalNumber), 90.6 + Math.Max(0, ("Tip: " + Dash(v.Type)).Length - 6) * 8, 521.53 + 19.793 * 2);
 
-        T(Loc.T("vehNote") + "   " + DateTime.Now.ToString("dd.MM.yyyy"), 41.5, 810, 7.5, false, w: 512);
+        // the note about the unverified parser, small and grey at the foot of the page (not part of MUP's printout), wrapped by hand
+        string note = Loc.T("vehNote") + "   " + DateTime.Now.ToString("dd.MM.yyyy");
+        double nb = 806;
+        while (note.Length > 0 && nb < 835)
+        {
+            int n = note.Length;
+            if (n > 125) { n = note.LastIndexOf(' ', 125); if (n <= 0) n = 125; }
+            T(note.Substring(0, n).Trim(), 41.5, nb, 7.5, false);
+            note = note.Substring(n).Trim(); nb += 9;
+        }
         return r;
     }
 }
