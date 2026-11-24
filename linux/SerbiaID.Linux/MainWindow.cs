@@ -80,7 +80,7 @@ public sealed class MainWindow : Window
         ApplyTheme(_cfg.Theme);
 
         Content = BuildUi();
-        _cmbLang.SelectedIndex = (int)Loc.Current;
+        _cmbLang.SelectedIndex = Array.IndexOf(Loc.PickerOrder, Loc.Current);
         _cmbTheme.SelectedIndex = _cfg.Theme switch { "light" => 1, "dark" => 2, _ => 0 };
         _chkMask.IsChecked = _cfg.MaskSensitive; _chkPrintJmbg.IsChecked = _cfg.PrintJmbg;
         _chkAutoRead.IsChecked = _cfg.AutoRead; _chkAutoUpdate.IsChecked = _cfg.AutoUpdate;
@@ -330,11 +330,11 @@ public sealed class MainWindow : Window
         _lblSetAppearance = Ui.Label("", 15, true); _lblSetAppearance.FontWeight = FontWeight.Bold; _lblSetAppearance.Margin = new Thickness(0, 0, 0, 10);
         _lblSetLang = Ui.Label(""); _lblSetTheme = Ui.Label("");
         _cmbLang = new ComboBox { Width = 190 };
-        foreach (var lang in Enum.GetValues<Lang>()) _cmbLang.Items.Add(Loc.NativeName(lang));
+        foreach (var lang in Loc.PickerOrder) _cmbLang.Items.Add(Loc.Flag(lang) + "  " + Loc.NativeName(lang));
         _cmbLang.SelectionChanged += (_, _) =>
         {
             if (_loading || _cmbLang.SelectedIndex < 0) return;
-            Loc.Current = (Lang)_cmbLang.SelectedIndex; _cfg.Lang = Loc.Current.ToString(); _cfg.Save(); ApplyLanguage();
+            Loc.Current = Loc.PickerOrder[_cmbLang.SelectedIndex]; _cfg.Lang = Loc.Current.ToString(); _cfg.Save(); ApplyLanguage();
         };
         _cmbTheme = new ComboBox { Width = 190 };
         for (int i = 0; i < 3; i++) _cmbTheme.Items.Add("");

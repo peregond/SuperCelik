@@ -1,23 +1,24 @@
 import SwiftUI
 
 enum AppLanguage: String, CaseIterable, Identifiable {
-    case ru, en, sr, srCyrl, hu, sq, sk, ro, hr, uk, be
+    // the order is the order of the language pickers: Serbian (Latin, Cyrillic), English, Russian, then the others alphabetically by their English name
+    case sr, srCyrl, en, ru, sq, be, hr, hu, ro, sk, uk
     /// The languages whose texts live in LocalizationExtra.swift (everything missing there falls back to English).
     var isExtra: Bool { switch self { case .hu, .sq, .sk, .ro, .hr, .uk, .be: return true; default: return false } }
     var id: String { rawValue }
     var title: String {
         switch self {
-        case .ru: return "Русский"
-        case .en: return "English"
-        case .sr: return "Srpski (latinica)"
-        case .srCyrl: return "Српски (ћирилица)"
-        case .hu: return "Magyar"
-        case .sq: return "Shqip"
-        case .sk: return "Slovenčina"
-        case .ro: return "Română"
-        case .hr: return "Hrvatski"
-        case .uk: return "Українська"
-        case .be: return "Беларуская"
+        case .ru: return "🇷🇺  Русский"
+        case .en: return "🇬🇧  English"
+        case .sr: return "🇷🇸  Srpski (latinica)"
+        case .srCyrl: return "🇷🇸  Српски (ћирилица)"
+        case .hu: return "🇭🇺  Magyar"
+        case .sq: return "🇦🇱  Shqip"
+        case .sk: return "🇸🇰  Slovenčina"
+        case .ro: return "🇷🇴  Română"
+        case .hr: return "🇭🇷  Hrvatski"
+        case .uk: return "🇺🇦  Українська"
+        case .be: return "🇧🇾  Беларуская"
         }
     }
 }

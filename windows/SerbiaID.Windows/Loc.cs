@@ -25,12 +25,27 @@ public static class Loc
         _ => null,
     };
 
+    /// The order of the language picker: Serbian (Latin, Cyrillic), English, Russian, then the others alphabetically by their English name.
+    public static readonly Lang[] PickerOrder =
+    {
+        Lang.sr, Lang.srCyrl, Lang.en, Lang.ru,
+        Lang.sq, Lang.be, Lang.hr, Lang.hu, Lang.ro, Lang.sk, Lang.uk,
+    };
+
     /// The name of a language as its speakers write it (language picker).
     public static string NativeName(Lang l) => l switch
     {
         Lang.ru => "Русский", Lang.en => "English", Lang.sr => "Srpski (latinica)", Lang.srCyrl => "Српски (ћирилица)",
         Lang.hu => "Magyar", Lang.sq => "Shqip", Lang.sk => "Slovenčina", Lang.ro => "Română", Lang.hr => "Hrvatski",
         Lang.uk => "Українська", Lang.be => "Беларуская", _ => l.ToString(),
+    };
+
+    /// The flag emoji of a language, for pickers that can draw it (Windows cannot: its emoji font has no flags, so the Windows picker leaves them out).
+    public static string Flag(Lang l) => l switch
+    {
+        Lang.ru => "\U0001F1F7\U0001F1FA", Lang.en => "\U0001F1EC\U0001F1E7", Lang.sr or Lang.srCyrl => "\U0001F1F7\U0001F1F8",
+        Lang.hu => "\U0001F1ED\U0001F1FA", Lang.sq => "\U0001F1E6\U0001F1F1", Lang.sk => "\U0001F1F8\U0001F1F0", Lang.ro => "\U0001F1F7\U0001F1F4",
+        Lang.hr => "\U0001F1ED\U0001F1F7", Lang.uk => "\U0001F1FA\U0001F1E6", Lang.be => "\U0001F1E7\U0001F1FE", _ => "",
     };
 
     /// The language code the site pages (reader help, what's new) take.

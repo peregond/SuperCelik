@@ -36,8 +36,8 @@ public partial class MainWindow : Window
         Theme.Apply(_cfg.Theme);
         RestoreWindow();
 
-        foreach (var lang in (Lang[])Enum.GetValues(typeof(Lang))) CmbLang.Items.Add(Loc.NativeName(lang));
-        CmbLang.SelectedIndex = (int)Loc.Current;
+        foreach (var lang in Loc.PickerOrder) CmbLang.Items.Add(Loc.NativeName(lang));
+        CmbLang.SelectedIndex = Array.IndexOf(Loc.PickerOrder, Loc.Current);
         for (int i = 0; i < 3; i++) CmbTheme.Items.Add("");
         CmbTheme.SelectedIndex = _cfg.Theme switch { "light" => 1, "dark" => 2, _ => 0 };
         ChkMask.IsChecked = _cfg.MaskSensitive; ChkPrintJmbg.IsChecked = _cfg.PrintJmbg;
@@ -129,7 +129,7 @@ public partial class MainWindow : Window
     private void Lang_Changed(object s, SelectionChangedEventArgs e)
     {
         if (_loading || CmbLang.SelectedIndex < 0) return;
-        Loc.Current = (Lang)CmbLang.SelectedIndex;
+        Loc.Current = Loc.PickerOrder[CmbLang.SelectedIndex];
         _cfg.Lang = Loc.Current.ToString(); _cfg.Save();
         ApplyLanguage();
     }
