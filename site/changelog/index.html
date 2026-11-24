@@ -33,6 +33,7 @@ a{color:inherit}
 .langmenu{position:absolute;right:0;top:100%;padding-top:8px;opacity:0;visibility:hidden;transform:translateY(-6px) scale(.96);transform-origin:top right;transition:opacity .18s,transform .18s,visibility .18s}
 .langmenu .in{display:flex;flex-direction:column;min-width:200px;padding:6px;border-radius:16px;background:color-mix(in srgb,var(--bg) 94%,transparent);-webkit-backdrop-filter:blur(18px);backdrop-filter:blur(18px);border:1px solid var(--line);box-shadow:0 18px 40px -18px rgba(0,0,0,.35)}
 .langmenu button{display:flex;align-items:center;gap:12px;text-align:left;border:0;background:none;color:var(--ink);padding:10px 12px;border-radius:10px;font:600 16px inherit;font-family:inherit;cursor:pointer}
+.langmenu .in{max-height:calc(100vh - 96px);overflow-y:auto}
 .langmenu .fl{width:26px;height:18px;border-radius:4px;flex:none;box-shadow:0 0 0 1px var(--line)}
 .langmenu button:hover{background:color-mix(in srgb,var(--ink) 8%,transparent)}
 .langmenu button[aria-pressed=true]::after{content:"✓";color:var(--red);font-weight:800;margin-left:auto;padding-left:10px}
@@ -69,6 +70,13 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 28px;justify-content:space-bet
     <button type="button" role="menuitem" data-l="en" aria-pressed="false"><svg class="fl" viewBox="0 0 60 40" preserveAspectRatio="none" aria-hidden="true"><rect width="60" height="40" fill="#012169"/><path d="M0 0L60 40M60 0L0 40" stroke="#fff" stroke-width="8"/><path d="M0 0L60 40M60 0L0 40" stroke="#C8102E" stroke-width="3"/><path d="M30 0V40M0 20H60" stroke="#fff" stroke-width="13"/><path d="M30 0V40M0 20H60" stroke="#C8102E" stroke-width="8"/></svg><span>English</span></button>
     <button type="button" role="menuitem" data-l="sr" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#fff"/><rect width="24" height="5.33" fill="#C6363C"/><rect y="5.33" width="24" height="5.34" fill="#0C4076"/></svg><span>Srpski</span></button>
     <button type="button" role="menuitem" data-l="sc" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#fff"/><rect width="24" height="5.33" fill="#C6363C"/><rect y="5.33" width="24" height="5.34" fill="#0C4076"/></svg><span>Српски</span></button>
+    <button type="button" role="menuitem" data-l="hr" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#fff"/><rect width="24" height="5.33" fill="#FF0000"/><rect y="10.67" width="24" height="5.33" fill="#171796"/><path d="M9.6 4.2h4.8v4.4c0 1.8-2.4 2.8-2.4 2.8s-2.4-1-2.4-2.8z" fill="#fff" stroke="#FF0000" stroke-width=".5"/><path d="M10.4 4.6h1.6v1.6h-1.6zM13.6 4.6h-1.6v1.6h1.6zM10.4 7.8h1.6V6.2h-1.6zM12 7.8h1.6V6.2H12z" fill="#FF0000"/></svg><span>Hrvatski</span></button>
+    <button type="button" role="menuitem" data-l="hu" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#fff"/><rect width="24" height="5.33" fill="#CE2939"/><rect y="10.67" width="24" height="5.33" fill="#477050"/></svg><span>Magyar</span></button>
+    <button type="button" role="menuitem" data-l="sq" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#E41E20"/><path d="M12 3.2c-.9 0-1.6.5-1.9 1.2L8 4.6l1.4 1.1L8.6 8l1.6-.5.5 2.2h2.6l.5-2.2 1.6.5-.8-2.3L15.6 4.6l-2.1-.2c-.3-.7-1-1.2-1.5-1.2zM9.5 10.4h5l.5 2.4h-6z" fill="#000"/></svg><span>Shqip</span></button>
+    <button type="button" role="menuitem" data-l="sk" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#fff"/><rect y="5.33" width="24" height="5.34" fill="#0B4EA2"/><rect y="10.67" width="24" height="5.33" fill="#EE1C25"/><path d="M4.6 3h5v5.4c0 2-2.5 3.2-2.5 3.2s-2.5-1.2-2.5-3.2z" fill="#EE1C25" stroke="#fff" stroke-width=".6"/><path d="M7.1 4.4v5M5.6 6h3M5.9 7.6h2.4" stroke="#fff" stroke-width=".8" fill="none"/></svg><span>Slovenčina</span></button>
+    <button type="button" role="menuitem" data-l="ro" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#FCD116"/><rect width="8" height="16" fill="#002B7F"/><rect x="16" width="8" height="16" fill="#CE1126"/></svg><span>Română</span></button>
+    <button type="button" role="menuitem" data-l="uk" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#FFD700"/><rect width="24" height="8" fill="#0057B7"/></svg><span>Українська</span></button>
+    <button type="button" role="menuitem" data-l="be" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#007C30"/><rect width="24" height="10.67" fill="#CF101A"/><rect width="4" height="16" fill="#fff"/><path d="M2 1.2l1.2 1.2L2 3.6.8 2.4zM2 5.2l1.2 1.2L2 7.6.8 6.4zM2 9.2l1.2 1.2L2 11.6.8 10.4zM2 13.2l1.2 1.2L2 15.6.8 14.4z" fill="#CF101A"/></svg><span>Беларуская</span></button>
   </div></div>
 </div>
 
@@ -86,13 +94,22 @@ footer .wrap{display:flex;flex-wrap:wrap;gap:10px 28px;justify-content:space-bet
 </div></footer>
 
 <script>
-const LANGS=["ru","en","sr","sc"];
+const LANGS=["ru","en","sr","sc","hu","sq","sk","ro","hr","uk","be"];
+const NEWL=["hu","sq","sk","ro","hr","uk","be"];
 const T={
  ru:{title:"Что нового",lead:"История изменений Super Čelik по приложениям. Новое сверху.",all:"Все приложения",next:"Следующий релиз",empty:"Для этого приложения записей пока нет.",disc:"Super Čelik – независимое приложение, не связано с МУП РС и NetSeT/Veridos."},
  en:{title:"What's new",lead:"What changed in Super Čelik, app by app. The newest is on top.",all:"All apps",next:"Next release",empty:"There are no entries for this app yet.",disc:"Super Čelik – independent app, not affiliated with MUP RS or NetSeT/Veridos."},
  sr:{title:"Šta je novo",lead:"Šta se promenilo u aplikaciji Super Čelik, po aplikacijama. Najnovije je na vrhu.",all:"Sve aplikacije",next:"Sledeće izdanje",empty:"Za ovu aplikaciju još nema zapisa.",disc:"Super Čelik – nezavisna aplikacija, nije povezana sa MUP RS niti NetSeT/Veridos."}
 };
 T.sc=T.sr;
+T.hr={title:"Što je novo",lead:"Što se promijenilo u Super Čeliku, po aplikacijama. Najnovije je na vrhu.",all:"Sve aplikacije",next:"Sljedeće izdanje",empty:"Za ovu aplikaciju još nema zapisa.",disc:"Super Čelik – neovisna aplikacija, nije povezana s MUP-om RS ni NetSeT/Veridos."};
+T.hu={title:"Mi újság?",lead:"Mi változott a Super Čelikben, alkalmazásonként. A legújabb van legfelül.",all:"Minden alkalmazás",next:"Következő kiadás",empty:"Ehhez az alkalmazáshoz még nincs bejegyzés.",disc:"A Super Čelik független alkalmazás, nem áll kapcsolatban a MUP RS-sel és a NetSeT/Veridosszal."};
+T.sq={title:"Çfarë ka të re",lead:"Çfarë ka ndryshuar në Super Čelik, aplikacion pas aplikacioni. Më e reja është lart.",all:"Të gjitha aplikacionet",next:"Botimi i radhës",empty:"Për këtë aplikacion ende nuk ka shënime.",disc:"Super Čelik – aplikacion i pavarur, pa lidhje me MUP RS ose NetSeT/Veridos."};
+T.sk={title:"Čo je nové",lead:"Čo sa zmenilo v Super Čelik, po aplikáciách. Najnovšie je hore.",all:"Všetky aplikácie",next:"Ďalšie vydanie",empty:"Pre túto aplikáciu zatiaľ nie sú žiadne záznamy.",disc:"Super Čelik – nezávislá aplikácia, nie je spojená s MUP RS ani NetSeT/Veridos."};
+T.ro={title:"Ce este nou",lead:"Ce s-a schimbat în Super Čelik, aplicație cu aplicație. Cel mai nou este sus.",all:"Toate aplicațiile",next:"Următoarea versiune",empty:"Pentru această aplicație nu există încă intrări.",disc:"Super Čelik – aplicație independentă, fără legătură cu MUP RS sau NetSeT/Veridos."};
+T.uk={title:"Що нового",lead:"Що змінилося в Super Čelik, програма за програмою. Найновіше зверху.",all:"Усі програми",next:"Наступний випуск",empty:"Для цієї програми записів поки немає.",disc:"Super Čelik – незалежна програма, не пов’язана з MUP RS чи NetSeT/Veridos."};
+T.be={title:"Што новага",lead:"Што змянілася ў Super Čelik, праграма за праграмай. Найноўшае зверху.",all:"Усе праграмы",next:"Наступны выпуск",empty:"Для гэтай праграмы запісаў пакуль няма.",disc:"Super Čelik – незалежная праграма, не звязаная з MUP RS або NetSeT/Veridos."};
+
 const APPS={windows:"Windows",linux:"Linux",macos:"macOS",ios:"iOS / iPadOS",android:"Android"};
 const ALL=Object.keys(APPS);
 // [version, date, [[apps, ru, en, sr], ...]]. Newest first. "next" = not released yet.
@@ -204,8 +221,9 @@ function detectLang(){
  const list=(navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language||""]).map(x=>String(x).toLowerCase());
  for(const l of list){
   if(l.startsWith("sr")) return /cyrl/.test(l)?"sc":"sr";
-  if(/^(bs|hr|me)\b/.test(l)) return "sr";
-  if(/^(ru|uk|be|kk)\b/.test(l)) return "ru";
+  if(/^(bs|me)\b/.test(l)) return "sr";
+  {const m=/^(hu|sq|sk|ro|hr|uk|be)\b/.exec(l);if(m)return m[1]}
+  if(/^(ru|kk)\b/.test(l)) return "ru";
   if(l.startsWith("en")) return "en";
  }
  return "en";
@@ -229,7 +247,7 @@ const KEEP=/(^|[^\p{L}\p{N}])(Super Čelik|eUprava|eid\.gov\.rs|Mac App Store|Ap
 function translitText(t){let o="",last=0;
  for(const m of t.matchAll(KEEP)){o+=cyr(t.slice(last,m.index))+m[1]+m[2];last=m.index+m[0].length}
  return o+cyr(t.slice(last))}
-function pick(item,l){const i={ru:1,en:2,sr:3}[l==="sc"?"sr":l];const t=item[i];return l==="sc"?translitText(t):t}
+function pick(item,l){const i={ru:1,en:2,sr:3}[l==="sc"?"sr":l]||2;const t=item[i];return l==="sc"?translitText(t):t}
 function build(){
  const tx=T[lang],sc=lang==="sc",L=s=>sc?translitText(s):s;
  const box=document.getElementById("log");box.textContent="";
@@ -259,14 +277,16 @@ function buildTabs(){
   b.onclick=()=>{app=k;try{const u=new URL(location.href);k==="all"?u.searchParams.delete("app"):u.searchParams.set("app",k);history.replaceState(null,"",u)}catch(e){}buildTabs();build()};
   box.append(b)})}
 const ARIA={ru:{lang:"Язык",cpu:"Процессор",shot:"Скриншот"},en:{lang:"Language",cpu:"CPU",shot:"Screenshot"},sr:{lang:"Jezik",cpu:"Procesor",shot:"Snimak ekrana"},sc:{lang:"Језик",cpu:"Процесор",shot:"Снимак екрана"}};
+Object.assign(ARIA,{hr:{lang:"Jezik",cpu:"Procesor",shot:"Snimka zaslona"},hu:{lang:"Nyelv",cpu:"Processzor",shot:"Képernyőkép"},sq:{lang:"Gjuha",cpu:"Procesori",shot:"Pamje ekrani"},sk:{lang:"Jazyk",cpu:"Procesor",shot:"Snímka obrazovky"},ro:{lang:"Limba",cpu:"Procesor",shot:"Captură de ecran"},uk:{lang:"Мова",cpu:"Процесор",shot:"Знімок екрана"},be:{lang:"Мова",cpu:"Працэсар",shot:"Здымак экрана"}});
 const FOOT={ru:{priv:"Приватность",d:"Что нового в Super Čelik: история изменений каждой версии для Windows, Linux, macOS, iOS и Android."},en:{priv:"Privacy",d:"What changed in Super Čelik: the history of every version for Windows, Linux, macOS, iOS and Android."},sr:{priv:"Privatnost",d:"Šta je novo u aplikaciji Super Čelik: istorija promena svake verzije za Windows, Linux, macOS, iOS i Android."},sc:{priv:"Приватност",d:"Шта је ново у апликацији Super Čelik: историја промена сваке верзије за Windows, Linux, macOS, iOS и Android."}};
+Object.assign(FOOT,{hr:{priv:"Privatnost",d:"Što je novo u Super Čeliku: povijest promjena svake verzije za Windows, Linux, macOS, iOS i Android."},hu:{priv:"Adatvédelem",d:"Mi újság a Super Čelikben: minden verzió változásainak története Windowshoz, Linuxhoz, macOS-hez, iOS-hez és Androidhoz."},sq:{priv:"Privatësia",d:"Çfarë ka të re në Super Čelik: historiku i ndryshimeve të çdo versioni për Windows, Linux, macOS, iOS dhe Android."},sk:{priv:"Súkromie",d:"Čo je nové v Super Čelik: história zmien každej verzie pre Windows, Linux, macOS, iOS a Android."},ro:{priv:"Confidențialitate",d:"Ce este nou în Super Čelik: istoricul modificărilor fiecărei versiuni pentru Windows, Linux, macOS, iOS și Android."},uk:{priv:"Приватність",d:"Що нового в Super Čelik: історія змін кожної версії для Windows, Linux, macOS, iOS і Android."},be:{priv:"Прыватнасць",d:"Што новага ў Super Čelik: гісторыя змен кожнай версіі для Windows, Linux, macOS, iOS і Android."}});
 function localizeMisc(l,title){
  document.querySelectorAll("[data-aria]").forEach(e=>e.setAttribute("aria-label",ARIA[l][e.dataset.aria]));
  document.getElementById("fpriv").textContent=FOOT[l].priv;
  const d=document.querySelector('meta[name="description"]');if(d)d.setAttribute("content",FOOT[l].d);
  const o=document.querySelector('meta[property="og:title"]');if(o)o.setAttribute("content",title)}
 function setLang(l){lang=l;try{localStorage.setItem("sc-lang",l)}catch(e){}
- document.documentElement.lang={ru:"ru",en:"en",sr:"sr-Latn",sc:"sr-Cyrl"}[l];
+ document.documentElement.lang={ru:"ru",en:"en",sr:"sr-Latn",sc:"sr-Cyrl"}[l]||l;
  const tx=T[l],L=s=>l==="sc"?translitText(s):s;
  document.getElementById("h1").textContent=L(tx.title);document.getElementById("lead").textContent=L(tx.lead);
  document.getElementById("disc").textContent=l==="sc"?"Super Čelik – независна апликација, није повезана са МУП РС нити NetSeT/Veridos.":tx.disc;

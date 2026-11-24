@@ -30,6 +30,7 @@ a{color:inherit}img{max-width:100%}
 .langmenu{position:absolute;right:0;top:100%;padding-top:8px;opacity:0;visibility:hidden;transform:translateY(-6px) scale(.96);transform-origin:top right;transition:opacity .18s,transform .18s,visibility .18s}
 .langmenu .in{display:flex;flex-direction:column;min-width:216px;padding:8px;border-radius:18px;background:rgba(9,30,60,.88);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border:1px solid rgba(255,255,255,.16);box-shadow:0 24px 50px -16px rgba(0,0,0,.6)}
 .langmenu button{display:flex;align-items:center;gap:14px;text-align:left;border:0;background:none;color:#c9dcf5;padding:12px 14px;border-radius:12px;font:600 17px inherit;font-family:inherit;cursor:pointer;transition:background .15s,color .15s}
+.langmenu .in{max-height:calc(100vh - 96px);overflow-y:auto}
 .langmenu .fl{width:28px;height:19px;border-radius:4px;flex:none;box-shadow:0 0 0 1px rgba(255,255,255,.28)}
 .langmenu button:hover{background:rgba(255,255,255,.12);color:#fff}
 .langmenu button[aria-pressed=true]{color:#fff}
@@ -74,6 +75,13 @@ footer a{color:#a9c3e6}
     <button type="button" role="menuitem" data-l="en" aria-pressed="false"><svg class="fl" viewBox="0 0 60 40" preserveAspectRatio="none" aria-hidden="true"><rect width="60" height="40" fill="#012169"/><path d="M0 0L60 40M60 0L0 40" stroke="#fff" stroke-width="8"/><path d="M0 0L60 40M60 0L0 40" stroke="#C8102E" stroke-width="3"/><path d="M30 0V40M0 20H60" stroke="#fff" stroke-width="13"/><path d="M30 0V40M0 20H60" stroke="#C8102E" stroke-width="8"/></svg><span>English</span></button>
     <button type="button" role="menuitem" data-l="sr" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#fff"/><rect width="24" height="5.33" fill="#C6363C"/><rect y="5.33" width="24" height="5.34" fill="#0C4076"/></svg><span>Srpski</span></button>
     <button type="button" role="menuitem" data-l="sc" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#fff"/><rect width="24" height="5.33" fill="#C6363C"/><rect y="5.33" width="24" height="5.34" fill="#0C4076"/></svg><span>Српски</span></button>
+    <button type="button" role="menuitem" data-l="hr" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#fff"/><rect width="24" height="5.33" fill="#FF0000"/><rect y="10.67" width="24" height="5.33" fill="#171796"/><path d="M9.6 4.2h4.8v4.4c0 1.8-2.4 2.8-2.4 2.8s-2.4-1-2.4-2.8z" fill="#fff" stroke="#FF0000" stroke-width=".5"/><path d="M10.4 4.6h1.6v1.6h-1.6zM13.6 4.6h-1.6v1.6h1.6zM10.4 7.8h1.6V6.2h-1.6zM12 7.8h1.6V6.2H12z" fill="#FF0000"/></svg><span>Hrvatski</span></button>
+    <button type="button" role="menuitem" data-l="hu" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#fff"/><rect width="24" height="5.33" fill="#CE2939"/><rect y="10.67" width="24" height="5.33" fill="#477050"/></svg><span>Magyar</span></button>
+    <button type="button" role="menuitem" data-l="sq" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#E41E20"/><path d="M12 3.2c-.9 0-1.6.5-1.9 1.2L8 4.6l1.4 1.1L8.6 8l1.6-.5.5 2.2h2.6l.5-2.2 1.6.5-.8-2.3L15.6 4.6l-2.1-.2c-.3-.7-1-1.2-1.5-1.2zM9.5 10.4h5l.5 2.4h-6z" fill="#000"/></svg><span>Shqip</span></button>
+    <button type="button" role="menuitem" data-l="sk" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#fff"/><rect y="5.33" width="24" height="5.34" fill="#0B4EA2"/><rect y="10.67" width="24" height="5.33" fill="#EE1C25"/><path d="M4.6 3h5v5.4c0 2-2.5 3.2-2.5 3.2s-2.5-1.2-2.5-3.2z" fill="#EE1C25" stroke="#fff" stroke-width=".6"/><path d="M7.1 4.4v5M5.6 6h3M5.9 7.6h2.4" stroke="#fff" stroke-width=".8" fill="none"/></svg><span>Slovenčina</span></button>
+    <button type="button" role="menuitem" data-l="ro" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#FCD116"/><rect width="8" height="16" fill="#002B7F"/><rect x="16" width="8" height="16" fill="#CE1126"/></svg><span>Română</span></button>
+    <button type="button" role="menuitem" data-l="uk" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#FFD700"/><rect width="24" height="8" fill="#0057B7"/></svg><span>Українська</span></button>
+    <button type="button" role="menuitem" data-l="be" aria-pressed="false"><svg class="fl" viewBox="0 0 24 16" aria-hidden="true"><rect width="24" height="16" fill="#007C30"/><rect width="24" height="10.67" fill="#CF101A"/><rect width="4" height="16" fill="#fff"/><path d="M2 1.2l1.2 1.2L2 3.6.8 2.4zM2 5.2l1.2 1.2L2 7.6.8 6.4zM2 9.2l1.2 1.2L2 11.6.8 10.4zM2 13.2l1.2 1.2L2 15.6.8 14.4z" fill="#CF101A"/></svg><span>Беларуская</span></button>
   </div></div>
 </div>
 
@@ -155,14 +163,17 @@ Aplikacija sama ništa ne šalje; sertifikat kartice i PIN obrađuje sistem (PIN
 </div></footer>
 
 <script>
-const LANGS=["ru","en","sr","sc"];
+const LANGS=["ru","en","sr","sc","hu","sq","sk","ro","hr","uk","be"];
+const NEWL=["hu","sq","sk","ro","hr","uk","be"];
 const TITLE={ru:["Политика конфиденциальности","Обновлено: 2026-11-18"],en:["Privacy Policy","Last updated: 2026-11-18"],sr:["Politika privatnosti","Ažurirano: 2026-11-18"],sc:["Политика приватности","Ажурирано: 2026-11-18"]};
+Object.assign(TITLE,{hr:["Pravila privatnosti","Ažurirano: 2026-11-18"],hu:["Adatvédelmi szabályzat","Frissítve: 2026-11-18"],sq:["Politika e privatësisë","Përditësuar: 2026-11-18"],sk:["Zásady ochrany súkromia","Aktualizované: 2026-11-18"],ro:["Politica de confidențialitate","Actualizat: 2026-11-18"],uk:["Політика конфіденційності","Оновлено: 2026-11-18"],be:["Палітыка прыватнасці","Абноўлена: 2026-11-18"]});
 function detectLang(){
  const list=(navigator.languages&&navigator.languages.length?navigator.languages:[navigator.language||""]).map(x=>String(x).toLowerCase());
  for(const l of list){
   if(l.startsWith("sr")) return /cyrl/.test(l)?"sc":"sr";
-  if(/^(bs|hr|me)\b/.test(l)) return "sr";
-  if(/^(ru|uk|be|kk)\b/.test(l)) return "ru";
+  if(/^(bs|me)\b/.test(l)) return "sr";
+  {const m=/^(hu|sq|sk|ro|hr|uk|be)\b/.exec(l);if(m)return m[1]}
+  if(/^(ru|kk)\b/.test(l)) return "ru";
   if(l.startsWith("en")) return "en";
  }
  return "en";
@@ -189,16 +200,18 @@ function buildCyr(){const sc=document.getElementById("sc");if(sc.firstChild)retu
  nodes.forEach(n=>{if(!n.parentNode.closest("a"))n.nodeValue=translitText(n.nodeValue)});
  while(c.firstChild)sc.appendChild(c.firstChild)}
 const ARIA={ru:{lang:"Язык",cpu:"Процессор",shot:"Скриншот"},en:{lang:"Language",cpu:"CPU",shot:"Screenshot"},sr:{lang:"Jezik",cpu:"Procesor",shot:"Snimak ekrana"},sc:{lang:"Језик",cpu:"Процесор",shot:"Снимак екрана"}};
+Object.assign(ARIA,{hr:{lang:"Jezik",cpu:"Procesor",shot:"Snimka zaslona"},hu:{lang:"Nyelv",cpu:"Processzor",shot:"Képernyőkép"},sq:{lang:"Gjuha",cpu:"Procesori",shot:"Pamje ekrani"},sk:{lang:"Jazyk",cpu:"Procesor",shot:"Snímka obrazovky"},ro:{lang:"Limba",cpu:"Procesor",shot:"Captură de ecran"},uk:{lang:"Мова",cpu:"Процесор",shot:"Знімок екрана"},be:{lang:"Мова",cpu:"Працэсар",shot:"Здымак экрана"}});
 const FOOT={ru:{disc:"Super Čelik – независимое приложение, не связано с МУП РС и NetSeT/Veridos.",rel:"Все версии",d:"Super Čelik: без аккаунтов, аналитики и отслеживания, без сервера. Данные карты никогда не покидают устройство."},en:{disc:"Super Čelik – independent app, not affiliated with MUP RS or NetSeT/Veridos.",rel:"All versions",d:"Super Čelik: no accounts, no analytics, no tracking, no server. Card data never leaves your device."},sr:{disc:"Super Čelik – nezavisna aplikacija, nije povezana sa MUP RS niti NetSeT/Veridos.",rel:"Sve verzije",d:"Super Čelik: bez naloga, analitike i praćenja, bez servera. Podaci kartice nikada ne napuštaju uređaj."},sc:{disc:"Super Čelik – независна апликација, није повезана са МУП РС нити NetSeT/Veridos.",rel:"Све верзије",d:"Super Čelik: без налога, аналитике и праћења, без сервера. Подаци картице никада не напуштају уређај."}};
+Object.assign(FOOT,{hr:{disc:"Super Čelik – neovisna aplikacija, nije povezana s MUP-om RS ni NetSeT/Veridos.",rel:"Sve verzije",d:"Super Čelik: bez računa, analitike i praćenja, bez poslužitelja. Podaci kartice nikad ne napuštaju vaš uređaj."},hu:{disc:"A Super Čelik független alkalmazás, nem áll kapcsolatban a MUP RS-sel és a NetSeT/Veridosszal.",rel:"Minden verzió",d:"Super Čelik: fiók, analitika és követés nélkül, szerver nélkül. A kártya adatai soha nem hagyják el az eszközét."},sq:{disc:"Super Čelik – aplikacion i pavarur, pa lidhje me MUP RS ose NetSeT/Veridos.",rel:"Të gjitha versionet",d:"Super Čelik: pa llogari, analitikë e gjurmim, pa server. Të dhënat e kartës nuk e lënë kurrë pajisjen tuaj."},sk:{disc:"Super Čelik – nezávislá aplikácia, nie je spojená s MUP RS ani NetSeT/Veridos.",rel:"Všetky verzie",d:"Super Čelik: bez účtov, analytiky a sledovania, bez servera. Údaje karty nikdy neopustia vaše zariadenie."},ro:{disc:"Super Čelik – aplicație independentă, fără legătură cu MUP RS sau NetSeT/Veridos.",rel:"Toate versiunile",d:"Super Čelik: fără conturi, analiză și urmărire, fără server. Datele cardului nu părăsesc niciodată dispozitivul dvs."},uk:{disc:"Super Čelik – незалежна програма, не пов’язана з MUP RS чи NetSeT/Veridos.",rel:"Усі версії",d:"Super Čelik: без облікових записів, аналітики й стеження, без сервера. Дані картки ніколи не залишають ваш пристрій."},be:{disc:"Super Čelik – незалежная праграма, не звязаная з MUP RS або NetSeT/Veridos.",rel:"Усе версіі",d:"Super Čelik: без акаўнтаў, аналітыкі і сачэння, без сервера. Даныя карты ніколі не пакідаюць вашу прыладу."}});
 function localizeMisc(l){
  document.querySelectorAll("[data-aria]").forEach(e=>e.setAttribute("aria-label",ARIA[l][e.dataset.aria]));
  const f=FOOT[l];document.getElementById("disc").textContent=f.disc;document.getElementById("frel").textContent=f.rel;
  const d=document.querySelector('meta[name="description"]');if(d)d.setAttribute("content",f.d);
  const o=document.querySelector('meta[property="og:title"]');if(o)o.setAttribute("content","Super Čelik – "+TITLE[l][0])}
 function setLang(l){lang=l;localStorage.setItem("sc-lang",l);
- document.documentElement.lang={ru:"ru",en:"en",sr:"sr-Latn",sc:"sr-Cyrl"}[l];
+ document.documentElement.lang={ru:"ru",en:"en",sr:"sr-Latn",sc:"sr-Cyrl"}[l]||l;
  if(l==="sc")buildCyr();
- document.querySelectorAll(".doc>div").forEach(d=>d.hidden=d.dataset.l!==l);
+ document.querySelectorAll(".doc>div").forEach(d=>d.hidden=d.dataset.l!==(NEWL.includes(l)?"en":l));
  document.getElementById("h1").textContent=TITLE[l][0];document.getElementById("upd").textContent=TITLE[l][1];
  document.title="Super Čelik – "+TITLE[l][0];localizeMisc(l);
  document.querySelectorAll(".langmenu button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.l===l))}
