@@ -159,6 +159,10 @@
     <string name="v_user">User</string>
     <string name="v_user_addr">User\'s address</string>
     <string name="v_user_jmbg">User\'s personal number</string>
+    <string name="v_state">Issuing state</string>
+    <string name="v_sec_doc">Document</string>
+    <string name="v_sec_owner">Owner and user</string>
+    <string name="v_sec_vehicle">Vehicle data</string>
     <string name="v_sale_ban">Sale ban until</string>
     <string name="v_doc_serial">Document serial number</string>
     <string name="v_doc_no">Registry document number</string>

@@ -245,21 +245,23 @@ object VehicleRows {
     /** Hidden behind the eye like the ID card's personal number and address. */
     val sensitive = setOf("vOwner", "vOwnerAddr", "vOwnerJmbg", "vUser", "vUserAddr", "vUserJmbg", "vDocSerial", "vDocNo", "vSaleBan")
 
-    fun build(v: VehicleData, includeJmbg: Boolean = true): List<Pair<String, String>> {
-        val r = ArrayList<Pair<String, String>>()
-        fun a(k: String, s: String) { if (s.isNotEmpty()) r.add(k to s) }
-        a("vRegNo", v.registrationNumber); a("vMake", v.make); a("vType", v.type); a("vModel", v.commercialDescription)
-        a("vVin", v.vin); a("vYear", v.yearOfProduction); a("vColour", v.colour); a("vCategory", v.category)
-        a("vFirstReg", v.firstRegistrationDate); a("vValidUntil", v.expiryDate); a("vIssued", v.issuingDate)
-        a("vFuel", v.fuelType); a("vCapacity", v.engineCapacity); a("vPower", v.maxNetPower); a("vPowerWeight", v.powerWeightRatio)
-        a("vEngineNo", v.engineNumber); a("vMass", v.mass); a("vMaxMass", v.maxLadenMass); a("vLoad", v.load)
-        a("vSeats", v.seats); a("vStanding", v.standingPlaces); a("vAxles", v.axles); a("vApproval", v.typeApprovalNumber)
-        a("vOwner", v.ownerFull); a("vOwnerAddr", v.ownerAddress); if (includeJmbg) a("vOwnerJmbg", v.ownerPersonalNo)
-        a("vUser", v.userFull); a("vUserAddr", v.userAddress); if (includeJmbg) a("vUserJmbg", v.userPersonalNo)
-        a("vSaleBan", CardText.date(v.saleBan))
-        a("vDocNo", v.unambiguousNumber); a("vDocSerial", v.serialNumber); a("vAuthority", v.authorityIssuing)
-        return r
+    /** The rows in three groups, in the order of the printout of MUP's reader: the document, the owner and user, the vehicle. */
+    fun sections(v: VehicleData, includeJmbg: Boolean = true): List<Pair<String, List<Pair<String, String>>>> {
+        fun g(vararg kv: Pair<String, String>) = kv.filter { it.second.isNotEmpty() }
+        val d = CardText::date
+        val doc = g("vRegNo" to v.registrationNumber, "vIssued" to d(v.issuingDate), "vValidUntil" to d(v.expiryDate), "vSaleBan" to d(v.saleBan),
+            "vState" to v.stateIssuing, "vAuthority" to v.authorityIssuing, "vDocNo" to v.unambiguousNumber, "vDocSerial" to v.serialNumber)
+        val owner = g("vOwner" to v.ownerFull, "vOwnerAddr" to v.ownerAddress, "vOwnerJmbg" to (if (includeJmbg) v.ownerPersonalNo else ""),
+            "vUser" to v.userFull, "vUserAddr" to v.userAddress, "vUserJmbg" to (if (includeJmbg) v.userPersonalNo else ""))
+        val car = g("vFirstReg" to d(v.firstRegistrationDate), "vYear" to v.yearOfProduction, "vMake" to v.make, "vModel" to v.commercialDescription,
+            "vType" to v.type, "vApproval" to v.typeApprovalNumber, "vColour" to v.colour, "vVin" to v.vin, "vEngineNo" to v.engineNumber,
+            "vPower" to v.maxNetPower, "vPowerWeight" to v.powerWeightRatio, "vCategory" to v.category, "vFuel" to v.fuelType,
+            "vSeats" to v.seats, "vStanding" to v.standingPlaces, "vAxles" to v.axles, "vCapacity" to v.engineCapacity,
+            "vMass" to v.mass, "vLoad" to v.load, "vMaxMass" to v.maxLadenMass)
+        return listOf("vSecDoc" to doc, "vSecOwner" to owner, "vSecVehicle" to car)
     }
+
+    fun build(v: VehicleData, includeJmbg: Boolean = true): List<Pair<String, String>> = sections(v, includeJmbg).flatMap { it.second }
 
     /** Fictional data for demo mode and screenshots. */
     fun demo() = VehicleData().apply {

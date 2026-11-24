@@ -158,6 +158,10 @@
     <string name="v_user">Përdoruesi</string>
     <string name="v_user_addr">Adresa e përdoruesit</string>
     <string name="v_user_jmbg">Numri personal i përdoruesit</string>
+    <string name="v_state">Shteti lëshues</string>
+    <string name="v_sec_doc">Dokumenti</string>
+    <string name="v_sec_owner">Të dhënat e pronarit</string>
+    <string name="v_sec_vehicle">Të dhënat e automjetit</string>
     <string name="v_sale_ban">Ndalimi i tjetërsimit deri më</string>
     <string name="v_doc_serial">Numri serik i dokumentit</string>
     <string name="v_doc_no">Numri i dokumentit në regjistër</string>

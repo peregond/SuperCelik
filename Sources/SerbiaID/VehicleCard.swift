@@ -234,20 +234,24 @@ enum VehicleRows {
     /// Hidden behind the eye like the ID card's personal number and address (keys are Loc.x keys).
     static let sensitive: Set<String> = ["vOwner", "vOwnerAddr", "vOwnerJmbg", "vUser", "vUserAddr", "vUserJmbg", "vDocSerial", "vDocNo", "vSaleBan"]
 
+    /// The rows in three groups, in the order of the printout of MUP's reader: the document, the owner and user, the vehicle.
+    static func sections(_ v: VehicleData, includeJmbg: Bool = true) -> [(title: String, rows: [(key: String, value: String)])] {
+        func g(_ kv: [(String, String)]) -> [(key: String, value: String)] { kv.filter { !$0.1.isEmpty }.map { (key: $0.0, value: $0.1) } }
+        let d = CardText.date
+        let doc = g([("vRegNo", v.registrationNumber), ("vIssued", d(v.issuingDate)), ("vValidUntil", d(v.expiryDate)), ("vSaleBan", d(v.saleBan)),
+                     ("vState", v.stateIssuing), ("vAuthority", v.authorityIssuing), ("vDocNo", v.unambiguousNumber), ("vDocSerial", v.serialNumber)])
+        let owner = g([("vOwner", v.ownerFull), ("vOwnerAddr", v.ownerAddress), ("vOwnerJmbg", includeJmbg ? v.ownerPersonalNo : ""),
+                       ("vUser", v.userFull), ("vUserAddr", v.userAddress), ("vUserJmbg", includeJmbg ? v.userPersonalNo : "")])
+        let car = g([("vFirstReg", d(v.firstRegistrationDate)), ("vYear", v.yearOfProduction), ("vMake", v.make), ("vModel", v.commercialDescription),
+                     ("vType", v.type), ("vApproval", v.typeApprovalNumber), ("vColour", v.colour), ("vVin", v.vin), ("vEngineNo", v.engineNumber),
+                     ("vPower", v.maxNetPower), ("vPowerWeight", v.powerWeightRatio), ("vCategory", v.category), ("vFuel", v.fuelType),
+                     ("vSeats", v.seats), ("vStanding", v.standingPlaces), ("vAxles", v.axles), ("vCapacity", v.engineCapacity),
+                     ("vMass", v.mass), ("vLoad", v.load), ("vMaxMass", v.maxLadenMass)])
+        return [("vSecDoc", doc), ("vSecOwner", owner), ("vSecVehicle", car)]
+    }
+
     static func build(_ v: VehicleData, includeJmbg: Bool = true) -> [(key: String, value: String)] {
-        var r: [(key: String, value: String)] = []
-        func a(_ k: String, _ s: String) { if !s.isEmpty { r.append((k, s)) } }
-        a("vRegNo", v.registrationNumber); a("vMake", v.make); a("vType", v.type); a("vModel", v.commercialDescription)
-        a("vVin", v.vin); a("vYear", v.yearOfProduction); a("vColour", v.colour); a("vCategory", v.category)
-        a("vFirstReg", v.firstRegistrationDate); a("vValidUntil", v.expiryDate); a("vIssued", v.issuingDate)
-        a("vFuel", v.fuelType); a("vCapacity", v.engineCapacity); a("vPower", v.maxNetPower); a("vPowerWeight", v.powerWeightRatio)
-        a("vEngineNo", v.engineNumber); a("vMass", v.mass); a("vMaxMass", v.maxLadenMass); a("vLoad", v.load)
-        a("vSeats", v.seats); a("vStanding", v.standingPlaces); a("vAxles", v.axles); a("vApproval", v.typeApprovalNumber)
-        a("vOwner", v.ownerFull); a("vOwnerAddr", v.ownerAddress); if includeJmbg { a("vOwnerJmbg", v.ownerPersonalNo) }
-        a("vUser", v.userFull); a("vUserAddr", v.userAddress); if includeJmbg { a("vUserJmbg", v.userPersonalNo) }
-        a("vSaleBan", CardText.date(v.saleBan))
-        a("vDocNo", v.unambiguousNumber); a("vDocSerial", v.serialNumber); a("vAuthority", v.authorityIssuing)
-        return r
+        sections(v, includeJmbg: includeJmbg).flatMap { $0.rows }
     }
 
     /// Fictional data for demo mode and screenshots.

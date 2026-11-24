@@ -718,8 +718,16 @@ public partial class MainWindow : Window
         if (TryDate(veh ? _vehicle.ExpiryDate : _personal.Document.ExpiryDate, out var until)) SetExpiry(PillExpiry, LblExpiry, until);
         else PillExpiry.Visibility = Visibility.Collapsed;
 
-        foreach (var (key, value) in veh ? VehicleRows.Build(_vehicle) : Rows(_personal))
+        var entries = veh ? VehicleRows.Entries(_vehicle) : Rows(_personal).ConvertAll(x => ((string)null, x.Item1, x.Item2));
+        foreach (var (heading, key, value) in entries)
         {
+            if (heading != null)
+            {
+                // a group title takes a line of its own, like the section headings of MUP's printout
+                FieldsPanel.Children.Add(new TextBlock { Text = Loc.T(heading), Width = 4000, FontSize = 13, FontWeight = FontWeights.SemiBold,
+                    Foreground = B("TextBrush"), Margin = new Thickness(0, 4, 0, 10) });
+                continue;
+            }
             bool sensitive = Sensitive.Contains(key) || Array.IndexOf(VehicleRows.Sensitive, key) >= 0;
             bool hidden = sensitive && _cfg.MaskSensitive && !_revealAll;
 

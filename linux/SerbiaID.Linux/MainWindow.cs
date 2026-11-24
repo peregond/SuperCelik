@@ -844,8 +844,16 @@ public sealed partial class MainWindow : Window
         _pillExpiry.IsVisible = true;
         if (TryDate(veh ? _vehicle.ExpiryDate : _personal.Document.ExpiryDate, out var until)) SetExpiry(_pillExpiry, until); else _pillExpiry.IsVisible = false;
 
-        foreach (var (key, value) in veh ? VehicleRows.Build(_vehicle) : Rows(_personal))
+        var entries = veh ? VehicleRows.Entries(_vehicle) : Rows(_personal).ConvertAll(x => ((string)null, x.Item1, x.Item2));
+        foreach (var (heading, key, value) in entries)
         {
+            if (heading != null)
+            {
+                // a group title takes a line of its own, like the section headings of MUP's printout
+                var h = Ui.Label(Loc.T(heading), 13, true, "TextBrush"); h.Width = 4000; h.Margin = new Thickness(0, 4, 0, 10);
+                _fields.Children.Add(h);
+                continue;
+            }
             bool hidden = (Sensitive.Contains(key) || Array.IndexOf(VehicleRows.Sensitive, key) >= 0) && _cfg.MaskSensitive && !_revealAll;
             var copy = Ui.Btn("", "icon"); Ui.SetBtn(copy, "copy", null); copy.Opacity = 0.55; copy.VerticalAlignment = VerticalAlignment.Bottom;
             ToolTip.SetTip(copy, Loc.T("copy"));

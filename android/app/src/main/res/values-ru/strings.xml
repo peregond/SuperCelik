@@ -159,6 +159,10 @@
     <string name="v_user">Пользователь</string>
     <string name="v_user_addr">Адрес пользователя</string>
     <string name="v_user_jmbg">ЕМБГ пользователя</string>
+    <string name="v_state">Выдавшее государство</string>
+    <string name="v_sec_doc">Документ</string>
+    <string name="v_sec_owner">Данные о владельце и пользователе</string>
+    <string name="v_sec_vehicle">Данные о транспортном средстве</string>
     <string name="v_sale_ban">Запрет отчуждения до</string>
     <string name="v_doc_serial">Серийный номер документа</string>
     <string name="v_doc_no">Номер документа в реестре</string>

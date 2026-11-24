@@ -280,20 +280,47 @@ public static class VehicleRows
     public static readonly string[] Sensitive =
         { "vOwner", "vOwnerAddr", "vOwnerJmbg", "vUser", "vUserAddr", "vUserJmbg", "vDocSerial", "vDocNo", "vSaleBan" };
 
+    /// The rows in three groups, in the order of the printout of MUP's reader: the document, the owner and user, the vehicle.
+    /// (group title key, rows); empty values are left out.
+    public static List<(string Title, List<(string Key, string Value)> Rows)> Sections(VehicleData v, bool includeJmbg = true)
+    {
+        List<(string, string)> G(params (string, string)[] kv)
+        {
+            var l = new List<(string, string)>();
+            foreach (var (k, s) in kv) if (!string.IsNullOrEmpty(s)) l.Add((k, s));
+            return l;
+        }
+        var doc = G(("vRegNo", v.RegistrationNumber), ("vIssued", Text.Date(v.IssuingDate)), ("vValidUntil", Text.Date(v.ExpiryDate)),
+            ("vSaleBan", Text.Date(v.SaleBan)), ("vState", v.StateIssuing), ("vAuthority", v.AuthorityIssuing),
+            ("vDocNo", v.UnambiguousNumber), ("vDocSerial", v.SerialNumber));
+        var owner = G(("vOwner", v.OwnerFull), ("vOwnerAddr", v.OwnerAddress), ("vOwnerJmbg", includeJmbg ? v.OwnerPersonalNo : ""),
+            ("vUser", v.UserFull), ("vUserAddr", v.UserAddress), ("vUserJmbg", includeJmbg ? v.UserPersonalNo : ""));
+        var car = G(("vFirstReg", Text.Date(v.FirstRegistrationDate)), ("vYear", v.YearOfProduction), ("vMake", v.Make), ("vModel", v.CommercialDescription),
+            ("vType", v.Type), ("vApproval", v.TypeApprovalNumber), ("vColour", v.Colour), ("vVin", v.Vin), ("vEngineNo", v.EngineNumber),
+            ("vPower", v.MaxNetPower), ("vPowerWeight", v.PowerWeightRatio), ("vCategory", v.Category), ("vFuel", v.FuelType),
+            ("vSeats", v.Seats), ("vStanding", v.StandingPlaces), ("vAxles", v.Axles), ("vCapacity", v.EngineCapacity),
+            ("vMass", v.Mass), ("vLoad", v.Load), ("vMaxMass", v.MaxLadenMass));
+        return new List<(string, List<(string, string)>)> { ("vSecDoc", doc), ("vSecOwner", owner), ("vSecVehicle", car) };
+    }
+
+    /// For the screen: a heading entry (Key = null) before every non-empty group, then its rows. The plate (the title of the card) is not repeated.
+    public static List<(string Heading, string Key, string Value)> Entries(VehicleData v, bool includeJmbg = true)
+    {
+        var r = new List<(string, string, string)>();
+        foreach (var sec in Sections(v, includeJmbg))
+        {
+            var rows = sec.Rows.FindAll(x => x.Key != "vRegNo");
+            if (rows.Count == 0) continue;
+            r.Add((sec.Title, null, null));
+            foreach (var (k, val) in rows) r.Add((null, k, val));
+        }
+        return r;
+    }
+
     public static List<(string Key, string Value)> Build(VehicleData v, bool includeJmbg = true)
     {
         var r = new List<(string, string)>();
-        void A(string k, string s) { if (!string.IsNullOrEmpty(s)) r.Add((k, s)); }
-        A("vRegNo", v.RegistrationNumber); A("vMake", v.Make); A("vType", v.Type); A("vModel", v.CommercialDescription);
-        A("vVin", v.Vin); A("vYear", v.YearOfProduction); A("vColour", v.Colour); A("vCategory", v.Category);
-        A("vFirstReg", v.FirstRegistrationDate); A("vValidUntil", v.ExpiryDate); A("vIssued", v.IssuingDate);
-        A("vFuel", v.FuelType); A("vCapacity", v.EngineCapacity); A("vPower", v.MaxNetPower); A("vPowerWeight", v.PowerWeightRatio);
-        A("vEngineNo", v.EngineNumber); A("vMass", v.Mass); A("vMaxMass", v.MaxLadenMass); A("vLoad", v.Load);
-        A("vSeats", v.Seats); A("vStanding", v.StandingPlaces); A("vAxles", v.Axles); A("vApproval", v.TypeApprovalNumber);
-        A("vOwner", v.OwnerFull); A("vOwnerAddr", v.OwnerAddress); if (includeJmbg) A("vOwnerJmbg", v.OwnerPersonalNo);
-        A("vUser", v.UserFull); A("vUserAddr", v.UserAddress); if (includeJmbg) A("vUserJmbg", v.UserPersonalNo);
-        A("vSaleBan", Text.Date(v.SaleBan));
-        A("vDocNo", v.UnambiguousNumber); A("vDocSerial", v.SerialNumber); A("vAuthority", v.AuthorityIssuing);
+        foreach (var sec in Sections(v, includeJmbg)) r.AddRange(sec.Rows);
         return r;
     }
 

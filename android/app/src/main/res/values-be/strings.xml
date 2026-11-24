@@ -158,6 +158,10 @@
     <string name="v_user">Карыстальнік</string>
     <string name="v_user_addr">Адрас карыстальніка</string>
     <string name="v_user_jmbg">ЕМБГ карыстальніка</string>
+    <string name="v_state">Дзяржава, якая выдала</string>
+    <string name="v_sec_doc">Дакумент</string>
+    <string name="v_sec_owner">Звесткі пра ўладальніка</string>
+    <string name="v_sec_vehicle">Звесткі пра транспартны сродак</string>
     <string name="v_sale_ban">Забарона адчужэння да</string>
     <string name="v_doc_serial">Серыйны нумар дакумента</string>
     <string name="v_doc_no">Нумар дакумента ў рэестры</string>

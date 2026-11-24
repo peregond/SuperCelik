@@ -31,6 +31,10 @@ fun vehicleLabel(key: String): Int = when (key) {
     "vUser" -> R.string.v_user
     "vUserAddr" -> R.string.v_user_addr
     "vUserJmbg" -> R.string.v_user_jmbg
+    "vState" -> R.string.v_state
+    "vSecDoc" -> R.string.v_sec_doc
+    "vSecOwner" -> R.string.v_sec_owner
+    "vSecVehicle" -> R.string.v_sec_vehicle
     "vSaleBan" -> R.string.v_sale_ban
     "vDocSerial" -> R.string.v_doc_serial
     "vDocNo" -> R.string.v_doc_no

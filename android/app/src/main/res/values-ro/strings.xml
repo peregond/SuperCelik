@@ -158,6 +158,10 @@
     <string name="v_user">Utilizator</string>
     <string name="v_user_addr">Adresa utilizatorului</string>
     <string name="v_user_jmbg">Numărul personal al utilizatorului</string>
+    <string name="v_state">Statul emitent</string>
+    <string name="v_sec_doc">Document</string>
+    <string name="v_sec_owner">Date despre proprietar</string>
+    <string name="v_sec_vehicle">Date despre vehicul</string>
     <string name="v_sale_ban">Interdicție de înstrăinare până la</string>
     <string name="v_doc_serial">Număr de serie al documentului</string>
     <string name="v_doc_no">Număr document în registru</string>

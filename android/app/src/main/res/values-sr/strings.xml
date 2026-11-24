@@ -159,6 +159,10 @@
     <string name="v_user">Корисник</string>
     <string name="v_user_addr">Адреса корисника</string>
     <string name="v_user_jmbg">ЈМБГ корисника</string>
+    <string name="v_state">Саобраћајну издао</string>
+    <string name="v_sec_doc">Документ</string>
+    <string name="v_sec_owner">Подаци о власнику</string>
+    <string name="v_sec_vehicle">Подаци о возилу</string>
     <string name="v_sale_ban">Забрана отуђења до</string>
     <string name="v_doc_serial">Серијски број документа</string>
     <string name="v_doc_no">Јединствени број документа</string>

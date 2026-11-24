@@ -166,7 +166,10 @@ private fun VehicleResult(vm: CardViewModel, v: VehicleData, revealAll: Boolean)
     val ctx = LocalContext.current
     val printJmbg by vm.printJmbg.collectAsStateWithLifecycle()
     var pdfFile by remember { mutableStateOf<File?>(null) }
-    val rows = VehicleRows.build(v).map { (k, s) -> Triple(vehicleLabel(k), s, k in VehicleRows.sensitive) }
+    // three groups in the order of the printout of MUP's reader: document, owner and user, vehicle (the plate is the card's title)
+    val sections = VehicleRows.sections(v).map { (title, rows) ->
+        vehicleLabel(title) to rows.filter { it.first != "vRegNo" }.map { (k, s) -> Triple(vehicleLabel(k), s, k in VehicleRows.sensitive) }
+    }
     LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
         item {
             Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = heroBg), shape = RoundedCornerShape(28.dp)) {
@@ -177,7 +180,7 @@ private fun VehicleResult(vm: CardViewModel, v: VehicleData, revealAll: Boolean)
                 }
             }
         }
-        item { Section(R.string.veh_title, rows, show) }
+        sections.forEach { (title, rows) -> item { Section(title, rows, show) } }
         item { Text(stringResource(R.string.veh_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
         item {
             FilledTonalButton(onClick = { pdfFile = Pdf.createVehicle(ctx, v, printJmbg) }, Modifier.fillMaxWidth()) {

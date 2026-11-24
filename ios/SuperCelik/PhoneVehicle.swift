@@ -16,8 +16,12 @@ struct VehicleCardView: View {
                 Text(loc.x("vehTitle")).foregroundStyle(.secondary)
                 Text(vehicle.registrationNumber).font(.title2.weight(.bold)).textSelection(.enabled)
             }
-            LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 16, alignment: .topLeading)], alignment: .leading, spacing: 14) {
-                ForEach(VehicleRows.build(vehicle), id: \.key) { VehicleField(key: $0.key, value: $0.value) }
+            // three groups in the order of the printout of MUP's reader: document, owner and user, vehicle
+            ForEach(VehicleRows.sections(vehicle).filter { !$0.rows.filter { $0.key != "vRegNo" }.isEmpty }, id: \.title) { sec in
+                Text(loc.x(sec.title)).font(.headline)
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 16, alignment: .topLeading)], alignment: .leading, spacing: 14) {
+                    ForEach(sec.rows.filter { $0.key != "vRegNo" }, id: \.key) { VehicleField(key: $0.key, value: $0.value) }
+                }
             }
             Text(loc.x("vehNote")).font(.caption).foregroundStyle(.secondary)
             HStack(spacing: 10) {

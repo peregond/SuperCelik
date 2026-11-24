@@ -517,10 +517,14 @@ struct PersonalView: View {
                     if let d = Self.dateFormatter.date(from: v.expiryDate) { ExpiryPill(date: d) }
                 }
                 Divider()
-                LazyVGrid(columns: [GridItem(.adaptive(minimum: 170), spacing: 16, alignment: .topLeading)], alignment: .leading, spacing: 12) {
-                    ForEach(VehicleRows.build(v), id: \.key) { VehicleCell(key: $0.key, value: $0.value) }
+                // three groups in the order of the printout of MUP's reader: document, owner and user, vehicle
+                ForEach(VehicleRows.sections(v).filter { !$0.rows.filter { $0.key != "vRegNo" }.isEmpty }, id: \.title) { sec in
+                    Text(loc.x(sec.title)).font(.headline).padding(.top, 4)
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 170), spacing: 16, alignment: .topLeading)], alignment: .leading, spacing: 12) {
+                        ForEach(sec.rows.filter { $0.key != "vRegNo" }, id: \.key) { VehicleCell(key: $0.key, value: $0.value) }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
                 }
-                .frame(maxWidth: .infinity, alignment: .leading)
             }
             .frame(maxWidth: .infinity, alignment: .leading)
         }

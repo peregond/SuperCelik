@@ -158,6 +158,10 @@
     <string name="v_user">Használó</string>
     <string name="v_user_addr">A használó címe</string>
     <string name="v_user_jmbg">A használó személyi száma</string>
+    <string name="v_state">Kiállító állam</string>
+    <string name="v_sec_doc">Okmány</string>
+    <string name="v_sec_owner">A tulajdonos adatai</string>
+    <string name="v_sec_vehicle">A jármű adatai</string>
     <string name="v_sale_ban">Elidegenítési tilalom eddig</string>
     <string name="v_doc_serial">Okmány sorozatszáma</string>
     <string name="v_doc_no">Nyilvántartási okmányszám</string>

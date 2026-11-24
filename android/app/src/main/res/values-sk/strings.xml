@@ -158,6 +158,10 @@
     <string name="v_user">Užívateľ</string>
     <string name="v_user_addr">Adresa užívateľa</string>
     <string name="v_user_jmbg">Osobné číslo užívateľa</string>
+    <string name="v_state">Vydal štát</string>
+    <string name="v_sec_doc">Doklad</string>
+    <string name="v_sec_owner">Údaje o držiteľovi</string>
+    <string name="v_sec_vehicle">Údaje o vozidle</string>
     <string name="v_sale_ban">Zákaz scudzenia do</string>
     <string name="v_doc_serial">Sériové číslo dokladu</string>
     <string name="v_doc_no">Číslo dokladu v registri</string>
