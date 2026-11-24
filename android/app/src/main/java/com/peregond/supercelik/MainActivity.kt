@@ -51,6 +51,8 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 class MainActivity : ComponentActivity() {
     private val vm: CardViewModel by viewModels()
 
+    override fun attachBaseContext(newBase: android.content.Context) = super.attachBaseContext(AppLocale.wrap(newBase))
+
     /** The "demo" launch extra (fictional data, screenshots allowed) works in debug builds only: the activity is
      *  exported, and no other app should be able to switch the screenshot protection off in a release build. */
     private val demoAllowed: Boolean

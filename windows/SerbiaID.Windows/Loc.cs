@@ -40,6 +40,9 @@ public static class Loc
         Lang.uk => "Українська", Lang.be => "Беларуская", _ => l.ToString(),
     };
 
+    /// The name of the flag picture of a language (Flags\<name>.png in the Windows build; Serbian has one flag for both scripts).
+    public static string FlagFile(Lang l) => l == Lang.srCyrl ? "sr" : l.ToString();
+
     /// The flag emoji of a language, for pickers that can draw it (Windows cannot: its emoji font has no flags, so the Windows picker leaves them out).
     public static string Flag(Lang l) => l switch
     {

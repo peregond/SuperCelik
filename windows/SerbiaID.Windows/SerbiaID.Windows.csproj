@@ -18,6 +18,7 @@
     <Resource Include="app.ico" />
     <!-- the cartoon poses, shared with the macOS app -->
     <Resource Include="..\..\Sources\SerbiaID\Resources\Mascots\*.png" Link="Mascots\%(Filename)%(Extension)" />
+    <Resource Include="Flags\*.png" />
   </ItemGroup>
 
   <ItemGroup>

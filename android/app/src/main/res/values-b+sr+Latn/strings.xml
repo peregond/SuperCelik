@@ -12,6 +12,7 @@
     <string name="group_privacy">Privatnost</string>
     <string name="group_reading">Čitanje kartice</string>
     <string name="group_help">Pomoć</string>
+    <string name="language_system">Sistemski</string>
     <string name="copy_logs">Kopiraj logove i greške</string>
     <string name="copy_logs_hint">Kopira tehničke podatke o greškama (bez vaših podataka sa kartice) da ih nalepite u prijavu greške.</string>
     <string name="logs_copied">Logovi su kopirani</string>

@@ -12,6 +12,7 @@
     <string name="group_privacy">Приватность</string>
     <string name="group_reading">Чтение карты</string>
     <string name="group_help">Помощь</string>
+    <string name="language_system">Как в системе</string>
     <string name="copy_logs">Скопировать логи и ошибки</string>
     <string name="copy_logs_hint">Копирует технические сведения об ошибках (без ваших данных с карты), чтобы вставить их в сообщение об ошибке.</string>
     <string name="logs_copied">Логи скопированы</string>
