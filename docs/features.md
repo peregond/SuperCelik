@@ -22,9 +22,9 @@ release, or the cell says why it cannot.
 | "No reader yet?" page | ✅ | ✅ | ✅ | ✅ | ✅ |
 | "What's new?" page | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Report a bug / leave feedback | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Demo data (Settings switch) | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Demo data (three Settings switches: ID card, health insurance card, vehicle card) | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Copy logs and errors (Settings) | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Language: ru, en, sr (Latin, Cyrillic), hu, sq, sk, ro, hr, uk, be; theme | ✅ | ✅ | ✅ | ✅ | ✅ |
+| Language menu as on the site (Serbian first, names in the interface language, flags): ru, en, sr (Latin, Cyrillic), hu, sq, sk, ro, hr, uk, be; theme | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Auto-read when the card is inserted | ✅ | ✅ | ✅ | ✅ | ✅ (reader already connected) |
 | Hide the data after idle time | ✅ | ✅ | ✅ | – (not wanted) | – (not wanted) |
 | Check for updates inside the app | ✅ | ✅ | ✅ (not the App Store build) | – (App Store) | – (store / APK page) |

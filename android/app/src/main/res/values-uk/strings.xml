@@ -209,4 +209,8 @@
     <string name="h_sex">Стать</string>
     <string name="h_jmbg">ЄМБГ</string>
     <string name="h_address">Адреса</string>
+    <string name="demo_card">Демо-дані: посвідчення особи</string>
+    <string name="demo_health">Демо-дані: картка медичного страхування</string>
+    <string name="demo_vehicle">Демо-дані: свідоцтво про реєстрацію ТЗ</string>
+    <string name="lang_names">Латиниця|Кирилиця|Албанська|Білоруська|Хорватська|Англійська|Угорська|Румунська|Російська|Словацька|Українська</string>
 </resources>

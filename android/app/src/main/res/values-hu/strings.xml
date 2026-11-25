@@ -209,4 +209,8 @@
     <string name="h_sex">Nem</string>
     <string name="h_jmbg">Személyi azonosító (JMBG)</string>
     <string name="h_address">Cím</string>
+    <string name="demo_card">Demóadatok: személyi igazolvány</string>
+    <string name="demo_health">Demóadatok: egészségbiztosítási kártya</string>
+    <string name="demo_vehicle">Demóadatok: forgalmi engedély</string>
+    <string name="lang_names">Latin|Cirill|Albán|Belarusz|Horvát|Angol|Magyar|Román|Orosz|Szlovák|Ukrán</string>
 </resources>

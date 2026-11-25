@@ -210,4 +210,8 @@
     <string name="h_sex">Пол</string>
     <string name="h_jmbg">ЕМБГ</string>
     <string name="h_address">Адрес</string>
+    <string name="demo_card">Демо-данные: удостоверение личности</string>
+    <string name="demo_health">Демо-данные: карта медицинского страхования</string>
+    <string name="demo_vehicle">Демо-данные: карта автомобиля</string>
+    <string name="lang_names">Латиница|Кириллица|Албанский|Белорусский|Хорватский|Английский|Венгерский|Румынский|Русский|Словацкий|Украинский</string>
 </resources>

@@ -209,4 +209,8 @@
     <string name="h_sex">Gjinia</string>
     <string name="h_jmbg">Numri personal (JMBG)</string>
     <string name="h_address">Adresa</string>
+    <string name="demo_card">Të dhëna demo: letërnjoftimi</string>
+    <string name="demo_health">Të dhëna demo: karta e sigurimit shëndetësor</string>
+    <string name="demo_vehicle">Të dhëna demo: libreza e automjetit</string>
+    <string name="lang_names">Latine|Cirilike|Shqip|Bjellorusisht|Kroatisht|Anglisht|Hungarisht|Rumanisht|Rusisht|Sllovakisht|Ukrainisht</string>
 </resources>

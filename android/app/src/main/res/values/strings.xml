@@ -210,4 +210,8 @@
     <string name="h_sex">Sex</string>
     <string name="h_jmbg">Personal ID (JMBG)</string>
     <string name="h_address">Address</string>
+    <string name="demo_card">Demo data: ID card</string>
+    <string name="demo_health">Demo data: health insurance card</string>
+    <string name="demo_vehicle">Demo data: vehicle registration card</string>
+    <string name="lang_names">Latin|Cyrillic|Albanian|Belarusian|Croatian|English|Hungarian|Romanian|Russian|Slovak|Ukrainian</string>
 </resources>

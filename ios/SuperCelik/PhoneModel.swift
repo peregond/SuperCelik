@@ -31,6 +31,7 @@ final class PhoneModel: ObservableObject {
     @Published var diagLog: String?
     @Published var busy = false
     @Published private(set) var demoActive = false     // fictional data on screen (Settings toggle)
+    @Published private(set) var demoKind: DemoKind = .card     // which demo card the Settings switches show
     @Published var problem: PhoneProblem?
     /// Result of a PIN / PUK operation, shown in an alert.
     @Published var pinAlert: String?
@@ -55,7 +56,8 @@ final class PhoneModel: ObservableObject {
     }
 
     /// Fictional data shown without a card (App Review has no Serbian eID; also used for screenshots).
-    func loadDemo() {
+    func loadDemo(_ demoCard: DemoKind = .card) {
+        demoKind = demoCard
         var p = PersonalData()
         p.cardType = .rp2024
         p.document = DocumentData(docRegNo: "001234567", documentType: "RP", issuingDate: "01.01.2024",
@@ -72,10 +74,11 @@ final class PhoneModel: ObservableObject {
         }
         personal = p
         signatureStatus = .ok
-        // `--vehicle` with the demo: a vehicle registration card instead of the ID card
-        if CommandLine.arguments.contains("--vehicle") { personal = nil; vehicle = VehicleRows.demo(); signatureStatus = nil }
-        // `--health`: a health insurance card
-        if CommandLine.arguments.contains("--health") { personal = nil; health = HealthRows.demo(); signatureStatus = nil }
+        // the demo card: the ID card, or (Settings switches, or `--vehicle` / `--health` for screenshots) a vehicle registration or health insurance card
+        let kind: DemoKind = CommandLine.arguments.contains("--vehicle") ? .vehicle : CommandLine.arguments.contains("--health") ? .health : demoCard
+        vehicle = nil; health = nil      // switching from one demo card to another
+        if kind == .vehicle { personal = nil; vehicle = VehicleRows.demo(); signatureStatus = nil }
+        if kind == .health { personal = nil; health = HealthRows.demo(); signatureStatus = nil }
         // the Token tab gets fictional certificates too
         token = TokenInfo(tokenLabel: "NetSeT's CardEdge Token", tokenSerial: "RP000000000", certificates: [])
         func cert(_ label: String, from: Double, to: Double) -> PhoneCertRow {

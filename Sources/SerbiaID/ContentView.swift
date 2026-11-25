@@ -870,7 +870,9 @@ struct SettingsView: View {
         Form {
             Section(loc.t(.setAppearance)) {
                 Picker(loc.t(.language), selection: $loc.language) {
-                    ForEach(AppLanguage.allCases) { Text($0.title).tag($0) }
+                    ForEach(AppLanguage.pickerTop) { Text(loc.pickerLabel($0)).tag($0) }
+                    Divider()
+                    ForEach(AppLanguage.pickerRest) { Text(loc.pickerLabel($0)).tag($0) }
                 }
                 Picker(loc.t(.setTheme), selection: $prefs.theme) {
                     Text(loc.t(.themeSystem)).tag("system")
@@ -895,9 +897,11 @@ struct SettingsView: View {
                 #endif
             }
             Section {
-                Toggle(loc.t(.demoData), isOn: Binding(
-                    get: { model.demoActive },
-                    set: { $0 ? model.showDemoData() : model.hideDemoData() }))
+                ForEach(DemoKind.allCases) { kind in
+                    Toggle(loc.x(kind.labelKey), isOn: Binding(
+                        get: { model.demoActive && model.demoKind == kind },
+                        set: { $0 ? model.showDemoData(kind) : model.hideDemoData() }))
+                }
             } footer: { Text(loc.t(.demoHint)) }
             Section {
                 Button {

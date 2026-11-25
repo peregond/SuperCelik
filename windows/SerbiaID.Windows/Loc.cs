@@ -25,20 +25,19 @@ public static class Loc
         _ => null,
     };
 
-    /// The order of the language picker: Serbian (Latin, Cyrillic), English, Russian, then the others alphabetically by their English name.
+    /// The order of the language picker, as on the site: Serbian (Latin, Cyrillic), a divider, then the others alphabetically by their English name.
     public static readonly Lang[] PickerOrder =
     {
-        Lang.sr, Lang.srCyrl, Lang.en, Lang.ru,
-        Lang.sq, Lang.be, Lang.hr, Lang.hu, Lang.ro, Lang.sk, Lang.uk,
+        Lang.sr, Lang.srCyrl,
+        Lang.sq, Lang.be, Lang.hr, Lang.en, Lang.hu, Lang.ro, Lang.ru, Lang.sk, Lang.uk,
     };
 
-    /// The name of a language as its speakers write it (language picker).
-    public static string NativeName(Lang l) => l switch
-    {
-        Lang.ru => "Русский", Lang.en => "English", Lang.sr => "Srpski (latinica)", Lang.srCyrl => "Српски (ћирилица)",
-        Lang.hu => "Magyar", Lang.sq => "Shqip", Lang.sk => "Slovenčina", Lang.ro => "Română", Lang.hr => "Hrvatski",
-        Lang.uk => "Українська", Lang.be => "Беларуская", _ => l.ToString(),
-    };
+    /// How many entries sit above the divider of the picker (the two Serbian scripts).
+    public const int PickerTop = 2;
+
+    /// The names of the languages in the picker, in the order of PickerOrder and in the language of the interface (the first two are
+    /// just "Latin" and "Cyrillic": the Serbian flag says which language that is).
+    public static string[] PickerNames() => T("langNames").Split('|');
 
     /// The name of the flag picture of a language (Flags\<name>.png in the Windows build; Serbian has one flag for both scripts).
     public static string FlagFile(Lang l) => l == Lang.srCyrl ? "sr" : l.ToString();

@@ -210,4 +210,8 @@
     <string name="h_sex">Пол</string>
     <string name="h_jmbg">ЈМБГ</string>
     <string name="h_address">Адреса</string>
+    <string name="demo_card">Демо подаци: лична карта</string>
+    <string name="demo_health">Демо подаци: картица здравственог осигурања</string>
+    <string name="demo_vehicle">Демо подаци: саобраћајна дозвола</string>
+    <string name="lang_names">Латиница|Ћирилица|Албански|Белоруски|Хрватски|Енглески|Мађарски|Румунски|Руски|Словачки|Украјински</string>
 </resources>

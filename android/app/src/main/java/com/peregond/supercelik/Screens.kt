@@ -559,6 +559,7 @@ fun SettingsScreen(vm: CardViewModel) {
     val autoRead by vm.autoRead.collectAsStateWithLifecycle()
     val printJmbg by vm.printJmbg.collectAsStateWithLifecycle()
     val demo by vm.demo.collectAsStateWithLifecycle()
+    val demoKind by vm.demoKind.collectAsStateWithLifecycle()
     val ctx = LocalContext.current
     val version = remember { runCatching { ctx.packageManager.getPackageInfo(ctx.packageName, 0).versionName }.getOrNull() ?: "" }
     val diagUnlocked by vm.diagUnlocked.collectAsStateWithLifecycle()
@@ -593,7 +594,7 @@ fun SettingsScreen(vm: CardViewModel) {
                 ListItem(modifier = Modifier.clickable { pickLanguage = true }, colors = transparent,
                     leadingContent = { Icon(Icons.Filled.Language, null) },
                     headlineContent = { Text(stringResource(R.string.settings_language)) },
-                    supportingContent = { Text(if (chosen == null) stringResource(R.string.language_system) else AppLocale.label(chosen)) })
+                    supportingContent = { Text(if (chosen == null) stringResource(R.string.language_system) else AppLocale.label(ctx, chosen)) })
                 if (pickLanguage) LanguageDialog(chosen, onDismiss = { pickLanguage = false }) { tag ->
                     pickLanguage = false
                     if (tag != chosen) { AppLocale.save(ctx, tag); ctx.findActivity()?.recreate() }
@@ -617,9 +618,14 @@ fun SettingsScreen(vm: CardViewModel) {
                     supportingContent = { Text(stringResource(R.string.settings_auto_read_hint)) },
                     trailingContent = { Switch(autoRead, { vm.setAutoRead(it) }) })
                 HorizontalDivider(Modifier.padding(horizontal = 16.dp))
-                ListItem(colors = transparent, headlineContent = { Text(stringResource(R.string.demo_data)) },
+                // three demo switches, one demo card at a time: the ID card, the health insurance card, the vehicle registration card
+                ListItem(colors = transparent, headlineContent = { Text(stringResource(R.string.demo_card)) },
+                    trailingContent = { Switch(demo && demoKind == "card", { vm.setDemo(if (it) "card" else null) }) })
+                ListItem(colors = transparent, headlineContent = { Text(stringResource(R.string.demo_health)) },
+                    trailingContent = { Switch(demo && demoKind == "health", { vm.setDemo(if (it) "health" else null) }) })
+                ListItem(colors = transparent, headlineContent = { Text(stringResource(R.string.demo_vehicle)) },
                     supportingContent = { Text(stringResource(R.string.demo_hint)) },
-                    trailingContent = { Switch(demo, { vm.setDemo(it) }) })
+                    trailingContent = { Switch(demo && demoKind == "vehicle", { vm.setDemo(if (it) "vehicle" else null) }) })
             }
         }
         item {
@@ -676,12 +682,16 @@ private fun LanguageDialog(current: String?, onDismiss: () -> Unit, onPick: (Str
         onDismissRequest = onDismiss,
         title = { Text(stringResource(R.string.settings_language)) },
         text = {
+            val ctx = LocalContext.current
             LazyColumn {
-                items((listOf<String?>(null) + AppLocale.order)) { tag ->
+                // as on the site: the system language, then Serbian (Latin, Cyrillic), a divider, then the others alphabetically
+                val rows = listOf<String?>(null) + AppLocale.order.take(AppLocale.TOP) + listOf("-") + AppLocale.order.drop(AppLocale.TOP)
+                items(rows) { tag ->
+                    if (tag == "-") { HorizontalDivider(Modifier.padding(vertical = 4.dp)); return@items }
                     Row(Modifier.fillMaxWidth().clickable { onPick(tag) }.padding(vertical = 10.dp), verticalAlignment = Alignment.CenterVertically) {
                         RadioButton(selected = tag == current, onClick = { onPick(tag) })
                         Spacer(Modifier.width(8.dp))
-                        Text(if (tag == null) stringResource(R.string.language_system) else AppLocale.label(tag))
+                        Text(if (tag == null) stringResource(R.string.language_system) else AppLocale.label(ctx, tag))
                     }
                 }
             }

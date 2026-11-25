@@ -209,4 +209,8 @@
     <string name="h_sex">Spol</string>
     <string name="h_jmbg">Osobni ID (JMBG)</string>
     <string name="h_address">Adresa</string>
+    <string name="demo_card">Demo podaci: osobna iskaznica</string>
+    <string name="demo_health">Demo podaci: kartica zdravstvenog osiguranja</string>
+    <string name="demo_vehicle">Demo podaci: prometna dozvola</string>
+    <string name="lang_names">Latinica|Ćirilica|Albanski|Bjeloruski|Hrvatski|Engleski|Mađarski|Rumunjski|Ruski|Slovački|Ukrajinski</string>
 </resources>

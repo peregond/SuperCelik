@@ -186,7 +186,9 @@
                         </Border>
                         <Border Style="{StaticResource Card}" Margin="0,16,0,0">
                             <StackPanel>
-                                <CheckBox x:Name="ChkDemo" Click="Demo_Click"/>
+                                <CheckBox x:Name="ChkDemoCard" Click="Demo_Click"/>
+                                <CheckBox x:Name="ChkDemoHealth" Click="Demo_Click" Margin="0,8,0,0"/>
+                                <CheckBox x:Name="ChkDemoVehicle" Click="Demo_Click" Margin="0,8,0,0"/>
                                 <TextBlock x:Name="LblDemoHint" Foreground="{DynamicResource MutedBrush}" TextWrapping="Wrap" Margin="24,4,0,0"/>
                             </StackPanel>
                         </Border>
