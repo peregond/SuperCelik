@@ -62,6 +62,8 @@ a{color:inherit}img{max-width:100%}
 @keyframes fl4{to{transform:translate3d(14vmax,10vmax,0) scale(1.15)}}
 .hero::after{content:"";position:absolute;inset:0;z-index:1;pointer-events:none;opacity:.14;mix-blend-mode:overlay;background-image:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='220' height='220'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .9 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");background-size:220px 220px}
 h1{font-size:var(--h1);line-height:1.05;letter-spacing:-.04em;margin:0 auto 18px;font-weight:800;max-width:1060px;text-wrap:balance}
+/* Croatian and Hungarian first lines are long: a lower cap keeps the headline on two lines */
+@media(min-width:481px){html[lang=hr] .hero,html[lang=hu] .hero{--h1:clamp(28px,5.5vw,66px)}}
 @media(max-width:480px){.hero{--h1:8.1vw}}
 @supports (height:100svh){.stage{--sw:clamp(480px,calc((100svh - 68px - var(--h1)*2.1 - 118px)*1.85),1060px)}}
 .grad{background:linear-gradient(100deg,#8cc2ff 0%,#b9a9ff 45%,#ff7f88 100%);-webkit-background-clip:text;background-clip:text;color:transparent}
