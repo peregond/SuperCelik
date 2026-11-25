@@ -208,6 +208,13 @@ class HealthCard(private val transport: CardTransport) {
         return Resp(data.toByteArray(), r.sw)
     }
 
+    /** READ BINARY that follows T=0 "61xx" (GET RESPONSE) and repeats with the right length after "6Cxx", like the official client. */
+    private fun readBinary(offset: Int, le: Int): Resp {
+        var r = tx(RegistrationCard.apdu(0xB0, offset shr 8 and 0xFF, offset and 0xFF, le = le))
+        if (r.sw shr 8 == 0x6C) r = tx(RegistrationCard.apdu(0xB0, offset shr 8 and 0xFF, offset and 0xFF, le = r.sw and 0xFF))
+        return r
+    }
+
     /** Selects the applet of a health card; returns its AID, or null if the card has none of them. */
     fun selectApplet(): String? {
         for (aid in AIDS) {
@@ -230,7 +237,7 @@ class HealthCard(private val transport: CardTransport) {
         val fileSize = if (r.data.size >= 4) ((r.data[2].toInt() and 0xFF) shl 8) or (r.data[3].toInt() and 0xFF) else 0   // bytes 2-3, big-endian
         if (fileSize in 1..3) fail("File %04X is too small".format(id), 0x6700)
 
-        r = transport.transmit(RegistrationCard.apdu(0xB0, 0x00, 0x00, le = 4))
+        r = readBinary(0, 4)
         if (r.sw != 0x9000 || r.data.size != 4) fail("Read header %04X".format(id), r.sw)
         val got = (r.data[0].toInt() and 0xFF) or ((r.data[1].toInt() and 0xFF) shl 8)
         if (got != id) fail("File %04X holds another block".format(id), 0x6A82)
@@ -241,7 +248,7 @@ class HealthCard(private val transport: CardTransport) {
         while (data.size() < total) {
             val o = data.size()
             val n = minOf(0x80, total - o)
-            r = transport.transmit(RegistrationCard.apdu(0xB0, o shr 8 and 0xFF, o and 0xFF, le = n))
+            r = readBinary(o, n)
             if (r.sw != 0x9000 || r.data.isEmpty()) fail("Read %04X".format(id), r.sw)
             data.write(r.data)
         }

@@ -208,6 +208,13 @@ final class HealthCard {
         return (data, r.sw)
     }
 
+    /// READ BINARY that follows T=0 "61xx" (GET RESPONSE) and repeats with the right length after "6Cxx", like the official client.
+    private func readBinary(offset: Int, le: Int) throws -> Response {
+        var r = try tx(Self.apdu(0xB0, UInt8(offset >> 8 & 0xFF), UInt8(offset & 0xFF), le: UInt8(le)))
+        if r.sw >> 8 == 0x6C { r = try tx(Self.apdu(0xB0, UInt8(offset >> 8 & 0xFF), UInt8(offset & 0xFF), le: UInt8(r.sw & 0xFF))) }
+        return r
+    }
+
     /// Selects the applet of a health card; returns its AID, or nil if the card has none of them.
     func selectApplet() throws -> String? {
         for aid in Self.aids {
@@ -228,7 +235,7 @@ final class HealthCard {
         let fileSize = r.data.count >= 4 ? Int(r.data[2]) << 8 | Int(r.data[3]) : 0   // bytes 2-3, big-endian, when the card returns them
         guard !(fileSize > 0 && fileSize < 4) else { throw CardError.pcsc(0x6700, "File too small") }
 
-        r = try transmit(Self.apdu(0xB0, 0x00, 0x00, le: 4))
+        r = try readBinary(offset: 0, le: 4)
         guard r.sw == 0x9000, r.data.count == 4 else { throw CardError.pcsc(Int32(r.sw), "Read header") }
         guard Int(r.data[0]) | Int(r.data[1]) << 8 == Int(id) else { throw CardError.pcsc(0x6A82, "Other block") }
         let total = 4 + (Int(r.data[2]) | Int(r.data[3]) << 8)
@@ -236,7 +243,7 @@ final class HealthCard {
         var data = r.data
         while data.count < total {
             let o = data.count, n = min(0x80, total - o)
-            r = try transmit(Self.apdu(0xB0, UInt8(o >> 8), UInt8(o & 0xFF), le: UInt8(n)))
+            r = try readBinary(offset: o, le: n)
             guard r.sw == 0x9000, !r.data.isEmpty else { throw CardError.pcsc(Int32(r.sw), "Read binary") }
             data += r.data
         }

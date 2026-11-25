@@ -29,6 +29,14 @@ public static class HealthCard
         using (var s = pc.Connect(reader)) return SelectApplet(s) != null;
     }
 
+    /// READ BINARY that follows T=0 "61xx" (GET RESPONSE) and repeats with the right length after "6Cxx", like the official client.
+    private static (byte[] Data, int Sw) ReadBinary(CardSession s, int offset, int le)
+    {
+        var r = s.TxFollow(VehicleCard.Apdu(0, 0xB0, (byte)(offset >> 8), (byte)offset, null, le));
+        if (r.Sw >> 8 == 0x6C) r = s.TxFollow(VehicleCard.Apdu(0, 0xB0, (byte)(offset >> 8), (byte)offset, null, r.Sw & 0xFF));
+        return r;
+    }
+
     /// One block: select the applet, select the file (00 A4 00 00 02 <id>), read the 4-byte header, then the rest in chunks of 0x80.
     internal static byte[] ReadBlock(CardSession s, string aid, ushort id)
     {
@@ -41,7 +49,7 @@ public static class HealthCard
         int fileSize = r.Data.Length >= 4 ? r.Data[2] << 8 | r.Data[3] : 0;            // bytes 2-3, big-endian, when the card returns them
         if (fileSize > 0 && fileSize < 4) throw new CardException($"File {id:X4} is too small");
 
-        r = s.Tx(VehicleCard.Apdu(0, 0xB0, 0, 0, null, 4));
+        r = ReadBinary(s, 0, 4);
         if (r.Sw != 0x9000 || r.Data.Length != 4) throw new CardException($"Read header {id:X4}: {r.Sw:X4}");
         if ((r.Data[0] | r.Data[1] << 8) != id) throw new CardException($"File {id:X4} holds another block");
         int total = 4 + (r.Data[2] | r.Data[3] << 8);
@@ -50,7 +58,7 @@ public static class HealthCard
         while (data.Count < total)
         {
             int o = data.Count, n = Math.Min(0x80, total - o);
-            r = s.Tx(VehicleCard.Apdu(0, 0xB0, (byte)(o >> 8), (byte)o, null, n));
+            r = ReadBinary(s, o, n);
             if (r.Sw != 0x9000 || r.Data.Length == 0) throw new CardException($"Read {id:X4}: {r.Sw:X4}");
             data.AddRange(r.Data);
         }
