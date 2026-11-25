@@ -545,11 +545,16 @@ private fun CertCard(cert: TokenCert, onExport: (TokenCert) -> Unit) {
         }
     }
     val chainBroken = info?.third?.second?.isNotEmpty() == true
+    val chainVerified = info?.third?.second?.isEmpty() == true
     Card(Modifier.fillMaxWidth(), shape = CardShape, colors = groupCardColors()) {
         Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
             Row(verticalAlignment = Alignment.CenterVertically) {
-                if (chainBroken) TonalBadge(Icons.Filled.GppBad, MaterialTheme.colorScheme.errorContainer, MaterialTheme.colorScheme.onErrorContainer)
-                else TonalBadge(Icons.Filled.VerifiedUser)
+                // the verified badge only after a successful chain check; while the check runs (or the certificate cannot be read) a neutral one
+                when {
+                    chainBroken -> TonalBadge(Icons.Filled.GppBad, MaterialTheme.colorScheme.errorContainer, MaterialTheme.colorScheme.onErrorContainer)
+                    chainVerified -> TonalBadge(Icons.Filled.VerifiedUser)
+                    else -> TonalBadge(Icons.Filled.Description)
+                }
                 Spacer(Modifier.width(16.dp))
                 Text(cert.label.ifBlank { info?.first ?: "" }, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
             }
