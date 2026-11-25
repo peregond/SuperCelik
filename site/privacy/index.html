@@ -24,21 +24,22 @@ a{color:inherit}img{max-width:100%}
 .wrap{max-width:1100px;margin:0 auto;padding:0 24px}
 /* language: a globe that opens on hover */
 .langbox{position:fixed;top:14px;right:16px;z-index:60}
-.globe{width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.22);background:rgba(6,26,54,.55);backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);color:#fff;display:grid;place-items:center;cursor:pointer;transition:background .2s,transform .2s;box-shadow:0 8px 24px -10px rgba(0,0,0,.55)}
+.globe{width:42px;height:42px;border-radius:50%;border:1px solid rgba(255,255,255,.24);background:linear-gradient(rgba(255,255,255,.12),rgba(255,255,255,.12)),rgba(8,24,50,.62);backdrop-filter:saturate(180%) blur(16px);-webkit-backdrop-filter:saturate(180%) blur(16px);color:#fff;display:grid;place-items:center;cursor:pointer;transition:background .2s,transform .2s;box-shadow:0 8px 24px -10px rgba(0,0,0,.55)}
 .globe svg{width:22px;height:22px}
-.langbox.open .globe,.globe:focus-visible{background:rgba(255,255,255,.2)}
+.langbox.open .globe,.globe:focus-visible{background:linear-gradient(rgba(255,255,255,.24),rgba(255,255,255,.24)),rgba(8,24,50,.62)}
 .langmenu{position:absolute;right:0;top:100%;padding-top:8px;opacity:0;visibility:hidden;transform:translateY(-6px) scale(.96);transform-origin:top right;transition:opacity .18s,transform .18s,visibility .18s}
-.langmenu .in{display:flex;flex-direction:column;min-width:216px;padding:8px;border-radius:18px;background:rgba(9,30,60,.88);backdrop-filter:saturate(180%) blur(20px);-webkit-backdrop-filter:saturate(180%) blur(20px);border:1px solid rgba(255,255,255,.16);box-shadow:0 24px 50px -16px rgba(0,0,0,.6)}
-.langmenu button{display:flex;align-items:center;gap:14px;text-align:left;border:0;background:none;color:#c9dcf5;padding:12px 14px;border-radius:12px;font:600 17px inherit;font-family:inherit;cursor:pointer;transition:background .15s,color .15s}
+.langmenu .in{display:flex;flex-direction:column;gap:2px;min-width:216px;padding:8px;border-radius:22px;background:linear-gradient(rgba(255,255,255,.12),rgba(255,255,255,.06)),rgba(8,24,50,.74);-webkit-backdrop-filter:blur(22px) saturate(170%);backdrop-filter:blur(22px) saturate(170%);border:1px solid rgba(255,255,255,.24);box-shadow:0 24px 60px -16px rgba(0,0,0,.6)}
+.langmenu button{display:flex;align-items:center;gap:14px;text-align:left;border:0;background:none;color:#e4eefc;padding:10px 14px;border-radius:14px;font:600 17px inherit;font-family:inherit;cursor:pointer;transition:background .15s,color .15s}
 .langmenu .in{max-height:calc(100vh - 96px);overflow-y:auto}
 .langmenu button{white-space:nowrap}
 .langmenu .fl{width:28px;height:19px;border-radius:4px;flex:none;box-shadow:0 0 0 1px rgba(255,255,255,.28)}
+.langmenu .fl.em{height:auto;border-radius:0;box-shadow:none;font:normal 24px/1 "Apple Color Emoji","Noto Color Emoji",sans-serif;text-align:center}
 .langmenu hr{flex:none;width:calc(100% - 24px);height:1px;margin:6px 12px;border:0;background:rgba(255,255,255,.18)}
 .langmenu button:hover{background:rgba(255,255,255,.12);color:#fff}
-.langmenu button[aria-pressed=true]{color:#fff}
+.langmenu button[aria-pressed=true]{color:#fff;background:rgba(255,255,255,.14);box-shadow:inset 0 0 0 1px rgba(255,255,255,.22)}
 .langmenu button[aria-pressed=true]::after{content:"✓";color:#ff8e95;font-weight:800;margin-left:auto;padding-left:10px}
 .langbox.open .langmenu,.langbox:focus-within .langmenu{opacity:1;visibility:visible;transform:none}
-@media(hover:hover){.langbox:hover .langmenu{opacity:1;visibility:visible;transform:none}.globe:hover{background:rgba(255,255,255,.2)}}
+@media(hover:hover){.langbox:hover .langmenu{opacity:1;visibility:visible;transform:none}.globe:hover{background:linear-gradient(rgba(255,255,255,.24),rgba(255,255,255,.24)),rgba(8,24,50,.62)}}
 @media(max-width:480px){.langbox{top:10px;right:10px}}
 .top{position:relative;overflow:hidden;color:#fff;padding:30px 0 56px;background:linear-gradient(180deg,#05162f 0%,#08234a 60%,#0a2b55 100%)}
 .top::before,.top::after{content:"";position:absolute;border-radius:50%;pointer-events:none}
@@ -318,6 +319,10 @@ const LANGS=["ru","en","sr","sc","hu","sq","sk","ro","hr","uk","be"];
 const LNAMES={ru:"Сербский (латиница)|Сербский (кириллица)|Албанский|Белорусский|Хорватский|Английский|Венгерский|Румынский|Русский|Словацкий|Украинский",en:"Serbian (Latin)|Serbian (Cyrillic)|Albanian|Belarusian|Croatian|English|Hungarian|Romanian|Russian|Slovak|Ukrainian",sr:"Srpski (latinica)|Srpski (ćirilica)|Albanski|Beloruski|Hrvatski|Engleski|Mađarski|Rumunski|Ruski|Slovački|Ukrajinski",sc:"Српски (латиница)|Српски (ћирилица)|Албански|Белоруски|Хрватски|Енглески|Мађарски|Румунски|Руски|Словачки|Украјински",hr:"Srpski (latinica)|Srpski (ćirilica)|Albanski|Bjeloruski|Hrvatski|Engleski|Mađarski|Rumunjski|Ruski|Slovački|Ukrajinski",hu:"Szerb (latin)|Szerb (cirill)|Albán|Belarusz|Horvát|Angol|Magyar|Román|Orosz|Szlovák|Ukrán",sq:"Serbisht (latine)|Serbisht (cirilike)|Shqip|Bjellorusisht|Kroatisht|Anglisht|Hungarisht|Rumanisht|Rusisht|Sllovakisht|Ukrainisht",sk:"Srbčina (latinka)|Srbčina (cyrilika)|Albánčina|Bieloruština|Chorvátčina|Angličtina|Maďarčina|Rumunčina|Ruština|Slovenčina|Ukrajinčina",ro:"Sârbă (latină)|Sârbă (chirilică)|Albaneză|Belarusă|Croată|Engleză|Maghiară|Română|Rusă|Slovacă|Ucraineană",uk:"Сербська (латиниця)|Сербська (кирилиця)|Албанська|Білоруська|Хорватська|Англійська|Угорська|Румунська|Російська|Словацька|Українська",be:"Сербская (лацініца)|Сербская (кірыліца)|Албанская|Беларуская|Харвацкая|Англійская|Венгерская|Румынская|Руская|Славацкая|Украінская"};
 const LORDER="sr sc sq be hr en hu ro ru sk uk".split(" ");
 function nameLangs(l){const n=LNAMES[l].split("|");document.querySelectorAll(".langmenu button").forEach(b=>b.querySelector("span").textContent=n[LORDER.indexOf(b.dataset.l)])}
+// flag emoji; Windows has none (it draws two letters instead), so the drawn flags stay there
+const FLAGS={sr:"🇷🇸",sc:"🇷🇸",sq:"🇦🇱",be:"🇧🇾",hr:"🇭🇷",en:"🇬🇧",hu:"🇭🇺",ro:"🇷🇴",ru:"🇷🇺",sk:"🇸🇰",uk:"🇺🇦"};
+function flagEmoji(){try{const c=document.createElement("canvas").getContext("2d",{willReadFrequently:true});c.canvas.width=c.canvas.height=24;c.textBaseline="top";c.font='18px "Apple Color Emoji","Segoe UI Emoji","Noto Color Emoji",sans-serif';c.fillStyle="#000";c.fillText(FLAGS.sr,0,0);const d=c.getImageData(0,0,24,24).data;for(let i=0;i<d.length;i+=4)if(d[i+3]>200&&Math.max(d[i],d[i+1],d[i+2])-Math.min(d[i],d[i+1],d[i+2])>60)return true}catch(e){}return false}
+if(flagEmoji())document.querySelectorAll(".langmenu button svg.fl").forEach(s=>{const i=document.createElement("i");i.className="fl em";i.setAttribute("aria-hidden","true");i.textContent=FLAGS[s.closest("button").dataset.l];s.replaceWith(i)});
 const NEWL=["hu","sq","sk","ro","hr","uk","be"];
 const TITLE={ru:["Политика конфиденциальности","Обновлено: 2026-11-25"],en:["Privacy Policy","Last updated: 2026-11-25"],sr:["Politika privatnosti","Ažurirano: 2026-11-25"],sc:["Политика приватности","Ажурирано: 2026-11-25"]};
 Object.assign(TITLE,{hr:["Pravila privatnosti","Ažurirano: 2026-11-25"],hu:["Adatvédelmi szabályzat","Frissítve: 2026-11-25"],sq:["Politika e privatësisë","Përditësuar: 2026-11-25"],sk:["Zásady ochrany súkromia","Aktualizované: 2026-11-25"],ro:["Politica de confidențialitate","Actualizat: 2026-11-25"],uk:["Політика конфіденційності","Оновлено: 2026-11-25"],be:["Палітыка прыватнасці","Абноўлена: 2026-11-25"]});
