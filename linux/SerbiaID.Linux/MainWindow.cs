@@ -38,7 +38,8 @@ public sealed partial class MainWindow : Window
     private TextBlock _lblSetAppearance, _lblSetLang, _lblSetTheme, _lblSetPrivacy, _lblSetBehavior, _lblAutoHide;
     private TextBlock _lblAboutTitle, _lblAboutText, _lblVersion, _lblUpdateStatus;
     private ComboBox _cmbReader, _cmbLang, _cmbTheme;
-    private CheckBox _chkMask, _chkPrintJmbg, _chkAutoRead, _chkAutoUpdate, _chkDemo;
+    private CheckBox _chkMask, _chkPrintJmbg, _chkAutoRead, _chkAutoUpdate, _chkDemoCard, _chkDemoHealth, _chkDemoVehicle;
+    private string _demoKind = "card";      // which demo card the Settings switches show: card | health | vehicle
     private TextBlock _lblDemoHint, _lblCopyLogsHint; private Button _btnCopyLogs;
     private TextBox _txtAutoHide;
     private ProgressBar _busyBar;
@@ -81,7 +82,7 @@ public sealed partial class MainWindow : Window
         ApplyTheme(_cfg.Theme);
 
         Content = BuildUi();
-        _cmbLang.SelectedIndex = Array.IndexOf(Loc.PickerOrder, Loc.Current);
+        UpdateLanguageNames();
         _cmbTheme.SelectedIndex = _cfg.Theme switch { "light" => 1, "dark" => 2, _ => 0 };
         _chkMask.IsChecked = _cfg.MaskSensitive; _chkPrintJmbg.IsChecked = _cfg.PrintJmbg;
         _chkAutoRead.IsChecked = _cfg.AutoRead; _chkAutoUpdate.IsChecked = _cfg.AutoUpdate;
@@ -89,7 +90,7 @@ public sealed partial class MainWindow : Window
         SelectTab(Math.Clamp(_cfg.Tab, 0, TabCount - 1));
         _loading = false;
 
-        if (opts.Demo) { LoadDemo(); _loading = true; _chkDemo.IsChecked = true; _loading = false; return; }
+        if (opts.Demo) { LoadDemo(); _loading = true; (_demoKind == "health" ? _chkDemoHealth : _demoKind == "vehicle" ? _chkDemoVehicle : _chkDemoCard).IsChecked = true; _loading = false; return; }
         ApplyLanguage();
         Refresh();
         StartPolling();
@@ -335,11 +336,16 @@ public sealed partial class MainWindow : Window
         _lblSetAppearance = Ui.Label("", 15, true); _lblSetAppearance.FontWeight = FontWeight.Bold; _lblSetAppearance.Margin = new Thickness(0, 0, 0, 10);
         _lblSetLang = Ui.Label(""); _lblSetTheme = Ui.Label("");
         _cmbLang = new ComboBox { Width = 190 };
-        foreach (var lang in Loc.PickerOrder) _cmbLang.Items.Add(Loc.Flag(lang) + "  " + Loc.NativeName(lang));
+        // as on the site: Serbian (Latin, Cyrillic), a divider, then the others alphabetically; the names are in the language of the interface
+        for (int i = 0; i < Loc.PickerOrder.Length; i++)
+        {
+            if (i == Loc.PickerTop) _cmbLang.Items.Add(new Separator());
+            _cmbLang.Items.Add(new ComboBoxItem { Tag = Loc.PickerOrder[i] });
+        }
         _cmbLang.SelectionChanged += (_, _) =>
         {
-            if (_loading || _cmbLang.SelectedIndex < 0) return;
-            Loc.Current = Loc.PickerOrder[_cmbLang.SelectedIndex]; _cfg.Lang = Loc.Current.ToString(); _cfg.Save(); ApplyLanguage();
+            if (_loading || _cmbLang.SelectedItem is not ComboBoxItem { Tag: Lang picked }) return;
+            Loc.Current = picked; _cfg.Lang = Loc.Current.ToString(); _cfg.Save(); ApplyLanguage();
         };
         _cmbTheme = new ComboBox { Width = 190 };
         for (int i = 0; i < 3; i++) _cmbTheme.Items.Add("");
@@ -369,20 +375,30 @@ public sealed partial class MainWindow : Window
 
         foreach (var c in new[] { _chkMask, _chkPrintJmbg, _chkAutoRead, _chkAutoUpdate }) c.IsCheckedChanged += (_, _) => SettingChanged();
 
-        _chkDemo = new CheckBox();
+        // three demo switches, one demo card at a time: the ID card, the health insurance card, the vehicle registration card
+        _chkDemoCard = new CheckBox(); _chkDemoHealth = new CheckBox(); _chkDemoVehicle = new CheckBox();
         _lblDemoHint = Ui.Label("", 12, false, "MutedBrush", true); _lblDemoHint.Margin = new Thickness(28, 0, 0, 0);
-        _chkDemo.IsCheckedChanged += (_, _) =>
+        foreach (var box in new[] { _chkDemoCard, _chkDemoHealth, _chkDemoVehicle })
         {
-            if (_loading) return;
-            if (_chkDemo.IsChecked == true)
+            box.Margin = new Thickness(0, 0, 0, 6);
+            var self = box;
+            box.IsCheckedChanged += (_, _) =>
             {
-                // a card operation is still running: it would put real data over the demo data, so wait for it
-                if (_busy) { _loading = true; _chkDemo.IsChecked = false; _loading = false; return; }
-                ShowDemoData();
-            }
-            else HideDemoData();
-        };
-        var demo = Ui.Card(new StackPanel { Children = { _chkDemo, _lblDemoHint } });
+                if (_loading) return;
+                if (self.IsChecked == true)
+                {
+                    // a card operation is still running: it would put real data over the demo data, so wait for it
+                    if (_busy) { _loading = true; self.IsChecked = false; _loading = false; return; }
+                    _loading = true;
+                    foreach (var other in new[] { _chkDemoCard, _chkDemoHealth, _chkDemoVehicle }) if (other != self) other.IsChecked = false;
+                    _loading = false;
+                    _demoKind = self == _chkDemoHealth ? "health" : self == _chkDemoVehicle ? "vehicle" : "card";
+                    ShowDemoData();
+                }
+                else HideDemoData();
+            };
+        }
+        var demo = Ui.Card(new StackPanel { Children = { _chkDemoCard, _chkDemoHealth, _chkDemoVehicle, _lblDemoHint } });
         demo.Margin = new Thickness(0, 16, 0, 0);
 
         _btnCopyLogs = Ui.Btn(""); _btnCopyLogs.HorizontalAlignment = HorizontalAlignment.Left; _btnCopyLogs.Click += async (_, _) => await CopyLogs();
@@ -420,6 +436,7 @@ public sealed partial class MainWindow : Window
     private void ApplyLanguage()
     {
         Title = Loc.T("appTitle") + " (beta)";
+        UpdateLanguageNames();
         _lblBrand.Text = Loc.T("appTitle"); _lblBrandSub.Text = Loc.T("brandSub") + " · beta";
         ToolTip.SetTip(_btnRefresh, Loc.T("refresh"));
         Ui.SetBtn(_btnRead, "user-round", Loc.T("readCard")); Ui.SetBtn(_btnReadBig, "user-round", Loc.T("readCard"));
@@ -438,7 +455,7 @@ public sealed partial class MainWindow : Window
         _lblSetPrivacy.Text = Loc.T("setPrivacy"); _lblSetBehavior.Text = Loc.T("setBehavior");
         _chkMask.Content = Loc.T("setMask"); _chkPrintJmbg.Content = Loc.T("setPrintJmbg");
         _chkAutoRead.Content = Loc.T("setAutoRead"); _chkAutoUpdate.Content = Loc.T("setAutoUpdate");
-        _chkDemo.Content = Loc.T("demoData"); _lblDemoHint.Text = Loc.T("demoHint");
+        _chkDemoCard.Content = Loc.T("demoCard"); _chkDemoHealth.Content = Loc.T("demoHealth"); _chkDemoVehicle.Content = Loc.T("demoVehicle"); _lblDemoHint.Text = Loc.T("demoHint");
         Ui.SetBtn(_btnCopyLogs, "copy", Loc.T("copyLogs")); _lblCopyLogsHint.Text = Loc.T("copyLogsHint");
         _lblAutoHide.Text = Loc.T("setAutoHide");
         _loading = true;
@@ -1158,9 +1175,12 @@ public sealed partial class MainWindow : Window
             Variable = new VariablePersonalData { Place = "Beograd", Community = "Stari Grad", Street = "Knez Mihailova", HouseNumber = "1" },
         };
         _sig = new SigStatus { Result = SigResult.Ok };
-        // `--vehicle` with the demo: a vehicle registration card instead of the ID card
-        if (Environment.GetCommandLineArgs().Contains("--vehicle")) { _vehicle = VehicleRows.Demo(); _personal = null; _sig = null; }
-        if (Environment.GetCommandLineArgs().Contains("--health")) { _health = HealthRows.Demo(); _personal = null; _sig = null; }
+        // the demo card: the ID card, or (Settings switches, or `--vehicle` / `--health` for screenshots) a vehicle registration or health insurance card
+        var kind = _demoKind;
+        if (Environment.GetCommandLineArgs().Contains("--vehicle")) kind = "vehicle";
+        if (Environment.GetCommandLineArgs().Contains("--health")) kind = "health";
+        if (kind == "vehicle") { _vehicle = VehicleRows.Demo(); _personal = null; _sig = null; }
+        if (kind == "health") { _health = HealthRows.Demo(); _personal = null; _sig = null; }
         _token = new TokenInfo { Label = "NetSeT's CardEdge Token", Serial = "RP000000000" };
         _token.Certificates.Add(new TokenCertificate
         {
@@ -1170,6 +1190,18 @@ public sealed partial class MainWindow : Window
     }
 
     /// Settings > "Show demo data": fictional data on screen, the real reader is not polled meanwhile.
+    /// Writes the names of the languages (with their flags) in the language of the interface and selects the current one.
+    private void UpdateLanguageNames()
+    {
+        var names = Loc.PickerNames();
+        var was = _loading; _loading = true;
+        foreach (var item in _cmbLang.Items)
+            if (item is ComboBoxItem { Tag: Lang lang } c) c.Content = Loc.Flag(lang) + "  " + names[Array.IndexOf(Loc.PickerOrder, lang)];
+        var pos = Array.IndexOf(Loc.PickerOrder, Loc.Current);
+        _cmbLang.SelectedIndex = pos + (pos >= Loc.PickerTop ? 1 : 0);      // the divider takes one index
+        _loading = was;
+    }
+
     private void ShowDemoData()
     {
         _demo = true; _serviceDown = false;

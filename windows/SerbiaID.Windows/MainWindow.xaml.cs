@@ -22,6 +22,7 @@ public partial class MainWindow : Window
     private List<string> _readers = new();
     private bool _revealAll;     // one global eye: show / hide all sensitive fields
     private bool _loading = true, _cardPresent, _busy, _demo;
+    private string _demoKind = "card";      // which demo card the Settings switches show: card | health | vehicle
     private DateTime _lastActivity = DateTime.Now;
     private readonly DispatcherTimer _poll = new() { Interval = TimeSpan.FromMilliseconds(1500) };
     private readonly DispatcherTimer _idle = new() { Interval = TimeSpan.FromSeconds(15) };
@@ -37,7 +38,6 @@ public partial class MainWindow : Window
         RestoreWindow();
 
         BuildLanguagePicker();
-        CmbLang.SelectedIndex = Array.IndexOf(Loc.PickerOrder, Loc.Current);
         for (int i = 0; i < 3; i++) CmbTheme.Items.Add("");
         CmbTheme.SelectedIndex = _cfg.Theme switch { "light" => 1, "dark" => 2, _ => 0 };
         ChkMask.IsChecked = _cfg.MaskSensitive; ChkPrintJmbg.IsChecked = _cfg.PrintJmbg;
@@ -56,20 +56,26 @@ public partial class MainWindow : Window
         Loaded += async (_, _) => { if (_cfg.AutoUpdate && !_demo) await AutoCheckUpdateAsync(); };
     }
 
-    /// A language in the picker: its flag (a picture: Windows has no flag emoji) and its name.
-    private sealed class LangEntry
+    /// A language in the picker: its flag (a picture: Windows has no flag emoji) and its name (in the language of the interface, so it changes with it).
+    private sealed class LangEntry : System.ComponentModel.INotifyPropertyChanged
     {
-        public string Name { get; set; }
+        private string _name;
+        public string Name { get { return _name; } set { _name = value; if (PropertyChanged != null) PropertyChanged(this, new System.ComponentModel.PropertyChangedEventArgs("Name")); } }
         public ImageSource Flag { get; set; }
+        public Lang Lang { get; set; }
+        public event System.ComponentModel.PropertyChangedEventHandler PropertyChanged;
     }
 
+    /// The picker as on the site: Serbian (Latin, Cyrillic), a divider, then the other languages alphabetically.
     private void BuildLanguagePicker()
     {
-        foreach (var lang in Loc.PickerOrder)
+        for (int i = 0; i < Loc.PickerOrder.Length; i++)
         {
+            if (i == Loc.PickerTop) CmbLang.Items.Add(new Separator());
+            var lang = Loc.PickerOrder[i];
             ImageSource flag = null;
             try { flag = new BitmapImage(new Uri("pack://application:,,,/Flags/" + Loc.FlagFile(lang) + ".png", UriKind.Absolute)); } catch { }
-            CmbLang.Items.Add(new LangEntry { Name = Loc.NativeName(lang), Flag = flag });
+            CmbLang.Items.Add(new LangEntry { Flag = flag, Lang = lang });
         }
         var row = new FrameworkElementFactory(typeof(StackPanel));
         row.SetValue(StackPanel.OrientationProperty, Orientation.Horizontal);
@@ -84,6 +90,22 @@ public partial class MainWindow : Window
         txt.SetValue(FrameworkElement.VerticalAlignmentProperty, VerticalAlignment.Center);
         row.AppendChild(img); row.AppendChild(txt);
         CmbLang.ItemTemplate = new DataTemplate { VisualTree = row };
+        UpdateLanguageNames();
+    }
+
+    /// Writes the names of the languages in the current language of the interface and selects the current one.
+    private void UpdateLanguageNames()
+    {
+        var names = Loc.PickerNames();
+        var was = _loading; _loading = true;
+        foreach (var item in CmbLang.Items)
+        {
+            var e = item as LangEntry;
+            if (e != null) e.Name = names[Array.IndexOf(Loc.PickerOrder, e.Lang)];
+        }
+        var pos = Array.IndexOf(Loc.PickerOrder, Loc.Current);
+        CmbLang.SelectedIndex = pos + (pos >= Loc.PickerTop ? 1 : 0);      // the divider takes one index
+        _loading = was;
     }
 
     protected override void OnClosing(System.ComponentModel.CancelEventArgs e)
@@ -158,8 +180,9 @@ public partial class MainWindow : Window
     // ---------- language ----------
     private void Lang_Changed(object s, SelectionChangedEventArgs e)
     {
-        if (_loading || CmbLang.SelectedIndex < 0) return;
-        Loc.Current = Loc.PickerOrder[CmbLang.SelectedIndex];
+        var picked = CmbLang.SelectedItem as LangEntry;
+        if (_loading || picked == null) return;
+        Loc.Current = picked.Lang;
         _cfg.Lang = Loc.Current.ToString(); _cfg.Save();
         ApplyLanguage();
     }
@@ -167,6 +190,7 @@ public partial class MainWindow : Window
     private void ApplyLanguage()
     {
         Title = Loc.T("appTitle");
+        UpdateLanguageNames();
         LblBrand.Text = Loc.T("appTitle"); LblBrandSub.Text = Loc.T("brandSub");
         BtnRefresh.Content = Glyph("", 15); BtnRefresh.ToolTip = Loc.T("refresh"); AutomationProperties.SetName(BtnRefresh, Loc.T("refresh"));
         SetBtn(BtnRead, "", Loc.T("readCard"));
@@ -185,7 +209,7 @@ public partial class MainWindow : Window
         SetBtn(BtnCopyLogs, "\uE8C8", Loc.T("copyLogs")); LblCopyLogsHint.Text = Loc.T("copyLogsHint");
         LblCheckTitle.Text = Loc.T("chkTitle");
         BtnCheckClose.Content = Glyph("\uE711", 12);
-        ChkDemo.Content = Loc.T("demoData"); LblDemoHint.Text = Loc.T("demoHint");
+        ChkDemoCard.Content = Loc.T("demoCard"); ChkDemoHealth.Content = Loc.T("demoHealth"); ChkDemoVehicle.Content = Loc.T("demoVehicle"); LblDemoHint.Text = Loc.T("demoHint");
         PnlCheck.Visibility = Visibility.Collapsed;
         SetBtn(BtnCheckUpdates, "", Loc.T("checkUpdates"));
         BtnWhatsNew.Content = Loc.T("whatsNew"); BtnReaderHelp.Content = Loc.T("readerHelp");
@@ -581,13 +605,17 @@ public partial class MainWindow : Window
         PnlCheck.Visibility = Visibility.Visible;
     }
 
+    /// The three demo switches: one demo card at a time (the ID card, the health insurance card or the vehicle registration card).
     private void Demo_Click(object s, RoutedEventArgs e)
     {
-        if (ChkDemo.IsChecked == true)
+        var box = (CheckBox)s;
+        if (box.IsChecked == true)
         {
-            if (_busy) { ChkDemo.IsChecked = false; return; }              // a card operation is running: it would put real data over the demo data
+            if (_busy) { box.IsChecked = false; return; }              // a card operation is running: it would put real data over the demo data
+            foreach (var other in new[] { ChkDemoCard, ChkDemoHealth, ChkDemoVehicle }) if (other != box) other.IsChecked = false;
+            _demoKind = box == ChkDemoHealth ? "health" : box == ChkDemoVehicle ? "vehicle" : "card";
             LoadDemo(Tabs.SelectedIndex);
-            ChkDemo.IsChecked = true;
+            box.IsChecked = true;
         }
         else
         {
@@ -1122,10 +1150,12 @@ public partial class MainWindow : Window
             Variable = new VariablePersonalData { Place = "Beograd", Community = "Stari Grad", Street = "Knez Mihailova", HouseNumber = "1" },
         };
         _sig = new SigStatus { Result = SigResult.Ok };
-        // `--vehicle` with the demo: a vehicle registration card instead of the ID card
-        if (Environment.GetCommandLineArgs().Contains("--vehicle")) { _vehicle = VehicleRows.Demo(); _personal = null; _sig = null; }
-        // `--health`: a health insurance card
-        if (Environment.GetCommandLineArgs().Contains("--health")) { _health = HealthRows.Demo(); _personal = null; _sig = null; }
+        // the demo card: the ID card, or (Settings switches, or `--vehicle` / `--health` for screenshots) a vehicle registration or health insurance card
+        var kind = _demoKind;
+        if (Environment.GetCommandLineArgs().Contains("--vehicle")) kind = "vehicle";
+        if (Environment.GetCommandLineArgs().Contains("--health")) kind = "health";
+        if (kind == "vehicle") { _vehicle = VehicleRows.Demo(); _personal = null; _sig = null; }
+        if (kind == "health") { _health = HealthRows.Demo(); _personal = null; _sig = null; }
         _token = new TokenInfo { Label = "NetSeT's CardEdge Token", Serial = "RP000000000" };
         _token.Certificates.Add(new TokenCertificate
         {
