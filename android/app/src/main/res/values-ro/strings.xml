@@ -209,4 +209,8 @@
     <string name="h_sex">Sex</string>
     <string name="h_jmbg">CNP (JMBG)</string>
     <string name="h_address">Adresa</string>
+    <string name="demo_card">Date demo: carte de identitate</string>
+    <string name="demo_health">Date demo: card de asigurare de sănătate</string>
+    <string name="demo_vehicle">Date demo: card de înmatriculare a vehiculului</string>
+    <string name="lang_names">Latină|Chirilică|Albaneză|Belarusă|Croată|Engleză|Maghiară|Română|Rusă|Slovacă|Ucraineană</string>
 </resources>

@@ -209,4 +209,8 @@
     <string name="h_sex">Пол</string>
     <string name="h_jmbg">ЕМБГ</string>
     <string name="h_address">Адрас</string>
+    <string name="demo_card">Дэмаданыя: пасведчанне асобы</string>
+    <string name="demo_health">Дэмаданыя: картка медыцынскага страхавання</string>
+    <string name="demo_vehicle">Дэмаданыя: пасведчанне аб рэгістрацыі ТС</string>
+    <string name="lang_names">Лацініца|Кірыліца|Албанская|Беларуская|Харвацкая|Англійская|Венгерская|Румынская|Руская|Славацкая|Украінская</string>
 </resources>

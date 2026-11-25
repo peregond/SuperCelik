@@ -209,4 +209,8 @@
     <string name="h_sex">Pohlavie</string>
     <string name="h_jmbg">Osobné ID (JMBG)</string>
     <string name="h_address">Adresa</string>
+    <string name="demo_card">Ukážkové údaje: občiansky preukaz</string>
+    <string name="demo_health">Ukážkové údaje: karta zdravotného poistenia</string>
+    <string name="demo_vehicle">Ukážkové údaje: osvedčenie o evidencii vozidla</string>
+    <string name="lang_names">Latinka|Cyrilika|Albánčina|Bieloruština|Chorvátčina|Angličtina|Maďarčina|Rumunčina|Ruština|Slovenčina|Ukrajinčina</string>
 </resources>

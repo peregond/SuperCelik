@@ -77,8 +77,11 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
     private val _demo = MutableStateFlow(false)
     val demo: StateFlow<Boolean> = _demo.asStateFlow()      // fictional data on screen (Settings switch), no card involved
 
-    /** Settings switch: shows fictional card data to look at the app, or goes back to the real reader. */
-    fun setDemo(on: Boolean) { if (on) { cancel(); showDemo() } else { clear() } }
+    private val _demoKind = MutableStateFlow("card")
+    val demoKind: StateFlow<String> = _demoKind.asStateFlow()      // which demo card is shown: card | health | vehicle
+
+    /** Settings switches: show a fictional card ("card", "health" or "vehicle", one at a time) to look at the app, or null to go back to the real reader. */
+    fun setDemo(kind: String?) { if (kind != null) { cancel(); showDemo(vehicle = kind == "vehicle", health = kind == "health") } else { clear() } }
 
     private val _autoRead = MutableStateFlow(prefs.getBoolean("autoRead", true))
     val autoRead: StateFlow<Boolean> = _autoRead.asStateFlow()
@@ -303,6 +306,8 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
     /** Fictional data for screenshots (launch intent extra "demo"); never touches a card. */
     fun showDemo(vehicle: Boolean = false, health: Boolean = false) {
         _demo.value = true
+        _demoKind.value = if (vehicle) "vehicle" else if (health) "health" else "card"
+        _vehicle.value = null; _health.value = null      // switching from one demo card to another
         _personal.value = PersonalData(
             cardType = CardType.RP2024, docRegNo = "001234567", documentType = "RP",
             issuingDate = "01.01.2024", expiryDate = "01.01.2030", issuingAuthority = "MUP RS", docSerial = "RS1234567",

@@ -12,19 +12,23 @@ import java.util.Locale
 object AppLocale {
     private const val KEY = "appLanguage"
 
-    /** Language tags in the order of the pickers: Serbian (Latin, Cyrillic), English, Russian, then the others alphabetically by their English name. */
-    val order = listOf("sr-Latn", "sr-Cyrl", "en", "ru", "sq", "be", "hr", "hu", "ro", "sk", "uk")
+    /** Language tags in the order of the pickers, as on the site: Serbian (Latin, Cyrillic), a divider, then the others alphabetically by their English name. */
+    val order = listOf("sr-Latn", "sr-Cyrl", "sq", "be", "hr", "en", "hu", "ro", "ru", "sk", "uk")
 
-    private val names = mapOf(
-        "sr-Latn" to "Srpski (latinica)", "sr-Cyrl" to "Српски (ћирилица)", "en" to "English", "ru" to "Русский",
-        "sq" to "Shqip", "be" to "Беларуская", "hr" to "Hrvatski", "hu" to "Magyar", "ro" to "Română", "sk" to "Slovenčina", "uk" to "Українська",
-    )
+    /** How many of [order] sit above the divider (the two Serbian scripts). */
+    const val TOP = 2
+
     private val flags = mapOf(
         "sr-Latn" to "🇷🇸", "sr-Cyrl" to "🇷🇸", "en" to "🇬🇧", "ru" to "🇷🇺", "sq" to "🇦🇱", "be" to "🇧🇾",
         "hr" to "🇭🇷", "hu" to "🇭🇺", "ro" to "🇷🇴", "sk" to "🇸🇰", "uk" to "🇺🇦",
     )
 
-    fun label(tag: String) = "${flags[tag] ?: ""}  ${names[tag] ?: tag}"
+    /** The flag and the name of a language in the language of the interface ("lang_names" of the current resources, in the order of [order]);
+     *  for the two Serbian scripts just "Latin" and "Cyrillic": the Serbian flag says which language that is. */
+    fun label(context: Context, tag: String): String {
+        val names = context.getString(R.string.lang_names).split("|")
+        return "${flags[tag] ?: ""}  ${names.getOrNull(order.indexOf(tag)) ?: tag}"
+    }
 
     fun saved(context: Context): String? =
         context.getSharedPreferences("settings", Context.MODE_PRIVATE).getString(KEY, null)?.takeIf { it in order }
