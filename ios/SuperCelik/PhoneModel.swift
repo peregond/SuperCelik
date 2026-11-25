@@ -76,6 +76,7 @@ final class PhoneModel: ObservableObject {
         signatureStatus = .ok
         // the demo card: the ID card, or (Settings switches, or `--vehicle` / `--health` for screenshots) a vehicle registration or health insurance card
         let kind: DemoKind = CommandLine.arguments.contains("--vehicle") ? .vehicle : CommandLine.arguments.contains("--health") ? .health : demoCard
+        vehicle = nil; health = nil      // switching from one demo card to another
         if kind == .vehicle { personal = nil; vehicle = VehicleRows.demo(); signatureStatus = nil }
         if kind == .health { personal = nil; health = HealthRows.demo(); signatureStatus = nil }
         // the Token tab gets fictional certificates too

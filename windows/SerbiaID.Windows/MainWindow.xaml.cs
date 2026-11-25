@@ -1154,6 +1154,7 @@ public partial class MainWindow : Window
         var kind = _demoKind;
         if (Environment.GetCommandLineArgs().Contains("--vehicle")) kind = "vehicle";
         if (Environment.GetCommandLineArgs().Contains("--health")) kind = "health";
+        _vehicle = null; _health = null;      // switching from one demo card to another
         if (kind == "vehicle") { _vehicle = VehicleRows.Demo(); _personal = null; _sig = null; }
         if (kind == "health") { _health = HealthRows.Demo(); _personal = null; _sig = null; }
         _token = new TokenInfo { Label = "NetSeT's CardEdge Token", Serial = "RP000000000" };
