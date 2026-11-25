@@ -31,8 +31,12 @@ struct SerbiaIDApp: App {
                 .keyboardShortcut("s").disabled(model.personal == nil && model.vehicle == nil)
             }
             CommandMenu(loc.t(.language)) {
-                ForEach(AppLanguage.allCases) { lang in
-                    Button(lang.title) { loc.language = lang }
+                ForEach(AppLanguage.pickerTop) { lang in
+                    Button(loc.pickerLabel(lang)) { loc.language = lang }
+                }
+                Divider()
+                ForEach(AppLanguage.pickerRest) { lang in
+                    Button(loc.pickerLabel(lang)) { loc.language = lang }
                 }
             }
         }

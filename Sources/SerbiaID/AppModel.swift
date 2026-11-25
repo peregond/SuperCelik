@@ -143,7 +143,9 @@ final class AppModel: ObservableObject {
 
     /// Fictional data shown from Settings (App Review has no Serbian eID). While it is on, polling is paused.
     @Published private(set) var demoActive = false
-    func showDemoData() {
+    @Published private(set) var demoKind: DemoKind = .card
+    func showDemoData(_ kind: DemoKind = .card) {
+        demoKind = kind
         demoActive = true
         loadDemo(problem: false)
     }
@@ -623,10 +625,10 @@ final class AppModel: ObservableObject {
         p.variable = VariablePersonalData(community: "Stari Grad", place: "Beograd", street: "Knez Mihailova", houseNumber: "1")
         personal = p
         signatureStatus = .ok
-        // `--vehicle` with the demo: a vehicle registration card instead of the ID card
-        if CommandLine.arguments.contains("--vehicle") { personal = nil; vehicle = VehicleRows.demo(); signatureStatus = nil }
-        // `--health`: a health insurance card
-        if CommandLine.arguments.contains("--health") { personal = nil; health = HealthRows.demo(); signatureStatus = nil }
+        // the demo card: the ID card, or (Settings switches, or `--vehicle` / `--health` for screenshots) a vehicle registration or health insurance card
+        let kind: DemoKind = CommandLine.arguments.contains("--vehicle") ? .vehicle : CommandLine.arguments.contains("--health") ? .health : demoKind
+        if kind == .vehicle { personal = nil; vehicle = VehicleRows.demo(); signatureStatus = nil }
+        if kind == .health { personal = nil; health = HealthRows.demo(); signatureStatus = nil }
         token = TokenInfo(tokenLabel: "NetSeT's CardEdge Token", tokenSerial: "RP000000000", certificates: [])
         tokenRows = [TokenCertRow(label: "MARKO PETROVIC 000000000 Auth",
                                   summary: TokenCodec.CertSummary(subject: "MARKO PETROVIC", issuer: "MUP Stranci CA 4",

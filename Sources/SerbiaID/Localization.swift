@@ -1,25 +1,45 @@
 import SwiftUI
 
 enum AppLanguage: String, CaseIterable, Identifiable {
-    // the order is the order of the language pickers: Serbian (Latin, Cyrillic), English, Russian, then the others alphabetically by their English name
-    case sr, srCyrl, en, ru, sq, be, hr, hu, ro, sk, uk
+    // the order is the order of the language pickers, as on the site: Serbian (Latin, Cyrillic), a divider, then the others alphabetically by their English name
+    case sr, srCyrl, sq, be, hr, en, hu, ro, ru, sk, uk
     /// The languages whose texts live in LocalizationExtra.swift (everything missing there falls back to English).
     var isExtra: Bool { switch self { case .hu, .sq, .sk, .ro, .hr, .uk, .be: return true; default: return false } }
     var id: String { rawValue }
-    var title: String {
+    /// The two Serbian scripts, above the divider of the pickers.
+    static var pickerTop: [AppLanguage] { Array(allCases.prefix(2)) }
+    /// All the other languages, below the divider.
+    static var pickerRest: [AppLanguage] { Array(allCases.dropFirst(2)) }
+    var flag: String {
         switch self {
-        case .ru: return "🇷🇺  Русский"
-        case .en: return "🇬🇧  English"
-        case .sr: return "🇷🇸  Srpski (latinica)"
-        case .srCyrl: return "🇷🇸  Српски (ћирилица)"
-        case .hu: return "🇭🇺  Magyar"
-        case .sq: return "🇦🇱  Shqip"
-        case .sk: return "🇸🇰  Slovenčina"
-        case .ro: return "🇷🇴  Română"
-        case .hr: return "🇭🇷  Hrvatski"
-        case .uk: return "🇺🇦  Українська"
-        case .be: return "🇧🇾  Беларуская"
+        case .ru: return "🇷🇺"
+        case .en: return "🇬🇧"
+        case .sr, .srCyrl: return "🇷🇸"
+        case .hu: return "🇭🇺"
+        case .sq: return "🇦🇱"
+        case .sk: return "🇸🇰"
+        case .ro: return "🇷🇴"
+        case .hr: return "🇭🇷"
+        case .uk: return "🇺🇦"
+        case .be: return "🇧🇾"
         }
+    }
+}
+
+/// The demo cards of the Settings switches (one at a time): the ID card, the health insurance card, the vehicle registration card.
+enum DemoKind: String, CaseIterable, Identifiable {
+    case card, health, vehicle
+    var id: String { rawValue }
+    var labelKey: String { switch self { case .card: return "demoCard"; case .health: return "demoHealth"; case .vehicle: return "demoVehicle" } }
+}
+
+extension Loc {
+    /// The label of a language in the pickers: its flag and its name in the language of the interface (for the two Serbian scripts just
+    /// "Latin" and "Cyrillic": the Serbian flag says which language that is).
+    func pickerLabel(_ l: AppLanguage) -> String {
+        let names = x("langNames").components(separatedBy: "|")
+        let i = AppLanguage.allCases.firstIndex(of: l) ?? 0
+        return "\(l.flag)  \(i < names.count ? names[i] : l.rawValue)"
     }
 }
 
