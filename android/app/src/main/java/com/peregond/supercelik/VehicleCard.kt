@@ -378,6 +378,9 @@ object CardDiag {
     private val VEHICLE = listOf("VL full (SERVL+01)" to "F381000002534552564C01", "VL prefix (SERVL)" to "F381000002534552564C",
         "VL (SERVL+040201)" to "F381000002534552564C040201",
         "eVL-001 (long)" to "A0000000183414010065564C2D303031", "eVL-001" to "A00000001865564C2D303031")
+    // health insurance card (KZO): applet names recovered from the official reader, see docs/health-card-protocol.md
+    private val HEALTH = listOf("KZO type 1 (SERVSZK+01)" to "F38100000253455256535A4B01", "KZO type 7 (SERSOVOZK+01)" to "F381000002534552534F564F5A4B01")
+    private val HEALTH_FILES = intArrayOf(0x0D00, 0x0D01, 0x0D02, 0x0D03, 0x0D04, 0x0D05, 0x0D06, 0x0D07, 0x0D09)
     private val VEHICLE_FILES = intArrayOf(0xD001, 0xD011, 0xD021, 0xD031, 0xD041, 0xE001, 0xE011, 0xE021, 0xC001, 0xC011, 0xC021)
 
     fun run(transport: CardTransport, appVersion: String, reader: String): String {
@@ -394,20 +397,22 @@ object CardDiag {
             readPlain(card, "EF.DIR 2F00", 0x2F00, out)
             readPlain(card, "EF.ATR 2F01", 0x2F01, out)
             l(""); l("== Known applications")
-            for ((n, a) in KNOWN) trySelect(card, n, a, false, out)
+            for ((n, a) in KNOWN) trySelect(card, n, a, null, out)
+            l(""); l("== Health insurance card (KZO), names from the official reader, not yet seen on a real card")
+            for ((n, a) in HEALTH) trySelect(card, n, a, HEALTH_FILES, out)
             l(""); l("== Vehicle registration candidates (unconfirmed names)")
-            for ((n, a) in VEHICLE) trySelect(card, n, a, true, out)
+            for ((n, a) in VEHICLE) trySelect(card, n, a, VEHICLE_FILES, out)
         } catch (e: Exception) { l("ERROR: ${e.javaClass.simpleName}: ${e.message}") }
         l(""); l("end")
         return out.joinToString("\n")
     }
 
-    private fun trySelect(card: RegistrationCard, name: String, aid: String, files: Boolean, out: MutableList<String>) {
+    private fun trySelect(card: RegistrationCard, name: String, aid: String, files: IntArray?, out: MutableList<String>) {
         val r = card.tx(RegistrationCard.apdu(0xA4, 0x04, 0x00, RegistrationCard.hex(aid), 0))
         out.add("SELECT %s %s: SW=%04X fci=%dB".format(name, aid, r.sw, r.data.size))
         if (r.sw != 0x9000) return
         if (r.data.isNotEmpty()) dump(r.data, "  fci ", true, out)
-        if (files) for (fid in VEHICLE_FILES) probeFile(card, fid, out)
+        if (files != null) for (fid in files) probeFile(card, fid, out)
     }
 
     private fun probeFile(card: RegistrationCard, fid: Int, out: MutableList<String>) {

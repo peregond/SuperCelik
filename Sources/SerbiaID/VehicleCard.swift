@@ -386,6 +386,11 @@ enum CardDiag {
         ("VL (SERVL+040201)", "F381000002534552564C040201"),
         ("eVL-001 (long)", "A0000000183414010065564C2D303031"), ("eVL-001", "A00000001865564C2D303031"),
     ]
+    // health insurance card (KZO): applet names recovered from the official reader, see docs/health-card-protocol.md
+    private static let healthAids: [(String, String)] = [
+        ("KZO type 1 (SERVSZK+01)", "F38100000253455256535A4B01"), ("KZO type 7 (SERSOVOZK+01)", "F381000002534552534F564F5A4B01"),
+    ]
+    private static let healthFiles: [UInt16] = [0x0D00, 0x0D01, 0x0D02, 0x0D03, 0x0D04, 0x0D05, 0x0D06, 0x0D07, 0x0D09]
     private static let vehicleFiles: [UInt16] = [0xD001, 0xD011, 0xD021, 0xD031, 0xD041, 0xE001, 0xE011, 0xE021, 0xC001, 0xC011, 0xC021]
 
     static func run(atr: [UInt8]?, appVersion: String, reader: String, transmit: @escaping ([UInt8]) throws -> RegistrationCard.Response) -> String {
@@ -403,9 +408,11 @@ enum CardDiag {
             readPlain(card, "EF.DIR 2F00", 0x2F00, &out)
             readPlain(card, "EF.ATR 2F01", 0x2F01, &out)
             L(""); L("== Known applications")
-            for (n, a) in knownAids { trySelect(card, n, a, false, &out) }
+            for (n, a) in knownAids { trySelect(card, n, a, nil, &out) }
+            L(""); L("== Health insurance card (KZO), names from the official reader, not yet seen on a real card")
+            for (n, a) in healthAids { trySelect(card, n, a, healthFiles, &out) }
             L(""); L("== Vehicle registration candidates (unconfirmed names)")
-            for (n, a) in vehicleAids { trySelect(card, n, a, true, &out) }
+            for (n, a) in vehicleAids { trySelect(card, n, a, vehicleFiles, &out) }
         } catch { L("ERROR: \(error.localizedDescription)") }
         L(""); L("end")
         return out.joined(separator: "\n")
@@ -413,13 +420,13 @@ enum CardDiag {
 
     private static func sw(_ v: UInt16) -> String { String(format: "%04X", v) }
 
-    private static func trySelect(_ card: RegistrationCard, _ name: String, _ aid: String, _ files: Bool, _ out: inout [String]) {
+    private static func trySelect(_ card: RegistrationCard, _ name: String, _ aid: String, _ files: [UInt16]?, _ out: inout [String]) {
         do {
             let r = try card.tx(RegistrationCard.apdu(0xA4, 0x04, 0x00, RegistrationCard.bytes(hex: aid), le: 0))
             out.append("SELECT \(name) \(aid): SW=\(sw(r.sw)) fci=\(r.data.count)B")
             guard r.sw == 0x9000 else { return }
             if !r.data.isEmpty { dump(r.data, "  fci ", true, &out) }
-            if files { for fid in vehicleFiles { probeFile(card, fid, &out) } }
+            if let files { for fid in files { probeFile(card, fid, &out) } }
         } catch { out.append("SELECT \(name): \(error.localizedDescription)") }
     }
 

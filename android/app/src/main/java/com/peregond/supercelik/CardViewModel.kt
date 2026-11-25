@@ -41,6 +41,8 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
     val personal: StateFlow<PersonalData?> = _personal.asStateFlow()
     private val _vehicle = MutableStateFlow<VehicleData?>(null)
     val vehicle: StateFlow<VehicleData?> = _vehicle.asStateFlow()
+    private val _health = MutableStateFlow<HealthData?>(null)
+    val health: StateFlow<HealthData?> = _health.asStateFlow()
     private val _diagLog = MutableStateFlow<String?>(null)
     val diagLog: StateFlow<String?> = _diagLog.asStateFlow()
     private val _diagUnlocked = MutableStateFlow(false)
@@ -106,7 +108,7 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
         startUsb(context)
     }
 
-    /** One read for every card: an eID card (ID, foreigner card, residence permit) or a vehicle registration card. */
+    /** One read for every card: an eID card (ID, foreigner card, residence permit), a health insurance card or a vehicle registration card. */
     fun readCard(context: Context) {
         _message.value = null; _failed.value = false
         pending = null; pendingRaw = null
@@ -128,8 +130,15 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
     private fun readAny(t: CardTransport) {
         val eid = EidCard(t)
         val isEid = try { eid.selectApplet(); true } catch (e: CardException) { if (e.kind == CardException.Kind.Unsupported) false else throw e }
-        if (isEid) { _vehicle.value = null; readOp(eid); return }
-        _vehicle.value = RegistrationCard(t).read()
+        if (isEid) { _vehicle.value = null; _health.value = null; readOp(eid); return }
+        val hc = HealthCard(t)
+        if (hc.selectApplet() != null) {
+            _health.value = hc.read(); _vehicle.value = null
+            _personal.value = null; _sig.value = null
+            _message.value = Msg(R.string.h_note, error = false)
+            return
+        }
+        _vehicle.value = RegistrationCard(t).read(); _health.value = null
         _personal.value = null; _sig.value = null
         _message.value = Msg(R.string.veh_note, error = false)
     }
@@ -173,7 +182,7 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
         // coming back from the eUprava sign-in screen: the user is on the Token tab, do not read the card by itself
         if (EuLogin.skipAutoStart) { EuLogin.skipAutoStart = false; return }
         if (!_autoRead.value) return                    // the user turned automatic reading off: only the buttons read
-        if (_phase.value != Phase.Idle || _personal.value != null || _vehicle.value != null) return
+        if (_phase.value != Phase.Idle || _personal.value != null || _vehicle.value != null || _health.value != null) return
         val usb = usbManager(context) ?: return         // no USB service on this device: nothing to look for (the card screen says so)
         if (UsbCcidTransport.findReader(usb) != null) startUsb(context)
     }
@@ -273,14 +282,14 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
     fun clear() {
         cancel()
         _demo.value = false; _failed.value = false
-        _personal.value = null; _sig.value = null; _token.value = null; _vehicle.value = null
+        _personal.value = null; _sig.value = null; _token.value = null; _vehicle.value = null; _health.value = null
     }
 
     /** Demo/screenshots only: open the PDF viewer as soon as the result is shown. */
     var demoOpenPdf = false
 
     /** Fictional data for screenshots (launch intent extra "demo"); never touches a card. */
-    fun showDemo(vehicle: Boolean = false) {
+    fun showDemo(vehicle: Boolean = false, health: Boolean = false) {
         _demo.value = true
         _personal.value = PersonalData(
             cardType = CardType.RP2024, docRegNo = "001234567", documentType = "RP",
@@ -296,6 +305,8 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
         _token.value = TokenData("NetSeT's CardEdge Token", "RP000000000", listOf(TokenCert("MARKO PETROVIC 000000000 Auth", ByteArray(0))))
         // launch extra "vehicle" with the demo: a vehicle registration card instead of the ID card
         if (vehicle) { _personal.value = null; _sig.value = null; _vehicle.value = VehicleRows.demo() }
+        // launch extra "health": a health insurance card
+        if (health) { _personal.value = null; _sig.value = null; _health.value = HealthRows.demo() }
     }
 
     /** A drawn silhouette so screenshots show the photo layout (demo mode only). */

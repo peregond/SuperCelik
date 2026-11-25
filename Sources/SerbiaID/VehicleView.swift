@@ -11,7 +11,7 @@ struct VehicleCell: View {
     let value: String
     @State private var hovering = false
 
-    private var hidden: Bool { VehicleRows.sensitive.contains(key) && prefs.maskSensitive && !model.revealAll }
+    private var hidden: Bool { (VehicleRows.sensitive.contains(key) || HealthRows.sensitive.contains(key)) && prefs.maskSensitive && !model.revealAll }
 
     var body: some View {
         HStack(alignment: .bottom, spacing: 6) {

@@ -15,6 +15,7 @@
   <ItemGroup>
     <Compile Include="..\..\windows\SerbiaID.Windows\Cards.cs" Link="Shared\Cards.cs" />
     <Compile Include="..\..\windows\SerbiaID.Windows\Compat.cs" Link="Shared\Compat.cs" />
+    <Compile Include="..\..\windows\SerbiaID.Windows\HealthData.cs" Link="Shared\HealthData.cs" />
     <Compile Include="..\..\windows\SerbiaID.Windows\SerbianScript.cs" Link="Shared\SerbianScript.cs" />
     <Compile Include="..\..\windows\SerbiaID.Windows\Loc.cs" Link="Shared\Loc.cs" />
     <Compile Include="..\..\windows\SerbiaID.Windows\LocExtra.cs" Link="Shared\LocExtra.cs" />

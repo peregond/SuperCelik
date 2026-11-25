@@ -38,6 +38,30 @@ struct VehicleCardView: View {
     }
 }
 
+/// A health insurance card on the "Card" tab (wired reader only: the NFC applet name is not in Info.plist). No printout yet.
+/// STATUS: read per the analysis of the official reader, not yet checked on a real card.
+struct HealthCardView: View {
+    @EnvironmentObject var loc: Loc
+    let health: HealthData
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 14) {
+            VStack(alignment: .leading, spacing: 4) {
+                Text(loc.x("hTitle")).foregroundStyle(.secondary)
+                Text(health.fullName).font(.title2.weight(.bold)).textSelection(.enabled)
+            }
+            ForEach(HealthRows.sections(health).filter { !$0.rows.isEmpty }, id: \.title) { sec in
+                Text(loc.x(sec.title)).font(.headline)
+                LazyVGrid(columns: [GridItem(.adaptive(minimum: 220), spacing: 16, alignment: .topLeading)], alignment: .leading, spacing: 14) {
+                    ForEach(sec.rows, id: \.key) { VehicleField(key: $0.key, value: $0.value) }
+                }
+            }
+            Text(loc.x("hNote")).font(.caption).foregroundStyle(.secondary)
+        }
+        .padding(16).frame(maxWidth: .infinity, alignment: .leading).glassCard()
+    }
+}
+
 struct VehicleField: View {
     @EnvironmentObject var loc: Loc
     @EnvironmentObject var prefs: Prefs
@@ -45,7 +69,7 @@ struct VehicleField: View {
     let key: String
     let value: String
 
-    private var hidden: Bool { VehicleRows.sensitive.contains(key) && prefs.maskSensitive && !model.revealAll }
+    private var hidden: Bool { (VehicleRows.sensitive.contains(key) || HealthRows.sensitive.contains(key)) && prefs.maskSensitive && !model.revealAll }
 
     var body: some View {
         VStack(alignment: .leading, spacing: 2) {

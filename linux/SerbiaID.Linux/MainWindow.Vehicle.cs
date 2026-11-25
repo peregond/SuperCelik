@@ -9,6 +9,7 @@ namespace SerbiaID;
 public sealed partial class MainWindow
 {
     private VehicleData _vehicle;
+    private HealthData _health;
     private bool _diagUnlocked;
     private int _versionTaps;
     private Button _diagRun, _diagCopy;

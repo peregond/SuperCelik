@@ -11,7 +11,7 @@ release, or the cell says why it cannot.
 | Read a vehicle registration card (saobraćajna dozvola) on the "Card" tab; one Read button for every card. **Parsed from the EU / MUP specifications, not yet checked on a real card**; the issuer signature is not verified | ✅ | ✅ | ✅ | ✅ USB reader only (the NFC application name is not confirmed) | ✅ |
 | Print / save the vehicle registration card as a PDF (laid out like the printout of MUP's own reader) | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Card diagnostics: structure of any card, no personal data, no PIN (hidden: tap the version 5 times in Settings; `--diag` on Windows and Linux). Its log is copied with a button | ✅ | ✅ | ✅ | ✅ | ✅ |
-| Read the health insurance card (KZO) | – not yet | – not yet | – not yet | – not yet | – not yet |
+| Read the health insurance card (KZO, RFZO) on the "Card" tab, no PIN. **The layout was recovered from the analysis of the official RFZO reader ([docs/health-card-protocol.md](health-card-protocol.md)), not yet checked on a real card**; signatures are not verified; no printout yet | ✅ | ✅ | ✅ | ✅ USB reader only | ✅ |
 | Print / save the PDF | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Hide sensitive fields (mask) | ✅ | ✅ | ✅ | ✅ | ✅ |
 | Read the token (certificates), export `.cer` | ✅ | ✅ | ✅ | ✅ | ✅ |

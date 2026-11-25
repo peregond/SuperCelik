@@ -13,6 +13,10 @@ protocol CardService {
     func readToken(reader: String) throws -> TokenInfo
     /// Vehicle registration card (specification-level only, see docs/cards-research.md).
     func readVehicle(reader: String) throws -> VehicleData
+    /// Health insurance card (KZO): written from the analysis of the official reader, not yet seen on a real card.
+    func readHealth(reader: String) throws -> HealthData
+    /// true if the card carries a health insurance card applet.
+    func isHealthCard(reader: String) throws -> Bool
     /// true if the card carries an eID applet (ID card, foreigner card, residence permit).
     func hasEidApplet(reader: String) throws -> Bool
     /// Card diagnostics: structure only, no personal data, no PIN commands.
@@ -112,6 +116,18 @@ final class PCSCService: CardService {
         }
     }
 
+    func readHealth(reader: String) throws -> HealthData {
+        try withCard(reader: reader) { card, proto in
+            try HealthCard { apdu in try self.transmit(card: card, proto: proto, apdu: apdu) }.read()
+        }
+    }
+
+    func isHealthCard(reader: String) throws -> Bool {
+        try withCard(reader: reader) { card, proto in
+            try HealthCard { apdu in try self.transmit(card: card, proto: proto, apdu: apdu) }.selectApplet() != nil
+        }
+    }
+
     func diagnose(reader: String) throws -> String {
         try withCard(reader: reader) { card, proto in
             var len = DWORD(64)
@@ -174,6 +190,8 @@ final class MockCardService: CardService {
         TokenInfo(tokenLabel: "NetSeT's CardEdge Token", tokenSerial: "RP000000000", certificates: [])
     }
     func readVehicle(reader: String) throws -> VehicleData { VehicleRows.demo() }
+    func readHealth(reader: String) throws -> HealthData { HealthRows.demo() }
+    func isHealthCard(reader: String) throws -> Bool { false }
     func hasEidApplet(reader: String) throws -> Bool { true }
     func diagnose(reader: String) throws -> String { "demo: no card" }
     func changePin(reader: String, cardType: EidCardType, old: String, new: String) throws -> Int { 3 }
