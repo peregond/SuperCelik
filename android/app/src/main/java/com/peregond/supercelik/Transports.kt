@@ -67,21 +67,47 @@ class UsbCcidTransport private constructor(
         return h + payload
     }
 
+    /**
+     * Reads one whole CCID message from the bulk-in endpoint. It reads packet by packet and takes the length from the
+     * 10-byte header, so it does not depend on the reader ending a transfer with a short or zero-length packet (some readers,
+     * and some phones' USB stacks, hang or fail on one big read when the message is a multiple of the packet size).
+     */
+    private fun readMessage(timeout: Int): ByteArray {
+        val pkt = maxOf(bulkIn.maxPacketSize, 64)
+        val head = ByteArray(pkt)
+        var n = 0
+        var empty = 0
+        while (n < 10) {
+            val r = conn.bulkTransfer(bulkIn, head, n, pkt - n, timeout)
+            if (r < 0) throw CardException(CardException.Kind.Lost, "USB read")
+            if (r == 0 && ++empty > 4) throw CardException(CardException.Kind.Lost, "USB read (empty)")   // zero-length packets that end an earlier message are skipped
+            n += r
+        }
+        val len = (head[1].toInt() and 0xFF) or (head[2].toInt() and 0xFF shl 8) or
+            (head[3].toInt() and 0xFF shl 16) or (head[4].toInt() and 0xFF shl 24)
+        if (len < 0 || len > 65536) throw CardException(CardException.Kind.Other, "CCID length $len")
+        val total = 10 + len
+        val out = head.copyOf(maxOf(total, n))
+        while (n < total) {
+            val r = conn.bulkTransfer(bulkIn, out, n, minOf(pkt, total - n), timeout)
+            if (r <= 0) throw CardException(CardException.Kind.Lost, "USB read (${n - 10} of $len)")
+            n += r
+        }
+        return out.copyOf(total)
+    }
+
     /** Sends one CCID message and returns the DataBlock payload; waits through "time extension" replies. */
     private fun exchange(msg: ByteArray): ByteArray {
         if (conn.bulkTransfer(bulkOut, msg, msg.size, 5000) < 0) throw CardException(CardException.Kind.Lost, "USB write")
-        val buf = ByteArray(65600)
         repeat(40) {
-            val n = conn.bulkTransfer(bulkIn, buf, buf.size, 10000)
-            if (n < 10) throw CardException(CardException.Kind.Lost, "USB read")
+            val buf = readMessage(10000)
             val status = buf[7].toInt() and 0xFF
             val cmd = status shr 6 and 3
             val icc = status and 3
             if (cmd == 2) return@repeat                                     // time extension: read again
             if (icc == 2) throw CardException(CardException.Kind.NoCard)
             if (cmd == 1) throw CardException(CardException.Kind.Other, "CCID error 0x%02X".format(buf[8].toInt() and 0xFF))
-            val len = (buf[1].toInt() and 0xFF) or (buf[2].toInt() and 0xFF shl 8)
-            return buf.copyOfRange(10, 10 + minOf(len, n - 10))
+            return buf.copyOfRange(10, buf.size)
         }
         throw CardException(CardException.Kind.Lost, "USB timeout")
     }
@@ -92,9 +118,7 @@ class UsbCcidTransport private constructor(
     fun cardPresent(): Boolean {
         val msg = message(0x65)
         if (conn.bulkTransfer(bulkOut, msg, msg.size, 2000) < 0) throw CardException(CardException.Kind.Lost, "USB write")
-        val buf = ByteArray(64)
-        val n = conn.bulkTransfer(bulkIn, buf, buf.size, 2000)
-        if (n < 10) throw CardException(CardException.Kind.Lost, "USB read")
+        val buf = readMessage(2000)
         return (buf[7].toInt() and 3) != 2
     }
 

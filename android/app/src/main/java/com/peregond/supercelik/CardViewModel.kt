@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.sync.withLock
 import kotlinx.coroutines.withContext
 
 /** Where the app is in a card operation. Idle = nothing running; a connected USB reader starts the default read. */
@@ -189,6 +190,10 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
 
     private var watchJob: Job? = null
 
+    /** One user of the USB reader at a time: the card watcher's polling and a read must not open the reader together
+     *  (claiming the interface twice makes the read fail with "connection lost"). */
+    private val usbLock = kotlinx.coroutines.sync.Mutex()
+
     /** While the app is in front: when a card is put into an already connected reader, read it (the same as the desktop apps).
      *  A card that is already in when the app opens is read by autoStart; after any read the card has to be taken out first,
      *  so a card that cannot be read does not make the app retry in a loop. Needs the USB permission to be granted already. */
@@ -204,12 +209,17 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
                 val usb = usbManager(app) ?: return@launch
                 val device = UsbCcidTransport.findReader(usb)
                 if (device == null || !usb.hasPermission(device)) { removed = false; continue }
-                val present = withContext(Dispatchers.IO) {
-                    try {
-                        val t = UsbCcidTransport.open(app, device) ?: return@withContext null
-                        try { t.cardPresent() } finally { t.release() }
-                    } catch (_: Exception) { null }
-                } ?: continue
+                if (!usbLock.tryLock()) continue          // a read has the reader: do not touch it
+                val present: Boolean?
+                try {
+                    present = withContext(Dispatchers.IO) {
+                        try {
+                            val t = UsbCcidTransport.open(app, device) ?: return@withContext null
+                            try { t.cardPresent() } finally { t.release() }
+                        } catch (_: Exception) { null }
+                    }
+                } finally { usbLock.unlock() }
+                if (present == null) continue
                 if (!present) removed = true
                 else if (removed && _phase.value == Phase.Idle) { removed = false; readCard(app) }
             }
@@ -228,6 +238,7 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
         if (device == null) { pending = null; pendingRaw = null; _phase.value = Phase.Idle; report(Msg(R.string.err_no_usb)); return }
         _phase.value = Phase.WaitingUsb
         job = viewModelScope.launch {
+          usbLock.withLock {
             val transport = UsbCcidTransport.open(context, device)
             if (transport == null) { pending = null; pendingRaw = null; _phase.value = Phase.Idle; report(Msg(R.string.err_usb_denied)); return@launch }
             _phase.value = Phase.Reading
@@ -238,6 +249,7 @@ class CardViewModel(app: Application) : AndroidViewModel(app) {
                     fail(e)
                 }
             }
+          }
         }
     }
 
