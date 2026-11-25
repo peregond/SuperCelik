@@ -4,7 +4,7 @@
 
 # Super Čelik
 
-Jedna aplikacija umesto Čelik + TrustEdge ID za srpsku elektronsku ličnu kartu, ličnu kartu za strance i boravišnu dozvolu. U **probnom režimu** čita i saobraćajnu dozvolu i zdravstvenu karticu (KZO). Besplatno, bez naloga i servera: podaci sa kartice ne napuštaju vaš uređaj.
+**Jedna aplikacija umesto četiri**: Čelik, TrustEdge ID i zvaničnih čitača saobraćajne dozvole (MUP) i zdravstvene kartice (RFZO). Čita srpsku elektronsku ličnu kartu, ličnu kartu za strance i boravišnu dozvolu; saobraćajna dozvola i zdravstvena kartica (KZO) su u **probnom režimu**. Besplatno, bez naloga i servera: podaci sa kartice ne napuštaju vaš uređaj.
 Sajt: <https://celik.peregon.cc> · Šta je novo: <https://celik.peregon.cc/changelog/> · Politika privatnosti: [docs/PRIVACY.md](docs/PRIVACY.md) · Greške i povratne informacije: [GitHub Issues](https://github.com/peregond/SuperCelik/issues/new)
 
 Jezici (10): srpski (latinica i ćirilica), engleski, ruski, hrvatski, mađarski, albanski, slovački, rumunski, ukrajinski i beloruski. Srpska ćirilica se dobija iz srpske latinice automatskom transliteracijom (`scripts/translit_sr.py`, ista pravila u Swift-u i C#-u).
