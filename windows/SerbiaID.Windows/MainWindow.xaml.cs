@@ -232,10 +232,11 @@ public partial class MainWindow : Window
         BtnRead.IsEnabled = BtnReadBig.IsEnabled = _cardPresent && !_busy;
         BtnReadToken.IsEnabled = _cardPresent && !_busy;
         BtnChangePin.IsEnabled = BtnUnblockPin.IsEnabled = BtnSignFile.IsEnabled = _cardPresent && !_busy;
-        BtnVerify.IsEnabled = _cardPresent && !_busy && _vehicle == null;
+        BtnVerify.IsEnabled = _cardPresent && !_busy && _vehicle == null && _health == null;
         if (_diagRun != null) _diagRun.IsEnabled = _cardPresent && !_busy;
         bool has = (_personal != null || _vehicle != null) && !_busy;
-        BtnPrint.IsEnabled = has; BtnPdf.IsEnabled = has; BtnMore.IsEnabled = has;
+        // the health card has no printout yet (the official reader's form is not part of the analysis): on screen, copy and JSON only
+        BtnPrint.IsEnabled = has; BtnPdf.IsEnabled = has; BtnMore.IsEnabled = has || (_health != null && !_busy);
     }
 
     private async Task Run(Func<Task> work)
@@ -591,7 +592,7 @@ public partial class MainWindow : Window
         else
         {
             _demo = false; Fx.Enabled = true;
-            _personal = null; _token = null; _sig = null; _revealAll = false; _cardPresent = false; _readers = new(); _lastTokenAtr = null;
+            _personal = null; _vehicle = null; _health = null; _token = null; _sig = null; _revealAll = false; _cardPresent = false; _readers = new(); _lastTokenAtr = null;
             FillReaders(_readers); ApplyLanguage();
             _poll.Start(); _idle.Start();
             Refresh();
@@ -619,9 +620,9 @@ public partial class MainWindow : Window
                 _ = OfferBrowserAsync();
                 if (_cfg.AutoRead) await Run(ReadCardAsync);
             }
-            else if (_personal != null || _token != null)
+            else if (_personal != null || _token != null || _vehicle != null || _health != null)
             {
-                _personal = null; _token = null; _sig = null; _revealAll = false; RenderAll();   // privacy: drop data when the card is removed
+                _personal = null; _vehicle = null; _health = null; _token = null; _sig = null; _revealAll = false; RenderAll();   // privacy: drop data when the card is removed
             }
         }
         catch { /* reader unplugged mid-poll: the next tick or a manual refresh reports it */ }
@@ -629,9 +630,9 @@ public partial class MainWindow : Window
 
     private void CheckIdle()
     {
-        if (_demo || _cfg.AutoHideMinutes <= 0 || (_personal == null && _token == null)) return;
+        if (_demo || _cfg.AutoHideMinutes <= 0 || (_personal == null && _token == null && _vehicle == null && _health == null)) return;
         if ((DateTime.Now - _lastActivity).TotalMinutes < _cfg.AutoHideMinutes) return;
-        _personal = null; _token = null; _sig = null; _vehicle = null; _revealAll = false;
+        _personal = null; _token = null; _sig = null; _vehicle = null; _health = null; _revealAll = false;
         RenderAll();
         ShowInfo(Loc.T("autoHidden"));
     }
@@ -640,16 +641,22 @@ public partial class MainWindow : Window
     private async Task ReadCardAsync()
     {
         var reader = Reader;
-        // one button for every card: an ID card, a foreigner card, a residence permit or a vehicle registration card
+        // one button for every card: an ID card, a foreigner card, a residence permit, a health insurance card or a vehicle registration card
         if (await Compat.Run(() => SerbianCard.HasEidApplet(_pc, reader)))
         {
             var p = await Compat.Run(() => SerbianCard.ReadPersonalData(_pc, reader));
-            _personal = p; _vehicle = null; _sig = null; _revealAll = false; HideProblem();
+            _personal = p; _vehicle = null; _health = null; _sig = null; _revealAll = false; HideProblem();
+        }
+        else if (await Compat.Run(() => HealthCard.IsHealthCard(_pc, reader)))
+        {
+            var h = await Compat.Run(() => HealthCard.Read(_pc, reader));
+            _health = h; _personal = null; _vehicle = null; _sig = null; _revealAll = false; HideProblem();
+            ShowInfo(Loc.T("hNote"));
         }
         else
         {
             var v = await Compat.Run(() => VehicleCard.Read(_pc, reader));
-            _vehicle = v; _personal = null; _sig = null; _revealAll = false; HideProblem();
+            _vehicle = v; _personal = null; _health = null; _sig = null; _revealAll = false; HideProblem();
             ShowInfo(Loc.T("vehNote"));
         }
         RenderAll();
@@ -689,7 +696,7 @@ public partial class MainWindow : Window
 
     private void UpdateEye()
     {
-        BtnEye.Visibility = (_personal != null || _vehicle != null) && _cfg.MaskSensitive ? Visibility.Visible : Visibility.Collapsed;
+        BtnEye.Visibility = (_personal != null || _vehicle != null || _health != null) && _cfg.MaskSensitive ? Visibility.Visible : Visibility.Collapsed;
         // eye = data is hidden (click to show); crossed eye = data is shown (click to hide)
         SetBtn(BtnEye, _revealAll ? "\uED1A" : "\uE7B3", _revealAll ? Loc.T("hideValue") : Loc.T("reveal"));
     }
@@ -701,7 +708,7 @@ public partial class MainWindow : Window
         UpdateEye();
         FieldsPanel.Children.Clear();
         ImgPortrait.Source = null;
-        bool has = _personal != null || _vehicle != null;
+        bool has = _personal != null || _vehicle != null || _health != null;
         bool appeared = has && PersonalContent.Visibility != Visibility.Visible;
         bool emptied = !has && EmptyState.Visibility != Visibility.Visible;
         PersonalContent.Visibility = has ? Visibility.Visible : Visibility.Collapsed;
@@ -710,15 +717,17 @@ public partial class MainWindow : Window
         if (emptied) Fx.FadeIn(EmptyState, 0);
         if (!has) return;
 
-        bool veh = _vehicle != null;
-        ((UIElement)ImgPortrait.Parent).Visibility = veh ? Visibility.Collapsed : Visibility.Visible;   // a vehicle has no photo
-        LblName.Text = veh ? _vehicle.RegistrationNumber : $"{_personal.Fixed.GivenName} {_personal.Fixed.Surname}".Trim();
-        LblDocType.Text = veh ? Loc.T("vehTitle") : DocTypeName(_personal.CardType);
-        ImgPortrait.Source = veh ? null : LoadImage(_personal.Portrait);
-        if (TryDate(veh ? _vehicle.ExpiryDate : _personal.Document.ExpiryDate, out var until)) SetExpiry(PillExpiry, LblExpiry, until);
+        bool veh = _vehicle != null, hlt = _health != null;
+        ((UIElement)ImgPortrait.Parent).Visibility = veh || hlt ? Visibility.Collapsed : Visibility.Visible;   // a vehicle and a health card have no photo
+        LblName.Text = veh ? _vehicle.RegistrationNumber : hlt ? _health.FullName : $"{_personal.Fixed.GivenName} {_personal.Fixed.Surname}".Trim();
+        LblDocType.Text = veh ? Loc.T("vehTitle") : hlt ? Loc.T("hTitle") : DocTypeName(_personal.CardType);
+        ImgPortrait.Source = veh || hlt ? null : LoadImage(_personal.Portrait);
+        string expiry = veh ? _vehicle.ExpiryDate : hlt ? (_health.Permanent ? "" : _health.ExpiryDate) : _personal.Document.ExpiryDate;
+        if (TryDate(expiry, out var until)) SetExpiry(PillExpiry, LblExpiry, until);
         else PillExpiry.Visibility = Visibility.Collapsed;
 
-        var entries = veh ? VehicleRows.Entries(_vehicle) : Rows(_personal).ConvertAll(x => ((string)null, x.Item1, x.Item2));
+        var entries = veh ? VehicleRows.Entries(_vehicle) : hlt ? HealthRows.Entries(_health)
+                    : Rows(_personal).ConvertAll(x => ((string)null, x.Item1, x.Item2));
         foreach (var (heading, key, value) in entries)
         {
             if (heading != null)
@@ -728,7 +737,7 @@ public partial class MainWindow : Window
                     Foreground = B("TextBrush"), Margin = new Thickness(0, 4, 0, 10) });
                 continue;
             }
-            bool sensitive = Sensitive.Contains(key) || Array.IndexOf(VehicleRows.Sensitive, key) >= 0;
+            bool sensitive = Sensitive.Contains(key) || Array.IndexOf(VehicleRows.Sensitive, key) >= 0 || Array.IndexOf(HealthRows.Sensitive, key) >= 0;
             bool hidden = sensitive && _cfg.MaskSensitive && !_revealAll;
 
             var cell = new DockPanel { Width = 290, Margin = new Thickness(0, 0, 14, 14) };
@@ -793,9 +802,9 @@ public partial class MainWindow : Window
 
     private void CopyAll()
     {
-        if (_personal == null) return;
+        if (_personal == null && _health == null) return;
         var sb = new StringBuilder();
-        foreach (var (k, v) in Rows(_personal)) sb.AppendLine($"{Loc.T(k)}: {v}");
+        foreach (var (k, v) in _health != null ? HealthRows.Build(_health) : Rows(_personal)) sb.AppendLine($"{Loc.T(k)}: {v}");
         try { Clipboard.SetText(sb.ToString()); ShowInfo(Loc.T("copied")); } catch (Exception ex) { ShowProblem(ex); }
     }
 
@@ -808,11 +817,11 @@ public partial class MainWindow : Window
 
     private void ExportJson()
     {
-        if (_personal == null) return;
+        if (_personal == null && _health == null) return;
         var dlg = new SaveFileDialog { Filter = "JSON (*.json)|*.json", FileName = "SuperCelik.json", DefaultExt = ".json" };
         if (dlg.ShowDialog(this) != true) return;
-        var obj = new Dictionary<string, string> { ["cardType"] = _personal.CardType.ToString() };
-        foreach (var (k, v) in Rows(_personal)) obj[k] = v;
+        var obj = new Dictionary<string, string> { ["cardType"] = _health != null ? "Health" : _personal.CardType.ToString() };
+        foreach (var (k, v) in _health != null ? HealthRows.Build(_health) : Rows(_personal)) obj[k] = v;
         File.WriteAllText(dlg.FileName, Compat.ToJsonReadable(obj));
     }
 
@@ -1115,6 +1124,8 @@ public partial class MainWindow : Window
         _sig = new SigStatus { Result = SigResult.Ok };
         // `--vehicle` with the demo: a vehicle registration card instead of the ID card
         if (Environment.GetCommandLineArgs().Contains("--vehicle")) { _vehicle = VehicleRows.Demo(); _personal = null; _sig = null; }
+        // `--health`: a health insurance card
+        if (Environment.GetCommandLineArgs().Contains("--health")) { _health = HealthRows.Demo(); _personal = null; _sig = null; }
         _token = new TokenInfo { Label = "NetSeT's CardEdge Token", Serial = "RP000000000" };
         _token.Certificates.Add(new TokenCertificate
         {
@@ -1123,7 +1134,7 @@ public partial class MainWindow : Window
         });
         if (state != null)
         {
-            _personal = null; _sig = null; _token = null; _vehicle = null;
+            _personal = null; _sig = null; _token = null; _vehicle = null; _health = null;
             if (state == "noreader") { _readers = new(); FillReaders(_readers); _cardPresent = false; }
             if (state == "nocard") _cardPresent = false;
             if (state == "busy") _busy = true;

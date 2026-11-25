@@ -24,6 +24,15 @@ public static class CardDiag
         new[] { "eVL-001", "A00000001865564C2D303031" },
     };
 
+    // health insurance card (KZO): applet names recovered from the official reader, see docs/health-card-protocol.md
+    private static readonly string[][] HealthAids =
+    {
+        new[] { "KZO type 1 (SERVSZK+01)", "F38100000253455256535A4B01" },
+        new[] { "KZO type 7 (SERSOVOZK+01)", "F381000002534552534F564F5A4B01" },
+    };
+
+    private static readonly ushort[] HealthFiles = { 0x0D00, 0x0D01, 0x0D02, 0x0D03, 0x0D04, 0x0D05, 0x0D06, 0x0D07, 0x0D09 };
+
     private static readonly ushort[] VehicleFiles =
         { 0xD001, 0xD011, 0xD021, 0xD031, 0xD041, 0xE001, 0xE011, 0xE021, 0xC001, 0xC011, 0xC021 };
 
@@ -47,6 +56,9 @@ public static class CardDiag
 
                 L(""); L("== Known applications");
                 foreach (var a in KnownAids) TrySelect(s, L, a[0], a[1], false, null);
+
+                L(""); L("== Health insurance card (KZO), names from the official reader, not yet seen on a real card");
+                foreach (var a in HealthAids) TrySelect(s, L, a[0], a[1], true, HealthFiles);
 
                 L(""); L("== Vehicle registration candidates (unconfirmed names)");
                 foreach (var a in VehicleAids) TrySelect(s, L, a[0], a[1], true, VehicleFiles);

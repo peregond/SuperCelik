@@ -68,6 +68,7 @@ final class AppModel: ObservableObject {
     @Published var personal: PersonalData?
     @Published var token: TokenInfo?
     @Published var vehicle: VehicleData?
+    @Published var health: HealthData?
     @Published var diagUnlocked = false      // hidden: 5 taps on the version in Settings
     @Published var diagLog: String?
     @Published var tokenRows: [TokenCertRow] = []
@@ -237,7 +238,7 @@ final class AppModel: ObservableObject {
     private func checkIdle() {
         guard !demoActive else { return }
         let m = prefs.autoHideMinutes
-        guard m > 0, personal != nil || token != nil || vehicle != nil else { return }
+        guard m > 0, personal != nil || token != nil || vehicle != nil || health != nil else { return }
         if Date().timeIntervalSince(activity.last) >= Double(m) * 60 {
             clearData()
             problem = Problem(titleKey: .autoHidden, isInfo: true)
@@ -246,7 +247,7 @@ final class AppModel: ObservableObject {
 
     private func clearData() {
         personal = nil; token = nil; tokenRows = []; signatureStatus = nil; revealAll = false
-        vehicle = nil
+        vehicle = nil; health = nil
     }
 
     // MARK: - Operations (card I/O runs off the main thread)
@@ -265,13 +266,17 @@ final class AppModel: ObservableObject {
     func readCard() async {
         await run {
             let svc = service, reader = selectedReader
-            // one button for every card: an ID card, a foreigner card, a residence permit or a vehicle registration card
+            // one button for every card: an ID card, a foreigner card, a residence permit, a health insurance card or a vehicle registration card
             if try await perform({ try svc.hasEidApplet(reader: reader) }) {
                 let p = try await perform { try svc.readPersonalData(reader: reader) }
-                personal = p; vehicle = nil; signatureStatus = nil; revealAll = false; problem = nil
+                personal = p; vehicle = nil; health = nil; signatureStatus = nil; revealAll = false; problem = nil
+            } else if try await perform({ try svc.isHealthCard(reader: reader) }) {
+                let h = try await perform { try svc.readHealth(reader: reader) }
+                health = h; personal = nil; vehicle = nil; signatureStatus = nil; revealAll = false
+                problem = Problem(raw: Loc.shared.x("hNote"), isInfo: true)
             } else {
                 let v = try await perform { try svc.readVehicle(reader: reader) }
-                vehicle = v; personal = nil; signatureStatus = nil; revealAll = false
+                vehicle = v; personal = nil; health = nil; signatureStatus = nil; revealAll = false
                 problem = Problem(raw: Loc.shared.x("vehNote"), isInfo: true)
             }
         }
@@ -527,6 +532,11 @@ final class AppModel: ObservableObject {
     }
 
     func copyAll() {
+        if let h = health {
+            copy(HealthRows.build(h).map { "\(Loc.shared.x($0.key)): \($0.value)" }.joined(separator: "\n"))
+            problem = Problem(titleKey: .copied, isInfo: true)
+            return
+        }
         guard let p = personal else { return }
         copy(p.rows().map { "\(Loc.shared.t($0.label)): \($0.value)" }.joined(separator: "\n"))
         problem = Problem(titleKey: .copied, isInfo: true)
@@ -541,13 +551,19 @@ final class AppModel: ObservableObject {
     }
 
     func exportJSON() {
-        guard let p = personal else { return }
+        guard personal != nil || health != nil else { return }
         let panel = NSSavePanel()
         panel.allowedContentTypes = [.json]
         panel.nameFieldStringValue = "SuperCelik.json"
         guard panel.runModal() == .OK, let url = panel.url else { return }
-        var obj: [String: String] = ["cardType": String(describing: p.cardType)]
-        for r in p.rows() { obj[r.id] = r.value }
+        var obj: [String: String] = [:]
+        if let h = health {
+            obj["cardType"] = "Health"
+            for r in HealthRows.build(h) { obj[r.key] = r.value }
+        } else if let p = personal {
+            obj["cardType"] = String(describing: p.cardType)
+            for r in p.rows() { obj[r.id] = r.value }
+        }
         if let data = try? JSONSerialization.data(withJSONObject: obj, options: [.prettyPrinted, .sortedKeys, .withoutEscapingSlashes]) {
             try? data.write(to: url)
         }
@@ -609,6 +625,8 @@ final class AppModel: ObservableObject {
         signatureStatus = .ok
         // `--vehicle` with the demo: a vehicle registration card instead of the ID card
         if CommandLine.arguments.contains("--vehicle") { personal = nil; vehicle = VehicleRows.demo(); signatureStatus = nil }
+        // `--health`: a health insurance card
+        if CommandLine.arguments.contains("--health") { personal = nil; health = HealthRows.demo(); signatureStatus = nil }
         token = TokenInfo(tokenLabel: "NetSeT's CardEdge Token", tokenSerial: "RP000000000", certificates: [])
         tokenRows = [TokenCertRow(label: "MARKO PETROVIC 000000000 Auth",
                                   summary: TokenCodec.CertSummary(subject: "MARKO PETROVIC", issuer: "MUP Stranci CA 4",

@@ -26,6 +26,7 @@ final class PhoneModel: ObservableObject {
     @Published var tokenRows: [PhoneCertRow] = []
     @Published var revealAll = false
     @Published var vehicle: VehicleData?
+    @Published var health: HealthData?
     @Published var diagUnlocked = false      // hidden: 5 taps on the version in Settings
     @Published var diagLog: String?
     @Published var busy = false
@@ -73,6 +74,8 @@ final class PhoneModel: ObservableObject {
         signatureStatus = .ok
         // `--vehicle` with the demo: a vehicle registration card instead of the ID card
         if CommandLine.arguments.contains("--vehicle") { personal = nil; vehicle = VehicleRows.demo(); signatureStatus = nil }
+        // `--health`: a health insurance card
+        if CommandLine.arguments.contains("--health") { personal = nil; health = HealthRows.demo(); signatureStatus = nil }
         // the Token tab gets fictional certificates too
         token = TokenInfo(tokenLabel: "NetSeT's CardEdge Token", tokenSerial: "RP000000000", certificates: [])
         func cert(_ label: String, from: Double, to: Double) -> PhoneCertRow {
@@ -156,9 +159,19 @@ final class PhoneModel: ObservableObject {
         busy = true
         defer { busy = false }
         do {
-            // one button for every card: with the wired reader a card without an eID applet is tried as a vehicle registration card
+            // one button for every card: with the wired reader a card without an eID applet is tried as a health insurance card,
+            // then as a vehicle registration card
             if source == .usb, try await !usbReader.run({ card in (try? card.selectApplet()) != nil }) {
-                vehicle = try await usbReader.runRegistration { card, _ in try card.read() }
+                let h: HealthData? = try await usbReader.runRegistration { reg, _ in
+                    let hc = HealthCard { try reg.rawTransmit($0) }
+                    return try hc.selectApplet() != nil ? try hc.read() : nil
+                }
+                if let h {
+                    health = h; vehicle = nil
+                } else {
+                    vehicle = try await usbReader.runRegistration { card, _ in try card.read() }
+                    health = nil
+                }
                 personal = nil; signatureStatus = nil; revealAll = false; problem = nil; demoActive = false
                 return true
             }
@@ -175,7 +188,7 @@ final class PhoneModel: ObservableObject {
                 catch { status = .invalid(error.localizedDescription) }
                 return (p, status)
             }
-            personal = p; vehicle = nil; signatureStatus = status; revealAll = false; problem = nil; demoActive = false
+            personal = p; vehicle = nil; health = nil; signatureStatus = status; revealAll = false; problem = nil; demoActive = false
             return true
         } catch { show(error); return false }
     }
@@ -273,7 +286,7 @@ final class PhoneModel: ObservableObject {
 
     func clear() {
         personal = nil; signatureStatus = nil; token = nil; tokenRows = []; revealAll = false; problem = nil; demoActive = false
-        vehicle = nil
+        vehicle = nil; health = nil
     }
 
     private func show(_ error: Error) {

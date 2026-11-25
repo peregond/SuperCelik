@@ -408,11 +408,19 @@ struct PersonalView: View {
                     .frame(maxWidth: .infinity)
                 }
                 .transition(.opacity.combined(with: .scale(scale: 0.985)))
+            } else if let h = model.health {
+                ScrollView {
+                    healthSummary(h)
+                    .padding(20)
+                    .frame(maxWidth: 920)
+                    .frame(maxWidth: .infinity)
+                }
+                .transition(.opacity.combined(with: .scale(scale: 0.985)))
             } else {
                 emptyState.transition(.opacity)
             }
         }
-        .animation(.easeInOut(duration: 0.25), value: model.personal != nil || model.vehicle != nil)
+        .animation(.easeInOut(duration: 0.25), value: model.personal != nil || model.vehicle != nil || model.health != nil)
         .toolbar { actions }
         .sheet(isPresented: $showReaderHelp) { ReaderHelpSheet() }
     }
@@ -471,7 +479,7 @@ struct PersonalView: View {
             Button { Task { await model.verifySignatures() } } label: {
                 Label(loc.t(.verifySignature), systemImage: "checkmark.seal")
             }
-            .disabled(!model.cardPresent || model.busy || model.vehicle != nil).help(loc.t(.verifySignature))
+            .disabled(!model.cardPresent || model.busy || model.vehicle != nil || model.health != nil).help(loc.t(.verifySignature))
             if prefs.maskSensitive {
                 // one eye for all sensitive fields: eye = hidden (click to show), crossed eye = shown (click to hide)
                 Button { model.revealAll.toggle() } label: {
@@ -479,19 +487,19 @@ struct PersonalView: View {
                           systemImage: model.revealAll ? "eye.slash" : "eye")
                         .symbolReplace()
                 }
-                .disabled(model.personal == nil && model.vehicle == nil)
+                .disabled(model.personal == nil && model.vehicle == nil && model.health == nil)
                 .help(model.revealAll ? loc.t(.hideValue) : loc.t(.reveal))
             }
             Menu {
                 Button { model.copyAll() } label: { Label(loc.t(.copyAll), systemImage: "doc.on.doc") }
-                Button { model.savePhoto() } label: { Label(loc.t(.savePhoto), systemImage: "photo") }
+                Button { model.savePhoto() } label: { Label(loc.t(.savePhoto), systemImage: "photo") }.disabled(model.personal == nil)
                 Button { model.exportJSON() } label: { Label(loc.t(.exportJson), systemImage: "curlybraces") }
             } label: { Label(loc.t(.more), systemImage: "ellipsis.circle") }
-            .disabled(model.personal == nil).help(loc.t(.more))
+            .disabled(model.personal == nil && model.health == nil).help(loc.t(.more))
         }
         ToolbarItem(placement: .primaryAction) {
             // while nothing is read, the empty state has the one Read button
-            if model.personal != nil || model.vehicle != nil {
+            if model.personal != nil || model.vehicle != nil || model.health != nil {
                 Button { Task { await model.readCard() } } label: {
                     Label(loc.t(.readCard), systemImage: "person.text.rectangle")
                 }
@@ -522,6 +530,28 @@ struct PersonalView: View {
                     Text(loc.x(sec.title)).font(.headline).padding(.top, 4)
                     LazyVGrid(columns: [GridItem(.adaptive(minimum: 170), spacing: 16, alignment: .topLeading)], alignment: .leading, spacing: 12) {
                         ForEach(sec.rows.filter { $0.key != "vRegNo" }, id: \.key) { VehicleCell(key: $0.key, value: $0.value) }
+                    }
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+        }
+    }
+
+    /// A health insurance card: no photo; title, name and validity on the left, the fields in groups. No printout yet.
+    private func healthSummary(_ h: HealthData) -> some View {
+        GlassCard {
+            VStack(alignment: .leading, spacing: 12) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(loc.x("hTitle")).foregroundStyle(.secondary)
+                    Text(h.fullName).font(.system(size: 22, weight: .bold)).textSelection(.enabled)
+                    if !h.permanent, let d = Self.dateFormatter.date(from: h.expiryDate) { ExpiryPill(date: d) }
+                }
+                Divider()
+                ForEach(HealthRows.sections(h).filter { !$0.rows.isEmpty }, id: \.title) { sec in
+                    Text(loc.x(sec.title)).font(.headline).padding(.top, 4)
+                    LazyVGrid(columns: [GridItem(.adaptive(minimum: 170), spacing: 16, alignment: .topLeading)], alignment: .leading, spacing: 12) {
+                        ForEach(sec.rows, id: \.key) { VehicleCell(key: $0.key, value: $0.value) }
                     }
                     .frame(maxWidth: .infinity, alignment: .leading)
                 }

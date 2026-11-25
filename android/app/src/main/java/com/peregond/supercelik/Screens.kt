@@ -125,10 +125,13 @@ private fun openUrl(ctx: Context, url: String) {
 fun CardScreen(vm: CardViewModel, reveal: Boolean) {
     val personal by vm.personal.collectAsStateWithLifecycle()
     val vehicle by vm.vehicle.collectAsStateWithLifecycle()
+    val health by vm.health.collectAsStateWithLifecycle()
     val ctx = LocalContext.current
     val p = personal
     val v = vehicle
+    val hl = health
     if (p == null && v != null) { VehicleResult(vm, v, reveal); return }
+    if (p == null && hl != null) { HealthResult(vm, hl, reveal); return }
     if (p == null) {
         Column(
             Modifier.fillMaxSize().padding(24.dp),
@@ -159,6 +162,34 @@ fun CardScreen(vm: CardViewModel, reveal: Boolean) {
         return
     }
     PersonalResult(vm, p, reveal)
+}
+
+/** A health insurance card on the card-data tab (no printout yet). STATUS: read per the analysis of the official reader, not yet checked on a real card. */
+@Composable
+private fun HealthResult(vm: CardViewModel, h: HealthData, revealAll: Boolean) {
+    val mask by vm.mask.collectAsStateWithLifecycle()
+    val flagPalette = LocalFlagPalette.current
+    val heroBg = if (flagPalette) Flag.Blue else MaterialTheme.colorScheme.primaryContainer
+    val heroFg = if (flagPalette) Color.White else MaterialTheme.colorScheme.onPrimaryContainer
+    val show = revealAll || !mask
+    val sections = HealthRows.sections(h).map { (title, rows) ->
+        healthLabel(title) to rows.map { (k, s) -> Triple(healthLabel(k), s, k in HealthRows.sensitive) }
+    }
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+        item {
+            Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = heroBg), shape = CardShape) {
+                Column(Modifier.padding(20.dp).fillMaxWidth(), verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                    Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                        Text(stringResource(R.string.h_title), style = MaterialTheme.typography.labelLarge, color = heroFg.copy(alpha = 0.85f))
+                        Text(h.fullName, style = MaterialTheme.typography.titleLarge, color = heroFg, maxLines = 2)
+                    }
+                    if (!h.permanent) ExpiryPill(h.expiryDate, onHero = flagPalette)
+                }
+            }
+        }
+        sections.forEach { (title, rows) -> item { Section(title, rows, show) } }
+        item { Text(stringResource(R.string.h_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+    }
 }
 
 /** A vehicle registration card on the card-data tab. STATUS: parsed per the specification, not yet checked on a real card. */

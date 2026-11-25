@@ -278,13 +278,15 @@ struct CardTab: View {
                     if let problem = model.problem {
                         ProblemBanner(problem: problem).padding(16).frame(maxWidth: .infinity, alignment: .leading).glassCard()
                     }
-                    if model.personal == nil && model.vehicle == nil {
+                    if model.personal == nil && model.vehicle == nil && model.health == nil {
                         ReaderStatusBlock(character: .reader, onHelp: { showHelp = true }).padding(.top, model.problem == nil ? 40 : 8)
                     }
                     if let p = model.personal {
                         if sizeClass == .regular { regularLayout(p) } else { compactLayout(p) }
                     } else if let v = model.vehicle {
                         VehicleCardView(vehicle: v)
+                    } else if let h = model.health {
+                        HealthCardView(health: h)
                     }
                 }
                 .padding(16)
@@ -295,10 +297,10 @@ struct CardTab: View {
             .background(GlassBackdrop())
             .navigationTitle(loc.t(.tabPersonal))
             .navigationBarTitleDisplayMode(.inline)
-            .animation(.easeInOut(duration: 0.25), value: model.personal == nil && model.vehicle == nil)
+            .animation(.easeInOut(duration: 0.25), value: model.personal == nil && model.vehicle == nil && model.health == nil)
             .safeAreaInset(edge: .bottom) {
                 // after a read the button goes away; the "x" at the top left brings it back
-                if model.personal == nil && model.vehicle == nil {
+                if model.personal == nil && model.vehicle == nil && model.health == nil {
                     ScanButton(title: .readCardAuto, collapsed: scanCollapsed) { await model.scanCardAuto() }
                         .padding(.horizontal, 20).padding(.bottom, 8)
                         .transition(.move(edge: .bottom).combined(with: .opacity))
@@ -306,7 +308,7 @@ struct CardTab: View {
             }
             .toolbar {
                 ToolbarItemGroup(placement: .navigationBarTrailing) {
-                    if model.personal != nil || model.vehicle != nil {
+                    if model.personal != nil || model.vehicle != nil || model.health != nil {
                         Button { model.revealAll.toggle() } label: {
                             Image(systemName: model.revealAll ? "eye.slash" : "eye")
                         }
@@ -314,7 +316,7 @@ struct CardTab: View {
                     }
                 }
                 ToolbarItemGroup(placement: .navigationBarLeading) {
-                    if model.personal != nil || model.vehicle != nil {
+                    if model.personal != nil || model.vehicle != nil || model.health != nil {
                         Button(role: .destructive) { model.clear() } label: { Image(systemName: "xmark").foregroundStyle(.red) }
                             .accessibilityLabel(loc.t(.close))
                     }
