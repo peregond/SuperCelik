@@ -4,7 +4,7 @@
 
 # Super Čelik
 
-One app instead of Čelik + TrustEdge ID for the Serbian electronic ID card, foreigner ID card and residence permit. It also reads vehicle registration cards (saobraćajna dozvola) and health insurance cards (KZO) in **test mode**. Free, no account, no servers: card data never leaves your device.
+**One app instead of four**: Čelik, TrustEdge ID and the official readers for vehicle registration cards (MUP) and health insurance cards (RFZO). It reads the Serbian electronic ID card, foreigner ID card and residence permit; vehicle registration cards (saobraćajna dozvola) and health insurance cards (KZO) are in **test mode**. Free, no account, no servers: card data never leaves your device.
 Website: <https://celik.peregon.cc> · What’s new: <https://celik.peregon.cc/changelog/> · Privacy policy: [docs/PRIVACY.md](docs/PRIVACY.md) · Bugs and feedback: [GitHub Issues](https://github.com/peregond/SuperCelik/issues/new)
 
 Languages (10): English, Russian, Serbian (Latin and Cyrillic), Croatian, Hungarian, Albanian, Slovak, Romanian, Ukrainian and Belarusian. Serbian Cyrillic is produced from Serbian Latin by automatic transliteration (`scripts/translit_sr.py`, the same rules in Swift and C#).
