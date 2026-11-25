@@ -9,7 +9,7 @@ Reads the personal data and photo of a Serbian ID card, foreigner ID card and re
 There is no NFC reading: Serbian ID cards have a contact-only chip (just as in the iOS version). The NFC code was removed;
 if you need it back, it is in git history before the commit “Android: read only through a USB reader, drop NFC”.
 
-The card protocol is ported from `Sources/SerbiaID/EidCard.swift`. Languages: RU / EN / SR (by the system language).
+The card protocol is ported from `Sources/SerbiaID/EidCard.swift`. Languages: 10, Serbian in both scripts (by the system language or chosen in Settings).
 
 ## Features
 - Reading personal data and photo (CCID USB reader, starts automatically when a reader is connected), MUP signature check against built-in certificates, expiry date, PDF (share).

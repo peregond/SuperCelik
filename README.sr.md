@@ -4,10 +4,10 @@
 
 # Super Čelik
 
-Jedna aplikacija umesto Čelik + TrustEdge ID za srpsku elektronsku ličnu kartu, ličnu kartu za strance i boravišnu dozvolu. Besplatno, bez naloga i servera: podaci sa kartice ne napuštaju vaš uređaj.
+Jedna aplikacija umesto Čelik + TrustEdge ID za srpsku elektronsku ličnu kartu, ličnu kartu za strance i boravišnu dozvolu. U **probnom režimu** čita i saobraćajnu dozvolu i zdravstvenu karticu (KZO). Besplatno, bez naloga i servera: podaci sa kartice ne napuštaju vaš uređaj.
 Sajt: <https://celik.peregon.cc> · Šta je novo: <https://celik.peregon.cc/changelog/> · Politika privatnosti: [docs/PRIVACY.md](docs/PRIVACY.md) · Greške i povratne informacije: [GitHub Issues](https://github.com/peregond/SuperCelik/issues/new)
 
-Jezici: RU / EN / SR (latinica) / SR (ćirilica). Srpska ćirilica se dobija iz srpske latinice automatskom transliteracijom (`scripts/translit_sr.py`, ista pravila u Swift-u i C#-u).
+Jezici (10): srpski (latinica i ćirilica), engleski, ruski, hrvatski, mađarski, albanski, slovački, rumunski, ukrajinski i beloruski. Srpska ćirilica se dobija iz srpske latinice automatskom transliteracijom (`scripts/translit_sr.py`, ista pravila u Swift-u i C#-u).
 Platforme: **iOS i iPadOS** (SwiftUI, čitanje preko USB-C čitača, vidi [ios/README.sr.md](ios/README.sr.md)), **macOS** (SwiftUI, vidi [macos/README.sr.md](macos/README.sr.md)), **Android** (Kotlin + Jetpack Compose, Material You, vidi [android/README.sr.md](android/README.sr.md)), **Windows** (WPF, .NET 8) i **Linux** (**beta**, Avalonia, .NET 8, vidi [linux/README.sr.md](linux/README.sr.md)).
 Nezavisna implementacija, nije povezana sa MUP RS niti sa NetSeT/Veridos.
 
@@ -40,11 +40,12 @@ Windows (.NET 8 SDK):
     windows\SerbiaID.Windows\bin\Release\net8.0-windows\SuperCelik.exe --selftest   # provera na pravoj kartici, izveštaj selftest.txt bez ličnih podataka
 
 ## Status
-- **Gotovo na svim platformama:** interfejs na tri jezika, pronalaženje čitača i ATR-a, čitanje ličnih podataka, adrese, dokumenta i fotografije, provera potpisa (CMS + lanac do MUP sertifikata iz `Resources/CA`), čitanje sertifikata tokena sa proverom lanca, štampa / PDF.
+- **Gotovo na svim platformama:** interfejs na deset jezika, pronalaženje čitača i ATR-a, čitanje ličnih podataka, adrese, dokumenta i fotografije, provera potpisa (CMS + lanac do MUP sertifikata iz `Resources/CA`), čitanje sertifikata tokena sa proverom lanca, štampa / PDF.
 - **Provereno na pravoj kartici:** Windows verzija (RP2024, `--selftest`): podaci, fotografija, oba potpisa i lanac sertifikata tokena. Na macOS-u: promena PIN-a, potpisivanje fajla i prijava u pregledaču (vidi dole). Na iPhone-u: prijava na eUprava preko sistemskog tokena (Safari) i brze radnje na početnom ekranu.
 - Protokol je dobijen posmatranjem `CelikApi.dll` i prave kartice; polja su uporedena sa izlazom DLL-a. Za ličnu kartu (SERID) i karticu za strance (SERIF) fajlovi su verovatno isti, ali nije provereno; oznake UNVERIFIED u kodu su pretpostavke.
 - **PIN tokena:** „Promeni PIN“, „Otključaj preko PUK-a“ i „Potpiši fajl“ (odvojeni CMS potpis `.p7s`, SHA-256, ključ tokena 0x6005) postoje u aplikacijama za macOS, Windows, iOS i Android. **Na pravom tokenu nije provereno:** promena PIN-a na Windows-u, iOS-u i Android-u, kao i **otključavanje preko PUK-a svuda** (APDU `00 2C 00 80` je uzet iz ISO 7816-4, u javnim izvorima ga nema; pogrešan PUK troši pokušaj).
 - **Prijava u pregledaču sertifikatom sa kartice (eid.gov.rs):** na **macOS-u** i **iOS-u** preko ugrađenog drajvera kartice (CryptoTokenKit), provereno na pravim karticama. Na **Androidu** se stranica za prijavu otvara unutar aplikacije sa ključem koji se oslanja na karticu (provereno na emulatoru do poziva potpisa, sa pravom karticom još ne). Na **Windows-u** aplikacija registruje sopstveni drajver kartice (jedan zahtev za administratorska prava), a Chrome, Edge i Firefox uzimaju sertifikat iz Windows skladišta. Na **Linux-u** aplikacija povezuje PKCS#11 modul [srb-id-pkcs11](https://github.com/ubavic/srb-id-pkcs11) sa Firefox-om, Chrome-om / Edge-om / Chromium-om ([linux/README.sr.md](linux/README.sr.md)). **Firefox** i **Edge** rade na sva tri sistema, vidi odeljke ispod.
+- **Saobraćajna i zdravstvena kartica (probni režim):** dugme za čitanje na kartici „Kartica“ samo prepoznaje vrstu kartice. Saobraćajna dozvola se čita prema direktivi EU 1999/37/EC i tabeli polja iz SDK dokumentacije MUP-a i **još nije proverena na pravoj kartici**: potpis izdavaoca se ne proverava, a naziv aplikacije na čipu je nepotvrđena pretpostavka; može se sačuvati kao PDF i odštampati. Raspored podataka zdravstvene kartice (KZO, RFZO) dobijen je analizom zvaničnog RFZO čitača ([docs/health-card-protocol.md](docs/health-card-protocol.md)) i takođe nije proveren na pravoj kartici: PIN nije potreban, potpisi se ne proveravaju, štampe još nema. Na iPhone-u i iPad-u obe kartice se čitaju samo preko USB čitača. Skrivena dijagnostika (Podešavanja: dodirnite verziju 5 puta; `--diag` na Windows-u i Linux-u) beleži strukturu prave kartice bez ličnih podataka. Vidi [docs/cards-research.md](docs/cards-research.md).
 - **Linux je u beta statusu:** izgrađen i isproban u demo režimu, ne na pravoj kartici.
 - Nije gotovo: stara kartica Apollo (protokol nepoznat).
 

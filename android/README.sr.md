@@ -9,7 +9,7 @@ Kotlin + Jetpack Compose, Material You dizajn (dinamičke boje od Androida 12; n
 NFC čitanja nema: srpske lične karte imaju samo kontaktni čip (kao i u iOS verziji). NFC kod je uklonjen;
 ako zatreba, nalazi se u git istoriji pre komita „Android: read only through a USB reader, drop NFC“.
 
-Protokol kartice je prenet iz `Sources/SerbiaID/EidCard.swift`. Jezici: RU / EN / SR (prema jeziku sistema).
+Protokol kartice je prenet iz `Sources/SerbiaID/EidCard.swift`. Jezici: 10, srpski na oba pisma (prema jeziku sistema ili po izboru u podešavanjima).
 
 ## Mogućnosti
 - Čitanje ličnih podataka i fotografije (CCID USB čitač, automatski početak kada se čitač poveže), provera MUP potpisa po ugrađenim sertifikatima, rok važenja, PDF (deljenje).

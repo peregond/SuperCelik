@@ -2,11 +2,12 @@
 
 # Privacy Policy / Политика конфиденциальности / Politika privatnosti
 
-_Last updated / Обновлено / Ažurirano: 2026-11-18_
+_Last updated / Обновлено / Ažurirano: 2026-11-25_
 
 ## English
 **Super Čelik** reads the data of a Serbian electronic ID card, foreigner ID card or residence permit from your own card,
 on your own device, and shows, prints or exports it for you.
+It can also read, in test mode, a vehicle registration card and a health insurance card; their data, including health insurance data, is handled in the same way.
 
 - **No data leaves your device.** The app has no accounts, no analytics, no advertising, no tracking and no server of ours.
   Card data (name, personal number, address, photo, certificates) is read into memory, shown on screen and cleared when you
@@ -27,6 +28,7 @@ Contact: open an issue at https://github.com/peregond/SuperCelik/issues
 ## Русский
 **Super Čelik** считывает данные сербской электронной ID-карты, карты иностранца или вида на жительство с вашей карты,
 на вашем устройстве, и показывает, печатает или сохраняет их по вашему запросу.
+В тестовом режиме приложение также читает свидетельство о регистрации автомобиля и карту медицинского страхования; с их данными, включая данные медстрахования, оно обращается так же.
 
 - **Данные не покидают устройство.** Нет аккаунтов, аналитики, рекламы, отслеживания и нашего сервера. Данные карты
   (имя, личный номер, адрес, фото, сертификаты) читаются в память, показываются на экране и стираются при закрытии
@@ -47,6 +49,7 @@ Contact: open an issue at https://github.com/peregond/SuperCelik/issues
 ## Srpski
 **Super Čelik** čita podatke srpske elektronske lične karte, lične karte za strance ili boravišne dozvole sa vaše kartice,
 na vašem uređaju, i prikazuje ih, štampa ili čuva po vašem zahtevu.
+U probnom režimu aplikacija čita i saobraćajnu dozvolu i zdravstvenu karticu; sa njihovim podacima, uključujući podatke o zdravstvenom osiguranju, postupa na isti način.
 
 - **Podaci ne napuštaju uređaj.** Nema naloga, analitike, reklama, praćenja ni našeg servera. Podaci sa kartice se čitaju u
   memoriju, prikazuju na ekranu i brišu pri zatvaranju aplikacije ili posle vremena koje podesite.

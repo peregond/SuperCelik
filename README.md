@@ -4,10 +4,10 @@
 
 # Super Čelik
 
-One app instead of Čelik + TrustEdge ID for the Serbian electronic ID card, foreigner ID card and residence permit. Free, no account, no servers: card data never leaves your device.
+One app instead of Čelik + TrustEdge ID for the Serbian electronic ID card, foreigner ID card and residence permit. It also reads vehicle registration cards (saobraćajna dozvola) and health insurance cards (KZO) in **test mode**. Free, no account, no servers: card data never leaves your device.
 Website: <https://celik.peregon.cc> · What’s new: <https://celik.peregon.cc/changelog/> · Privacy policy: [docs/PRIVACY.md](docs/PRIVACY.md) · Bugs and feedback: [GitHub Issues](https://github.com/peregond/SuperCelik/issues/new)
 
-Languages: RU / EN / SR (Latin) / SR (Cyrillic). Serbian Cyrillic is produced from Serbian Latin by automatic transliteration (`scripts/translit_sr.py`, the same rules in Swift and C#).
+Languages (10): English, Russian, Serbian (Latin and Cyrillic), Croatian, Hungarian, Albanian, Slovak, Romanian, Ukrainian and Belarusian. Serbian Cyrillic is produced from Serbian Latin by automatic transliteration (`scripts/translit_sr.py`, the same rules in Swift and C#).
 Platforms: **iOS and iPadOS** (SwiftUI, reads through a USB-C reader, see [ios/README.md](ios/README.md)), **macOS** (SwiftUI, see [macos/README.md](macos/README.md)), **Android** (Kotlin + Jetpack Compose, Material You, see [android/README.md](android/README.md)), **Windows** (WPF, .NET 8) and **Linux** (**beta**, Avalonia, .NET 8, see [linux/README.md](linux/README.md)).
 An independent implementation, not affiliated with MUP RS or NetSeT/Veridos.
 
@@ -40,7 +40,7 @@ Windows (.NET 8 SDK):
     windows\SerbiaID.Windows\bin\Release\net8.0-windows\SuperCelik.exe --selftest   # check on a real card, writes selftest.txt without personal data
 
 ## Status
-- **Done on every platform:** interface in three languages, reader and ATR detection, reading personal data, address, document and photo, signature check (CMS + chain up to the MUP certificates from `Resources/CA`), reading the token certificate with chain validation, print / PDF.
+- **Done on every platform:** interface in ten languages, reader and ATR detection, reading personal data, address, document and photo, signature check (CMS + chain up to the MUP certificates from `Resources/CA`), reading the token certificate with chain validation, print / PDF.
 - **Checked on a real card:** the Windows version (RP2024, `--selftest`): data, photo, both signatures and the token certificate chain. On macOS: PIN change, file signing and browser sign-in (see below). On iPhone: sign-in to eUprava through the system token (Safari) and the Home Screen quick actions.
 - The protocol was obtained by observing `CelikApi.dll` and a real card; the fields were compared with the DLL's output. For the ID card (SERID) and the foreigner card (SERIF) the files are probably the same, but this is not verified; tags marked UNVERIFIED in the code are assumptions.
 - **Token PIN:** “Change PIN”, “Unblock with PUK” and “Sign file” (detached CMS `.p7s`, SHA-256, token key 0x6005) are in the macOS, Windows, iOS and Android apps. **Not verified on a real token:** PIN change on Windows, iOS and Android, and **unblocking with PUK everywhere** (the APDU `00 2C 00 80` follows ISO 7816-4 and is not in public sources; a wrong PUK costs an attempt).
