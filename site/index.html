@@ -557,8 +557,8 @@ const OS=(()=>{const u=navigator.userAgent,p=navigator.platform||"";
  if(/Win/.test(p)||/Windows/.test(u))return"win";if(/Mac/.test(p)||/Mac OS/.test(u))return"mac";if(/Linux|X11/.test(p+u))return"linux";return null})();
 const NAMES={mac:"macOS",win:"Windows",android:"Android",ios:"iPhone",linux:"Linux"};
 let version="";
-// macOS and iPhone screenshots follow the chosen language (English files have no suffix; Serbian Cyrillic uses the Latin ones)
-const SHOT_RE=/^(img\/(?:shot|full)-(?:iphone|iphone-dark|mac|mac-token))(?:-(?:ru|sr))?\.webp$/;
+// macOS, iPhone and Android screenshots follow the chosen language (English files have no suffix; Serbian Cyrillic uses the Latin ones)
+const SHOT_RE=/^(img\/(?:shot|full)-(?:iphone|iphone-dark|mac|mac-token|android|android-token))(?:-(?:ru|sr))?\.webp$/;
 function localizeShots(l){const sfx={ru:"-ru",sr:"-sr",sc:"-sr"}[l]||"";
  document.querySelectorAll("img[src],[data-full]").forEach(e=>{for(const a of ["src","data-full"]){const v=e.getAttribute(a),m=v&&SHOT_RE.exec(v);if(m){const n=m[1]+sfx+".webp";if(n!==v)e.setAttribute(a,n)}}})}
 const ARIA={ru:{lang:"Язык",cpu:"Процессор",shot:"Скриншот"},en:{lang:"Language",cpu:"CPU",shot:"Screenshot"},sr:{lang:"Jezik",cpu:"Procesor",shot:"Snimak ekrana"},sc:{lang:"Језик",cpu:"Процесор",shot:"Снимак екрана"}};
