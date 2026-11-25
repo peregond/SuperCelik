@@ -35,6 +35,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.scale
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalClipboardManager
 import androidx.compose.ui.platform.LocalContext
@@ -416,7 +417,7 @@ fun TokenScreen(vm: CardViewModel) {
         if (out != null && c != null) ctx.contentResolver.openOutputStream(out)?.use { it.write(c.der) }
     }
 
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 24.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(16.dp, 8.dp, 16.dp, 24.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
         item {
             Box(Modifier.fillMaxWidth(), contentAlignment = Alignment.Center) {
                 val failed by vm.failed.collectAsStateWithLifecycle()
@@ -436,35 +437,19 @@ fun TokenScreen(vm: CardViewModel) {
         }
         val t = token
         if (t == null) {
-            item { Text(stringResource(R.string.token_hint), color = MaterialTheme.colorScheme.onSurfaceVariant, textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth()) }
-        } else {
             item {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    Icon(Icons.Filled.Key, null, tint = MaterialTheme.colorScheme.primary)
-                    Spacer(Modifier.width(8.dp))
-                    Text(t.label, style = MaterialTheme.typography.titleMedium)
-                    Spacer(Modifier.width(8.dp))
-                    Text(t.serial, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
+                Text(stringResource(R.string.token_hint), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp))
             }
+        } else {
+            item { TokenHero(t) }
             items(t.certs.size) { i -> CertCard(t.certs[i]) { exportCert = it; saveCert.launch("certificate.cer") } }
             item {
-                Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                    OutlinedButton({ dialog = "change" }, Modifier.fillMaxWidth()) { Icon(Icons.Filled.LockReset, null); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.change_pin)) }
-                    OutlinedButton({ dialog = "unblock" }, Modifier.fillMaxWidth()) { Icon(Icons.Filled.LockOpen, null); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.unblock_pin)) }
-                    FilledTonalButton({ pickFile.launch(arrayOf("*/*")) }, Modifier.fillMaxWidth()) { Icon(Icons.Filled.Draw, null); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.sign_file)) }
-                }
+                TokenActions(onChange = { dialog = "change" }, onUnblock = { dialog = "unblock" }, onSign = { pickFile.launch(arrayOf("*/*")) })
             }
         }
         // eUprava sign-in: reads the certificates (no PIN), then opens the in-app sign-in screen
-        item {
-            Column(verticalArrangement = Arrangement.spacedBy(6.dp)) {
-                Button({ vm.prepareEuprava(ctx) }, Modifier.fillMaxWidth().height(56.dp)) {
-                    Icon(Icons.Filled.Login, null); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.eu_login))
-                }
-                Text(stringResource(R.string.eu_login_note), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        }
+        item { EuCard { vm.prepareEuprava(ctx) } }
     }
 
     when (dialog) {
@@ -476,6 +461,72 @@ fun TokenScreen(vm: CardViewModel) {
             onDismiss = { dialog = null; signSrc = null }) { v ->
             dialog = null; signPin = v[0]
             saveSig.launch((signSrc?.lastPathSegment?.substringAfterLast('/') ?: "file") + ".p7s")
+        }
+    }
+}
+
+/** The token as a hero card (the same look as the card tabs): the key in a round badge, its name and serial number. */
+@Composable
+private fun TokenHero(t: TokenData) {
+    val flagPalette = LocalFlagPalette.current
+    val bg = if (flagPalette) Flag.Blue else MaterialTheme.colorScheme.primaryContainer
+    val fg = if (flagPalette) Color.White else MaterialTheme.colorScheme.onPrimaryContainer
+    Card(Modifier.fillMaxWidth(), colors = CardDefaults.cardColors(containerColor = bg), shape = CardShape) {
+        Row(Modifier.fillMaxWidth().padding(20.dp), verticalAlignment = Alignment.CenterVertically) {
+            Box(Modifier.size(48.dp).clip(CircleShape).background(fg.copy(alpha = 0.16f)), contentAlignment = Alignment.Center) {
+                Icon(Icons.Filled.Key, null, tint = fg)
+            }
+            Spacer(Modifier.width(16.dp))
+            Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                Text(t.label, style = MaterialTheme.typography.titleMedium, color = fg)
+                Text(t.serial, style = MaterialTheme.typography.bodyMedium, color = fg.copy(alpha = 0.85f))
+            }
+        }
+    }
+}
+
+/** A round badge with an icon in the tonal colours (leading element of the list rows and cards). */
+@Composable
+private fun TonalBadge(icon: ImageVector, container: Color = MaterialTheme.colorScheme.secondaryContainer, tint: Color = MaterialTheme.colorScheme.onSecondaryContainer) {
+    Box(Modifier.size(40.dp).clip(CircleShape).background(container), contentAlignment = Alignment.Center) { Icon(icon, null, tint = tint) }
+}
+
+/** The PIN and signing actions as one list in a card (like the groups in Settings) instead of three stacked buttons. */
+@Composable
+private fun TokenActions(onChange: () -> Unit, onUnblock: () -> Unit, onSign: () -> Unit) {
+    val transparent = ListItemDefaults.colors(containerColor = Color.Transparent)
+    @Composable fun row(icon: ImageVector, @androidx.annotation.StringRes text: Int, onClick: () -> Unit) {
+        ListItem(modifier = Modifier.clickable(onClick = onClick), colors = transparent,
+            leadingContent = { TonalBadge(icon) },
+            headlineContent = { Text(stringResource(text), style = MaterialTheme.typography.bodyLarge) },
+            trailingContent = { Icon(Icons.Filled.ChevronRight, null, tint = MaterialTheme.colorScheme.onSurfaceVariant) })
+    }
+    Card(Modifier.fillMaxWidth(), shape = CardShape, colors = groupCardColors()) {
+        Column(Modifier.padding(vertical = 4.dp)) {
+            row(Icons.Filled.LockReset, R.string.change_pin, onChange)
+            HorizontalDivider(Modifier.padding(start = 72.dp, end = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
+            row(Icons.Filled.LockOpen, R.string.unblock_pin, onUnblock)
+            HorizontalDivider(Modifier.padding(start = 72.dp, end = 16.dp), color = MaterialTheme.colorScheme.outlineVariant.copy(alpha = 0.6f))
+            row(Icons.Filled.Draw, R.string.sign_file, onSign)
+        }
+    }
+}
+
+/** Sign in to eUprava with the card certificate: a tonal card with the explanation and the one filled button. */
+@Composable
+private fun EuCard(onClick: () -> Unit) {
+    val fg = MaterialTheme.colorScheme.onSecondaryContainer
+    Card(Modifier.fillMaxWidth(), shape = CardShape, colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
+        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(16.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                TonalBadge(Icons.Filled.Login, container = fg.copy(alpha = 0.12f), tint = fg)
+                Spacer(Modifier.width(16.dp))
+                Text("eUprava", style = MaterialTheme.typography.titleMedium, color = fg)
+            }
+            Text(stringResource(R.string.eu_login_note), style = MaterialTheme.typography.bodyMedium, color = fg.copy(alpha = 0.85f))
+            Button(onClick, Modifier.fillMaxWidth().height(56.dp)) {
+                Icon(Icons.Filled.Login, null); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.eu_login))
+            }
         }
     }
 }
@@ -493,19 +544,37 @@ private fun CertCard(cert: TokenCert, onExport: (TokenCert) -> Unit) {
             }.getOrNull()
         }
     }
+    val chainBroken = info?.third?.second?.isNotEmpty() == true
+    val chainVerified = info?.third?.second?.isEmpty() == true
     Card(Modifier.fillMaxWidth(), shape = CardShape, colors = groupCardColors()) {
-        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Text(cert.label.ifBlank { info?.first ?: "" }, style = MaterialTheme.typography.titleMedium)
-            info?.let { (subject, issuer, rest) ->
-                Text("${stringResource(R.string.cert_issuer)}: $issuer", color = MaterialTheme.colorScheme.onSurfaceVariant)
-                rest?.let { (valid, chainErr) ->
-                    Text(stringResource(R.string.cert_valid, valid), color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Column(Modifier.padding(20.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                // the verified badge only after a successful chain check; while the check runs (or the certificate cannot be read) a neutral one
+                when {
+                    chainBroken -> TonalBadge(Icons.Filled.GppBad, MaterialTheme.colorScheme.errorContainer, MaterialTheme.colorScheme.onErrorContainer)
+                    chainVerified -> TonalBadge(Icons.Filled.VerifiedUser)
+                    else -> TonalBadge(Icons.Filled.Description)
+                }
+                Spacer(Modifier.width(16.dp))
+                Text(cert.label.ifBlank { info?.first ?: "" }, style = MaterialTheme.typography.titleMedium, modifier = Modifier.weight(1f))
+            }
+            info?.let { (_, issuer, rest) ->
+                Column(verticalArrangement = Arrangement.spacedBy(2.dp)) {
+                    Text("${stringResource(R.string.cert_issuer)}: $issuer", style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    rest?.let { (valid, _) ->
+                        Text(stringResource(R.string.cert_valid, valid), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
+                }
+                rest?.let { (_, chainErr) ->
                     if (chainErr.isEmpty()) Pill(stringResource(R.string.chain_ok), MaterialTheme.colorScheme.onSecondaryContainer, MaterialTheme.colorScheme.secondaryContainer)
                     else Pill(stringResource(R.string.sig_chain), MaterialTheme.colorScheme.onErrorContainer, MaterialTheme.colorScheme.errorContainer)
                 }
-                if (subject.isBlank()) Spacer(Modifier.height(0.dp))
             }
-            if (cert.der.isNotEmpty()) TextButton(onClick = { onExport(cert) }) { Text(stringResource(R.string.export_cert)) }
+            if (cert.der.isNotEmpty()) {
+                FilledTonalButton(onClick = { onExport(cert) }, Modifier.align(Alignment.End)) {
+                    Icon(Icons.Filled.Download, null, Modifier.size(18.dp)); Spacer(Modifier.width(8.dp)); Text(stringResource(R.string.export_cert))
+                }
+            }
         }
     }
 }
