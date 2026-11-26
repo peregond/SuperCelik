@@ -30,7 +30,7 @@ cp -R "$BIN_DIR"/SerbiaID_SerbiaID.bundle "$APP/Contents/Resources/"
 for ip in "$APP"/Contents/Resources/SerbiaID_SerbiaID.bundle/Contents/Info.plist "$APP"/Contents/Resources/SerbiaID_SerbiaID.bundle/Info.plist; do
   [ -f "$ip" ] && $PB -c "Delete :CFBundleExecutable" "$ip" 2>/dev/null || true
 done
-cp assets/AppIcon.icns "$APP/Contents/Resources/AppIcon.icns"
+bash scripts/compile-mac-icon.sh "$APP/Contents/Resources"
 cp macos/PrivacyInfo.xcprivacy "$APP/Contents/Resources/PrivacyInfo.xcprivacy"
 
 PLIST="$APP/Contents/Info.plist"
