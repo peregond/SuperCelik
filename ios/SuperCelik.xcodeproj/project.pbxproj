@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		A10000000000000000000040 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000042 /* AppIcon.icon */; };
+		A10000000000000000000041 /* AppIcon.icon in Resources */ = {isa = PBXBuildFile; fileRef = A10000000000000000000042 /* AppIcon.icon */; };
 		076F477AFBB34016C0DCD226 /* SuperCelikApp.swift in Sources */ = {isa = PBXBuildFile; fileRef = B6A9443BC53EB311ED927118 /* SuperCelikApp.swift */; };
 		A0CD34D9E0004D0C44D04EF4 /* PhoneModel.swift in Sources */ = {isa = PBXBuildFile; fileRef = C85CB36E74AF9D06F4C2C244 /* PhoneModel.swift */; };
 		0FDAD66B44FCA1C5261B7DF4 /* PhoneViews.swift in Sources */ = {isa = PBXBuildFile; fileRef = E5956581239ED5DE9BFB2439 /* PhoneViews.swift */; };
@@ -67,6 +69,7 @@
 /* End PBXCopyFilesBuildPhase section */
 
 /* Begin PBXFileReference section */
+		A10000000000000000000042 /* AppIcon.icon */ = {isa = PBXFileReference; lastKnownFileType = folder.iconcomposer.icon; name = AppIcon.icon; path = ../assets/AppIcon.icon; sourceTree = SOURCE_ROOT; };
 		B6A9443BC53EB311ED927118 /* SuperCelikApp.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = SuperCelikApp.swift; sourceTree = "<group>"; };
 		C85CB36E74AF9D06F4C2C244 /* PhoneModel.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneModel.swift; sourceTree = "<group>"; };
 		E5956581239ED5DE9BFB2439 /* PhoneViews.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = PhoneViews.swift; sourceTree = "<group>"; };
@@ -132,6 +135,7 @@
 				A01B5CB932856B6168E43F89,
 				C3809410BC68B6AD7407904A,
 				A1000000000000000000000A,
+				A10000000000000000000042,
 				3EEF9D4B52FAB14020558098,
 			);
 			sourceTree = "<group>";
@@ -292,6 +296,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				2B4A2C08D382ED0CB67D3F18 /* Assets.xcassets in Resources */,
+				A10000000000000000000040 /* AppIcon.icon in Resources */,
 				243866D0C6E614680F031BFA /* CA in Resources */,
 				C3E4A5B6D7F8920A3B4C5D6E /* Mascots in Resources */,
 				8D3B6F1A4C9E2057B1D7A9C2 /* PrivacyInfo.xcprivacy in Resources */,
@@ -303,6 +308,7 @@
 			buildActionMask = 2147483647;
 			files = (
 				A10000000000000000000020 /* Assets.xcassets in Resources */,
+				A10000000000000000000041 /* AppIcon.icon in Resources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
